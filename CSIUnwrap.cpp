@@ -163,45 +163,21 @@ void phaseUnwrapBetweenAntennas(std::deque<std::deque<double>> & phases, int ntx
     for(auto i = 0 ; i < ntx; i++) {
         auto segHead = nrx * i;
         auto segEnd =  nrx * (i+1);
-        double dc_phases_origin[3], dc_phases_unwrap[3], dc_phases_wrap[3];
+        double dc_phases_origin[3];
+        std::deque<double> dc_phases_unwraped;
         // do unwrap between antennas.
         auto dcPos = phases[segHead].size() / 2;
         for(auto j = segHead ; j < segEnd; j ++) {
             dc_phases_origin[j - segHead] = (phases[j][dcPos]);
-            dc_phases_unwrap[j - segHead] = dc_phases_origin[j - segHead];
-            dc_phases_wrap[j - segHead]   = dc_phases_origin[j - segHead];
+            dc_phases_unwraped.emplace_back(dc_phases_origin[j - segHead]);
         }
-
-        if (dc_phases_unwrap[0] >= dc_phases_unwrap[2] && dc_phases_unwrap[2] >= dc_phases_unwrap[1]) { // 1 >= 3 >= 2, 2/3 should be moved to top
-            dc_phases_unwrap[2] += M_2PI;
-            dc_phases_unwrap[1] += M_2PI;
-        }
-
-        if (dc_phases_unwrap[1] >= dc_phases_unwrap[2] && dc_phases_unwrap[2] >= dc_phases_unwrap[0]) { // 2 >= 3 >= 1, 2/3 should be moved to bottom
-            dc_phases_unwrap[2] -= M_2PI;
-            dc_phases_unwrap[1] -= M_2PI;
-        }
-
-        if (dc_phases_unwrap[1] >= dc_phases_unwrap[0] && dc_phases_unwrap[0] >= dc_phases_unwrap[2]) { // 2 >= 1 >= 3, 3 is wrapped to bottom.
-            dc_phases_unwrap[2] += M_2PI;
-        }
-
-        if (dc_phases_unwrap[2] >= dc_phases_unwrap[0] && dc_phases_unwrap[0] >= dc_phases_unwrap[1]) { // 3 >= 1 >= 2, 3 is wrapped to top.
-            dc_phases_unwrap[2] -= M_2PI;
-        }
-
-        dc_phases_wrap[1] = phase_unwrap_two(dc_phases_unwrap[0], dc_phases_unwrap[1], M_2PI);
-        auto sign = (dc_phases_wrap[1] - dc_phases_unwrap[0]) * (dc_phases_unwrap[1] - dc_phases_unwrap[0]) > 0 ? 1.0 : -1.0;
-        dc_phases_wrap[2] = dc_phases_wrap[1] + (dc_phases_unwrap[2] - dc_phases_unwrap[1]) * sign;
-
-//        unwrapMonotonic(dc_phases_wrap);
-        unwrapMonotonic2(dc_phases_wrap);
-
-        auto gap2 = dc_phases_wrap[1] - dc_phases_origin[1];
+        unwrapPhase_part(dc_phases_unwraped, 0, dc_phases_unwraped.size() - 1, true, M_2PI);
+        
+        auto gap2 = dc_phases_unwraped[1] - dc_phases_origin[1];
         for(auto & phase: phases[segEnd-2])
             phase += gap2;
 
-        auto gap3 = dc_phases_wrap[2] - dc_phases_origin[2];
+        auto gap3 = dc_phases_unwraped[2] - dc_phases_origin[2];
         for(auto & phase: phases[segEnd-1])
             phase += gap3;
     }
@@ -222,7 +198,7 @@ int phaseUnwrapAroundDC(const std::complex<double> csi_matrix[], double magArray
         unwrapPhase(phases[i]);
     }
 
-//    phaseUnwrapBetweenAntennas(phases, ntx, nrx);
+    phaseUnwrapBetweenAntennas(phases, ntx, nrx);
 
     currentPos = 0;
     for (auto i = 0 ; i < nrx * ntx ; i ++) {
