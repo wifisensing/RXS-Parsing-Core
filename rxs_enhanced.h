@@ -38,6 +38,7 @@
 #define AR_CSI_EXTRAINFO_HASLASTHWTXTSF            0x00001000
 #define AR_CSI_EXTRAINFO_HASCHANNELFLAGS           0x00002000
 #define AR_CSI_EXTRAINFO_HASPLLSLOPE               0x00004000
+#define AR_CSI_EXTRAINFO_HASTUNINGPOLICY           0x00008000
 
 /**
  * Test the presence of version field.
@@ -158,9 +159,11 @@ inline bool extraInfoHasLastHWTxTSF(uint32_t featureCode) {
 inline bool extraInfoHasChannelFlags(uint32_t featureCode) {
 	return static_cast<bool>(featureCode >> 13 & 0x1);
 }
-
 inline bool extraInfoHasPLLSlope(uint32_t featureCode) {
 	return static_cast<bool>(featureCode >> 14 & 0x1);
+}
+inline bool extraInfoHasTuningPolicy(uint32_t featureCode) {
+    return static_cast<bool>(featureCode >> 15 & 0x1);
 }
 
 enum RXSParsingLevel: uint8_t {
@@ -177,6 +180,13 @@ enum ChannelMode : uint8_t {
     HT20,
     HT40_MINUS,
     HT40_PLUS,
+};
+
+enum TuningPolicy: uint8_t {
+    TuningPolicy_Unknown = 30,
+    TuningPolicy_Reset,
+    TuningPolicy_Fastcc,
+    TuningPolicy_Chansel
 };
 
 /**
@@ -284,6 +294,7 @@ struct ExtraInfo {
 	bool hasLastHWTxTSF;
     bool hasChannelFlags;
 	bool hasPLLSlope;
+	bool hasTuningPolicy;
     uint16_t length;
     uint8_t version;
     uint8_t macaddr_rom[6];
@@ -299,6 +310,7 @@ struct ExtraInfo {
 	uint32_t lastHwTxTSF;
     uint16_t channelFlags;
 	double pllSlope;
+	uint8_t tuningPolicy;
 
     static int fromBinary(const uint8_t *extraInfoPtr, struct ExtraInfo * extraInfo, uint32_t suppliedFeatureCode = 0);
     static int toBinary(void * extraInfoPtr);

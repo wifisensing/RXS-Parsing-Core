@@ -54,6 +54,7 @@ void featureCodeInterpretation(uint32_t featureCode, struct ExtraInfo * extraInf
     extraInfo->hasLastHWTxTSF = extraInfoHasLastHWTxTSF(featureCode);
     extraInfo->hasChannelFlags= extraInfoHasChannelFlags(featureCode);
     extraInfo->hasPLLSlope    = extraInfoHasPLLSlope(featureCode);
+    extraInfo->hasTuningPolicy= extraInfoHasTuningPolicy(featureCode);
 }
 
 struct RXS_enhanced parseRXS(const uint8_t * inBytes, enum RXSParsingLevel parsingLevel) {
@@ -165,6 +166,7 @@ void inplaceAddRxExtraInfo(uint8_t *inBytes, uint32_t featureCode, uint8_t *valu
     pos += extraInfoHasLastHWTxTSF(*rxFeatureCode) ? 4: 0;
     pos += extraInfoHasChannelFlags(*rxFeatureCode) ? 2: 0;
     pos += extraInfoHasPLLSlope(*rxFeatureCode) ? sizeof(double): 0;
+    pos += extraInfoHasTuningPolicy(*rxFeatureCode) ? 1: 0;
 
     *rxFeatureCode |= featureCode;
     memcpy(inBytes + pos, value, length);
@@ -305,6 +307,10 @@ int ExtraInfo::fromBinary(const uint8_t *extraInfoPtr, struct ExtraInfo * extraI
     if (extraInfo->hasPLLSlope) {
         extraInfo->pllSlope = *((double *)(extraInfoPtr + pos));
         pos += sizeof(double);
+    }
+
+    if (extraInfo->hasTuningPolicy) {
+        extraInfo->tuningPolicy = extraInfoPtr[pos++];
     }
     
     return 0;
