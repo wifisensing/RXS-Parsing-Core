@@ -182,11 +182,10 @@ enum ChannelMode : uint8_t {
     HT40_PLUS,
 };
 
-enum TuningPolicy: uint8_t {
-    TuningPolicy_Unknown = 30,
-    TuningPolicy_Reset,
-    TuningPolicy_Fastcc,
-    TuningPolicy_Chansel
+enum AtherosCFTuningPolicy: uint8_t {
+    CFTuningByFastCC,
+    CFTuningByChansel,
+    CFTuningByHardwareReset,
 };
 
 /**
