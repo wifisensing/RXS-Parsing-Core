@@ -392,6 +392,19 @@ inline std::string channelModel2String(ChannelMode mode) {
     }
 }
 
+inline std::string TuningPolicy2String(uint8_t policy) {
+    switch (policy) {
+        case CFTuningByChansel:
+            return "Chansel";
+        case CFTuningByFastCC:
+            return "FastCC";
+        case CFTuningByHardwareReset:
+            return "Reset";
+        default:
+            throw std::runtime_error("[RXS_Enhanced.h] Unknown Tuning Policy for value: " + std::to_string(policy));
+    }
+}
+
 /**
  * calculate the over-the-air Tx duration for a packet
  * @param length packet length
