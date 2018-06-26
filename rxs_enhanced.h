@@ -174,17 +174,17 @@ enum RXSParsingLevel: uint8_t {
 };
 
 enum ChannelMode : uint8_t {
-    NON_HT5 = 10,
-    NON_HT10,
-    NON_HT20,
-    HT20,
-    HT40_MINUS,
-    HT40_PLUS,
+    NON_HT20 = 1,
+    NON_HT10 = 2,
+    NON_HT5 = 4,
+    HT20 = 9,
+    HT40_MINUS = 24,
+    HT40_PLUS = 40,
 };
 
 enum AtherosCFTuningPolicy: uint8_t {
+    CFTuningByChansel = 30,
     CFTuningByFastCC,
-    CFTuningByChansel,
     CFTuningByHardwareReset,
 };
 
