@@ -108,23 +108,36 @@ int parse_rxs_enhanced(const uint8_t * inBytes, struct RXS_enhanced *rxs, enum R
     }
     pos += rxs->rxs_basic.csi_len;
 
-    auto packetHeader = (struct ieee80211_packet_header *)(inBytes + pos);
-    rxs->txHeader = * packetHeader;
-    pos += sizeof(struct ieee80211_packet_header);
+    uint8_t frameType = *((uint8_t *)(inBytes+pos));
+    //printf("frame_type = 0x%2x, control_type = 0x%2x.\n", frameType, controlType);
 
-    if ( packetHeader->header_info.hasTxExtraInfo ) {
-        ExtraInfo::fromBinary(inBytes+pos, &rxs->txExtraInfo);
-        pos += rxs->txExtraInfo.length + 6;
-    }
+    if (frameType == 0x8) { // Frame injected by PicoScenes
+        auto packetHeader = (struct ieee80211_packet_header *)(inBytes + pos);
+        rxs->txHeader = * packetHeader;
+        pos += sizeof(struct ieee80211_packet_header);
 
-    if (packetHeader->header_info.hasChronosInfo) {
-        struct ChronosInfo * chronosInfoPtr = (struct ChronosInfo *)(inBytes + pos);
-        rxs->chronosInfo = * chronosInfoPtr;
-        pos += sizeof(struct ChronosInfo);
-        if (rxs->chronosInfo.TxRXSLength > 0) {
-            memcpy(rxs->chronosACKBody, inBytes + pos, rxs->chronosInfo.TxRXSLength);
+        if ( packetHeader->header_info.hasTxExtraInfo ) {
+            ExtraInfo::fromBinary(inBytes+pos, &rxs->txExtraInfo);
+            pos += rxs->txExtraInfo.length + 6;
         }
-        pos += rxs->chronosInfo.TxRXSLength;
+
+        if (packetHeader->header_info.hasChronosInfo) {
+            struct ChronosInfo * chronosInfoPtr = (struct ChronosInfo *)(inBytes + pos);
+            rxs->chronosInfo = * chronosInfoPtr;
+            pos += sizeof(struct ChronosInfo);
+            if (rxs->chronosInfo.TxRXSLength > 0) {
+                memcpy(rxs->chronosACKBody, inBytes + pos, rxs->chronosInfo.TxRXSLength);
+            }
+            pos += rxs->chronosInfo.TxRXSLength;
+        }
+    } else if (frameType == 0x88) { // Frame injected by "send_data" program created by Yaxiong Xie.
+        auto packetHeader = (struct ieee80211_packet_header *)(inBytes + pos);
+        rxs->txHeader = * packetHeader;
+        // Mute all further processing...
+        rxs->txHeader.header_info.hasChronosInfo = false;
+        rxs->txHeader.header_info.hasTxExtraInfo = false;
+        rxs->txHeader.header_info.frameType = 0;
+        pos += rxs->payloadLength;
     }
 
     rxs->rawBufferLength = static_cast<uint16_t>(pos);
