@@ -174,10 +174,7 @@ enum RXSParsingLevel: uint8_t {
 };
 
 enum ChannelMode : uint8_t {
-    NON_HT20 = 1,
-    NON_HT10 = 2,
-    NON_HT5 = 4,
-    HT20 = 9,
+    HT20 = 8,
     HT40_MINUS = 24,
     HT40_PLUS = 40,
 };
@@ -352,14 +349,6 @@ struct RXS_enhanced {
 inline ChannelMode channelFlags2ChannelMode(uint16_t channelFlags) {
     std::bitset<16> channelFlagSet(channelFlags);
 
-    if  (channelFlagSet.test(2)) {
-        return NON_HT5;
-    }
-
-    if  (channelFlagSet.test(1)) {
-        return NON_HT10;
-    }
-
     if  (channelFlagSet.test(3) && channelFlagSet.test(4)) {
         return HT40_PLUS;
     }
@@ -372,7 +361,7 @@ inline ChannelMode channelFlags2ChannelMode(uint16_t channelFlags) {
         return HT20;
     }
 
-    return NON_HT20;
+    return HT20;
 }
 
 inline std::string channelModel2String(ChannelMode mode) {
@@ -383,12 +372,6 @@ inline std::string channelModel2String(ChannelMode mode) {
             return "HT40_MINUS";
         case HT20:
             return "HT20";
-        case NON_HT20:
-            return "NON_HT20";
-        case NON_HT5:
-            return "NON_HT5";
-        case NON_HT10:
-            return "NON_HT10";
     }
 }
 
