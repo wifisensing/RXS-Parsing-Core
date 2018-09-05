@@ -53,8 +53,11 @@ void featureCodeInterpretation(uint32_t featureCode, struct ExtraInfo * extraInf
     extraInfo->hasTxTSF       = extraInfoHasTxTSF(featureCode);
     extraInfo->hasLastHWTxTSF = extraInfoHasLastHWTxTSF(featureCode);
     extraInfo->hasChannelFlags= extraInfoHasChannelFlags(featureCode);
-    extraInfo->hasPLLSlope    = extraInfoHasPLLSlope(featureCode);
+    extraInfo->hasRxNess      = extraInfoHasRxNESS(featureCode);
     extraInfo->hasTuningPolicy= extraInfoHasTuningPolicy(featureCode);
+    extraInfo->hasPLLRate     = extraInfoHasPLLRate(featureCode);
+    extraInfo->hasPLLClkSel   = extraInfoHasPLLClkSel(featureCode);
+    extraInfo->hasPLLRefDiv   = extraInfoHasPLLRefDiv(featureCode);
 }
 
 struct RXS_enhanced parseRXS(const uint8_t * inBytes, enum RXSParsingLevel parsingLevel) {
@@ -158,12 +161,16 @@ int reparseCSIMatrixInRXS(struct RXS_enhanced *rxs) {
 }
 
 void inplaceAddRxExtraInfo(uint8_t *inBytes, uint32_t featureCode, uint8_t *value, int length) {
+    static uint8_t buffer[200];
     uint32_t * rxFeatureCode = nullptr;
     uint32_t pos = 4;
+    uint32_t insertPos = 0;
+    uint16_t * lengthField_ptr = nullptr;
+    uint32_t bufferUsedLength = 0;
 
     rxFeatureCode = (uint32_t *)(inBytes+pos); pos += 4;
-
     pos += sizeof(struct ath_rx_status_basic);
+    lengthField_ptr = extraInfoHasLength(*rxFeatureCode) ? (uint16_t *)inBytes + pos : nullptr;
     pos += extraInfoHasLength(*rxFeatureCode) ? 2:0;
     pos += extraInfoHasVersion(*rxFeatureCode) ? 1:0;
     pos += extraInfoHasMacAddress_Current(*rxFeatureCode) ? 6:0;
@@ -178,11 +185,25 @@ void inplaceAddRxExtraInfo(uint8_t *inBytes, uint32_t featureCode, uint8_t *valu
     pos += extraInfoHasTxTSF(*rxFeatureCode) ? 4: 0;
     pos += extraInfoHasLastHWTxTSF(*rxFeatureCode) ? 4: 0;
     pos += extraInfoHasChannelFlags(*rxFeatureCode) ? 2: 0;
-    pos += extraInfoHasPLLSlope(*rxFeatureCode) ? sizeof(double): 0;
+    pos += extraInfoHasRxNESS(*rxFeatureCode) ? 1: 0;
+    insertPos = extraInfoHasTuningPolicy(featureCode) ? pos : (insertPos > 0 ? insertPos : 0);
     pos += extraInfoHasTuningPolicy(*rxFeatureCode) ? 1: 0;
+    pos += extraInfoHasPLLRate(*rxFeatureCode) ? 1: 0;
+    pos += extraInfoHasPLLClkSel(*rxFeatureCode) ? 1: 0;
+    pos += extraInfoHasPLLRefDiv(*rxFeatureCode) ? 1: 0;
 
     *rxFeatureCode |= featureCode;
-    memcpy(inBytes + pos, value, length);
+    if (insertPos == 0) {
+        memcpy(inBytes + insertPos, value, length);
+        *lengthField_ptr += length;
+    } else {
+        memset(buffer,0,200);
+        bufferUsedLength = pos - insertPos;
+        memcpy(buffer, inBytes + insertPos, bufferUsedLength);
+        memcpy(inBytes + insertPos, value, length);
+        memcpy(inBytes + insertPos + length, buffer, bufferUsedLength);
+        *lengthField_ptr += length;
+    }
 }
 
 void inplaceAddTxChronosData(RXS_enhanced * rxs, uint8_t *dataBuffer, int bufferLength) {
@@ -317,13 +338,24 @@ int ExtraInfo::fromBinary(const uint8_t *extraInfoPtr, struct ExtraInfo * extraI
         pos += 2;
     }
 
-    if (extraInfo->hasPLLSlope) {
-        extraInfo->pllSlope = *((double *)(extraInfoPtr + pos));
-        pos += sizeof(double);
+    if (extraInfo->hasRxNess) {
+        extraInfo->rx_ness = extraInfoPtr[pos++];
     }
 
     if (extraInfo->hasTuningPolicy) {
         extraInfo->tuningPolicy = extraInfoPtr[pos++];
+    }
+
+    if (extraInfo->hasPLLRate) {
+        extraInfo->pll_rate = extraInfoPtr[pos++];
+    }
+
+    if (extraInfo->hasPLLClkSel) {
+        extraInfo->pll_clock_select = extraInfoPtr[pos++];
+    }
+
+    if (extraInfo->hasPLLRefDiv) {
+        extraInfo->pll_refdiv = extraInfoPtr[pos++];
     }
     
     return 0;
