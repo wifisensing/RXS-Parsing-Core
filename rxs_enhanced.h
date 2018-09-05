@@ -37,8 +37,11 @@
 #define AR_CSI_EXTRAINFO_HASTXTSF                  0x00000800
 #define AR_CSI_EXTRAINFO_HASLASTHWTXTSF            0x00001000
 #define AR_CSI_EXTRAINFO_HASCHANNELFLAGS           0x00002000
-#define AR_CSI_EXTRAINFO_HASPLLSLOPE               0x00004000
+#define AR_CSI_EXTRAINFO_HASRXNESS                 0x00004000
 #define AR_CSI_EXTRAINFO_HASTUNINGPOLICY           0x00008000
+#define AR_CSI_EXTRAINFO_HASPLLRATE                0x00010000
+#define AR_CSI_EXTRAINFO_HASPLLCLKSEL              0x00020000
+#define AR_CSI_EXTRAINFO_HASPLLREFDIV              0x00040000
 
 /**
  * Test the presence of version field.
@@ -159,11 +162,20 @@ inline bool extraInfoHasLastHWTxTSF(uint32_t featureCode) {
 inline bool extraInfoHasChannelFlags(uint32_t featureCode) {
 	return static_cast<bool>(featureCode >> 13 & 0x1);
 }
-inline bool extraInfoHasPLLSlope(uint32_t featureCode) {
+inline bool extraInfoHasRxNESS(uint32_t featureCode) {
 	return static_cast<bool>(featureCode >> 14 & 0x1);
 }
 inline bool extraInfoHasTuningPolicy(uint32_t featureCode) {
     return static_cast<bool>(featureCode >> 15 & 0x1);
+}
+inline bool extraInfoHasPLLRate(uint32_t featureCode) {
+	return static_cast<bool>(featureCode >> 16 & 0x1);
+}
+inline bool extraInfoHasPLLClkSel(uint32_t featureCode) {
+	return static_cast<bool>(featureCode >> 17 & 0x1);
+}
+inline bool extraInfoHasPLLRefDiv(uint32_t featureCode) {
+	return static_cast<bool>(featureCode >> 18 & 0x1);
 }
 
 enum RXSParsingLevel: uint8_t {
@@ -289,8 +301,11 @@ struct ExtraInfo {
     bool hasTxTSF;
 	bool hasLastHWTxTSF;
     bool hasChannelFlags;
-	bool hasPLLSlope;
+	bool hasRxNess;
 	bool hasTuningPolicy;
+    bool hasPLLRate;
+    bool hasPLLClkSel;
+    bool hasPLLRefDiv;
     uint16_t length;
     uint8_t version;
     uint8_t macaddr_rom[6];
@@ -305,8 +320,11 @@ struct ExtraInfo {
     uint32_t txTSF;
 	uint32_t lastHwTxTSF;
     uint16_t channelFlags;
-	double pllSlope;
+	uint8_t rx_ness;
 	uint8_t tuningPolicy;
+    uint8_t pll_rate;
+    uint8_t pll_clock_select;
+    uint8_t pll_refdiv;
 
     static int fromBinary(const uint8_t *extraInfoPtr, struct ExtraInfo * extraInfo, uint32_t suppliedFeatureCode = 0);
     static int toBinary(void * extraInfoPtr);
@@ -450,7 +468,6 @@ int reparseCSIMatrixInRXS(struct RXS_enhanced *rxs);
  * Directly inject (in-place add) an ExtraInfo Item into the raw RxS data.
  *
  * The transparency to the upper RxS parsing process makes this method very useful in case of adding some platform-calculated value into RXS struct.
- * Currently, this method is used to inject clock slope value into RXS
  *
  * @param rxs_raw the raw rxs data
  * @param featureCode_added the feature code for the adding value
