@@ -13,7 +13,7 @@ static auto phase_unwrap_two = [](double cur, double next, double circularEqualV
     if (circularEqualValue/2.0 >= diff_abs)
         return cur + diff;
     else {
-        diff = (circularEqualValue - diff_abs) * (diff > 0 ? -1 : 1);
+        diff = diff > 0 ? -(circularEqualValue - diff_abs) : (circularEqualValue - diff_abs);
         return cur + diff;
     }
 };
@@ -27,6 +27,7 @@ void unwrapPhase_part(std::deque<double> & phases, int unwrapHead, int unwrapEnd
 }
 
 void unwrapPhase(std::deque<double> & originalPhase) {
+    static constexpr double M_2PI = M_PI * 2.0;
     auto dcStart = 28;
     auto dcEnd = 29;
 
@@ -35,8 +36,8 @@ void unwrapPhase(std::deque<double> & originalPhase) {
         dcEnd = 60;
     }
 
-    unwrapPhase_part(originalPhase, dcStart - 1, 0, false, M_PI_2);
-    unwrapPhase_part(originalPhase, dcStart - 1, dcStart, true, M_PI_2);
+    unwrapPhase_part(originalPhase, dcStart - 1, 0, false, M_2PI);
+    unwrapPhase_part(originalPhase, dcStart - 1, dcStart, true, M_2PI);
 
     if (fabs(originalPhase[dcStart] - originalPhase[dcStart-1]) > M_PI_4) { // Ath9k 40MHz case
         auto unwrapped_dcStart = phase_unwrap_two(originalPhase[dcStart-1], originalPhase[dcStart], M_PI_2);
@@ -46,15 +47,16 @@ void unwrapPhase(std::deque<double> & originalPhase) {
         }
     }
 
-    unwrapPhase_part(originalPhase, dcStart, originalPhase.size() - 1, true, M_PI_2);
+    unwrapPhase_part(originalPhase, dcStart, originalPhase.size() - 1, true, M_2PI);
 
     auto lower = originalPhase[dcStart - 1];
     auto higher = originalPhase[dcStart];
     auto gap = higher - lower;
-    for(auto i = dcStart ; i < dcEnd ; i++) { 
+    for(auto i = dcStart ; i < dcEnd ; i++) {
         auto newValue = lower + gap * (double)(i - dcStart + 1) / (double)(dcEnd - dcStart + 1);
         originalPhase.emplace(originalPhase.begin() + i, newValue);
     }
+
 }
 
 void interpMag(std::deque<double> & originalMag) {
