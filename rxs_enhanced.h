@@ -256,7 +256,7 @@ struct ieee80211_packet_header_info {
 			moreIsComming  :1, ///< indicating that this packet is segmented and Tx-ed in several sub-packets.
 			isReTX         :1, ///< is re-transmission packet
 			hasTxExtraInfo :1, ///< contains Tx ExtraInfo @see ExtraInfo
-			hasChronosInfo :1; ///< contains ChronosInfo @see ChronosInfo
+			hasEchoProbeInfo :1; ///< contains EchoProbeInfo @see EchoProbeInfo
     uint8_t frameType;
     uint16_t taskId;
 } __attribute__ ((__packed__));
@@ -330,7 +330,7 @@ struct ExtraInfo {
     static int toBinary(void * extraInfoPtr);
 };
 
-struct ChronosInfo {
+struct EchoProbeInfo {
 	uint16_t length;
 	uint8_t  version;
 	uint8_t  ackRequestType; // 0 for NO ACK, 1 for ACK with simple Injection, 2 for ACK with Injection containing TxRXS.
@@ -355,7 +355,7 @@ struct RXS_enhanced {
     struct ExtraInfo rxExtraInfo;
     struct ieee80211_packet_header txHeader;
     struct ExtraInfo txExtraInfo;
-    struct ChronosInfo chronosInfo;
+    struct EchoProbeInfo echoProbeInfo;
     std::complex<double> csi_matrix[MAX_OFDM_TONES_UNWRAP];
     double unwrappedMag[MAX_OFDM_TONES_UNWRAP];
     double unwrappedPhase[MAX_OFDM_TONES_UNWRAP];
