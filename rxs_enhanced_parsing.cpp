@@ -124,20 +124,20 @@ int parse_rxs_enhanced(const uint8_t * inBytes, struct RXS_enhanced *rxs, enum R
             pos += rxs->txExtraInfo.length + 6;
         }
 
-        if (packetHeader->header_info.hasChronosInfo) {
-            struct ChronosInfo * chronosInfoPtr = (struct ChronosInfo *)(inBytes + pos);
-            rxs->chronosInfo = * chronosInfoPtr;
-            pos += sizeof(struct ChronosInfo);
-            if (rxs->chronosInfo.TxRXSLength > 0) {
-                memcpy(rxs->chronosACKBody, inBytes + pos, rxs->chronosInfo.TxRXSLength);
+        if (packetHeader->header_info.hasEchoProbeInfo) {
+            struct EchoProbeInfo * echoProbeInfoPtr = (struct EchoProbeInfo *)(inBytes + pos);
+            rxs->echoProbeInfo = * echoProbeInfoPtr;
+            pos += sizeof(struct EchoProbeInfo);
+            if (rxs->echoProbeInfo.TxRXSLength > 0) {
+                memcpy(rxs->chronosACKBody, inBytes + pos, rxs->echoProbeInfo.TxRXSLength);
             }
-            pos += rxs->chronosInfo.TxRXSLength;
+            pos += rxs->echoProbeInfo.TxRXSLength;
         }
     } else if (frameType == 0x88) { // Frame injected by "send_data" program created by Yaxiong Xie.
         auto packetHeader = (struct ieee80211_packet_header *)(inBytes + pos);
         rxs->txHeader = * packetHeader;
         // Mute all further processing...
-        rxs->txHeader.header_info.hasChronosInfo = false;
+        rxs->txHeader.header_info.hasEchoProbeInfo = false;
         rxs->txHeader.header_info.hasTxExtraInfo = false;
         rxs->txHeader.header_info.frameType = 0;
         pos += rxs->payloadLength;
@@ -221,28 +221,28 @@ void inplaceAddTxChronosData(RXS_enhanced * rxs, uint8_t *dataBuffer, int buffer
         chronosPos += *txExtraInfoLength_ptr;
         chronosPos += 6;
     }
-    auto * chronos_ptr = (struct ChronosInfo *)(rawBuffer + chronosPos);
-    if(!packetHeader_ptr->header_info.hasChronosInfo) {
-        packetHeader_ptr->header_info.hasChronosInfo |= 1;
+    auto * chronos_ptr = (struct EchoProbeInfo *)(rawBuffer + chronosPos);
+    if(!packetHeader_ptr->header_info.hasEchoProbeInfo) {
+        packetHeader_ptr->header_info.hasEchoProbeInfo |= 1;
         *chronos_ptr = {};
-        chronos_ptr->length = sizeof(struct ChronosInfo);
+        chronos_ptr->length = sizeof(struct EchoProbeInfo);
         chronos_ptr->version = 2;
 
-        rxs->txHeader.header_info.hasChronosInfo |= 1;
-        rxs->chronosInfo = *chronos_ptr;
-        rxs->payloadLength += sizeof(struct ChronosInfo);
-        rxs->rawBufferLength += sizeof(struct ChronosInfo);
+        rxs->txHeader.header_info.hasEchoProbeInfo |= 1;
+        rxs->echoProbeInfo = *chronos_ptr;
+        rxs->payloadLength += sizeof(struct EchoProbeInfo);
+        rxs->rawBufferLength += sizeof(struct EchoProbeInfo);
     }
 
-    assert(chronos_ptr->TxRXSLength == rxs->chronosInfo.TxRXSLength);
-    auto * chronos_rxs_ptr = rawBuffer + chronosPos + sizeof(struct ChronosInfo) + chronos_ptr->TxRXSLength;
+    assert(chronos_ptr->TxRXSLength == rxs->echoProbeInfo.TxRXSLength);
+    auto * chronos_rxs_ptr = rawBuffer + chronosPos + sizeof(struct EchoProbeInfo) + chronos_ptr->TxRXSLength;
     memcpy(chronos_rxs_ptr, dataBuffer, bufferLength);
-    memcpy(rxs->chronosACKBody + rxs->chronosInfo.TxRXSLength, dataBuffer, bufferLength);
+    memcpy(rxs->chronosACKBody + rxs->echoProbeInfo.TxRXSLength, dataBuffer, bufferLength);
     chronos_ptr->TxRXSLength += bufferLength;
     *payloadLength_ptr += bufferLength;
     rxs->rawBufferLength += bufferLength;
     rxs->payloadLength += bufferLength;
-    rxs->chronosInfo.TxRXSLength += bufferLength;
+    rxs->echoProbeInfo.TxRXSLength += bufferLength;
 }
 
 int TxExtraInfoMinSet::getTxTSFPos() {
