@@ -56,8 +56,8 @@ void featureCodeInterpretation(uint32_t featureCode, struct ExtraInfo * extraInf
     extraInfo->hasRxNess      = extraInfoHasRxNESS(featureCode);
     extraInfo->hasTuningPolicy= extraInfoHasTuningPolicy(featureCode);
     extraInfo->hasPLLRate     = extraInfoHasPLLRate(featureCode);
-    extraInfo->hasPLLClkSel   = extraInfoHasPLLClkSel(featureCode);
     extraInfo->hasPLLRefDiv   = extraInfoHasPLLRefDiv(featureCode);
+    extraInfo->hasPLLClkSel   = extraInfoHasPLLClkSel(featureCode);
 }
 
 struct RXS_enhanced parseRXS(const uint8_t * inBytes, enum RXSParsingLevel parsingLevel) {
@@ -189,8 +189,8 @@ void inplaceAddRxExtraInfo(uint8_t *inBytes, uint32_t featureCode, uint8_t *valu
     insertPos = extraInfoHasTuningPolicy(featureCode) ? pos : (insertPos > 0 ? insertPos : 0);
     pos += extraInfoHasTuningPolicy(*rxFeatureCode) ? 1: 0;
     pos += extraInfoHasPLLRate(*rxFeatureCode) ? 1: 0;
-    pos += extraInfoHasPLLClkSel(*rxFeatureCode) ? 1: 0;
     pos += extraInfoHasPLLRefDiv(*rxFeatureCode) ? 1: 0;
+    pos += extraInfoHasPLLClkSel(*rxFeatureCode) ? 1: 0;
 
     *rxFeatureCode |= featureCode;
     if (insertPos == 0) {
@@ -350,13 +350,13 @@ int ExtraInfo::fromBinary(const uint8_t *extraInfoPtr, struct ExtraInfo * extraI
         extraInfo->pll_rate = extraInfoPtr[pos++];
     }
 
+    if (extraInfo->hasPLLRefDiv) {
+        extraInfo->pll_refdiv = extraInfoPtr[pos++];
+    }
+
     if (extraInfo->hasPLLClkSel) {
         extraInfo->pll_clock_select = extraInfoPtr[pos++];
     }
 
-    if (extraInfo->hasPLLRefDiv) {
-        extraInfo->pll_refdiv = extraInfoPtr[pos++];
-    }
-    
     return 0;
 }
