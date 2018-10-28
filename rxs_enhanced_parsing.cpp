@@ -347,7 +347,8 @@ int ExtraInfo::fromBinary(const uint8_t *extraInfoPtr, struct ExtraInfo * extraI
     }
 
     if (extraInfo->hasPLLRate) {
-        extraInfo->pll_rate = extraInfoPtr[pos++];
+        extraInfo->pll_rate = *((uint16_t *)(extraInfoPtr+pos));
+        pos += 2;
     }
 
     if (extraInfo->hasPLLRefDiv) {
