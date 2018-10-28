@@ -171,10 +171,10 @@ inline bool extraInfoHasTuningPolicy(uint32_t featureCode) {
 inline bool extraInfoHasPLLRate(uint32_t featureCode) {
 	return static_cast<bool>(featureCode >> 16 & 0x1);
 }
-inline bool extraInfoHasPLLClkSel(uint32_t featureCode) {
-	return static_cast<bool>(featureCode >> 17 & 0x1);
-}
 inline bool extraInfoHasPLLRefDiv(uint32_t featureCode) {
+    return static_cast<bool>(featureCode >> 17 & 0x1);
+}
+inline bool extraInfoHasPLLClkSel(uint32_t featureCode) {
 	return static_cast<bool>(featureCode >> 18 & 0x1);
 }
 

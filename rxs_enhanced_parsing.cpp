@@ -188,7 +188,7 @@ void inplaceAddRxExtraInfo(uint8_t *inBytes, uint32_t featureCode, uint8_t *valu
     pos += extraInfoHasRxNESS(*rxFeatureCode) ? 1: 0;
     insertPos = extraInfoHasTuningPolicy(featureCode) ? pos : (insertPos > 0 ? insertPos : 0);
     pos += extraInfoHasTuningPolicy(*rxFeatureCode) ? 1: 0;
-    pos += extraInfoHasPLLRate(*rxFeatureCode) ? 1: 0;
+    pos += extraInfoHasPLLRate(*rxFeatureCode) ? 2: 0;
     pos += extraInfoHasPLLRefDiv(*rxFeatureCode) ? 1: 0;
     pos += extraInfoHasPLLClkSel(*rxFeatureCode) ? 1: 0;
 
