@@ -40,8 +40,8 @@
 #define AR_CSI_EXTRAINFO_HASRXNESS                 0x00004000
 #define AR_CSI_EXTRAINFO_HASTUNINGPOLICY           0x00008000
 #define AR_CSI_EXTRAINFO_HASPLLRATE                0x00010000
-#define AR_CSI_EXTRAINFO_HASPLLCLKSEL              0x00020000
-#define AR_CSI_EXTRAINFO_HASPLLREFDIV              0x00040000
+#define AR_CSI_EXTRAINFO_HASPLLREFDIV              0x00020000
+#define AR_CSI_EXTRAINFO_HASPLLCLKSEL              0x00040000
 
 /**
  * Test the presence of version field.
@@ -322,7 +322,7 @@ struct ExtraInfo {
     uint16_t channelFlags;
 	uint8_t rx_ness;
 	uint8_t tuningPolicy;
-    uint8_t pll_rate;
+    uint16_t pll_rate;
     uint8_t pll_clock_select;
     uint8_t pll_refdiv;
 
@@ -334,15 +334,14 @@ struct EchoProbeInfo {
 	uint16_t length;
 	uint8_t  version;
 	uint8_t  ackRequestType; // 0 for NO ACK, 1 for ACK with simple Injection, 2 for ACK with Injection containing TxRXS.
-	uint8_t  ackInjectionType;
     int8_t   ackMCS;         // 0 to 23 are OK, negative means use default (maybe mcs 0).
 	int8_t   ackBandWidth;   // 0 for 20MHz, 1 for 40MHz, negative means use default (maybe 20MHz).
 	int8_t   ackSGI;         // 0 for LGI, 1 for SGI, negative means use default (maybe LGI).
     int8_t   ackTxChainMask; // negative means use default
 	int8_t   ackRxChainMask; // negative means use default
 	int8_t   ackTxpower;     // negative means use default
-	uint64_t frequency;
-    int32_t  pll_rate;
+	int64_t  frequency;
+    int16_t  pll_rate;
 	int8_t   pll_refdiv;
 	int8_t   pll_clock_select;
     int32_t  ackExpectedDelay_us;
