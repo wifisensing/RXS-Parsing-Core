@@ -342,7 +342,7 @@ struct EchoProbeInfo {
 	int8_t   ackRxChainMask; // negative means use default
 	int8_t   ackTxpower;     // negative means use default
 	uint64_t frequency;
-    int8_t   pll_rate;
+    int32_t   pll_rate;
 	int8_t   pll_refdiv;
 	int8_t   pll_clock_select;
     int32_t  ackExpectedDelay_us;
