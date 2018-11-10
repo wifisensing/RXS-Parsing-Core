@@ -19,10 +19,10 @@ void iwl_parse_csi_matrix(const uint8_t *payload, int nrx, int ntx, int num_tone
                 auto position = ntxIdx * (nrx * 30) + nrxIdx * 30 + subcarrierIdx;
                 char tmp = (payload[index / 8] >> remainder) |
                       (payload[index/8+1] << (8-remainder));
-                csi_matrix[position].real((double)temp);
+                csi_matrix[position].real((double)tmp);
                 tmp = (payload[index / 8+1] >> remainder) |
                       (payload[index/8+2] << (8-remainder));
-                csi_matrix[position].imag(temp);
+                csi_matrix[position].imag((double)tmp);
                 index += 16;
             }
     }
