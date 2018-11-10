@@ -63,7 +63,7 @@ static void parser_job(const uint8_t* csi_addr, int nrx, int ntx, int num_tones,
     }
 }
 
-void parse_csi_matrix(const uint8_t* csi_addr, int nrx, int ntx, int num_tones, std::complex<double> csi_matrix[]) {
+void ar_parse_csi_matrix(const uint8_t *csi_addr, int nrx, int ntx, int num_tones, std::complex<double> *csi_matrix) {
     auto totalSegments = nrx * ntx * num_tones / 2;
     parser_job(csi_addr, nrx, ntx, num_tones, 0, totalSegments, csi_matrix);
 //    NO situation is found that parallel_for is faster than single-thread...sigh...
@@ -73,7 +73,7 @@ void parse_csi_matrix(const uint8_t* csi_addr, int nrx, int ntx, int num_tones, 
 //    });
 }
 
-void parse_csi_matrix_old(const uint8_t* csi_addr, int nrx, int ntx, int num_tones, std::complex<double> csi_matrix[]){
+void ar_parse_csi_matrix_old(const uint8_t* csi_addr, int nrx, int ntx, int num_tones, std::complex<double> csi_matrix[]){
 #define BITS_PER_SYMBOL         10
     uint8_t k;
     uint8_t bits_left, nrx_idx, ntx_idx, position;

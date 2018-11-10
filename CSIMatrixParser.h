@@ -14,8 +14,8 @@
 #include <future>
 #include <complex>
 #include <deque>
-void parse_csi_matrix_old(const uint8_t* csi_addr, int nrx, int ntx, int num_tones, std::complex<double> csi_matrix[]);
-void parse_csi_matrix(const uint8_t* csi_addr, int nrx, int ntx, int num_tones, std::complex<double> csi_matrix[]);
 
-int phaseUnwrapAroundDC(const std::complex<double> csi_matrix[], double mag[], double phase[], int nrx, int ntx, int num_tones);
+void ar_parse_csi_matrix(const uint8_t *csi_addr, int nrx, int ntx, int num_tones, std::complex<double> *csi_matrix);
+void iwl_parse_csi_matrix(const uint8_t *csi_addr, int nrx, int ntx, int num_tones, std::complex<double> *csi_matrix);
+
 #endif //CSIMATRIXPARSER_H
