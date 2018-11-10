@@ -68,6 +68,8 @@ struct ExtraInfo {
     bool hasPLLRate;
     bool hasPLLClkSel;
     bool hasPLLRefDiv;
+    bool hasAGC;
+    bool hasAntennaSelection;
     uint16_t length;
     uint8_t version;
     uint8_t macaddr_rom[6];
@@ -87,6 +89,8 @@ struct ExtraInfo {
     uint16_t pll_rate;
     uint8_t pll_clock_select;
     uint8_t pll_refdiv;
+    uint8_t agc;
+    uint8_t antennaSelection;
 
     static int fromBinary(const uint8_t *extraInfoPtr, struct ExtraInfo * extraInfo, uint32_t suppliedFeatureCode = 0);
     static int toBinary(void * extraInfoPtr);
@@ -226,6 +230,12 @@ inline bool extraInfoHasPLLRefDiv(uint32_t featureCode) {
 }
 inline bool extraInfoHasPLLClkSel(uint32_t featureCode) {
     return static_cast<bool>(featureCode >> 18 & 0x1);
+}
+inline bool extraInfoHasAGC(uint32_t featureCode) {
+    return static_cast<bool>(featureCode >> 19 & 0x1);
+}
+inline bool extraInfoHasAntennaSelection(uint32_t featureCode) {
+    return static_cast<bool>(featureCode >> 20 & 0x1);
 }
 
 enum RXSParsingLevel: uint8_t {

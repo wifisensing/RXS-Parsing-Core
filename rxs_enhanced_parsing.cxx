@@ -56,7 +56,7 @@ int parse_rxs_enhanced(const uint8_t * inBytes, struct RXS_enhanced *rxs, enum R
 
     rxFeatureCode = *((uint32_t *)(inBytes+pos)); pos += 4;
     rxs->rxs_basic = *((struct rx_status_basic *)(inBytes + pos)); pos += sizeof (struct rx_status_basic);
-    if(rxs->rxs_basic.nrx <=0 || rxs->rxs_basic.nrx > 3 || rxs->rxs_basic.ntx <=0 || rxs->rxs_basic.ntx >3 || (rxs->rxs_basic.num_tones != TONE_20M && rxs->rxs_basic.num_tones != TONE_40M) ) {
+    if(rxs->rxs_basic.nrx <=0 || rxs->rxs_basic.nrx > 3 || rxs->rxs_basic.ntx <=0 || rxs->rxs_basic.ntx >3 || (rxs->isAR9300 && rxs->rxs_basic.num_tones != TONE_20M && rxs->rxs_basic.num_tones != TONE_40M) ) {
         printf("RXS Parser: Impossible values in nrx (%d), ntx (%d), or num_tones (%d). Error occurs in file format or parsing.\n", rxs->rxs_basic.nrx, rxs->rxs_basic.ntx, rxs->rxs_basic.num_tones);
         return 1;
     }
@@ -85,7 +85,7 @@ int parse_rxs_enhanced(const uint8_t * inBytes, struct RXS_enhanced *rxs, enum R
     }
     pos += rxs->rxs_basic.csi_len;
 
-    rxs->payloadLength = totalLength - pos + 2;
+    rxs->payloadLength = totalLength - pos;
     rxs->txDuration = pkt_duration(rxs->payloadLength, rxs->rxs_basic.rate, rxs->rxs_basic.chanBW, rxs->rxs_basic.sgi);
 
     uint8_t frameType = *((uint8_t *)(inBytes+pos));

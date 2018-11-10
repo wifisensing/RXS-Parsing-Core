@@ -25,6 +25,8 @@ void featureCodeInterpretation(uint32_t featureCode, struct ExtraInfo * extraInf
     extraInfo->hasPLLRate     = extraInfoHasPLLRate(featureCode);
     extraInfo->hasPLLRefDiv   = extraInfoHasPLLRefDiv(featureCode);
     extraInfo->hasPLLClkSel   = extraInfoHasPLLClkSel(featureCode);
+    extraInfo->hasAGC         = extraInfoHasAGC(featureCode);
+    extraInfo->hasAntennaSelection = extraInfoHasAntennaSelection(featureCode);
 }
 
 
@@ -59,6 +61,8 @@ void inplaceAddRxExtraInfo(uint8_t *inBytes, uint32_t featureCode, uint8_t *valu
     pos += extraInfoHasPLLRate(*rxFeatureCode) ? 2: 0;
     pos += extraInfoHasPLLRefDiv(*rxFeatureCode) ? 1: 0;
     pos += extraInfoHasPLLClkSel(*rxFeatureCode) ? 1: 0;
+    pos += extraInfoHasAGC(*rxFeatureCode) ? 1: 0;
+    pos += extraInfoHasAntennaSelection(*rxFeatureCode) ? 1: 0;
 
     *rxFeatureCode |= featureCode;
     if (insertPos == 0) {
@@ -187,6 +191,14 @@ int ExtraInfo::fromBinary(const uint8_t *extraInfoPtr, struct ExtraInfo * extraI
 
     if (extraInfo->hasPLLClkSel) {
         extraInfo->pll_clock_select = extraInfoPtr[pos++];
+    }
+
+    if (extraInfo->hasAGC) {
+        extraInfo->agc = extraInfoPtr[pos++];
+    }
+
+    if (extraInfo->hasAntennaSelection) {
+        extraInfo->antennaSelection = extraInfoPtr[pos++];
     }
 
     return 0;
