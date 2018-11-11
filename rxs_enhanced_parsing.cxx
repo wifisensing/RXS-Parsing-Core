@@ -25,7 +25,7 @@ uint16_t pkt_duration(uint16_t length, uint8_t mcs, bool wide40BW, bool usingSGI
             {   234,  486 },     /*  6: 64-QAM 3/4 */
             {   260,  540 },     /*  7: 64-QAM 5/6 */
     };
-//
+
     auto streams = mcs / 8 + 1;
     auto bits = length * 8 + OFDM_PLCP_BITS;
     if (lengthWithoutFCS)
@@ -107,7 +107,7 @@ int parse_rxs_enhanced(const uint8_t * inBytes, struct RXS_enhanced *rxs, enum R
         }
     }
 
-    assert(pos == totalLength);
+    assert(pos == totalLength); // this is for validation
     rxs->rawBufferLength = static_cast<uint16_t>(pos);
     memcpy(rxs->rawBuffer, inBytes, rxs->rawBufferLength);
     rxs->parsingLevel = parsingLevel;
