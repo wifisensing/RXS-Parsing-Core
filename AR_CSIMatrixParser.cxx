@@ -33,7 +33,7 @@ static inline void parse10bitsValues(const uint8_t *rawByte, int * v0, int * v1,
     *v3 = array[3];
 }
 
-static void parser_job(const uint8_t* csi_addr, int nrx, int ntx, int num_tones, int segmentStart, int segmentEnd, std::complex<double> csi_matrix[]) {
+static void parser_job(const uint8_t* csi_addr, int ntx, int nrx, int num_tones, int segmentStart, int segmentEnd, std::complex<double> csi_matrix[]) {
     auto value_pos = 0;
     auto subcarrierIdx = 0;
     auto ntxIdx = 0;
@@ -63,9 +63,9 @@ static void parser_job(const uint8_t* csi_addr, int nrx, int ntx, int num_tones,
     }
 }
 
-void ar_parse_csi_matrix(const uint8_t *csi_addr, int nrx, int ntx, int num_tones, std::complex<double> *csi_matrix) {
+void ar_parse_csi_matrix(const uint8_t *csi_addr, int ntx, int nrx, int num_tones, std::complex<double> *csi_matrix) {
     auto totalSegments = nrx * ntx * num_tones / 2;
-    parser_job(csi_addr, nrx, ntx, num_tones, 0, totalSegments, csi_matrix);
+    parser_job(csi_addr, ntx, nrx, num_tones, 0, totalSegments, csi_matrix);
 //    NO situation is found that parallel_for is faster than single-thread...sigh...
 //#include <tbb/tbb.h>
 //    tbb::parallel_for(tbb::blocked_range<size_t>(0, totalSegments), [=](const tbb::blocked_range<size_t> & r) {
@@ -73,7 +73,7 @@ void ar_parse_csi_matrix(const uint8_t *csi_addr, int nrx, int ntx, int num_tone
 //    });
 }
 
-void ar_parse_csi_matrix_old(const uint8_t* csi_addr, int nrx, int ntx, int num_tones, std::complex<double> csi_matrix[]){
+void ar_parse_csi_matrix_old(const uint8_t* csi_addr, int ntx, int nrx, int num_tones, std::complex<double> csi_matrix[]){
 #define BITS_PER_SYMBOL         10
     uint8_t k;
     uint8_t bits_left, nrx_idx, ntx_idx, position;

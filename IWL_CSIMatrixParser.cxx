@@ -7,7 +7,7 @@
     #include "mex.h"
 #endif
 
-void iwl_parse_csi_matrix(const uint8_t *payload, int nrx, int ntx, int num_tones, std::complex<double> *csi_matrix) {
+void iwl_parse_csi_matrix(const uint8_t *payload, int ntx, int nrx, int num_tones, std::complex<double> *csi_matrix) {
     uint32_t index = 0, remainder;
 
     for (auto subcarrierIdx = 0; subcarrierIdx < 30; subcarrierIdx ++ ) {
