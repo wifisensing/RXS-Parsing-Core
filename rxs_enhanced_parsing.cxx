@@ -108,7 +108,18 @@ int parse_rxs_enhanced(const uint8_t * inBytes, struct RXS_enhanced *rxs, enum R
         }
     }
 
-    assert(pos == totalLength); // this is for validation
+    if (pos != totalLength) {
+        printf("\nPacket Dump ! \n");
+        printf("  Offset: 00 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f");
+        for (auto i = 0 ; i < totalLength; i ++) {
+            if (i % 16 == 0) {
+                printf("\n%8x:", i/16);
+            }
+            printf(" %2x", *(inBytes + i));
+        }
+        assert(pos == totalLength); // this is for validation
+    }
+
     rxs->rawBufferLength = static_cast<uint16_t>(pos);
     memcpy(rxs->rawBuffer, inBytes, rxs->rawBufferLength);
     rxs->parsingLevel = parsingLevel;
