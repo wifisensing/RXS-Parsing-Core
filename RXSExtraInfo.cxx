@@ -33,7 +33,7 @@ void featureCodeInterpretation(uint32_t featureCode, struct ExtraInfo * extraInf
 void inplaceAddRxExtraInfo(uint8_t *inBytes, uint32_t featureCode, uint8_t *value, int length) {
     static uint8_t buffer[200];
     uint32_t * rxFeatureCode = nullptr;
-    uint32_t pos = 4;
+    uint32_t pos = 6;
     uint32_t insertPos = 0;
     uint16_t * lengthField_ptr = nullptr;
     uint32_t bufferUsedLength = 0;
