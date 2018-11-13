@@ -28,11 +28,12 @@ void unwrapPhase_part(std::deque<double> & phases, int unwrapHead, int unwrapEnd
 }
 
 void unwrapPhase(std::deque<double> & originalPhase) {
-    static constexpr double M_2PI = M_PI * 2.0;
-    auto dcStart = 28;
-    auto dcEnd = 29;
+    auto dcStart = originalPhase.size() / 2; // 28 for ar9300, 15 for 5300
+    auto dcEnd = dcStart + 1;
 
-    if (originalPhase.size() == 114) {
+    // We ignore the 5300 @ 40MHz case, becuase the unwraped phase still needs to be interpolated.
+    // Thus, we don't need to interpolate the exact -1-th, 0-th, 1-th subcarrier.
+    if (originalPhase.size() == 114) { // ath9k 40MHz case
         dcStart = 57;
         dcEnd = 60;
     }
@@ -61,10 +62,12 @@ void unwrapPhase(std::deque<double> & originalPhase) {
 }
 
 void interpMag(std::deque<double> & originalMag) {
-    auto dcStart = 28;
-    auto dcEnd = 29;
+    auto dcStart = originalPhase.size() / 2; // 28 for ar9300, 15 for 5300
+    auto dcEnd = dcStart + 1;
 
-    if (originalMag.size() == 114) {
+    // We ignore the 5300 @ 40MHz case, becuase the unwraped phase still needs to be interpolated.
+    // Thus, we don't need to interpolate the exact -1-th, 0-th, 1-th subcarrier.
+    if (originalPhase.size() == 114) { // ath9k 40MHz case
         dcStart = 57;
         dcEnd = 60;
     }
@@ -184,7 +187,7 @@ void phaseUnwrapBetweenAntennas(std::deque<std::deque<double>> & phases, int ntx
     }
 }
 
-int phaseUnwrapAroundDC(const std::complex<double> csi_matrix[], double magArray[], double phaseArray[], int nrx, int ntx, int num_tones) {
+int phaseUnwrapAroundDC(const std::complex<double> csi_matrix[], double magArray[], double phaseArray[], int ntx, int nrx, int num_tones) {
     std::deque<std::deque<double>> mags(nrx * ntx);
     std::deque<std::deque<double>> phases(nrx * ntx);
 
