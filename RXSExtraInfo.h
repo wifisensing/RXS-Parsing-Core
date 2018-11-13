@@ -255,6 +255,7 @@ enum AtherosCFTuningPolicy: uint8_t {
     CFTuningByChansel = 30,
     CFTuningByFastCC,
     CFTuningByHardwareReset,
+    CFTuningByDefault,
 };
 
 
@@ -295,6 +296,8 @@ inline std::string TuningPolicy2String(uint8_t policy) {
             return "FastCC";
         case CFTuningByHardwareReset:
             return "Reset";
+        case CFTuningByDefault:
+            return "Default";
         default:
             throw std::runtime_error("[RXS_Enhanced.h] Unknown Tuning Policy for value: " + std::to_string(policy));
     }
