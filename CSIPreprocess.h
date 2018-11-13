@@ -15,6 +15,6 @@
 #include <complex>
 #include <deque>
 
-int phaseUnwrapAroundDC(const std::complex<double> csi_matrix[], double mag[], double phase[], int nrx, int ntx, int num_tones);
+int phaseUnwrapAroundDC(std::complex<double> csi_matrix[], double mag[], double phase[], int nrx, int ntx, int num_tones);
 
 #endif //PICOSCENES_PLATFROM_CSI_PREPROCESS_HXX

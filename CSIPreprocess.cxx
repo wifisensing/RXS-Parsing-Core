@@ -187,7 +187,7 @@ void phaseUnwrapBetweenAntennas(std::deque<std::deque<double>> & phases, int ntx
     }
 }
 
-int phaseUnwrapAroundDC(const std::complex<double> csi_matrix[], double magArray[], double phaseArray[], int ntx, int nrx, int num_tones) {
+int phaseUnwrapAroundDC(std::complex<double> csi_matrix[], double magArray[], double phaseArray[], int ntx, int nrx, int num_tones) {
     std::deque<std::deque<double>> mags(nrx * ntx);
     std::deque<std::deque<double>> phases(nrx * ntx);
 
@@ -196,20 +196,23 @@ int phaseUnwrapAroundDC(const std::complex<double> csi_matrix[], double magArray
         for(auto j = 0 ; j < num_tones; j++, currentPos++) {
             mags[i].emplace_back(std::abs(csi_matrix[currentPos]));
             phases[i].emplace_back(std::arg(csi_matrix[currentPos]));
-
         }
         interpMag(mags[i]);
         unwrapPhase(phases[i]);
     }
 
     phaseUnwrapBetweenAntennas(phases, ntx, nrx);
-
+    
     currentPos = 0;
     for (auto i = 0 ; i < nrx * ntx ; i ++) {
         assert(mags[i].size() == phases[i].size());
-        for (auto j = 0; j < mags[i].size(); j++, currentPos++) {
+        for (auto j = 0; j < (int) mags[i].size(); j++, currentPos++) {
             phaseArray[currentPos] = phases[i][j];
             magArray[currentPos]   = mags[i][j];
+            
+            auto x = std::cos(phases[i][j]) * mags[i][j];
+            auto y = std::sin(phases[i][j]) * mags[i][j];
+            csi_matrix[currentPos] = std::complex<double>(x, y);
         }
     }
 
