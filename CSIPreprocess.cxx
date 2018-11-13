@@ -62,12 +62,12 @@ void unwrapPhase(std::deque<double> & originalPhase) {
 }
 
 void interpMag(std::deque<double> & originalMag) {
-    auto dcStart = originalPhase.size() / 2; // 28 for ar9300, 15 for 5300
+    auto dcStart = originalMag.size() / 2; // 28 for ar9300, 15 for 5300
     auto dcEnd = dcStart + 1;
 
     // We ignore the 5300 @ 40MHz case, becuase the unwraped phase still needs to be interpolated.
     // Thus, we don't need to interpolate the exact -1-th, 0-th, 1-th subcarrier.
-    if (originalPhase.size() == 114) { // ath9k 40MHz case
+    if (originalMag.size() == 114) { // ath9k 40MHz case
         dcStart = 57;
         dcEnd = 60;
     }
