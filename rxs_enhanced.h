@@ -122,6 +122,7 @@ struct RXS_enhanced {
 	bool isAR9300;
     struct rx_status_basic rxs_basic;
 	uint16_t   csi_pos;     /* CSI data position in raw buffer, used for re-parsing.*/
+	uint16_t   payload_pos;
 	uint16_t   payloadLength;
     uint16_t   rawBufferLength;
     uint16_t   txDuration;

@@ -85,6 +85,7 @@ int parse_rxs_enhanced(const uint8_t * inBytes, struct RXS_enhanced *rxs, enum R
         rxs->rxs_basic.num_tones = new_tones_num;
     }
     pos += rxs->rxs_basic.csi_len;
+    rxs->payload_pos = pos;
 
     rxs->payloadLength = totalLength - pos;
     rxs->txDuration = pkt_duration(rxs->payloadLength, rxs->rxs_basic.rate, rxs->rxs_basic.chanBW, rxs->rxs_basic.sgi);
@@ -118,14 +119,11 @@ int parse_rxs_enhanced(const uint8_t * inBytes, struct RXS_enhanced *rxs, enum R
 
 void inplaceAddTxChronosData(RXS_enhanced * rxs, uint8_t *dataBuffer, int bufferLength) {
     auto * rawBuffer = rxs->rawBuffer;
-    auto * payloadLength_ptr = (uint16_t *)(rawBuffer+rxs->csi_pos - 2);
-    assert(rxs->payloadLength == *payloadLength_ptr);
 
-    auto headerPos = rxs->csi_pos + rxs->rxs_basic.csi_len;
-    auto * packetHeader_ptr = (struct ieee80211_packet_header *)(rawBuffer + headerPos);
+    auto * packetHeader_ptr = (struct ieee80211_packet_header *)(rawBuffer + rxs->payload_pos);
     assert(rxs->txHeader.header_info.taskId == packetHeader_ptr->header_info.taskId);
 
-    auto chronosPos = headerPos + sizeof(struct ieee80211_packet_header);
+    auto chronosPos = rxs->payload_pos + sizeof(struct ieee80211_packet_header);
     if (packetHeader_ptr->header_info.hasTxExtraInfo) {
         auto * txExtraInfoLength_ptr = (uint16_t *)(rawBuffer+chronosPos + 4);
         chronosPos += *txExtraInfoLength_ptr;
@@ -149,7 +147,6 @@ void inplaceAddTxChronosData(RXS_enhanced * rxs, uint8_t *dataBuffer, int buffer
     memcpy(chronos_rxs_ptr, dataBuffer, bufferLength);
     memcpy(rxs->chronosACKBody + rxs->echoProbeInfo.TxRXSLength, dataBuffer, bufferLength);
     chronos_ptr->TxRXSLength += bufferLength;
-    *payloadLength_ptr += bufferLength;
     rxs->rawBufferLength += bufferLength;
     rxs->payloadLength += bufferLength;
     rxs->echoProbeInfo.TxRXSLength += bufferLength;
