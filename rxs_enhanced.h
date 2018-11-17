@@ -104,7 +104,8 @@ struct ieee80211_packet_header {
 	uint8_t	 addr2[6];
 	uint8_t	 addr3[6];
     uint16_t seq;
-    struct ieee80211_packet_header_info header_info;
+	uint16_t segment_head_seq;
+	    struct ieee80211_packet_header_info header_info;
 } __attribute__ ((__packed__));
 
 struct EchoProbeInfo {
