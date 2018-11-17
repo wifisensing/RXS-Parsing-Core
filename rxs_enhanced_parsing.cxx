@@ -1,6 +1,7 @@
 #include "rxs_enhanced.h"
 #ifdef BUILD_WITH_MEX
     #include "mex.h"
+    #define printf mexPrintf
 #endif
 
 uint16_t pkt_duration(uint16_t length, uint8_t mcs, bool wide40BW, bool usingSGI, bool lengthWithoutFCS) {
@@ -35,6 +36,21 @@ uint16_t pkt_duration(uint16_t length, uint8_t mcs, bool wide40BW, bool usingSGI
     auto pktDuration = (usingSGI ? SGI: LGI) * symbols;
 
     return L_STF + L_LTF + L_SIG + HT_SIG + HT_STF + HT_LTF*streams + pktDuration;
+}
+
+void hexDump(const uint8_t * inBytes, uint64_t length, std::optional<std::string> title) {
+    printf("\n"
+           "   %s, length=%llu \n"
+           "------------------------------------------------\n", title.value().c_str(), length);
+    printf("  Offset: 00 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f");
+    for (auto i = 0 ; i < length; i ++) {
+        if (i % 16 == 0) {
+            printf("\n%08x:", i/16);
+        }
+        printf(" %02x", *(inBytes + i));
+    }
+    printf("\n"
+           "------------------------------------------------\n");
 }
 
 struct RXS_enhanced parseRXS(const uint8_t * inBytes, enum RXSParsingLevel parsingLevel) {
@@ -110,18 +126,7 @@ int parse_rxs_enhanced(const uint8_t * inBytes, struct RXS_enhanced *rxs, enum R
     }
 
     if (pos != totalLength) {
-        printf("\n"
-        "--------------------------------\n"
-              "Packet Dump ! \n");
-        printf("  Offset: 00 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f");
-        for (auto i = 0 ; i < totalLength; i ++) {
-            if (i % 16 == 0) {
-                printf("\n%08x:", i/16);
-            }
-            printf(" %02x", *(inBytes + i));
-        }
-        printf("\n"
-        "--------------------------------\n");
+        hexDump(inBytes, totalLength);
         // assert(pos == totalLength); // this is for validation
     }
 
