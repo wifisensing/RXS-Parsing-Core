@@ -63,7 +63,11 @@ int parse_rxs_enhanced(const uint8_t * inBytes, struct RXS_enhanced *rxs, enum R
 
     totalLength += *((uint16_t *)(inBytes+pos)); pos += 2;
     magicValue  = *((uint32_t *)(inBytes+pos)); pos += 4;
-    assert(magicValue == 0x20150315 || magicValue == 0x20120930);
+    if (magicValue != 0x20150315 && magicValue != 0x20120930) {
+        hexDump(inBytes, 200);
+        assert(magicValue == 0x20150315 || magicValue == 0x20120930);
+    }
+
     rxs->isAR9300 = magicValue == 0x20150315 ? true : false;
 
     rxFeatureCode = *((uint32_t *)(inBytes+pos)); pos += 4;
