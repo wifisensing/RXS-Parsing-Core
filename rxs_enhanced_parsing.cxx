@@ -1,8 +1,4 @@
 #include "rxs_enhanced.h"
-#ifdef BUILD_WITH_MEX
-    #include "mex.h"
-    #define printf mexPrintf
-#endif
 
 uint16_t pkt_duration(uint16_t length, uint8_t mcs, bool wide40BW, bool usingSGI, bool lengthWithoutFCS) {
     static const auto L_STF = 8;

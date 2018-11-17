@@ -17,6 +17,11 @@
 #include "RXSExtraInfo.h"
 #include "CSIMatrixParser.h"
 #include "CSIPreprocess.h"
+#ifdef BUILD_WITH_MEX
+    #include "mex.h"
+    #define printf mexPrintf
+#endif
+
 
 #define TONE_20M                56 ///< Ath9k NIC returns 56 subcarrier in 20MHz bandwidth
 #define TONE_40M                114 ///< Ath9k NIC returns 114 subcarrier in 40MHz bandwidth
