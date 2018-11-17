@@ -36,7 +36,7 @@ uint16_t pkt_duration(uint16_t length, uint8_t mcs, bool wide40BW, bool usingSGI
 
 void hexDump(const uint8_t * inBytes, uint64_t length, std::optional<std::string> title) {
     printf("\n"
-           "   %s, length=%llu \n"
+           "   %s, length=%lu \n"
            "------------------------------------------------\n", title.value_or("").c_str(), length);
     printf("  Offset: 00 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f");
     for (auto i = 0 ; i < length; i ++) {
@@ -123,7 +123,7 @@ int parse_rxs_enhanced(const uint8_t * inBytes, struct RXS_enhanced *rxs, enum R
 
     if (pos != totalLength) {
         hexDump(inBytes, totalLength);
-        // assert(pos == totalLength); // this is for validation
+        assert(pos == totalLength); // this is for validation
     }
 
     rxs->rawBufferLength = static_cast<uint16_t>(pos);
