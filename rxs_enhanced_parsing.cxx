@@ -166,7 +166,7 @@ void inplaceAddTxChronosData(RXS_enhanced * rxs, uint8_t *dataBuffer, int buffer
     auto * chronos_rxs_ptr = rawBuffer + chronosPos + sizeof(struct EchoProbeInfo) + chronos_ptr->TxRXSLength;
     memcpy(chronos_rxs_ptr, dataBuffer, bufferLength);
     auto * totalLength_ptr = (uint16_t *)(rawBuffer);
-    totalLength_ptr += bufferLength;
+    * totalLength_ptr += bufferLength;
     memcpy(rxs->chronosACKBody + rxs->echoProbeInfo.TxRXSLength, dataBuffer, bufferLength);
     chronos_ptr->TxRXSLength += bufferLength;
     rxs->rawBufferLength += bufferLength;
