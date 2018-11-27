@@ -39,7 +39,7 @@ void groupingCSIInterpolation(std::deque<double> & origin, bool HT40) {
 
     origin.clear();
     origin.resize(groupingVector[30] - groupingVector[0] + 1);
-    std::copy(interp.begin(), interp.begin() + (groupingVector[30] - groupingVector[0]), origin.begin());
+    std::copy(interp.begin(), interp.begin() + (groupingVector[30] - groupingVector[0] + 1), origin.begin());
 }
 
 static auto phase_unwrap_two = [](double cur, double next, double circularEqualValue) -> double
