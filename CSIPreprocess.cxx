@@ -7,6 +7,41 @@
 
 static constexpr auto M_2PI = 2 * M_PI;
 
+static int CSI_GROUPING_HT20[] = {-28, -26, -24, -22, -20, -18, -16, -14, -12, -10,  -8,  -6,  -4, -2, -1, 0, 1, 3,  5,  7,  9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 28};
+static int CSI_GROUPING_HT40[] = {-58, -54, -50, -46, -42, -38, -34, -30, -26, -22, -18, -14, -10, -6, -2, 0, 2, 6, 10, 14, 18, 22, 26, 30, 34, 38, 42, 46, 50, 54, 58};
+
+static std::deque<double> linspace(double start, double end, double num_lin_spaced) {
+    std::deque<double> interpValues;
+    num_lin_spaced = std::floor(num_lin_spaced);
+    double step = (end - start) / num_lin_spaced;
+
+    for(auto i = 0 ; i <= num_lin_spaced ; i++) {
+        interpValues.emplace_back(start + step * i);
+    }
+
+    return interpValues;
+}
+
+void groupingCSIInterpolation(std::deque<double> & origin, bool HT40) {
+    std::deque<double> interp(117);
+    int *groupingVector = HT40 ? CSI_GROUPING_HT40 : CSI_GROUPING_HT20;
+    for (auto i = 0 ; i < origin.size() ; i ++) {
+        auto pos = groupingVector[i] - groupingVector[0];
+        interp[pos] = origin[i];
+
+        if (i > 0) {
+            auto lastPos = groupingVector[i-1] - groupingVector[0];
+            auto n_spaced = groupingVector[i] - groupingVector[i -1];
+            auto linspacedValues = linspace(interp[lastPos], interp[pos], n_spaced);
+            std::copy(linspacedValues.begin(), linspacedValues.end(), interp.begin() + lastPos);
+        }
+    }
+
+    origin.clear();
+    origin.resize(groupingVector[30] - groupingVector[0] + 1);
+    std::copy(interp.begin(), interp.begin() + (groupingVector[30] - groupingVector[0]), origin.begin());
+}
+
 static auto phase_unwrap_two = [](double cur, double next, double circularEqualValue) -> double
 {
     auto diff = fmod(next - cur, circularEqualValue);
@@ -187,7 +222,7 @@ void phaseUnwrapBetweenAntennas(std::deque<std::deque<double>> & phases, int ntx
     }
 }
 
-int phaseUnwrapAroundDC(std::complex<double> csi_matrix[], double magArray[], double phaseArray[], int ntx, int nrx, int num_tones) {
+int phaseUnwrapAroundDC(std::complex<double> csi_matrix[], double magArray[], double phaseArray[], int ntx, int nrx, int num_tones, int bw) {
     std::deque<std::deque<double>> mags(nrx * ntx);
     std::deque<std::deque<double>> phases(nrx * ntx);
 
@@ -199,10 +234,15 @@ int phaseUnwrapAroundDC(std::complex<double> csi_matrix[], double magArray[], do
         }
         interpMag(mags[i]);
         unwrapPhase(phases[i]);
+
+        if (mags[i].size() == 31) {
+            groupingCSIInterpolation(mags[i], bw);
+            groupingCSIInterpolation(phases[i], bw);
+        }
     }
 
     phaseUnwrapBetweenAntennas(phases, ntx, nrx);
-    
+
     currentPos = 0;
     for (auto i = 0 ; i < nrx * ntx ; i ++) {
         assert(mags[i].size() == phases[i].size());

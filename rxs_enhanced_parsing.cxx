@@ -101,7 +101,7 @@ int parse_rxs_enhanced(const uint8_t * inBytes, struct RXS_enhanced *rxs, enum R
                                 rxs->csi_matrix);
 
         // commit the following two lines to aquire raw csi matrix
-        auto new_tones_num = phaseUnwrapAroundDC(rxs->csi_matrix, rxs->unwrappedMag, rxs->unwrappedPhase, rxs->rxs_basic.ntx, rxs->rxs_basic.nrx, rxs->rxs_basic.num_tones);
+        auto new_tones_num = phaseUnwrapAroundDC(rxs->csi_matrix, rxs->unwrappedMag, rxs->unwrappedPhase, rxs->rxs_basic.ntx, rxs->rxs_basic.nrx, rxs->rxs_basic.num_tones, rxs->rxs_basic.chanBW);
         rxs->rxs_basic.num_tones = new_tones_num;
     }
     pos += rxs->rxs_basic.csi_len;
