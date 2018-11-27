@@ -34,12 +34,16 @@ uint16_t pkt_duration(uint16_t length, uint8_t mcs, bool wide40BW, bool usingSGI
     return L_STF + L_LTF + L_SIG + HT_SIG + HT_STF + HT_LTF*streams + pktDuration;
 }
 
-void hexDump(const uint8_t * inBytes, uint64_t length, std::optional<std::string> title) {
+static void hexDump(const uint8_t * inBytes, uint32_t length, std::optional<std::string> title) {
+
+    if (!title)
+        title = "Hex Dump";
+        
     printf("\n"
-           "   %s, length=%lu \n"
-           "------------------------------------------------\n", *title, length);
+           "   %s, length=%u \n"
+           "------------------------------------------------\n", (*title).c_str(), length);
     printf("  Offset: 00 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f");
-    for (uint64_t i = 0 ; i < length; i ++) {
+    for (uint32_t i = 0 ; i < length; i ++) {
         if (i % 16 == 0) {
             printf("\n%08x:", i/16);
         }
@@ -64,7 +68,7 @@ int parse_rxs_enhanced(const uint8_t * inBytes, struct RXS_enhanced *rxs, enum R
     totalLength += *((uint16_t *)(inBytes+pos)); pos += 2;
     magicValue  = *((uint32_t *)(inBytes+pos)); pos += 4;
     if (magicValue != 0x20150315 && magicValue != 0x20120930) {
-        hexDump(inBytes, 200);
+        hexDump(inBytes, 200, {});
         assert(magicValue == 0x20150315 || magicValue == 0x20120930);
     }
 
@@ -126,7 +130,7 @@ int parse_rxs_enhanced(const uint8_t * inBytes, struct RXS_enhanced *rxs, enum R
     }
 
     if (pos != totalLength) {
-        hexDump(inBytes, totalLength);
+        hexDump(inBytes, totalLength, {});
         assert(pos == totalLength); // this is for validation
     }
 
