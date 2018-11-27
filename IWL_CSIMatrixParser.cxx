@@ -7,16 +7,27 @@
     #include "mex.h"
 #endif
 
-void iwl_parse_csi_matrix(const uint8_t *payload, int ntx, int nrx, int num_tones, std::complex<double> *csi_matrix) {
+static int positionComputationWRTPermutation(int ntx, int nrx, int num_tones, int nrxIdx, int ntxIdx, int subcarrierIdx, const struct ExtraInfo & rxExtraInfo) {
+    auto new_nrxIdx = nrxIdx;
+    if (rxExtraInfo.hasAntennaSelection == true || nrx > 1) {
+        std::vector<int> ant_sel_values(std::begin(rxExtraInfo.ant_sel), std::begin(rxExtraInfo.ant_sel) + nrx);
+        auto sorted_indexes = sort_indexes(ant_sel_values);
+        auto new_nrxIdx = sorted_indexes[nrxIdx];
+    }
+
+    return ntxIdx * (nrx * num_tones) + new_nrxIdx * num_tones + subcarrierIdx;
+}
+
+void iwl_parse_csi_matrix(const uint8_t *payload, int ntx, int nrx, int num_tones, const struct ExtraInfo & rxExtraInfo, std::complex<double> *csi_matrix) {
     uint32_t index = 0, remainder;
 
-    for (auto subcarrierIdx = 0; subcarrierIdx < 30; subcarrierIdx ++ ) {
+    for (auto subcarrierIdx = 0; subcarrierIdx < num_tones; subcarrierIdx ++ ) {
         index += 3;
         remainder = index % 8;
 
         for (auto nrxIdx = 0 ; nrxIdx < nrx ; nrxIdx ++ )
             for(auto ntxIdx = 0 ; ntxIdx < ntx ; ntxIdx ++ ) {
-                auto position = ntxIdx * (nrx * 30) + nrxIdx * 30 + subcarrierIdx;
+                auto position = ntxIdx * (nrx * num_tones) + nrxIdx * num_tones + subcarrierIdx;
                 char tmp = (payload[index / 8] >> remainder) |
                       (payload[index/8+1] << (8-remainder));
                 csi_matrix[position].real((double)tmp);
