@@ -90,7 +90,7 @@ struct ExtraInfo {
     uint8_t pll_clock_select;
     uint8_t pll_refdiv;
     uint8_t agc;
-    uint8_t antennaSelection;
+    uint8_t ant_sel[3];
 
     static int fromBinary(const uint8_t *extraInfoPtr, struct ExtraInfo * extraInfo, uint32_t suppliedFeatureCode = 0);
     static int toBinary(void * extraInfoPtr);

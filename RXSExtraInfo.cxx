@@ -198,7 +198,10 @@ int ExtraInfo::fromBinary(const uint8_t *extraInfoPtr, struct ExtraInfo * extraI
     }
 
     if (extraInfo->hasAntennaSelection) {
-        extraInfo->antennaSelection = extraInfoPtr[pos++];
+        auto ant_sel_raw = extraInfoPtr[pos++];
+        extraInfo->ant_sel[0] = ((ant_sel_raw) & 0x3) + 1;
+	    extraInfo->ant_sel[1] = ((ant_sel_raw >> 2) & 0x3) + 1;
+	    extraInfo->ant_sel[2] = ((ant_sel_raw >> 4) & 0x3) + 1;
     }
 
     return 0;
