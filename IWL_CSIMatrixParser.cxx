@@ -9,7 +9,7 @@
 
 static int positionComputationWRTPermutation(int ntx, int nrx, int num_tones, int nrxIdx, int ntxIdx, int subcarrierIdx, const struct ExtraInfo & rxExtraInfo) {
     auto new_nrxIdx = nrxIdx;
-    if (rxExtraInfo.hasAntennaSelection == true || nrx > 1) {
+    if (rxExtraInfo.hasAntennaSelection == true && nrx > 1) {
         std::vector<int> ant_sel_values(std::begin(rxExtraInfo.ant_sel), std::begin(rxExtraInfo.ant_sel) + nrx);
         auto sorted_indexes = sort_indexes(ant_sel_values);
         auto new_nrxIdx = sorted_indexes[nrxIdx];
@@ -27,7 +27,7 @@ void iwl_parse_csi_matrix(const uint8_t *payload, int ntx, int nrx, int num_tone
 
         for (auto nrxIdx = 0 ; nrxIdx < nrx ; nrxIdx ++ )
             for(auto ntxIdx = 0 ; ntxIdx < ntx ; ntxIdx ++ ) {
-                auto position = ntxIdx * (nrx * num_tones) + nrxIdx * num_tones + subcarrierIdx;
+                auto position = positionComputationWRTPermutation(ntx, nrx, num_tones, nrxIdx, ntxIdx, subcarrierIdx, rxExtraInfo);
                 char tmp = (payload[index / 8] >> remainder) |
                       (payload[index/8+1] << (8-remainder));
                 csi_matrix[position].real((double)tmp);
