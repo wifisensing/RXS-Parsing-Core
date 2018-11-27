@@ -12,6 +12,7 @@ static int positionComputationWRTPermutation(int ntx, int nrx, int num_tones, in
     if (rxExtraInfo.hasAntennaSelection == true && nrx > 1) {
         std::vector<int> ant_sel_values(std::begin(rxExtraInfo.ant_sel), std::begin(rxExtraInfo.ant_sel) + nrx);
         auto sorted_indexes = sort_indexes(ant_sel_values);
+        sorted_indexes = sort_indexes(sorted_indexes); // double sort, shit but works !
         new_nrxIdx = sorted_indexes[nrxIdx];
     }
 
