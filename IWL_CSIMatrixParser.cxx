@@ -24,6 +24,7 @@ void iwl_parse_csi_matrix(const uint8_t *payload, int ntx, int nrx, int num_tone
                       (payload[index/8+2] << (8-remainder));
                 csi_matrix[position].imag((double)tmp);
                 index += 16;
+//                printf("pos=%3d, subcarrierIdx=%2d, nrxIdx=%d, ntxIdx=%d, real=%f, imag=%f\n", position, subcarrierIdx, nrxIdx, ntxIdx, csi_matrix[position].real(), csi_matrix[position].imag());
             }
     }
 }
