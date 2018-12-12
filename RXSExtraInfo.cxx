@@ -20,7 +20,7 @@ void featureCodeInterpretation(uint32_t featureCode, struct ExtraInfo * extraInf
     extraInfo->hasTxTSF       = extraInfoHasTxTSF(featureCode);
     extraInfo->hasLastHWTxTSF = extraInfoHasLastHWTxTSF(featureCode);
     extraInfo->hasChannelFlags= extraInfoHasChannelFlags(featureCode);
-    extraInfo->hasRxNess      = extraInfoHasRxNESS(featureCode);
+    extraInfo->hasTxNess      = extraInfoHasTxNess(featureCode);
     extraInfo->hasTuningPolicy= extraInfoHasTuningPolicy(featureCode);
     extraInfo->hasPLLRate     = extraInfoHasPLLRate(featureCode);
     extraInfo->hasPLLRefDiv   = extraInfoHasPLLRefDiv(featureCode);
@@ -55,7 +55,7 @@ void inplaceAddRxExtraInfo(uint8_t *inBytes, uint32_t featureCode, uint8_t *valu
     pos += extraInfoHasTxTSF(*rxFeatureCode) ? 4: 0;
     pos += extraInfoHasLastHWTxTSF(*rxFeatureCode) ? 4: 0;
     pos += extraInfoHasChannelFlags(*rxFeatureCode) ? 2: 0;
-    pos += extraInfoHasRxNESS(*rxFeatureCode) ? 1: 0;
+    pos += extraInfoHasTxNess(*rxFeatureCode) ? 1: 0;
     insertPos = extraInfoHasTuningPolicy(featureCode) ? pos : (insertPos > 0 ? insertPos : 0);
     pos += extraInfoHasTuningPolicy(*rxFeatureCode) ? 1: 0;
     pos += extraInfoHasPLLRate(*rxFeatureCode) ? 2: 0;
@@ -172,8 +172,8 @@ int ExtraInfo::fromBinary(const uint8_t *extraInfoPtr, struct ExtraInfo * extraI
         pos += 2;
     }
 
-    if (extraInfo->hasRxNess) {
-        extraInfo->rx_ness = extraInfoPtr[pos++];
+    if (extraInfo->hasTxNess) {
+        extraInfo->tx_ness = extraInfoPtr[pos++];
     }
 
     if (extraInfo->hasTuningPolicy) {

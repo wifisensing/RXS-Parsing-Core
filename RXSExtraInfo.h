@@ -24,7 +24,7 @@
 #define PICOSCENES_EXTRAINFO_HASTXTSF                  0x00000800
 #define PICOSCENES_EXTRAINFO_HASLASTHWTXTSF            0x00001000
 #define PICOSCENES_EXTRAINFO_HASCHANNELFLAGS           0x00002000
-#define PICOSCENES_EXTRAINFO_HASRXNESS                 0x00004000
+#define PICOSCENES_EXTRAINFO_HASTXNESS                 0x00004000
 #define PICOSCENES_EXTRAINFO_HASTUNINGPOLICY           0x00008000
 #define PICOSCENES_EXTRAINFO_HASPLLRATE                0x00010000
 #define PICOSCENES_EXTRAINFO_HASPLLREFDIV              0x00020000
@@ -63,7 +63,7 @@ struct ExtraInfo {
     bool hasTxTSF;
     bool hasLastHWTxTSF;
     bool hasChannelFlags;
-    bool hasRxNess;
+    bool hasTxNess;
     bool hasTuningPolicy;
     bool hasPLLRate;
     bool hasPLLClkSel;
@@ -84,7 +84,7 @@ struct ExtraInfo {
     uint32_t txTSF;
     uint32_t lastHwTxTSF;
     uint16_t channelFlags;
-    uint8_t rx_ness;
+    uint8_t tx_ness;
     uint8_t tuningPolicy;
     uint16_t pll_rate;
     uint8_t pll_clock_select;
@@ -216,7 +216,7 @@ inline bool extraInfoHasLastHWTxTSF(uint32_t featureCode) {
 inline bool extraInfoHasChannelFlags(uint32_t featureCode) {
     return static_cast<bool>(featureCode >> 13 & 0x1);
 }
-inline bool extraInfoHasRxNESS(uint32_t featureCode) {
+inline bool extraInfoHasTxNess(uint32_t featureCode) {
     return static_cast<bool>(featureCode >> 14 & 0x1);
 }
 inline bool extraInfoHasTuningPolicy(uint32_t featureCode) {

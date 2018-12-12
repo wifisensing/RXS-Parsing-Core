@@ -47,7 +47,9 @@ struct rx_status_basic {
     uint8_t    chanBW;      ///< receiving channel bandwidth, 0 for 20MHz, 1 for 40MHz
     uint8_t    num_tones;   ///< number of tones (subcarriers), should be 56 or 114
     uint8_t    nrx;         ///< number of receiving antennas, 1~3
-    uint8_t    ntx;         ///< number of transmitting anteannas, 1~3
+    uint8_t    ntx;         ///< number of transmitting antennas, 1~3
+	uint8_t    nltf;        ///< number of LTF field, 1~3
+	uint8_t    nss;         ///< number of CSI measurement groups
 
     uint8_t    rssi;        ///< rx frame RSSI
     uint8_t    rssi0;       ///< rx frame RSSI [ctl, chain 0]
