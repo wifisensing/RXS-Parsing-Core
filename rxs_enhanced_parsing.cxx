@@ -97,7 +97,7 @@ int parse_rxs_enhanced(const uint8_t * inBytes, struct RXS_enhanced *rxs, enum R
             ar_parse_csi_matrix(inBytes + rxs->csi_pos, rxs->rxs_basic.nss / rxs->rxs_basic.nrx, rxs->rxs_basic.nrx, rxs->rxs_basic.num_tones,
                             rxs->csi_matrix);
         else
-            iwl_parse_csi_matrix(inBytes + rxs->csi_pos, rxs->rxs_basic.nss / rxs->rxs_basic.nrx, rxs->rxs_basic.nrx, rxs->rxs_basic.num_tones, rxs->rxExtraInfo, rxs->csi_matrix);
+            iwl_parse_csi_matrix(inBytes + rxs->csi_pos, rxs->rxs_basic.ntx, rxs->rxs_basic.nrx, rxs->rxs_basic.nltf, rxs->rxs_basic.num_tones, rxs->rxExtraInfo, rxs->csi_matrix);
 
         // commit the following two lines to aquire raw csi matrix
         auto new_tones_num = phaseUnwrapAroundDC(rxs->csi_matrix, rxs->unwrappedMag, rxs->unwrappedPhase, rxs->rxs_basic.nss / rxs->rxs_basic.nrx, rxs->rxs_basic.nrx, rxs->rxs_basic.num_tones, rxs->rxs_basic.chanBW);

@@ -32,6 +32,6 @@ template <typename T> std::vector<size_t> sort_indexes(const std::vector<T> &v) 
 }
 
 void ar_parse_csi_matrix(const uint8_t *csi_addr, int ntx, int nrx, int num_tones, std::complex<double> *csi_matrix);
-void iwl_parse_csi_matrix(const uint8_t *csi_addr, int ntx, int nrx, int num_tones, const struct ExtraInfo & rxExtraInfo, std::complex<double> *csi_matrix);
+void iwl_parse_csi_matrix(const uint8_t *csi_addr, int ntx, int nrx, int nltf, int num_tones, const struct ExtraInfo & rxExtraInfo, std::complex<double> *csi_matrix);
 
 #endif //CSIMATRIXPARSER_H
