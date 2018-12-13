@@ -27,8 +27,8 @@
 #define TONE_40M                114 ///< Ath9k NIC returns 114 subcarrier in 40MHz bandwidth
 #define TONE_20M_UNWRAP         57
 #define TONE_40M_UNWRAP         117
-#define MAX_OFDM_TONES          (TONE_40M * 3 * 3) ///< in 3x3 MIMO + 40MHZ case
-#define MAX_OFDM_TONES_UNWRAP   (TONE_40M_UNWRAP * 3 * 3) ///< in 3x3 MIMO + 40MHZ case
+#define MAX_OFDM_TONES          (TONE_40M * 4 * 4) ///< in 4x4 MIMO + 40MHZ case
+#define MAX_OFDM_TONES_UNWRAP   (TONE_40M_UNWRAP * 4 * 4) ///< in 4x4 MIMO + 40MHZ case
 #define BITS_PER_BYTE           8
 #define BITS_PER_COMPLEX_SYMBOL (2 * BITS_PER_SYMBOL)
 #define BITS_PER_SYMBOL         10
