@@ -1,6 +1,14 @@
 #include "rxs_enhanced.h"
 
-uint16_t pkt_duration(uint16_t length, uint8_t mcs, bool wide40BW, bool usingSGI, bool lengthWithoutFCS) {
+double ath9kPLLSamplingRateComputation(double multipler, double refdiv, double clockSelect, bool channelBonding) {
+    return 5e6 / refdiv * multipler / std::pow(2, clockSelect) * 10 / 11 * (channelBonding ? 2 : 1);
+}
+
+double ath9kPLLBandwidthComputation(double multipler, double refdiv, double clockSelect, bool channelBonding){
+    return ath9kPLLSamplingRateComputation(multipler, refdiv, clockSelect, channelBonding) / 2;
+}
+
+uint16_t pkt_duration(uint16_t length, uint8_t mcs, uint8_t nltf, double bb_bandwidth, bool wide40BW, bool usingSGI, bool lengthWithoutFCS) {
     static const auto L_STF = 8;
     static const auto L_LTF = 8;
     static const auto L_SIG = 4;
@@ -30,8 +38,9 @@ uint16_t pkt_duration(uint16_t length, uint8_t mcs, bool wide40BW, bool usingSGI
     auto symbolbits = bits_per_symbol[mcs % 8][wide40BW] * streams;
     auto symbols = (bits + symbolbits -1) / symbolbits;
     auto pktDuration = (usingSGI ? SGI: LGI) * symbols;
+    auto baseTime = L_STF + L_LTF + L_SIG + HT_SIG + HT_STF + HT_LTF * nltf + pktDuration;
 
-    return L_STF + L_LTF + L_SIG + HT_SIG + HT_STF + HT_LTF*streams + pktDuration;
+    return baseTime * ((wide40BW ? 40e6 : 20e6) / bb_bandwidth);
 }
 
 static void hexDump(const uint8_t * inBytes, uint32_t length, std::optional<std::string> title) {
@@ -90,6 +99,11 @@ int parse_rxs_enhanced(const uint8_t * inBytes, struct RXS_enhanced *rxs, enum R
             }
         }
     }
+    if (rxs->isAR9300) {
+        rxs->basebandFs = ath9kPLLSamplingRateComputation(rxs->rxExtraInfo.pll_rate, rxs->rxExtraInfo.pll_refdiv, rxs->rxExtraInfo.pll_clock_select, rxs->rxs_basic.channelBonding);
+    } else {
+        rxs->basebandFs = (rxs->rxs_basic.channelBonding == 0 ? 40e6 : 80e6);
+    }
 
     rxs->csi_pos = pos;
     if (parsingLevel >= EXTRA_CSI ) {
@@ -100,14 +114,14 @@ int parse_rxs_enhanced(const uint8_t * inBytes, struct RXS_enhanced *rxs, enum R
             iwl_parse_csi_matrix(inBytes + rxs->csi_pos, rxs->rxs_basic.ntx, rxs->rxs_basic.nrx, rxs->rxs_basic.nltf, rxs->rxs_basic.num_tones, rxs->rxExtraInfo, rxs->csi_matrix);
 
         // commit the following two lines to aquire raw csi matrix
-        auto new_tones_num = phaseUnwrapAroundDC(rxs->csi_matrix, rxs->unwrappedMag, rxs->unwrappedPhase, rxs->rxs_basic.nss / rxs->rxs_basic.nrx, rxs->rxs_basic.nrx, rxs->rxs_basic.num_tones, rxs->rxs_basic.chanBW);
+        auto new_tones_num = phaseUnwrapAroundDC(rxs->csi_matrix, rxs->unwrappedMag, rxs->unwrappedPhase, rxs->rxs_basic.nss / rxs->rxs_basic.nrx, rxs->rxs_basic.nrx, rxs->rxs_basic.num_tones, rxs->rxs_basic.channelBonding);
         rxs->rxs_basic.num_tones = new_tones_num;
     }
     pos += rxs->rxs_basic.csi_len;
     rxs->payload_pos = pos;
 
     rxs->payloadLength = totalLength - pos;
-    rxs->txDuration = pkt_duration(rxs->payloadLength, rxs->rxs_basic.rate, rxs->rxs_basic.chanBW, rxs->rxs_basic.sgi);
+    rxs->txDuration = pkt_duration(rxs->payloadLength, rxs->rxs_basic.rate, rxs->rxs_basic.nltf, rxs->basebandFs / 2, rxs->rxs_basic.channelBonding, rxs->rxs_basic.sgi);
 
     uint8_t frameType = *((uint8_t *)(inBytes+pos));
     if (frameType == 0x8) { // Frame injected by PicoScenes

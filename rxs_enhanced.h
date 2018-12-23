@@ -44,7 +44,7 @@ struct rx_status_basic {
 
     int8_t     noise;       ///< noise floor
     uint8_t	   rate;	    ///< MCS index
-    uint8_t    chanBW;      ///< receiving channel bandwidth, 0 for 20MHz, 1 for 40MHz
+    uint8_t    channelBonding; ///< receiving channel bandwidth, 0 for 20MHz, 1 for 40MHz
     uint8_t    num_tones;   ///< number of tones (subcarriers), should be 56 or 114
     uint8_t    nrx;         ///< number of receiving antennas, 1~3
     uint8_t    ntx;         ///< number of transmitting antennas, 1~3
@@ -135,6 +135,7 @@ struct RXS_enhanced {
 	uint16_t   payload_pos;
 	uint16_t   payloadLength;
     uint16_t   rawBufferLength;
+	double     basebandFs;
     uint16_t   txDuration;
     struct ExtraInfo rxExtraInfo;
     struct ieee80211_packet_header txHeader;
@@ -148,16 +149,22 @@ struct RXS_enhanced {
 	RXSParsingLevel parsingLevel;
 };
 
+double ath9kPLLSamplingRateComputation(double multipler, double devider, double clk_select, bool channelBonding);
+
+double ath9kPLLBandwidthComputation(double multipler, double devider, double clk_select, bool channelBonding);
+
 /**
  * calculate the over-the-air Tx duration for a packet
  * @param length packet length
  * @param mcs  Tx MCS value
- * @param wide40BW  bandwidth 20 or 40MHz
+ * @param nltf number of HT-LTF 
+ * @param bb_bandwidth baseband bandwidth (Hz)
+ * @param channelBonding  802.11n channel bonding feature, true for bonding
  * @param usingSGI  short or long GI
  * @param lengthWithoutFCS length not include FCS ?
  * @return over-the-air tx duration
  */
-uint16_t pkt_duration(uint16_t length, uint8_t mcs, bool wide40BW, bool usingSGI = false, bool lengthWithoutFCS = true);
+uint16_t pkt_duration(uint16_t length, uint8_t mcs, uint8_t nltf, double bb_bandwidth, bool channelBonding, bool usingSGI, bool lengthWithoutFCS = true);
 
 /**
  * Parse the raw RxS data
