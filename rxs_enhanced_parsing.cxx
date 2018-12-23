@@ -99,7 +99,7 @@ int parse_rxs_enhanced(const uint8_t * inBytes, struct RXS_enhanced *rxs, enum R
             }
         }
     }
-    if (rxs->isAR9300) {
+    if (rxs->isAR9300 && rxs->rxExtraInfo.hasPLLRate && rxs->rxExtraInfo.hasPLLRefDiv && rxs->rxExtraInfo.hasPLLClkSel) {
         rxs->basebandFs = ath9kPLLSamplingRateComputation(rxs->rxExtraInfo.pll_rate, rxs->rxExtraInfo.pll_refdiv, rxs->rxExtraInfo.pll_clock_select, rxs->rxs_basic.channelBonding);
     } else {
         rxs->basebandFs = (rxs->rxs_basic.channelBonding == 0 ? 40e6 : 80e6);

@@ -66,8 +66,8 @@ struct ExtraInfo {
     bool hasTxNess;
     bool hasTuningPolicy;
     bool hasPLLRate;
-    bool hasPLLClkSel;
     bool hasPLLRefDiv;
+    bool hasPLLClkSel;
     bool hasAGC;
     bool hasAntennaSelection;
     uint16_t length;
@@ -87,8 +87,8 @@ struct ExtraInfo {
     uint8_t tx_ness;
     uint8_t tuningPolicy;
     uint16_t pll_rate;
-    uint8_t pll_clock_select;
     uint8_t pll_refdiv;
+    uint8_t pll_clock_select;
     uint8_t agc;
     uint8_t ant_sel[3];
 
