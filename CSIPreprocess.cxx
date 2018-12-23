@@ -25,7 +25,7 @@ static std::deque<double> linspace(double start, double end, double num_lin_spac
 void groupingCSIInterpolation(std::deque<double> & origin, bool HT40) {
     std::deque<double> interp(117);
     int *groupingVector = HT40 ? CSI_GROUPING_HT40 : CSI_GROUPING_HT20;
-    for (auto i = 0 ; i < origin.size() ; i ++) {
+    for (size_t i = 0 ; i < origin.size() ; i ++) {
         auto pos = groupingVector[i] - groupingVector[0];
         interp[pos] = origin[i];
 
