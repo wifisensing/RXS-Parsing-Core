@@ -113,7 +113,8 @@ int ExtraInfo::fromBinary(const uint8_t *extraInfoPtr, struct ExtraInfo * extraI
     }
 
     if (extraInfo->hasVersion) {
-        extraInfo->version = extraInfoPtr[pos++];
+        extraInfo->version =  *((uint64_t *)(extraInfoPtr+pos));
+        pos += 8;
     }
 
     if (extraInfo->hasMacAddr_cur) {

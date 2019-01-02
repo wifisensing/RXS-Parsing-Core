@@ -71,7 +71,7 @@ struct ExtraInfo {
     bool hasAGC;
     bool hasAntennaSelection;
     uint16_t length;
-    uint8_t version;
+    uint64_t version;
     uint8_t macaddr_rom[6];
     uint8_t macaddr_cur[6];
     uint32_t chansel;
