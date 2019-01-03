@@ -41,7 +41,7 @@
 struct TxExtraInfoMinSet {
     uint32_t txExtraInfoFeatureCode;
     uint16_t txExtraInfoLength;
-    uint8_t txExtraInfoVersion;
+    uint64_t txExtraInfoVersion;
     uint8_t txExtraInfoMacAddr_cur[6];
     uint8_t txExtraInfoMacAddr_rom[6];
 

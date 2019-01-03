@@ -6,8 +6,8 @@
 #include "rxs_enhanced.h"
 
 void featureCodeInterpretation(uint32_t featureCode, struct ExtraInfo * extraInfo) {
-    extraInfo->hasVersion     = extraInfoHasVersion(featureCode);
     extraInfo->hasLength      = extraInfoHasLength(featureCode);
+    extraInfo->hasVersion     = extraInfoHasVersion(featureCode);
     extraInfo->hasMacAddr_cur = extraInfoHasMacAddress_Current(featureCode);
     extraInfo->hasMacAddr_rom = extraInfoHasMacAddress_Rom(featureCode);
     extraInfo->hasChansel     = extraInfoHasChansel(featureCode);
@@ -42,7 +42,7 @@ void inplaceAddRxExtraInfo(uint8_t *inBytes, uint32_t featureCode, uint8_t *valu
     pos += sizeof(struct rx_status_basic);
     lengthField_ptr = extraInfoHasLength(*rxFeatureCode) ? (uint16_t *)inBytes + pos : nullptr;
     pos += extraInfoHasLength(*rxFeatureCode) ? 2:0;
-    pos += extraInfoHasVersion(*rxFeatureCode) ? 1:0;
+    pos += extraInfoHasVersion(*rxFeatureCode) ? 8:0;
     pos += extraInfoHasMacAddress_Current(*rxFeatureCode) ? 6:0;
     pos += extraInfoHasMacAddress_Rom(*rxFeatureCode) ? 6:0;
     pos += extraInfoHasChansel(*rxFeatureCode) ? 4:0;
