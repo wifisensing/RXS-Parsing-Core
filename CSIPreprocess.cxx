@@ -73,8 +73,8 @@ void unwrapPhase(std::deque<double> & originalPhase) {
         dcEnd = 60;
     }
 
-    unwrapPhase_part(originalPhase, dcStart - 1, 0, false, M_PI);
-    unwrapPhase_part(originalPhase, dcStart - 1, dcStart, true, M_PI);
+    unwrapPhase_part(originalPhase, dcStart - 1, 0, false, M_2PI);
+    unwrapPhase_part(originalPhase, dcStart - 1, dcStart, true, M_2PI);
 
     if (fabs(originalPhase[dcStart] - originalPhase[dcStart-1]) > M_PI_4) { // Ath9k 40MHz case
         auto unwrapped_dcStart = phase_unwrap_two(originalPhase[dcStart-1], originalPhase[dcStart], M_PI_2);
@@ -84,7 +84,7 @@ void unwrapPhase(std::deque<double> & originalPhase) {
         }
     }
 
-    unwrapPhase_part(originalPhase, dcStart, originalPhase.size() - 1, true, M_PI);
+    unwrapPhase_part(originalPhase, dcStart, originalPhase.size() - 1, true, M_2PI);
 
     auto lower = originalPhase[dcStart - 1];
     auto higher = originalPhase[dcStart];
