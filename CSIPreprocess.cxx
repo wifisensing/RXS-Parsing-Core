@@ -116,112 +116,6 @@ void interpMag(std::deque<double> & originalMag) {
     }
 }
 
-inline double mirrorPhase(double phase) {
-    if (phase >= 0)
-        return std::fmod(phase - M_2PI, M_2PI);
-    else return std::fmod(phase + M_2PI, M_2PI);
-}
-
-inline bool isMonotonic(const double & p1, const double & p2, const double & p3) {
-    if(p1 * p2 * p3 != 0 && (p1 - p2) * (p2 - p3) > 0)
-        return true;
-
-    if (p1 >= p2 && p2 >= p3)
-        return true;
-
-    if (p1 <= p2 && p2 <= p3)
-        return true;
-
-    return false;
-}
-
-inline double matlabMod(double value , double base) {
-    auto result = std::fmod(value + base * 2.0, base);
-    return result;
-}
-
-inline void unwrapMonotonic2(double phases[3]) {
-    auto pd21 = phases[1] - phases[0];
-    auto pd31 = phases[2] - phases[0];
-    auto newpd21 = phases[0] + matlabMod(pd21, M_PI);
-    auto newpd31 = phases[0] + matlabMod(pd31, M_PI);
-    phases[1] = newpd21;
-    phases[2] = newpd31;
-}
-
-void unwrapMonotonic(double phases[3]) {
-    if (isMonotonic(phases[0], phases[1], phases[2]))
-        return;
-
-    double bestp1 = 0, bestp2 = 0, bestp3 = 0, score = 999;
-    auto p1o = phases[0];
-    auto p2o = phases[1];
-    auto p3o = phases[2];
-    auto p2m = mirrorPhase(p2o);
-    auto p3m = mirrorPhase(p3o);
-
-    if (isMonotonic(p1o, p2o, p3m)) {
-        auto curScore = std::abs(p1o - p3m);
-        if (score > curScore) {
-            bestp1 = p1o;
-            bestp2 = p2o;
-            bestp3 = p3m;
-            score = curScore;
-        }
-    }
-
-    if (isMonotonic(p1o, p2m, p3o)) {
-        auto curScore = std::abs(p1o - p3o);
-        if (score > curScore) {
-            bestp1 = p1o;
-            bestp2 = p2m;
-            bestp3 = p3o;
-            score = curScore;
-        }
-    }
-
-    if (isMonotonic(p1o, p2m, p3m)) {
-        auto curScore = std::abs(p1o - p3m);
-        if (score > std::abs(p1o - p3m)) {
-            bestp1 = p1o;
-            bestp2 = p2m;
-            bestp3 = p3m;
-            score = curScore;
-        }
-    }
-
-    phases[0] = bestp1;
-    phases[1] = bestp2;
-    phases[2] = bestp3;
-}
-
-void phaseUnwrapBetweenAntennas(std::deque<std::deque<double>> & phases, int ntx, int nrx) {
-    if (nrx < 3) // strange phase combination happends only when nrx is larger than 3
-        return;
-
-    for(auto i = 0 ; i < ntx; i++) {
-        auto segHead = nrx * i;
-        auto segEnd =  nrx * (i+1);
-        double dc_phases_origin[3];
-        std::deque<double> dc_phases_unwraped;
-        // do unwrap between antennas.
-        auto dcPos = phases[segHead].size() / 2;
-        for(auto j = segHead ; j < segEnd; j ++) {
-            dc_phases_origin[j - segHead] = (phases[j][dcPos]);
-            dc_phases_unwraped.emplace_back(dc_phases_origin[j - segHead]);
-        }
-        unwrapPhase_part(dc_phases_unwraped, 0, dc_phases_unwraped.size() - 1, true, M_2PI);
-
-        auto gap2 = dc_phases_unwraped[1] - dc_phases_origin[1];
-        for(auto & phase: phases[segEnd-2])
-            phase += gap2;
-
-        auto gap3 = dc_phases_unwraped[2] - dc_phases_origin[2];
-        for(auto & phase: phases[segEnd-1])
-            phase += gap3;
-    }
-}
-
 int phaseUnwrapAroundDC(std::complex<double> csi_matrix[], double magArray[], double phaseArray[], int ntx, int nrx, int num_tones, int bw) {
     std::deque<std::deque<double>> mags(nrx * ntx);
     std::deque<std::deque<double>> phases(nrx * ntx);
@@ -240,8 +134,6 @@ int phaseUnwrapAroundDC(std::complex<double> csi_matrix[], double magArray[], do
             groupingCSIInterpolation(phases[i], bw);
         }
     }
-
-    phaseUnwrapBetweenAntennas(phases, ntx, nrx);
 
     currentPos = 0;
     for (auto i = 0 ; i < nrx * ntx ; i ++) {
