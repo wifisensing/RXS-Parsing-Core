@@ -1,11 +1,7 @@
 #include "rxs_enhanced.h"
 
-double ath9kPLLSamplingRateComputation(double multipler, double refdiv, double clockSelect, bool channelBonding) {
-    return 5e6 / refdiv * multipler / std::pow(2, clockSelect) * 10 / 11 * (channelBonding ? 2 : 1);
-}
-
 double ath9kPLLBandwidthComputation(double multipler, double refdiv, double clockSelect, bool channelBonding){
-    return ath9kPLLSamplingRateComputation(multipler, refdiv, clockSelect, channelBonding) / 2;
+    return 40e6 / refdiv * multipler / std::pow(2, clockSelect + 4) * 10 / 11 * (channelBonding ? 2 : 1);
 }
 
 uint16_t pkt_duration(uint16_t length, uint8_t mcs, uint8_t nltf, double bb_bandwidth, bool wide40BW, bool usingSGI, bool lengthWithoutFCS) {
@@ -100,9 +96,9 @@ int parse_rxs_enhanced(const uint8_t * inBytes, struct RXS_enhanced *rxs, enum R
         }
     }
     if (rxs->isAR9300 && rxs->rxExtraInfo.hasPLLRate && rxs->rxExtraInfo.hasPLLRefDiv && rxs->rxExtraInfo.hasPLLClkSel) {
-        rxs->basebandFs = ath9kPLLSamplingRateComputation(rxs->rxExtraInfo.pll_rate, rxs->rxExtraInfo.pll_refdiv, rxs->rxExtraInfo.pll_clock_select, rxs->rxs_basic.channelBonding);
+        rxs->basebandFs = ath9kPLLBandwidthComputation(rxs->rxExtraInfo.pll_rate, rxs->rxExtraInfo.pll_refdiv, rxs->rxExtraInfo.pll_clock_select, rxs->rxs_basic.channelBonding);
     } else {
-        rxs->basebandFs = (rxs->rxs_basic.channelBonding == 0 ? 40e6 : 80e6);
+        rxs->basebandFs = (rxs->rxs_basic.channelBonding == 0 ? 20e6 : 40e6);
     }
 
     rxs->csi_pos = pos;
@@ -121,7 +117,7 @@ int parse_rxs_enhanced(const uint8_t * inBytes, struct RXS_enhanced *rxs, enum R
     rxs->payload_pos = pos;
 
     rxs->payloadLength = totalLength - pos;
-    rxs->txDuration = pkt_duration(rxs->payloadLength, rxs->rxs_basic.rate, rxs->rxs_basic.nltf, rxs->basebandFs / 2, rxs->rxs_basic.channelBonding, rxs->rxs_basic.sgi);
+    rxs->txDuration = pkt_duration(rxs->payloadLength, rxs->rxs_basic.rate, rxs->rxs_basic.nltf, rxs->basebandFs, rxs->rxs_basic.channelBonding, rxs->rxs_basic.sgi);
 
     uint8_t frameType = *((uint8_t *)(inBytes+pos));
     if (frameType == 0x8) { // Frame injected by PicoScenes

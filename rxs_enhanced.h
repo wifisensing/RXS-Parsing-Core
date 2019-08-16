@@ -149,8 +149,6 @@ struct RXS_enhanced {
 	RXSParsingLevel parsingLevel;
 };
 
-double ath9kPLLSamplingRateComputation(double multipler, double devider, double clk_select, bool channelBonding);
-
 double ath9kPLLBandwidthComputation(double multipler, double devider, double clk_select, bool channelBonding);
 
 /**
