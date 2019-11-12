@@ -10,6 +10,14 @@
 #include <complex>
 #include <bitset>
 
+#ifdef __GNUC__
+#define PACK( __Declaration__ ) __Declaration__ __attribute__((__packed__))
+#endif
+
+#ifdef _MSC_VER
+#define PACK( __Declaration__ ) __pragma( pack(push, 1) ) __Declaration__ __pragma( pack(pop))
+#endif
+
 #define PICOSCENES_EXTRAINFO_HASLENGTH                 0x00000001
 #define PICOSCENES_EXTRAINFO_HASVERSION                0x00000002
 #define PICOSCENES_EXTRAINFO_HASMACCUR                 0x00000004
@@ -38,7 +46,7 @@
 
  @see ExtraInfo
  */
-struct TxExtraInfoMinSet {
+PACK(struct TxExtraInfoMinSet {
     uint32_t txExtraInfoFeatureCode;
     uint16_t txExtraInfoLength;
     uint64_t txExtraInfoVersion;
@@ -46,7 +54,7 @@ struct TxExtraInfoMinSet {
     uint8_t txExtraInfoMacAddr_rom[6];
 
     int getTxTSFPos();
-} __attribute__ ((__packed__));
+});
 
 struct ExtraInfo {
     bool hasLength;

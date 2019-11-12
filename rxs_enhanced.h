@@ -36,7 +36,7 @@
 /**
  * Shared RxStatus basic information for Qualcomm Atheros AR9300 series and Intel 5300
  */
-struct rx_status_basic {
+PACK(struct rx_status_basic {
     uint64_t   tstamp;      ///< h/w assigned RX timestamp
     uint16_t   csi_len;     ///< csi length
     uint16_t   channel;     ///< receiving channel frequency, unit is MHz, e.g, 2437
@@ -55,12 +55,12 @@ struct rx_status_basic {
     uint8_t    rssi0;       ///< rx frame RSSI [ctl, chain 0]
     uint8_t    rssi1;       ///< rx frame RSSI [ctl, chain 1]
     uint8_t    rssi2;       ///< rx frame RSSI [ctl, chain 2]
-} __attribute__ ((__packed__));
+});
 
 /**
  Atheros Tx Status structure
  */
-struct ath_tx_status {
+PACK(struct ath_tx_status {
 	uint32_t ts_tstamp; ///< timestamp of the TX event, in microsecond
 	uint16_t ts_seqnum;
 	uint8_t ts_status;
@@ -85,8 +85,9 @@ struct ath_tx_status {
 	uint32_t evm1;
 	uint32_t evm2;
 	uint32_t duration; ///< Tx duration in microsecond
-} __attribute__ ((__packed__));
+});
 
+#ifdef __GNUC__
 struct ieee80211_packet_header_info {
     uint8_t version        :2,
 			isShortHeader  :1,
@@ -98,8 +99,23 @@ struct ieee80211_packet_header_info {
     uint8_t frameType;
     uint16_t taskId;
 } __attribute__ ((__packed__));
+#endif
 
-struct ieee80211_packet_header {
+#ifdef _MSC_VER
+__pragma( pack(push, 1) ) struct ieee80211_packet_header_info __pragma( pack(pop)) {
+    uint8_t version        :2,
+            isShortHeader  :1,
+            needACK        :1,
+            moreIsComming  :1, ///< indicating that this packet is segmented and Tx-ed in several sub-packets.
+            isReTX         :1, ///< is re-transmission packet
+            hasTxExtraInfo :1, ///< contains Tx ExtraInfo @see ExtraInfo
+            hasEchoProbeInfo :1; ///< contains EchoProbeInfo @see EchoProbeInfo
+    uint8_t frameType;
+    uint16_t taskId;
+};
+#endif
+
+PACK(struct ieee80211_packet_header {
     uint16_t  fc;
 	uint16_t dur; // Atheros NIC will over-write this value, so leave alone.
     uint8_t	 addr1[6];
@@ -107,10 +123,10 @@ struct ieee80211_packet_header {
 	uint8_t	 addr3[6];
     uint16_t seq;
 	uint16_t segment_head_seq;
-	    struct ieee80211_packet_header_info header_info;
-} __attribute__ ((__packed__));
+	struct ieee80211_packet_header_info header_info;
+});
 
-struct EchoProbeInfo {
+PACK(struct EchoProbeInfo {
 	uint16_t length;
 	uint8_t  version;
 	uint8_t  ackRequestType; // 0 for NO ACK, 1 for ACK with simple Injection, 2 for ACK with Injection containing TxRXS.
@@ -126,7 +142,7 @@ struct EchoProbeInfo {
 	int8_t   pll_clock_select;
     int32_t  ackExpectedDelay_us;
 	uint16_t TxRXSLength;    // 0 means no TxRXS
-} __attribute__ ((__packed__));
+});
 
 struct RXS_enhanced {
 	bool isAR9300;
@@ -212,7 +228,7 @@ void inplaceAddTxChronosData(RXS_enhanced * rxs, uint8_t *dataBuffer, int buffer
  * @return 
  */
 inline uint64_t MACAddressSignature(const uint8_t *macaddr) {
-    return macaddr[0] + macaddr[1] * (1UL << 8) + macaddr[2] * ( 1UL << 16) + macaddr[3] * ( 1UL << 24) + macaddr[4] * ( 1UL << 32) + macaddr[5] * ( 1UL << 40);
+    return macaddr[0] + macaddr[1] * (1UL << 8) + macaddr[2] * ( 1UL << 16) + macaddr[3] * ( 1UL << 24) + macaddr[4] * ( 1ULL << 32) + macaddr[5] * ( 1ULL << 40);
 }
 
 #endif // RXS_ENHANCED_H_

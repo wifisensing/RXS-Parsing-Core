@@ -3,8 +3,9 @@
 //
 
 #include "CSIPreprocess.h"
-
-
+#define M_PI		3.14159265358979323846
+#define M_PI_2		1.57079632679489661923
+#define M_PI_4		0.78539816339744830962
 static constexpr auto M_2PI = 2 * M_PI;
 
 static int CSI_GROUPING_HT20[] = {-28, -26, -24, -22, -20, -18, -16, -14, -12, -10,  -8,  -6,  -4, -2, -1, 0, 1, 3,  5,  7,  9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 28};

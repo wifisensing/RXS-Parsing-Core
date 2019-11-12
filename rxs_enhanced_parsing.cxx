@@ -36,7 +36,7 @@ uint16_t pkt_duration(uint16_t length, uint8_t mcs, uint8_t nltf, double bb_band
     auto pktDuration = (usingSGI ? SGI: LGI) * symbols;
     auto baseTime = L_STF + L_LTF + L_SIG + HT_SIG + HT_STF + HT_LTF * nltf + pktDuration;
 
-    return baseTime * ((wide40BW ? 40e6 : 20e6) / bb_bandwidth);
+    return uint16_t(baseTime * ((wide40BW ? 40e6 : 20e6) / bb_bandwidth));
 }
 
 static void hexDump(const uint8_t * inBytes, uint32_t length, std::optional<std::string> title) {
