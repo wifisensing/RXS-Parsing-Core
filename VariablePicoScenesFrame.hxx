@@ -23,7 +23,7 @@ struct ieee80211_mac_frame_header_frame_control_field {
             order           :1;
 } __attribute__ ((__packed__));
 
-struct ieee80211_mac_frame_header_frame {
+struct ieee80211_mac_frame_header {
     struct ieee80211_mac_frame_header_frame_control_field fc;
     uint16_t dur;
     uint8_t addr1[6];
@@ -60,7 +60,7 @@ public:
     rx_status_basic rxs_basic;
     ExtraInfo rxExtraInfo;
     CSIData csi;
-    ieee80211_mac_frame_header_frame standardHeader;
+    ieee80211_mac_frame_header standardHeader;
     std::optional<PicoScenesFrameHeader> PicoScenesHeader;
     std::optional<std::vector<uint16_t>> frameSegmentStarts;
     std::optional<ExtraInfo> txExtraInfo;
@@ -74,12 +74,12 @@ public:
 class PicoScenesTxFrameStructure {
 public:
     PicoScenesDeviceType deviceType;
-    ieee80211_mac_frame_header_frame standardHeader;
+    ieee80211_mac_frame_header standardHeader;
     PicoScenesFrameHeader frameHeader;
     std::optional<ExtraInfo> extraInfo;
-    std::map<std::string, std::shared_ptr<uint8_t>> segmentMap;
+    std::map<std::string, std::vector<uint8_t>> segmentMap;
 
-    static int toBuffer(uint8_t *buffer, uint32_t start = 0);
+    int toBuffer(uint8_t *buffer);
 };
 
 

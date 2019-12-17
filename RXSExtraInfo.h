@@ -100,6 +100,7 @@ struct ExtraInfo {
     uint8_t agc;
     uint8_t ant_sel[3];
 
+    uint16_t getLength();
     static int fromBinary(const uint8_t *extraInfoPtr, struct ExtraInfo * extraInfo, uint32_t suppliedFeatureCode = 0);
     static int toBinary(void * extraInfoPtr);
 };

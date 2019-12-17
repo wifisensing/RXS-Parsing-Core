@@ -56,8 +56,8 @@ std::optional<PicoScenesRxFrameStructure> PicoScenesRxFrameStructure::fromBuffer
     }
     pos += rxFrame.rxs_basic.csi_len;
 
-    rxFrame.standardHeader = *((ieee80211_mac_frame_header_frame *) (buffer + pos));
-    pos += sizeof(ieee80211_mac_frame_header_frame);
+    rxFrame.standardHeader = *((ieee80211_mac_frame_header *) (buffer + pos));
+    pos += sizeof(ieee80211_mac_frame_header);
 
     rxFrame.PicoScenesHeader = PicoScenesFrameHeader::fromBuffer(buffer + pos);
     pos += sizeof(PicoScenesFrameHeader);
@@ -91,6 +91,17 @@ std::optional<PicoScenesRxFrameStructure> PicoScenesRxFrameStructure::fromBuffer
     return rxFrame;
 }
 
-int PicoScenesTxFrameStructure::toBuffer(uint8_t *buffer, uint32_t start) {
-    return 0;
+int PicoScenesTxFrameStructure::toBuffer(uint8_t *buffer) {
+    uint16_t totalLength = 0;
+    totalLength += sizeof(ieee80211_mac_frame_header);
+    totalLength += sizeof(PicoScenesFrameHeader);
+    if (extraInfo) {
+        totalLength += 2;
+        totalLength += extraInfo->getLength();
+    }
+
+    for(const auto & segmentPair : segmentMap) {
+        totalLength += 2;
+        totalLength += segmentPair.second.size();
+    }
 }
