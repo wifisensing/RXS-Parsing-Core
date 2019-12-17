@@ -87,6 +87,20 @@ PACK(struct ath_tx_status {
 	uint32_t duration; ///< Tx duration in microsecond
 });
 
+struct ieee80211_packet_header_frame_control {
+    uint16_t version         :2,
+             type            :2,
+             subtype         :4,
+             toDS            :1,
+             fromDS          :1,
+             moreFrags       :1,
+             retry           :1,
+             power_mgmt      :1,
+             more            :1,
+             protect         :1,
+             order           :1;
+};
+
 #ifdef __GNUC__
 struct ieee80211_packet_header_info {
     uint8_t version        :2,
@@ -193,7 +207,7 @@ uint16_t pkt_duration(uint16_t length, uint8_t mcs, uint8_t nltf, double bb_band
  * @see RXS_enhanced
  * @see RXSParsingLevel
  */
-struct RXS_enhanced parseRXS(const uint8_t * inBytes, enum RXSParsingLevel parsingLevel);
+struct RXS_enhanced parseRXS(const uint8_t *inBytes, enum RXSParsingLevel parsingLevel);
 
 /**
  * Parse the RxS raw data into RXS_enhanced struct.
