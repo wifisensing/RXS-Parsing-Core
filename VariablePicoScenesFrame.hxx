@@ -9,6 +9,8 @@
 #include <optional>
 #include <map>
 
+#define PICOSCENES_FRAME_SEGMENT_MAX_LENGTH 2048
+
 enum class PicoScenesDeviceType : uint16_t {
     QCA9300 = 0x9300,
     IWL5300 = 0x5300,
@@ -83,7 +85,7 @@ public:
     ieee80211_mac_frame_header standardHeader;
     PicoScenesFrameHeader frameHeader;
     std::optional<ExtraInfo> extraInfo;
-    std::map<std::string, std::array<uint8_t, 2048>> segmentBuffer;
+    std::map<std::string, std::array<uint8_t, PICOSCENES_FRAME_SEGMENT_MAX_LENGTH>> segmentBuffer;
     std::map<std::string, uint16_t> segmentLength;
 
     int toBuffer(uint8_t *buffer);
@@ -92,7 +94,7 @@ public:
 
     void addSegmentBuffer(const std::string &identifier, const uint8_t *buffer, uint16_t length);
 
-    void addSegmentBuffer(const std::string &identifier, const std::array<uint8_t, 2048> &bufferArray, uint16_t length);
+    void addSegmentBuffer(const std::string &identifier, const std::array<uint8_t, PICOSCENES_FRAME_SEGMENT_MAX_LENGTH> &bufferArray, uint16_t length);
 };
 
 

@@ -109,13 +109,15 @@ std::optional<uint16_t> PicoScenesRxFrameStructure::parseRxMACFramePart(const ui
 }
 
 void PicoScenesTxFrameStructure::addSegmentBuffer(const std::string &identifier, const uint8_t *buffer, uint16_t length) {
-    auto bufferArray = std::array<uint8_t, 2048>();
+    if (length > PICOSCENES_FRAME_SEGMENT_MAX_LENGTH)
+        throw std::overflow_error("PicoScenes Frame segment max length :PICOSCENES_FRAME_SEGMENT_MAX_LENGTH");
+    auto bufferArray = std::array<uint8_t, PICOSCENES_FRAME_SEGMENT_MAX_LENGTH>();
     memcpy(bufferArray.data(), buffer, length);
     addSegmentBuffer(identifier, bufferArray, length);
     frameHeader.segments = segmentLength.size() + (extraInfo ? 1 : 0);
 }
 
-void PicoScenesTxFrameStructure::addSegmentBuffer(const std::string &identifier, const std::array<uint8_t, 2048> &bufferArray, uint16_t length) {
+void PicoScenesTxFrameStructure::addSegmentBuffer(const std::string &identifier, const std::array<uint8_t, PICOSCENES_FRAME_SEGMENT_MAX_LENGTH> &bufferArray, uint16_t length) {
     if (segmentLength.find(identifier) != segmentLength.end())
         throw std::runtime_error("Duplicated segment buffer identifier: " + identifier);
 
