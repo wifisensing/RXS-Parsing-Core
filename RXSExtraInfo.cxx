@@ -100,110 +100,45 @@ int TxExtraInfoMinSet::getTxTSFPos() {
 int ExtraInfo::fromBinary(const uint8_t *extraInfoPtr, struct ExtraInfo *extraInfo, uint32_t suppliedFeatureCode) {
     int pos = 0;
     if (suppliedFeatureCode == 0) {
-        auto featureCode = *((uint32_t *) extraInfoPtr);
+        extraInfo->featureCode = *((uint32_t *) extraInfoPtr);
         pos += 4;
-        featureCodeInterpretation(featureCode, extraInfo);
-    } else {
-        featureCodeInterpretation(suppliedFeatureCode, extraInfo);
-    }
+    } else
+        extraInfo->featureCode = suppliedFeatureCode;
+    featureCodeInterpretation(extraInfo->featureCode, extraInfo);
 
-    if (extraInfo->hasLength) {
-        uint16_t exLength = *((uint16_t *) (extraInfoPtr + pos));
-        pos += 2;
-        extraInfo->length = exLength;
-    }
+#define GETVALUE(hasV, V) \
+    if (extraInfo->hasV) { \
+        memcpy(&extraInfo->V, extraInfoPtr + pos, sizeof(extraInfo->V)); \
+        pos += sizeof(extraInfo->V); \
+    } \
 
-    if (extraInfo->hasVersion) {
-        extraInfo->version = *((uint64_t *) (extraInfoPtr + pos));
-        pos += 8;
-    }
-
-    if (extraInfo->hasMacAddr_cur) {
-        memcpy(extraInfo->macaddr_cur, extraInfoPtr + pos, 6);
-        pos += 6;
-    }
-
-    if (extraInfo->hasMacAddr_rom) {
-        memcpy(extraInfo->macaddr_rom, extraInfoPtr + pos, 6);
-        pos += 6;
-    }
-
-    if (extraInfo->hasChansel) {
-        extraInfo->chansel = *((uint32_t *) (extraInfoPtr + pos));
-        pos += 4;
-    }
-
-    if (extraInfo->hasBMode) {
-        extraInfo->bmode = extraInfoPtr[pos++];
-    }
-
-    if (extraInfo->hasEVM) {
-        memcpy(extraInfo->evm, (extraInfoPtr + pos), 18);
-        pos += 20; // +20, but using first 18 only. because only first 2 of evm4 is used.
-    }
-
-    if (extraInfo->hasTxChainMask) {
-        extraInfo->txChainMask = extraInfoPtr[pos++];
-    }
-
-    if (extraInfo->hasRxChainMask) {
-        extraInfo->rxChainMask = extraInfoPtr[pos++];
-    }
-
-    if (extraInfo->hasTxpower) {
-        extraInfo->txpower = extraInfoPtr[pos++];
-    }
-
-    if (extraInfo->hasCF) {
-        extraInfo->cf = *((uint64_t *) (extraInfoPtr + pos));
-        pos += 8;
-    }
-
-    if (extraInfo->hasTxTSF) {
-        extraInfo->txTSF = *((uint32_t *) (extraInfoPtr + pos));
-        pos += 4;
-    }
-
-    if (extraInfo->hasLastHWTxTSF) {
-        extraInfo->lastHwTxTSF = *((uint32_t *) (extraInfoPtr + pos));
-        pos += 4;
-    }
-
-    if (extraInfo->hasChannelFlags) {
-        extraInfo->channelFlags = *((uint16_t *) (extraInfoPtr + pos));
-        pos += 2;
-    }
-
-    if (extraInfo->hasTxNess) {
-        extraInfo->tx_ness = extraInfoPtr[pos++];
-    }
-
-    if (extraInfo->hasTuningPolicy) {
-        extraInfo->tuningPolicy = extraInfoPtr[pos++];
-    }
-
-    if (extraInfo->hasPLLRate) {
-        extraInfo->pll_rate = *((uint16_t *) (extraInfoPtr + pos));
-        pos += 2;
-    }
-
-    if (extraInfo->hasPLLRefDiv) {
-        extraInfo->pll_refdiv = extraInfoPtr[pos++];
-    }
-
-    if (extraInfo->hasPLLClkSel) {
-        extraInfo->pll_clock_select = extraInfoPtr[pos++];
-    }
-
-    if (extraInfo->hasAGC) {
-        extraInfo->agc = extraInfoPtr[pos++];
-    }
-
+    GETVALUE(hasLength, length)
+    GETVALUE(hasVersion, version)
+    GETVALUE(hasMacAddr_cur, macaddr_cur)
+    GETVALUE(hasMacAddr_rom, macaddr_rom)
+    GETVALUE(hasChansel, chansel)
+    GETVALUE(hasBMode, bmode)
+    GETVALUE(hasEVM, evm)
+    GETVALUE(hasTxChainMask, txChainMask)
+    GETVALUE(hasRxChainMask, rxChainMask)
+    GETVALUE(hasTxpower, txpower)
+    GETVALUE(hasCF, cf)
+    GETVALUE(hasTxTSF, txTSF)
+    GETVALUE(hasTxpower, txpower)
+    GETVALUE(hasLastHWTxTSF, lastHwTxTSF)
+    GETVALUE(hasChannelFlags, channelFlags)
+    GETVALUE(hasTxNess, tx_ness)
+    GETVALUE(hasTuningPolicy, tuningPolicy)
+    GETVALUE(hasPLLRate, pll_rate)
+    GETVALUE(hasPLLRefDiv, pll_refdiv)
+    GETVALUE(hasPLLClkSel, pll_clock_select)
+    GETVALUE(hasAGC, agc)
+#undef GETVALUE
     if (extraInfo->hasAntennaSelection) {
         auto ant_sel_raw = extraInfoPtr[pos++];
-        extraInfo->ant_sel[0] = ((ant_sel_raw) & 0x3) + 1;
-        extraInfo->ant_sel[1] = ((ant_sel_raw >> 2) & 0x3) + 1;
-        extraInfo->ant_sel[2] = ((ant_sel_raw >> 4) & 0x3) + 1;
+        extraInfo->ant_sel[0] = ((ant_sel_raw) & 0x1U) + 1;
+        extraInfo->ant_sel[1] = (((unsigned) ant_sel_raw >> 0x2U) & 0x3U) + 1;
+        extraInfo->ant_sel[2] = (((unsigned) ant_sel_raw >> 0x4U) & 0x3U) + 1;
     }
 
     return 0;
@@ -236,6 +171,161 @@ uint16_t ExtraInfo::getLength() {
     return pos;
 }
 
-int ExtraInfo::toBinary(void *extraInfoPtr) {
-    return 0;
+int ExtraInfo::toBinary(uint8_t *buffer) {
+#define SETBUFF(hasV, v) \
+    if (hasV) { \
+        memcpy(buffer + pos, &v, sizeof(v)); \
+        pos += sizeof(v); \
+    } \
+
+    *(uint32_t *) buffer = this->featureCode;
+    uint16_t pos = 4;
+    SETBUFF(hasLength, length)
+    SETBUFF(hasVersion, version)
+    SETBUFF(hasMacAddr_cur, macaddr_cur)
+    SETBUFF(hasMacAddr_rom, macaddr_rom)
+    SETBUFF(hasChansel, chansel)
+    SETBUFF(hasBMode, bmode)
+    SETBUFF(hasEVM, evm)
+    SETBUFF(hasTxChainMask, txChainMask)
+    SETBUFF(hasRxChainMask, rxChainMask)
+    SETBUFF(hasTxpower, txpower)
+    SETBUFF(hasCF, cf)
+    SETBUFF(hasTxTSF, txTSF)
+    SETBUFF(hasTxpower, txpower)
+    SETBUFF(hasLastHWTxTSF, lastHwTxTSF)
+    SETBUFF(hasChannelFlags, channelFlags)
+    SETBUFF(hasTxNess, tx_ness)
+    SETBUFF(hasTuningPolicy, tuningPolicy)
+    SETBUFF(hasPLLRate, pll_rate)
+    SETBUFF(hasPLLRefDiv, pll_refdiv)
+    SETBUFF(hasPLLClkSel, pll_clock_select)
+    SETBUFF(hasAGC, agc)
+    if (hasAntennaSelection) {
+        auto *antV = (uint8_t *) (buffer + pos++);
+        *antV = (ant_sel[0] - 1) + ((unsigned) (ant_sel[1] - 1) << 2U) + ((unsigned) (ant_sel[2] - 1) << 4U);
+    }
+
+    return pos;
+#undef SETBUFF
+}
+
+void ExtraInfo::setLength(uint16_t lengthV) {
+    hasLength = true;
+    featureCode |= PICOSCENES_EXTRAINFO_HASLENGTH;
+    ExtraInfo::length = lengthV;
+}
+
+void ExtraInfo::setVersion(uint64_t versionV) {
+    hasVersion = true;
+    featureCode |= PICOSCENES_EXTRAINFO_HASVERSION;
+    ExtraInfo::version = versionV;
+}
+
+void ExtraInfo::setMacaddr_rom(const uint8_t addr_rom[6]) {
+    hasMacAddr_rom = true;
+    featureCode |= PICOSCENES_EXTRAINFO_HASMACROM;
+    memcpy(macaddr_rom, addr_rom, 6);
+}
+
+void ExtraInfo::setMacaddr_cur(const uint8_t addr_cur[6]) {
+    hasMacAddr_cur = true;
+    featureCode |= PICOSCENES_EXTRAINFO_HASMACCUR;
+    memcpy(macaddr_cur, addr_cur, 6);
+}
+
+void ExtraInfo::setChansel(uint32_t chanselV) {
+    hasChansel = true;
+    featureCode |= PICOSCENES_EXTRAINFO_HASCHANSEL;
+    ExtraInfo::chansel = chanselV;
+}
+
+void ExtraInfo::setBmode(uint8_t bmodeV) {
+    hasBMode = true;
+    featureCode |= PICOSCENES_EXTRAINFO_HASBMODE;
+    ExtraInfo::bmode = bmodeV;
+}
+
+void ExtraInfo::setTxChainMask(uint8_t txChainMaskV) {
+    hasTxChainMask = true;
+    featureCode |= PICOSCENES_EXTRAINFO_HASTXCHAINMASK;
+    ExtraInfo::txChainMask = txChainMaskV;
+}
+
+void ExtraInfo::setRxChainMask(uint8_t rxChainMaskV) {
+    hasRxChainMask = true;
+    featureCode |= PICOSCENES_EXTRAINFO_HASRXCHAINMASK;
+    ExtraInfo::rxChainMask = rxChainMaskV;
+}
+
+void ExtraInfo::setTxpower(uint8_t txpowerV) {
+    hasTxpower = true;
+    featureCode |= PICOSCENES_EXTRAINFO_HASTXPOWER;
+    ExtraInfo::txpower = txpowerV;
+}
+
+void ExtraInfo::setCf(uint64_t cfV) {
+    hasCF = true;
+    featureCode |= PICOSCENES_EXTRAINFO_HASCF;
+    ExtraInfo::cf = cfV;
+}
+
+void ExtraInfo::setTxTsf(uint32_t txTsfV) {
+    hasTxTSF = true;
+    featureCode |= PICOSCENES_EXTRAINFO_HASTXTSF;
+    txTSF = txTsfV;
+}
+
+void ExtraInfo::setLastHwTxTsf(uint32_t lastHwTxTsfV) {
+    hasLastHWTxTSF = true;
+    featureCode |= PICOSCENES_EXTRAINFO_HASLASTHWTXTSF;
+    lastHwTxTSF = lastHwTxTsfV;
+}
+
+void ExtraInfo::setChannelFlags(uint16_t channelFlagsV) {
+    hasChannelFlags = true;
+    featureCode |= PICOSCENES_EXTRAINFO_HASCHANNELFLAGS;
+    ExtraInfo::channelFlags = channelFlagsV;
+}
+
+void ExtraInfo::setTxNess(uint8_t txNess) {
+    hasTxNess = true;
+    featureCode |= PICOSCENES_EXTRAINFO_HASTXNESS;
+    tx_ness = txNess;
+}
+
+void ExtraInfo::setTuningPolicy(uint8_t tuningPolicyV) {
+    hasTuningPolicy = true;
+    featureCode |= PICOSCENES_EXTRAINFO_HASTUNINGPOLICY;
+    ExtraInfo::tuningPolicy = tuningPolicyV;
+}
+
+void ExtraInfo::setPllRate(uint16_t pllRateV) {
+    hasPLLRate = true;
+    featureCode |= PICOSCENES_EXTRAINFO_HASPLLRATE;
+    pll_rate = pllRateV;
+}
+
+void ExtraInfo::setPllRefdiv(uint8_t pllRefdivV) {
+    hasPLLRefDiv = true;
+    featureCode |= PICOSCENES_EXTRAINFO_HASPLLREFDIV;
+    pll_refdiv = pllRefdivV;
+}
+
+void ExtraInfo::setPllClockSelect(uint8_t pllClockSelectV) {
+    hasPLLClkSel = true;
+    featureCode |= PICOSCENES_EXTRAINFO_HASPLLCLKSEL;
+    pll_clock_select = pllClockSelectV;
+}
+
+void ExtraInfo::setAgc(uint8_t agcV) {
+    hasAGC = true;
+    featureCode |= PICOSCENES_EXTRAINFO_HASAGC;
+    ExtraInfo::agc = agcV;
+}
+
+void ExtraInfo::setAntennaSelection(const uint8_t sel[6]) {
+    hasAntennaSelection = true;
+    featureCode |= PICOSCENES_EXTRAINFO_HASANTENNASELECTION;
+    memcpy(ant_sel, sel, 3);
 }
