@@ -77,9 +77,16 @@ public:
     ieee80211_mac_frame_header standardHeader;
     PicoScenesFrameHeader frameHeader;
     std::optional<ExtraInfo> extraInfo;
-    std::map<std::string, std::vector<uint8_t>> segmentMap;
+    std::map<std::string, std::array<uint8_t, 2048>> segmentBuffer;
+    std::map<std::string, uint16_t> segmentLength;
 
     int toBuffer(uint8_t *buffer);
+
+    void addExtraInfo(const ExtraInfo &txExtraInfo);
+
+    void addSegmentBuffer(const std::string &identifier, const uint8_t *buffer, uint16_t length);
+
+    void addSegmentBuffer(const std::string &identifier, const std::array<uint8_t, 2048> &bufferArray, uint16_t length);
 };
 
 

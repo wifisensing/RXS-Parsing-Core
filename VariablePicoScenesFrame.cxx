@@ -76,6 +76,7 @@ std::optional<PicoScenesRxFrameStructure> PicoScenesRxFrameStructure::fromBuffer
             if (identifierString == "EI") { // Tx ExtraInfo is a special case.
                 ExtraInfo txExtraInfo{};
                 ExtraInfo::fromBinary(buffer + pos, &txExtraInfo);
+                rxFrame.txExtraInfo = txExtraInfo;
                 pos += txExtraInfo.length + 2;
                 continue;
             }
@@ -91,17 +92,39 @@ std::optional<PicoScenesRxFrameStructure> PicoScenesRxFrameStructure::fromBuffer
     return rxFrame;
 }
 
+void PicoScenesTxFrameStructure::addSegmentBuffer(const std::string &identifier, const uint8_t *buffer, uint16_t length) {
+    auto bufferArray = std::array<uint8_t, 2048>();
+    memcpy(bufferArray.data(), buffer, length);
+    addSegmentBuffer(identifier, bufferArray, length);
+    frameHeader.segments++;
+}
+
+void PicoScenesTxFrameStructure::addSegmentBuffer(const std::string &identifier, const std::array<uint8_t, 2048> &bufferArray, uint16_t length) {
+    if (segmentLength.find(identifier) != segmentLength.end())
+        throw std::runtime_error("Duplicated segment buffer identifier: " + identifier);
+
+    segmentBuffer.emplace(std::make_pair(identifier, bufferArray));
+    segmentLength.emplace(std::make_pair(identifier, length));
+    frameHeader.segments++;
+}
+
+void PicoScenesTxFrameStructure::addExtraInfo(const ExtraInfo &txExtraInfo) {
+    this->extraInfo = txExtraInfo;
+}
+
 int PicoScenesTxFrameStructure::toBuffer(uint8_t *buffer) {
-    uint16_t totalLength = 0;
-    totalLength += sizeof(ieee80211_mac_frame_header);
-    totalLength += sizeof(PicoScenesFrameHeader);
+    uint16_t pos = 0;
+    memcpy(buffer + pos, &standardHeader, sizeof(ieee80211_mac_frame_header));
+    pos += sizeof(ieee80211_mac_frame_header);
+    memcpy(buffer + pos, &frameHeader, sizeof(PicoScenesFrameHeader));
     if (extraInfo) {
-        totalLength += 2;
-        totalLength += extraInfo->getLength();
+        pos += 2;
+        pos += extraInfo->getLength();
     }
 
-    for(const auto & segmentPair : segmentMap) {
-        totalLength += 2;
-        totalLength += segmentPair.second.size();
+    for (const auto &segmentPair : segmentLength) {
+        pos += 2;
+        pos += segmentPair.second;
     }
+    return pos;
 }
