@@ -97,6 +97,10 @@ int TxExtraInfoMinSet::getTxTSFPos() {
     return -1;
 }
 
+ExtraInfo::ExtraInfo() {
+    memset(this, 0, sizeof(ExtraInfo));
+}
+
 int ExtraInfo::fromBinary(const uint8_t *extraInfoPtr, struct ExtraInfo *extraInfo, uint32_t suppliedFeatureCode) {
     int pos = 0;
     if (suppliedFeatureCode == 0) {

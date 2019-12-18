@@ -96,7 +96,7 @@ void PicoScenesTxFrameStructure::addSegmentBuffer(const std::string &identifier,
     auto bufferArray = std::array<uint8_t, 2048>();
     memcpy(bufferArray.data(), buffer, length);
     addSegmentBuffer(identifier, bufferArray, length);
-    frameHeader.segments++;
+    frameHeader.segments = segmentLength.size() + extraInfo ? 1 : 0;
 }
 
 void PicoScenesTxFrameStructure::addSegmentBuffer(const std::string &identifier, const std::array<uint8_t, 2048> &bufferArray, uint16_t length) {
@@ -105,11 +105,12 @@ void PicoScenesTxFrameStructure::addSegmentBuffer(const std::string &identifier,
 
     segmentBuffer.emplace(std::make_pair(identifier, bufferArray));
     segmentLength.emplace(std::make_pair(identifier, length));
-    frameHeader.segments++;
+    frameHeader.segments = segmentLength.size() + extraInfo ? 1 : 0;
 }
 
 void PicoScenesTxFrameStructure::addExtraInfo(const ExtraInfo &txExtraInfo) {
     this->extraInfo = txExtraInfo;
+    frameHeader.segments = segmentLength.size() + 1;
 }
 
 int PicoScenesTxFrameStructure::toBuffer(uint8_t *buffer) {
@@ -118,12 +119,17 @@ int PicoScenesTxFrameStructure::toBuffer(uint8_t *buffer) {
     pos += sizeof(ieee80211_mac_frame_header);
     memcpy(buffer + pos, &frameHeader, sizeof(PicoScenesFrameHeader));
     if (extraInfo) {
-        pos += 2;
-        pos += extraInfo->getLength();
+        *((char *) (buffer + pos++)) = 'E';
+        *((char *) (buffer + pos++)) = 'I';
+        auto extraLength = extraInfo->toBinary(buffer + pos);
+        pos += extraLength;
     }
 
     for (const auto &segmentPair : segmentLength) {
+        *((char *) (buffer + pos++)) = segmentPair.first.c_str()[0];
+        *((char *) (buffer + pos++)) = segmentPair.first.c_str()[1];
         pos += 2;
+        memcpy(buffer + pos, segmentBuffer.at(segmentPair.first).data(), segmentPair.second);
         pos += segmentPair.second;
     }
     return pos;
