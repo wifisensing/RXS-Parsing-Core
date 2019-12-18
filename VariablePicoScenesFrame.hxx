@@ -9,6 +9,12 @@
 #include <optional>
 #include <map>
 
+enum class PicoScenesDeviceType : uint16_t {
+    QCA9300 = 0x9300,
+    IWL5300 = 0x5300,
+    USRP = 0x1234,
+};
+
 struct ieee80211_mac_frame_header_frame_control_field {
     uint16_t version         :2,
             type            :2,
@@ -39,18 +45,13 @@ struct ieee80211_mac_frame_header {
 struct PicoScenesFrameHeader {
     uint32_t magicValue = 0x20150315;
     uint32_t version = 0x20191218;
+    PicoScenesDeviceType deviceType = PicoScenesDeviceType::QCA9300;
     uint8_t segments = 0;
     uint8_t frameType = 0;
     uint16_t taskId = 0;
 
     static std::optional<PicoScenesFrameHeader> fromBuffer(const uint8_t *buffer);
 } __attribute__ ((__packed__));
-
-enum class PicoScenesDeviceType : uint16_t {
-    QCA9300 = 9300,
-    IWL5300 = 5300,
-    USRP = 1234,
-};
 
 struct CSIData {
     std::complex<double> csi_matrix[MAX_OFDM_TONES_UNWRAP];
@@ -73,11 +74,12 @@ public:
     static bool isOldRXSEnhancedFrame(const uint8_t bufferHead[6]);
 
     static std::optional<PicoScenesRxFrameStructure> fromBuffer(const uint8_t *buffer, uint32_t start = 0, enum RXSParsingLevel parsingLevel = RXSParsingLevel::EXTRA_NOCSI);
+
+    std::optional<uint16_t> parseRxMACFramePart(const uint8_t *buffer);
 };
 
 class PicoScenesTxFrameStructure {
 public:
-    PicoScenesDeviceType deviceType = PicoScenesDeviceType::QCA9300;
     ieee80211_mac_frame_header standardHeader;
     PicoScenesFrameHeader frameHeader;
     std::optional<ExtraInfo> extraInfo;

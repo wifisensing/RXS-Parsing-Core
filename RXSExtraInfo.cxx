@@ -99,6 +99,7 @@ int TxExtraInfoMinSet::getTxTSFPos() {
 
 ExtraInfo::ExtraInfo() {
     memset(this, 0, sizeof(ExtraInfo));
+    setLength(2);
 }
 
 int ExtraInfo::fromBinary(const uint8_t *extraInfoPtr, struct ExtraInfo *extraInfo, uint32_t suppliedFeatureCode) {
@@ -137,7 +138,6 @@ int ExtraInfo::fromBinary(const uint8_t *extraInfoPtr, struct ExtraInfo *extraIn
     GETVALUE(hasPLLRefDiv, pll_refdiv)
     GETVALUE(hasPLLClkSel, pll_clock_select)
     GETVALUE(hasAGC, agc)
-#undef GETVALUE
     if (extraInfo->hasAntennaSelection) {
         auto ant_sel_raw = extraInfoPtr[pos++];
         extraInfo->ant_sel[0] = ((ant_sel_raw) & 0x1U) + 1;
@@ -145,37 +145,54 @@ int ExtraInfo::fromBinary(const uint8_t *extraInfoPtr, struct ExtraInfo *extraIn
         extraInfo->ant_sel[2] = (((unsigned) ant_sel_raw >> 0x4U) & 0x3U) + 1;
     }
 
-    return 0;
+    return pos;
+#undef GETVALUE
 }
 
-uint16_t ExtraInfo::getLength() {
-    int pos = 4;
-    pos += this->hasLength ? 2 : 0;
-    pos += this->hasVersion ? 8 : 0;
-    pos += this->hasMacAddr_cur ? 6 : 0;
-    pos += this->hasMacAddr_rom ? 6 : 0;
-    pos += this->hasChansel ? 4 : 0;
-    pos += this->hasBMode ? 1 : 0;
-    pos += this->hasEVM ? 20 : 0;
-    pos += this->hasTxChainMask ? 1 : 0;
-    pos += this->hasRxChainMask ? 1 : 0;
-    pos += this->hasTxpower ? 1 : 0;
-    pos += this->hasCF ? 8 : 0;
-    pos += this->hasTxTSF ? 4 : 0;
-    pos += this->hasLastHWTxTSF ? 4 : 0;
-    pos += this->hasChannelFlags ? 2 : 0;
-    pos += this->hasTxNess ? 1 : 0;
-    pos += this->hasTuningPolicy ? 1 : 0;
-    pos += this->hasPLLRate ? 2 : 0;
-    pos += this->hasPLLRefDiv ? 1 : 0;
-    pos += this->hasPLLClkSel ? 1 : 0;
-    pos += this->hasAGC ? 1 : 0;
+std::optional<ExtraInfo> ExtraInfo::fromBuffer(const uint8_t *extraInfoPtr, uint32_t suppliedFeatureCode) {
+    ExtraInfo extraInfo;
+    auto parsedLength = fromBinary(extraInfoPtr, &extraInfo, suppliedFeatureCode);
+    if (suppliedFeatureCode != 0 && parsedLength == extraInfo.calculateBufferLength())
+        return extraInfo;
+    if (suppliedFeatureCode == 0 && parsedLength == extraInfo.calculateBufferLength() + 4)
+        return extraInfo;
+    return std::nullopt;
+}
+
+uint16_t ExtraInfo::calculateBufferLength() {
+    uint16_t pos = 0;
+
+#define ADDLENGTH(hasV, V) \
+        pos += (this->hasV ? sizeof(V) : 0); \
+
+    ADDLENGTH(hasLength, length)
+    ADDLENGTH(hasVersion, version)
+    ADDLENGTH(hasMacAddr_cur, macaddr_cur)
+    ADDLENGTH(hasMacAddr_rom, macaddr_rom)
+    ADDLENGTH(hasChansel, chansel)
+    ADDLENGTH(hasBMode, bmode)
+    ADDLENGTH(hasEVM, evm)
+    ADDLENGTH(hasTxChainMask, txChainMask)
+    ADDLENGTH(hasRxChainMask, rxChainMask)
+    ADDLENGTH(hasTxpower, txpower)
+    ADDLENGTH(hasCF, cf)
+    ADDLENGTH(hasTxTSF, txTSF)
+    ADDLENGTH(hasTxpower, txpower)
+    ADDLENGTH(hasLastHWTxTSF, lastHwTxTSF)
+    ADDLENGTH(hasChannelFlags, channelFlags)
+    ADDLENGTH(hasTxNess, tx_ness)
+    ADDLENGTH(hasTuningPolicy, tuningPolicy)
+    ADDLENGTH(hasPLLRate, pll_rate)
+    ADDLENGTH(hasPLLRefDiv, pll_refdiv)
+    ADDLENGTH(hasPLLClkSel, pll_clock_select)
+    ADDLENGTH(hasAGC, agc)
     pos += this->hasAntennaSelection ? 1 : 0;
 
     return pos;
+#undef ADDLENGTH
 }
 
-int ExtraInfo::toBinary(uint8_t *buffer) {
+int ExtraInfo::toBuffer(uint8_t *buffer) {
 #define SETBUFF(hasV, v) \
     if (hasV) { \
         memcpy(buffer + pos, &v, sizeof(v)); \
@@ -224,112 +241,136 @@ void ExtraInfo::setVersion(uint64_t versionV) {
     hasVersion = true;
     featureCode |= PICOSCENES_EXTRAINFO_HASVERSION;
     ExtraInfo::version = versionV;
+    updateLength();
 }
 
 void ExtraInfo::setMacaddr_rom(const uint8_t addr_rom[6]) {
     hasMacAddr_rom = true;
     featureCode |= PICOSCENES_EXTRAINFO_HASMACROM;
     memcpy(macaddr_rom, addr_rom, 6);
+    updateLength();
 }
 
 void ExtraInfo::setMacaddr_cur(const uint8_t addr_cur[6]) {
     hasMacAddr_cur = true;
     featureCode |= PICOSCENES_EXTRAINFO_HASMACCUR;
     memcpy(macaddr_cur, addr_cur, 6);
+    updateLength();
 }
 
 void ExtraInfo::setChansel(uint32_t chanselV) {
     hasChansel = true;
     featureCode |= PICOSCENES_EXTRAINFO_HASCHANSEL;
     ExtraInfo::chansel = chanselV;
+    updateLength();
 }
 
 void ExtraInfo::setBmode(uint8_t bmodeV) {
     hasBMode = true;
     featureCode |= PICOSCENES_EXTRAINFO_HASBMODE;
     ExtraInfo::bmode = bmodeV;
+    updateLength();
 }
 
 void ExtraInfo::setTxChainMask(uint8_t txChainMaskV) {
     hasTxChainMask = true;
     featureCode |= PICOSCENES_EXTRAINFO_HASTXCHAINMASK;
     ExtraInfo::txChainMask = txChainMaskV;
+    updateLength();
 }
 
 void ExtraInfo::setRxChainMask(uint8_t rxChainMaskV) {
     hasRxChainMask = true;
     featureCode |= PICOSCENES_EXTRAINFO_HASRXCHAINMASK;
     ExtraInfo::rxChainMask = rxChainMaskV;
+    updateLength();
 }
 
 void ExtraInfo::setTxpower(uint8_t txpowerV) {
     hasTxpower = true;
     featureCode |= PICOSCENES_EXTRAINFO_HASTXPOWER;
     ExtraInfo::txpower = txpowerV;
+    updateLength();
 }
 
 void ExtraInfo::setCf(uint64_t cfV) {
     hasCF = true;
     featureCode |= PICOSCENES_EXTRAINFO_HASCF;
     ExtraInfo::cf = cfV;
+    updateLength();
 }
 
 void ExtraInfo::setTxTsf(uint32_t txTsfV) {
     hasTxTSF = true;
     featureCode |= PICOSCENES_EXTRAINFO_HASTXTSF;
     txTSF = txTsfV;
+    updateLength();
 }
 
 void ExtraInfo::setLastHwTxTsf(uint32_t lastHwTxTsfV) {
     hasLastHWTxTSF = true;
     featureCode |= PICOSCENES_EXTRAINFO_HASLASTHWTXTSF;
     lastHwTxTSF = lastHwTxTsfV;
+    updateLength();
 }
 
 void ExtraInfo::setChannelFlags(uint16_t channelFlagsV) {
     hasChannelFlags = true;
     featureCode |= PICOSCENES_EXTRAINFO_HASCHANNELFLAGS;
     ExtraInfo::channelFlags = channelFlagsV;
+    updateLength();
 }
 
 void ExtraInfo::setTxNess(uint8_t txNess) {
     hasTxNess = true;
     featureCode |= PICOSCENES_EXTRAINFO_HASTXNESS;
     tx_ness = txNess;
+    updateLength();
 }
 
 void ExtraInfo::setTuningPolicy(uint8_t tuningPolicyV) {
     hasTuningPolicy = true;
     featureCode |= PICOSCENES_EXTRAINFO_HASTUNINGPOLICY;
     ExtraInfo::tuningPolicy = tuningPolicyV;
+    updateLength();
 }
 
 void ExtraInfo::setPllRate(uint16_t pllRateV) {
     hasPLLRate = true;
     featureCode |= PICOSCENES_EXTRAINFO_HASPLLRATE;
     pll_rate = pllRateV;
+    updateLength();
 }
 
 void ExtraInfo::setPllRefdiv(uint8_t pllRefdivV) {
     hasPLLRefDiv = true;
     featureCode |= PICOSCENES_EXTRAINFO_HASPLLREFDIV;
     pll_refdiv = pllRefdivV;
+    updateLength();
 }
 
 void ExtraInfo::setPllClockSelect(uint8_t pllClockSelectV) {
     hasPLLClkSel = true;
     featureCode |= PICOSCENES_EXTRAINFO_HASPLLCLKSEL;
     pll_clock_select = pllClockSelectV;
+    updateLength();
 }
 
 void ExtraInfo::setAgc(uint8_t agcV) {
     hasAGC = true;
     featureCode |= PICOSCENES_EXTRAINFO_HASAGC;
     ExtraInfo::agc = agcV;
+    updateLength();
 }
 
-void ExtraInfo::setAntennaSelection(const uint8_t sel[6]) {
+void ExtraInfo::setAntennaSelection(const uint8_t sel[3]) {
     hasAntennaSelection = true;
     featureCode |= PICOSCENES_EXTRAINFO_HASANTENNASELECTION;
     memcpy(ant_sel, sel, 3);
+    updateLength();
 }
+
+void ExtraInfo::updateLength() {
+    setLength(calculateBufferLength());
+}
+

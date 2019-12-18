@@ -56,40 +56,56 @@ std::optional<PicoScenesRxFrameStructure> PicoScenesRxFrameStructure::fromBuffer
     }
     pos += rxFrame.rxs_basic.csi_len;
 
-    rxFrame.standardHeader = *((ieee80211_mac_frame_header *) (buffer + pos));
+    if (auto extraLength = rxFrame.parseRxMACFramePart(buffer + pos)) {
+        pos += *extraLength;
+    } else
+        return std::nullopt;
+
+    if (pos == totalLength)
+        return rxFrame;
+    return std::nullopt;
+}
+
+std::optional<uint16_t> PicoScenesRxFrameStructure::parseRxMACFramePart(const uint8_t *buffer) {
+    uint16_t pos = 0;
+    this->standardHeader = *((ieee80211_mac_frame_header *) (buffer + pos));
     pos += sizeof(ieee80211_mac_frame_header);
 
-    rxFrame.PicoScenesHeader = PicoScenesFrameHeader::fromBuffer(buffer + pos);
+    this->PicoScenesHeader = PicoScenesFrameHeader::fromBuffer(buffer + pos);
     pos += sizeof(PicoScenesFrameHeader);
 
-    if (rxFrame.PicoScenesHeader) {
-        rxFrame.frameSegmentStarts = std::vector<uint16_t>(rxFrame.PicoScenesHeader->segments);
-        rxFrame.segmentMap = std::map<std::string, std::shared_ptr<uint8_t>>();
-        char identifier[2];
-        for (auto i = 0; i < rxFrame.PicoScenesHeader->segments; i++) {
+    if (this->PicoScenesHeader) {
+        if (this->PicoScenesHeader->magicValue != 0x20150315)
+            return std::nullopt;
+        this->frameSegmentStarts = std::vector<uint16_t>(this->PicoScenesHeader->segments);
+        this->segmentMap = std::map<std::string, std::shared_ptr<uint8_t>>();
+        char identifier[3];
+        identifier[2] = '\0';
+        for (auto i = 0; i < this->PicoScenesHeader->segments; i++) {
             identifier[0] = *((char *) (buffer + pos));
             pos++;
             identifier[1] = *((char *) (buffer + pos));
             pos++;
-            auto identifierString = std::string(identifier);
+            std::string identifierString = identifier;
 
             if (identifierString == "EI") { // Tx ExtraInfo is a special case.
-                ExtraInfo txExtraInfo{};
-                ExtraInfo::fromBinary(buffer + pos, &txExtraInfo);
-                rxFrame.txExtraInfo = txExtraInfo;
-                pos += txExtraInfo.length + 2;
-                continue;
+                if (auto extraInfo = ExtraInfo::fromBuffer(buffer + pos)) {
+                    this->txExtraInfo = extraInfo;
+                    pos += extraInfo->length;
+                    continue;
+                }
+                return std::nullopt;
             }
 
             auto segmentLength = *((uint16_t *) (buffer + pos));
             auto segmentBuffer = std::shared_ptr<uint8_t>(new uint8_t[segmentLength], std::default_delete<uint8_t[]>());
             memcpy(segmentBuffer.get(), buffer + pos, segmentLength);
             pos += segmentLength;
-            rxFrame.segmentMap->emplace(std::make_pair(identifierString, segmentBuffer));
+            this->segmentMap->emplace(std::make_pair(identifierString, segmentBuffer));
         }
+        return pos;
     }
-
-    return rxFrame;
+    return std::nullopt;
 }
 
 void PicoScenesTxFrameStructure::addSegmentBuffer(const std::string &identifier, const uint8_t *buffer, uint16_t length) {
@@ -114,14 +130,15 @@ void PicoScenesTxFrameStructure::addExtraInfo(const ExtraInfo &txExtraInfo) {
 }
 
 int PicoScenesTxFrameStructure::toBuffer(uint8_t *buffer) {
-    uint16_t pos = 0;
-    memcpy(buffer + pos, &standardHeader, sizeof(ieee80211_mac_frame_header));
-    pos += sizeof(ieee80211_mac_frame_header);
-    memcpy(buffer + pos, &frameHeader, sizeof(PicoScenesFrameHeader));
+    frameHeader.segments = segmentLength.size() + (extraInfo ? 1 : 0);
+    memcpy(buffer, &standardHeader, sizeof(ieee80211_mac_frame_header));
+    memcpy(buffer + sizeof(ieee80211_mac_frame_header), &frameHeader, sizeof(PicoScenesFrameHeader));
+    uint16_t pos = sizeof(ieee80211_mac_frame_header) + sizeof(PicoScenesFrameHeader);
+
     if (extraInfo) {
         *((char *) (buffer + pos++)) = 'E';
         *((char *) (buffer + pos++)) = 'I';
-        auto extraLength = extraInfo->toBinary(buffer + pos);
+        auto extraLength = extraInfo->toBuffer(buffer + pos);
         pos += extraLength;
     }
 

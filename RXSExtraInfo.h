@@ -9,6 +9,7 @@
 #include <cstdio>
 #include <complex>
 #include <bitset>
+#include <optional>
 
 #ifdef __GNUC__
 #define PACK(__Declaration__) __Declaration__ __attribute__((__packed__))
@@ -57,7 +58,7 @@ PACK(struct TxExtraInfoMinSet {
      });
 
 struct ExtraInfo {
-    uint32_t featureCode = 0x0;
+    uint32_t featureCode;
     bool hasLength;
     bool hasVersion;
     bool hasMacAddr_cur;
@@ -103,11 +104,15 @@ struct ExtraInfo {
 
     ExtraInfo();
 
-    uint16_t getLength();
+    uint16_t calculateBufferLength();
+
+    void updateLength();
 
     static int fromBinary(const uint8_t *extraInfoPtr, struct ExtraInfo *extraInfo, uint32_t suppliedFeatureCode = 0);
 
-    int toBinary(uint8_t *buffer);
+    static std::optional<ExtraInfo> fromBuffer(const uint8_t *extraInfoPtr, uint32_t suppliedFeatureCode = 0);
+
+    int toBuffer(uint8_t *buffer);
 
     [[maybe_unused]] void setLength(uint16_t length);
 
