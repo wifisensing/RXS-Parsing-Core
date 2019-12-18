@@ -96,7 +96,7 @@ void PicoScenesTxFrameStructure::addSegmentBuffer(const std::string &identifier,
     auto bufferArray = std::array<uint8_t, 2048>();
     memcpy(bufferArray.data(), buffer, length);
     addSegmentBuffer(identifier, bufferArray, length);
-    frameHeader.segments = segmentLength.size() + extraInfo ? 1 : 0;
+    frameHeader.segments = segmentLength.size() + (extraInfo ? 1 : 0);
 }
 
 void PicoScenesTxFrameStructure::addSegmentBuffer(const std::string &identifier, const std::array<uint8_t, 2048> &bufferArray, uint16_t length) {
@@ -105,7 +105,7 @@ void PicoScenesTxFrameStructure::addSegmentBuffer(const std::string &identifier,
 
     segmentBuffer.emplace(std::make_pair(identifier, bufferArray));
     segmentLength.emplace(std::make_pair(identifier, length));
-    frameHeader.segments = segmentLength.size() + extraInfo ? 1 : 0;
+    frameHeader.segments = segmentLength.size() + (extraInfo ? 1 : 0);
 }
 
 void PicoScenesTxFrameStructure::addExtraInfo(const ExtraInfo &txExtraInfo) {
