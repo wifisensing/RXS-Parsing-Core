@@ -131,7 +131,11 @@ void PicoScenesTxFrameStructure::addExtraInfo(const ExtraInfo &txExtraInfo) {
     frameHeader.segments = segmentLength.size() + 1;
 }
 
-int PicoScenesTxFrameStructure::toBuffer(uint8_t *buffer) {
+int PicoScenesTxFrameStructure::toBuffer(uint8_t *buffer, std::optional<uint16_t> bufferLength) {
+    if (bufferLength) {
+        if (*bufferLength < totalLength())
+            throw std::overflow_error("Buffer not long enough for TX frame dumping...");
+    }
     frameHeader.segments = segmentLength.size() + (extraInfo ? 1 : 0);
     memcpy(buffer, &standardHeader, sizeof(ieee80211_mac_frame_header));
     memcpy(buffer + sizeof(ieee80211_mac_frame_header), &frameHeader, sizeof(PicoScenesFrameHeader));
@@ -152,4 +156,21 @@ int PicoScenesTxFrameStructure::toBuffer(uint8_t *buffer) {
         pos += segmentPair.second;
     }
     return pos;
+}
+
+uint16_t PicoScenesTxFrameStructure::totalLength() {
+    uint16_t length = sizeof (decltype(standardHeader)) + sizeof(decltype(frameHeader));
+    if (extraInfo) {
+        length += (2 + extraInfo->calculateBufferLength());
+    }
+    for (const auto &segmentPair : segmentLength) {
+        length += (2 + segmentPair.second);
+    }
+    return length;
+}
+
+std::shared_ptr<uint8_t[]> PicoScenesTxFrameStructure::toBuffer() {
+    std::shared_ptr<uint8_t[]> buffer((uint8_t *)malloc(this->totalLength()), free);
+    toBuffer(buffer.get(), 0);
+    return buffer;
 }
