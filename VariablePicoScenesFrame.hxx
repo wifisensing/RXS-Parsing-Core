@@ -63,8 +63,8 @@ struct CSIData {
 
 class PicoScenesRxFrameStructure {
 public:
-    PicoScenesDeviceType deviceType;
-    rx_status_basic rxs_basic;
+    PicoScenesDeviceType deviceType = PicoScenesDeviceType::QCA9300;
+    rx_status_basic rxs_basic = {};
     ExtraInfo rxExtraInfo;
     CSIData csi;
     ieee80211_mac_frame_header standardHeader;
