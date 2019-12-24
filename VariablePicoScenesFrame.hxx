@@ -57,8 +57,8 @@ struct PicoScenesFrameHeader {
 
 struct CSIData {
     std::complex<double> csi_matrix[MAX_OFDM_TONES_UNWRAP];
-    double unwrappedMag[MAX_OFDM_TONES_UNWRAP];
-    double unwrappedPhase[MAX_OFDM_TONES_UNWRAP];
+    double unwrappedMag[MAX_OFDM_TONES_UNWRAP] = {0};
+    double unwrappedPhase[MAX_OFDM_TONES_UNWRAP]= {0};
 };
 
 class PicoScenesRxFrameStructure {
@@ -80,10 +80,20 @@ public:
     std::optional<uint16_t> parseRxMACFramePart(const uint8_t *buffer);
 };
 
+
+class PicoScenesFrameTxParameters {
+public:
+    uint8_t mcs = 0;
+    bool channelBonding = false;
+    bool sgi = false;
+    bool greenField = false;
+};
+
 class PicoScenesTxFrameStructure {
 public:
     ieee80211_mac_frame_header standardHeader;
     PicoScenesFrameHeader frameHeader;
+    PicoScenesFrameTxParameters txParameters;
     std::optional<ExtraInfo> extraInfo;
     std::map<std::string, std::array<uint8_t, PICOSCENES_FRAME_SEGMENT_MAX_LENGTH>> segmentBuffer;
     std::map<std::string, uint16_t> segmentLength;
@@ -96,11 +106,33 @@ public:
 
     std::shared_ptr<uint8_t[]> toBuffer();
 
-    void addExtraInfo(const ExtraInfo &txExtraInfo);
+    PicoScenesTxFrameStructure &addExtraInfo(const ExtraInfo &txExtraInfo);
 
-    void addSegmentBuffer(const std::string &identifier, const uint8_t *buffer, uint16_t length);
+    PicoScenesTxFrameStructure &addSegmentBuffer(const std::string &identifier, const uint8_t *buffer, uint16_t length);
 
-    void addSegmentBuffer(const std::string &identifier, const std::array<uint8_t, PICOSCENES_FRAME_SEGMENT_MAX_LENGTH> &bufferArray, uint16_t length);
+    PicoScenesTxFrameStructure &addSegmentBuffer(const std::string &identifier, const std::array<uint8_t, PICOSCENES_FRAME_SEGMENT_MAX_LENGTH> &bufferArray, uint16_t length);
+
+    PicoScenesTxFrameStructure &setRetry();
+
+    PicoScenesTxFrameStructure &setTaskId(uint16_t taskId);
+
+    PicoScenesTxFrameStructure &setRandomTaskId();
+
+    PicoScenesTxFrameStructure &setPicoScenesFrameType(uint8_t frameType);
+
+    PicoScenesTxFrameStructure &setChannelBonding(bool useChannelBonding);
+
+    PicoScenesTxFrameStructure &setSGI(bool useSGI);
+
+    PicoScenesTxFrameStructure &setMCS(uint8_t mcs);
+
+    PicoScenesTxFrameStructure &setGreenField(bool useGreenField);
+
+    PicoScenesTxFrameStructure &setDestinationAddress(const uint8_t macAddr[6]);
+
+    PicoScenesTxFrameStructure &setSourceAddress(const uint8_t macAddr[6]);
+
+    PicoScenesTxFrameStructure &set3rdAddress(const uint8_t macAddr[6]);
 };
 
 
