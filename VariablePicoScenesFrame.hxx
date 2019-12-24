@@ -88,6 +88,8 @@ public:
     std::map<std::string, std::array<uint8_t, PICOSCENES_FRAME_SEGMENT_MAX_LENGTH>> segmentBuffer;
     std::map<std::string, uint16_t> segmentLength;
 
+    void reset();
+
     uint16_t totalLength();
 
     int toBuffer(uint8_t *buffer, std::optional<uint16_t> bufferLength);

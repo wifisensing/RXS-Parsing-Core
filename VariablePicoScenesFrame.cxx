@@ -174,3 +174,11 @@ std::shared_ptr<uint8_t[]> PicoScenesTxFrameStructure::toBuffer() {
     toBuffer(buffer.get(), 0);
     return buffer;
 }
+
+void PicoScenesTxFrameStructure::reset() {
+    standardHeader = ieee80211_mac_frame_header();
+    frameHeader = PicoScenesFrameHeader();
+    extraInfo = std::nullopt;
+    segmentBuffer.clear();
+    segmentLength.clear();
+}
