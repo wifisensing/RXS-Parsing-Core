@@ -211,12 +211,12 @@ PicoScenesTxFrameStructure &PicoScenesTxFrameStructure::setPicoScenesFrameType(u
 }
 
 PicoScenesTxFrameStructure &PicoScenesTxFrameStructure::setChannelBonding(bool useChannelBonding) {
-    txParameters.channelBonding = true;
+    txParameters.channelBonding = useChannelBonding;
     return *this;
 }
 
 PicoScenesTxFrameStructure &PicoScenesTxFrameStructure::setSGI(bool useSGI) {
-    txParameters.sgi = true;
+    txParameters.sgi = useSGI;
     return *this;
 }
 
