@@ -159,7 +159,7 @@ std::optional<ExtraInfo> ExtraInfo::fromBuffer(const uint8_t *extraInfoPtr, uint
     return std::nullopt;
 }
 
-uint16_t ExtraInfo::calculateBufferLength() {
+uint16_t ExtraInfo::calculateBufferLength() const {
     uint16_t pos = 0;
 
 #define ADDLENGTH(hasV, V) \

@@ -104,7 +104,7 @@ struct ExtraInfo {
 
     ExtraInfo();
 
-    uint16_t calculateBufferLength();
+    uint16_t calculateBufferLength() const;
 
     void updateLength();
 
