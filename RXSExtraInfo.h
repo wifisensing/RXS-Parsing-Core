@@ -112,47 +112,47 @@ struct ExtraInfo {
 
     static std::optional<ExtraInfo> fromBuffer(const uint8_t *extraInfoPtr, uint32_t suppliedFeatureCode = 0);
 
-    int toBuffer(uint8_t *buffer);
+    int toBuffer(uint8_t *buffer) const;
 
-    [[maybe_unused]] void setLength(uint16_t length);
+    void setLength(uint16_t length);
 
-    [[maybe_unused]] void setVersion(uint64_t version);
+    void setVersion(uint64_t version);
 
-    [[maybe_unused]] void setMacaddr_rom(const uint8_t addr_rom[6]);
+    void setMacaddr_rom(const uint8_t addr_rom[6]);
 
-    [[maybe_unused]] void setMacaddr_cur(const uint8_t addr_cur[6]);
+    void setMacaddr_cur(const uint8_t addr_cur[6]);
 
-    [[maybe_unused]] void setChansel(uint32_t chansel);
+    void setChansel(uint32_t chansel);
 
-    [[maybe_unused]] void setBmode(uint8_t bmode);
+    void setBmode(uint8_t bmode);
 
-    [[maybe_unused]] void setTxChainMask(uint8_t txChainMask);
+    void setTxChainMask(uint8_t txChainMask);
 
-    [[maybe_unused]] void setRxChainMask(uint8_t rxChainMaskV);
+    void setRxChainMask(uint8_t rxChainMaskV);
 
-    [[maybe_unused]] void setTxpower(uint8_t txpowerV);
+    void setTxpower(uint8_t txpowerV);
 
-    [[maybe_unused]] void setCf(uint64_t cf);
+    void setCf(uint64_t cf);
 
-    [[maybe_unused]] void setTxTsf(uint32_t txTsf);
+    void setTxTsf(uint32_t txTsf);
 
-    [[maybe_unused]] void setLastHwTxTsf(uint32_t lastHwTxTsf);
+    void setLastHwTxTsf(uint32_t lastHwTxTsf);
 
-    [[maybe_unused]] void setChannelFlags(uint16_t channelFlags);
+    void setChannelFlags(uint16_t channelFlags);
 
-    [[maybe_unused]] void setTxNess(uint8_t txNess);
+    void setTxNess(uint8_t txNess);
 
-    [[maybe_unused]] void setTuningPolicy(uint8_t tuningPolicy);
+    void setTuningPolicy(uint8_t tuningPolicy);
 
-    [[maybe_unused]] void setPllRate(uint16_t pllRate);
+    void setPllRate(uint16_t pllRate);
 
-    [[maybe_unused]] void setPllRefdiv(uint8_t pllRefdiv);
+    void setPllRefdiv(uint8_t pllRefdiv);
 
-    [[maybe_unused]] void setPllClockSelect(uint8_t pllClockSelect);
+    void setPllClockSelect(uint8_t pllClockSelect);
 
-    [[maybe_unused]] void setAgc(uint8_t agc);
+    void setAgc(uint8_t agc);
 
-    [[maybe_unused]] void setAntennaSelection(const uint8_t ant_sel[3]);
+    void setAntennaSelection(const uint8_t ant_sel[3]);
 };
 
 

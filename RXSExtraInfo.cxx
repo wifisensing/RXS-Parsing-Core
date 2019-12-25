@@ -192,7 +192,7 @@ uint16_t ExtraInfo::calculateBufferLength() const {
 #undef ADDLENGTH
 }
 
-int ExtraInfo::toBuffer(uint8_t *buffer) {
+int ExtraInfo::toBuffer(uint8_t *buffer) const {
 #define SETBUFF(hasV, v) \
     if (hasV) { \
         memcpy(buffer + pos, &v, sizeof(v)); \

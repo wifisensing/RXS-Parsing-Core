@@ -97,15 +97,14 @@ public:
     std::optional<ExtraInfo> extraInfo;
     std::map<std::string, std::array<uint8_t, PICOSCENES_FRAME_SEGMENT_MAX_LENGTH>> segmentBuffer;
     std::map<std::string, uint16_t> segmentLength;
-    std::optional<std::shared_ptr<uint8_t[]>> builtBuffer;
 
     void reset();
 
     uint16_t totalLength() const;
 
-    int toBuffer(uint8_t *buffer, std::optional<uint16_t> bufferLength);
+    int toBuffer(uint8_t *buffer, std::optional<uint16_t> bufferLength) const;
 
-    std::shared_ptr<uint8_t[]> toBuffer();
+    std::shared_ptr<uint8_t[]> toBuffer() const;
 
     PicoScenesTxFrameStructure &addExtraInfo(const ExtraInfo &txExtraInfo);
 

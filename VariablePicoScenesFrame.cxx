@@ -134,12 +134,12 @@ PicoScenesTxFrameStructure & PicoScenesTxFrameStructure::addExtraInfo(const Extr
     return *this;
 }
 
-int PicoScenesTxFrameStructure::toBuffer(uint8_t *buffer, std::optional<uint16_t> bufferLength) {
+int PicoScenesTxFrameStructure::toBuffer(uint8_t *buffer, std::optional<uint16_t> bufferLength) const {
     if (bufferLength) {
         if (*bufferLength < totalLength())
             throw std::overflow_error("Buffer not long enough for TX frame dumping...");
     }
-    frameHeader.segments = segmentLength.size() + (extraInfo ? 1 : 0);
+    assert(segmentLength.size() + (extraInfo ? 1 : 0) == frameHeader.segments);
     memcpy(buffer, &standardHeader, sizeof(ieee80211_mac_frame_header));
     memcpy(buffer + sizeof(ieee80211_mac_frame_header), &frameHeader, sizeof(PicoScenesFrameHeader));
     uint16_t pos = sizeof(ieee80211_mac_frame_header) + sizeof(PicoScenesFrameHeader);
@@ -159,7 +159,6 @@ int PicoScenesTxFrameStructure::toBuffer(uint8_t *buffer, std::optional<uint16_t
         pos += segmentPair.second;
     }
 
-    builtBuffer = std::shared_ptr<uint8_t[]>(buffer);
     return pos;
 }
 
@@ -174,18 +173,17 @@ uint16_t PicoScenesTxFrameStructure::totalLength() const {
     return length;
 }
 
-std::shared_ptr<uint8_t[]> PicoScenesTxFrameStructure::toBuffer() {
+std::shared_ptr<uint8_t[]> PicoScenesTxFrameStructure::toBuffer() const {
     auto length = totalLength();
-    builtBuffer = std::shared_ptr<uint8_t[]>(new uint8_t[length]);
-    toBuffer(builtBuffer.value().get(), length);
-    return *builtBuffer;
+    auto builtBuffer = std::shared_ptr<uint8_t[]>(new uint8_t[length]);
+    toBuffer(builtBuffer.get(), length);
+    return builtBuffer;
 }
 
 void PicoScenesTxFrameStructure::reset() {
     standardHeader = ieee80211_mac_frame_header();
     frameHeader = PicoScenesFrameHeader();
     txParameters = PicoScenesFrameTxParameters();
-    builtBuffer = std::nullopt;
     extraInfo = std::nullopt;
     segmentBuffer.clear();
     segmentLength.clear();
