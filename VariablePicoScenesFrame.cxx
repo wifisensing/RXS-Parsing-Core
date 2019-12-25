@@ -139,7 +139,9 @@ int PicoScenesTxFrameStructure::toBuffer(uint8_t *buffer, std::optional<uint16_t
         if (*bufferLength < totalLength())
             throw std::overflow_error("Buffer not long enough for TX frame dumping...");
     }
-    assert(segmentLength.size() + (extraInfo ? 1 : 0) == frameHeader.segments);
+    if(segmentLength.size() + (extraInfo ? 1 : 0) == frameHeader.segments)
+        throw std::overflow_error("PicoScenesTxFrameStructure toBuffer method segment number in-consistent!");
+
     memcpy(buffer, &standardHeader, sizeof(ieee80211_mac_frame_header));
     memcpy(buffer + sizeof(ieee80211_mac_frame_header), &frameHeader, sizeof(PicoScenesFrameHeader));
     uint16_t pos = sizeof(ieee80211_mac_frame_header) + sizeof(PicoScenesFrameHeader);
