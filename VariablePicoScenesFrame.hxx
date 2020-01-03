@@ -104,7 +104,7 @@ public:
 
     int toBuffer(uint8_t *buffer, std::optional<uint16_t> bufferLength) const;
 
-    std::shared_ptr<uint8_t[]> toBuffer() const;
+    std::shared_ptr<uint8_t> toBuffer() const;
 
     PicoScenesTxFrameStructure &addExtraInfo(const ExtraInfo &txExtraInfo);
 
