@@ -14,7 +14,9 @@
 enum class PicoScenesDeviceType : uint16_t {
     QCA9300 = 0x9300,
     IWL5300 = 0x5300,
+    MAC80211Compatible = 0x802,
     USRP = 0x1234,
+    Unknown = 0x404
 };
 
 struct ieee80211_mac_frame_header_frame_control_field {
@@ -104,7 +106,7 @@ public:
 
     int toBuffer(uint8_t *buffer, std::optional<uint16_t> bufferLength) const;
 
-    std::shared_ptr<uint8_t[]> toBuffer() const;
+    std::shared_ptr<uint8_t> toBuffer() const;
 
     PicoScenesTxFrameStructure &addExtraInfo(const ExtraInfo &txExtraInfo);
 

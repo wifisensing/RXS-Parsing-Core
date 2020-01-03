@@ -173,9 +173,9 @@ uint16_t PicoScenesTxFrameStructure::totalLength() const {
     return length;
 }
 
-std::shared_ptr<uint8_t[]> PicoScenesTxFrameStructure::toBuffer() const {
+std::shared_ptr<uint8_t> PicoScenesTxFrameStructure::toBuffer() const {
     auto length = totalLength();
-    auto builtBuffer = std::shared_ptr<uint8_t[]>(new uint8_t[length]);
+    auto builtBuffer = std::shared_ptr<uint8_t>(new uint8_t[length]);
     toBuffer(builtBuffer.get(), length);
     return builtBuffer;
 }
