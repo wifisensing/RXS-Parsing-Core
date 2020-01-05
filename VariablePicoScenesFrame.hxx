@@ -119,7 +119,7 @@ public:
 
     uint16_t totalLength() const;
 
-    int toBuffer(uint8_t *buffer, std::optional<uint16_t> bufferLength) const;
+    int toBuffer(uint8_t *buffer, std::optional<uint16_t> bufferLength = std::nullopt) const;
 
     std::shared_ptr<uint8_t> toBuffer() const;
 
