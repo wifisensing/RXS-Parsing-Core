@@ -91,6 +91,7 @@ public:
     std::optional<ExtraInfo> txExtraInfo;
     std::optional<std::map<std::string, std::shared_ptr<uint8_t>>> segmentMap;
     std::shared_ptr<uint8_t> rawBuffer;
+    uint32_t rawBufferLength;
 
     static bool isOldRXSEnhancedFrame(const uint8_t bufferHead[6]);
 
