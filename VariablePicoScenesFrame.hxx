@@ -7,6 +7,7 @@
 
 #include "rxs_enhanced.h"
 #include <optional>
+#include <memory>
 #include <map>
 
 #define PICOSCENES_FRAME_SEGMENT_MAX_LENGTH 2048
@@ -75,7 +76,7 @@ struct PicoScenesFrameHeader {
 struct CSIData {
     std::complex<double> csi_matrix[MAX_OFDM_TONES_UNWRAP];
     double unwrappedMag[MAX_OFDM_TONES_UNWRAP] = {0};
-    double unwrappedPhase[MAX_OFDM_TONES_UNWRAP]= {0};
+    double unwrappedPhase[MAX_OFDM_TONES_UNWRAP] = {0};
 };
 
 class PicoScenesRxFrameStructure {
@@ -89,6 +90,7 @@ public:
     std::optional<std::vector<uint16_t>> frameSegmentStarts;
     std::optional<ExtraInfo> txExtraInfo;
     std::optional<std::map<std::string, std::shared_ptr<uint8_t>>> segmentMap;
+    std::shared_ptr<uint8_t> rawBuffer;
 
     static bool isOldRXSEnhancedFrame(const uint8_t bufferHead[6]);
 

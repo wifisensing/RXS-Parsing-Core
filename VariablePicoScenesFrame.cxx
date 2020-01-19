@@ -61,8 +61,12 @@ std::optional<PicoScenesRxFrameStructure> PicoScenesRxFrameStructure::fromBuffer
     } else
         return std::nullopt;
 
-    if (pos == totalLength)
+    if (pos == totalLength) {
+        rxFrame.rawBuffer = std::shared_ptr<uint8_t>(new uint8_t[totalLength], std::default_delete<uint8_t[]>());
+        memcpy(rxFrame.rawBuffer.get(), buffer, totalLength);
         return rxFrame;
+    }
+
     return std::nullopt;
 }
 
@@ -106,7 +110,7 @@ std::optional<uint16_t> PicoScenesRxFrameStructure::parseRxMACFramePart(const ui
     return std::nullopt;
 }
 
-PicoScenesTxFrameStructure & PicoScenesTxFrameStructure::addSegmentBuffer(const std::string &identifier, const uint8_t *buffer, uint16_t length) {
+PicoScenesTxFrameStructure &PicoScenesTxFrameStructure::addSegmentBuffer(const std::string &identifier, const uint8_t *buffer, uint16_t length) {
     if (length > PICOSCENES_FRAME_SEGMENT_MAX_LENGTH)
         throw std::overflow_error("PicoScenes Frame segment max length :PICOSCENES_FRAME_SEGMENT_MAX_LENGTH");
     auto bufferArray = std::array<uint8_t, PICOSCENES_FRAME_SEGMENT_MAX_LENGTH>();
@@ -116,7 +120,7 @@ PicoScenesTxFrameStructure & PicoScenesTxFrameStructure::addSegmentBuffer(const 
     return *this;
 }
 
-PicoScenesTxFrameStructure & PicoScenesTxFrameStructure::addSegmentBuffer(const std::string &identifier, const std::array<uint8_t, PICOSCENES_FRAME_SEGMENT_MAX_LENGTH> &bufferArray, uint16_t length) {
+PicoScenesTxFrameStructure &PicoScenesTxFrameStructure::addSegmentBuffer(const std::string &identifier, const std::array<uint8_t, PICOSCENES_FRAME_SEGMENT_MAX_LENGTH> &bufferArray, uint16_t length) {
     if (segmentLength.find(identifier) != segmentLength.end())
         throw std::runtime_error("Duplicated segment buffer identifier: " + identifier);
 
@@ -126,7 +130,7 @@ PicoScenesTxFrameStructure & PicoScenesTxFrameStructure::addSegmentBuffer(const 
     return *this;
 }
 
-PicoScenesTxFrameStructure & PicoScenesTxFrameStructure::addExtraInfo(const ExtraInfo &txExtraInfo) {
+PicoScenesTxFrameStructure &PicoScenesTxFrameStructure::addExtraInfo(const ExtraInfo &txExtraInfo) {
     this->extraInfo = txExtraInfo;
     frameHeader.segments = segmentLength.size() + 1;
     return *this;
@@ -137,7 +141,7 @@ int PicoScenesTxFrameStructure::toBuffer(uint8_t *buffer, std::optional<uint16_t
         if (*bufferLength < totalLength())
             throw std::overflow_error("Buffer not long enough for TX frame dumping...");
     }
-    if(segmentLength.size() + (extraInfo ? 1 : 0) != frameHeader.segments)
+    if (segmentLength.size() + (extraInfo ? 1 : 0) != frameHeader.segments)
         throw std::overflow_error("PicoScenesTxFrameStructure toBuffer method segment number in-consistent!");
 
     memcpy(buffer, &standardHeader, sizeof(ieee80211_mac_frame_header));
@@ -175,7 +179,7 @@ uint16_t PicoScenesTxFrameStructure::totalLength() const {
 
 std::shared_ptr<uint8_t> PicoScenesTxFrameStructure::toBuffer() const {
     auto length = totalLength();
-    auto builtBuffer = std::shared_ptr<uint8_t>(new uint8_t[length]);
+    auto builtBuffer = std::shared_ptr<uint8_t>(new uint8_t[length], std::default_delete<uint8_t[]>());
     toBuffer(builtBuffer.get(), length);
     return builtBuffer;
 }
