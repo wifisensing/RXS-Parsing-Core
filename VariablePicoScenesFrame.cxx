@@ -181,7 +181,7 @@ int PicoScenesTxFrameStructure::toBuffer(uint8_t *buffer, std::optional<uint16_t
 uint16_t PicoScenesTxFrameStructure::totalLength() const {
     uint16_t length = sizeof(decltype(standardHeader)) + sizeof(decltype(frameHeader));
     if (extraInfo) {
-        length += (2 + extraInfo->calculateBufferLength());
+        length += extraInfo->calculateBufferLength() + 6; // 4B for Feature Code, 2B for 'EI'
     }
     for (const auto &segmentPair : segmentLength) {
         length += (2 + segmentPair.second);
