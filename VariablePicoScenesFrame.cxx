@@ -73,27 +73,27 @@ std::optional<PicoScenesRxFrameStructure> PicoScenesRxFrameStructure::fromBuffer
 
 std::optional<uint16_t> PicoScenesRxFrameStructure::parseRxMACFramePart(const uint8_t *buffer) {
     uint16_t pos = 0;
-    this->standardHeader = *((ieee80211_mac_frame_header *) (buffer + pos));
+    standardHeader = *((ieee80211_mac_frame_header *) (buffer + pos));
     pos += sizeof(ieee80211_mac_frame_header);
 
-    this->PicoScenesHeader = PicoScenesFrameHeader::fromBuffer(buffer + pos);
+    PicoScenesHeader = PicoScenesFrameHeader::fromBuffer(buffer + pos);
     pos += sizeof(PicoScenesFrameHeader);
 
-    if (this->PicoScenesHeader) {
-        if (this->PicoScenesHeader->magicValue != 0x20150315)
+    if (PicoScenesHeader) {
+        if (PicoScenesHeader->magicValue != 0x20150315)
             return std::nullopt;
-        this->frameSegmentStarts = std::vector<uint16_t>(this->PicoScenesHeader->segments);
-        this->segmentMap = std::map<std::string, std::shared_ptr<uint8_t>>();
+        frameSegmentStarts = std::vector<uint16_t>(PicoScenesHeader->segments);
+        segmentMap = std::map<std::string, std::shared_ptr<uint8_t>>();
         char identifier[3];
         identifier[2] = '\0';
-        for (auto i = 0; i < this->PicoScenesHeader->segments; i++) {
+        for (auto i = 0; i < PicoScenesHeader->segments; i++) {
             identifier[0] = *((char *) (buffer + pos++));
             identifier[1] = *((char *) (buffer + pos++));
             std::string identifierString = identifier;
 
             if (identifierString == "EI") { // Tx ExtraInfo is a special case.
                 if (auto extraInfo = ExtraInfo::fromBuffer(buffer + pos)) {
-                    this->txExtraInfo = extraInfo;
+                    txExtraInfo = extraInfo;
                     pos += extraInfo->length;
                     continue;
                 }
@@ -104,7 +104,7 @@ std::optional<uint16_t> PicoScenesRxFrameStructure::parseRxMACFramePart(const ui
             auto segmentBuffer = std::shared_ptr<uint8_t>(new uint8_t[segmentLength], std::default_delete<uint8_t[]>());
             memcpy(segmentBuffer.get(), buffer + pos, segmentLength);
             pos += segmentLength;
-            this->segmentMap->emplace(std::make_pair(identifierString, segmentBuffer));
+            segmentMap->emplace(std::make_pair(identifierString, segmentBuffer));
         }
         return pos;
     }
