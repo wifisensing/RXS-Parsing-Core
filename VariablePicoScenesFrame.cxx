@@ -72,10 +72,10 @@ std::optional<PicoScenesRxFrameStructure> PicoScenesRxFrameStructure::fromBuffer
     } else
         return std::nullopt;
 
-    if (pos == totalLength) {
-        rxFrame.rawBuffer = std::shared_ptr<uint8_t>(new uint8_t[totalLength], std::default_delete<uint8_t[]>());
-        memcpy(rxFrame.rawBuffer.get(), buffer, totalLength);
-        rxFrame.rawBufferLength = totalLength;
+    if (pos == totalLength + 2) {
+        rxFrame.rawBuffer = std::shared_ptr<uint8_t>(new uint8_t[pos], std::default_delete<uint8_t[]>());
+        memcpy(rxFrame.rawBuffer.get(), buffer, pos);
+        rxFrame.rawBufferLength = pos;
         return rxFrame;
     }
 
