@@ -45,7 +45,7 @@ std::optional<PicoScenesRxFrameStructure> PicoScenesRxFrameStructure::fromBuffer
     }
 
     ExtraInfo::fromBinary(buffer + pos, &rxFrame.rxExtraInfo);
-    pos += rxFrame.rxExtraInfo.length + 2;
+    pos += rxFrame.rxExtraInfo.length + 6; // + 6 for the rxFeatureCode (4B) and rxExtraInfoLength (2B)
     if (rxFrame.rxExtraInfo.hasEVM) {
         for (auto &evm : rxFrame.rxExtraInfo.evm) {
             evm += rxFrame.rxs_basic.noise;
@@ -105,7 +105,7 @@ std::optional<uint16_t> PicoScenesRxFrameStructure::parseRxMACFramePart(const ui
             if (identifierString == "EI") { // Tx ExtraInfo is a special case.
                 if (auto extraInfo = ExtraInfo::fromBuffer(buffer + pos)) {
                     txExtraInfo = extraInfo;
-                    pos += extraInfo->length;
+                    pos += extraInfo->length + 4;
                     continue;
                 }
                 return std::nullopt;

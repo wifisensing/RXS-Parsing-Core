@@ -176,7 +176,6 @@ uint16_t ExtraInfo::calculateBufferLength() const {
     ADDLENGTH(hasTxpower, txpower)
     ADDLENGTH(hasCF, cf)
     ADDLENGTH(hasTxTSF, txTSF)
-    ADDLENGTH(hasTxpower, txpower)
     ADDLENGTH(hasLastHWTxTSF, lastHwTxTSF)
     ADDLENGTH(hasChannelFlags, channelFlags)
     ADDLENGTH(hasTxNess, tx_ness)
