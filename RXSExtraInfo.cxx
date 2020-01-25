@@ -213,7 +213,6 @@ int ExtraInfo::toBuffer(uint8_t *buffer) const {
     SETBUFF(hasTxpower, txpower)
     SETBUFF(hasCF, cf)
     SETBUFF(hasTxTSF, txTSF)
-    SETBUFF(hasTxpower, txpower)
     SETBUFF(hasLastHWTxTSF, lastHwTxTSF)
     SETBUFF(hasChannelFlags, channelFlags)
     SETBUFF(hasTxNess, tx_ness)
