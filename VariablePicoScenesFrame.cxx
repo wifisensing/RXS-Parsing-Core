@@ -19,7 +19,16 @@ std::optional<PicoScenesFrameHeader> PicoScenesFrameHeader::fromBuffer(const uin
     return std::nullopt;
 }
 
+PicoScenesRxFrameStructure PicoScenesRxFrameStructure::fromRXSEnhanced(const RXS_enhanced &rxs) {
+    return PicoScenesRxFrameStructure();
+}
+
 std::optional<PicoScenesRxFrameStructure> PicoScenesRxFrameStructure::fromBuffer(const uint8_t *buffer, uint32_t start, enum RXSParsingLevel parsingLevel) {
+    if (PicoScenesRxFrameStructure::isOldRXSEnhancedFrame(buffer)) {
+        auto rxs = parseRXS(buffer, parsingLevel);
+        return PicoScenesRxFrameStructure::fromRXSEnhanced(rxs);
+    }
+
     uint16_t totalLength = 2;
     uint16_t pos = start;
     PicoScenesRxFrameStructure rxFrame;

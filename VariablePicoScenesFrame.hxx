@@ -97,6 +97,8 @@ public:
 
     static std::optional<PicoScenesRxFrameStructure> fromBuffer(const uint8_t *buffer, uint32_t start = 0, enum RXSParsingLevel parsingLevel = RXSParsingLevel::EXTRA_NOCSI);
 
+    static PicoScenesRxFrameStructure fromRXSEnhanced(const RXS_enhanced &rxs);
+
     std::optional<uint16_t> parseRxMACFramePart(const uint8_t *buffer);
 };
 
