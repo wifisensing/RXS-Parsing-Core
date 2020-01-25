@@ -23,17 +23,19 @@ PicoScenesRxFrameStructure PicoScenesRxFrameStructure::fromRXSEnhanced(const RXS
     return PicoScenesRxFrameStructure();
 }
 
-std::optional<PicoScenesRxFrameStructure> PicoScenesRxFrameStructure::fromBuffer(const uint8_t *buffer, uint32_t start, enum RXSParsingLevel parsingLevel) {
+std::optional<PicoScenesRxFrameStructure> PicoScenesRxFrameStructure::fromBuffer(const uint8_t *buffer, std::optional<uint32_t> bufferLength, enum RXSParsingLevel parsingLevel) {
     if (PicoScenesRxFrameStructure::isOldRXSEnhancedFrame(buffer)) {
         auto rxs = parseRXS(buffer, parsingLevel);
         return PicoScenesRxFrameStructure::fromRXSEnhanced(rxs);
     }
 
-    uint16_t totalLength = 2;
-    uint16_t pos = start;
+    uint16_t totalLength = *((uint16_t *) (buffer));
+    uint16_t pos = 2;
+
+    if(bufferLength && totalLength != bufferLength)
+        throw std::overflow_error("PicoScenesFrame structure corrupted.");
+
     PicoScenesRxFrameStructure rxFrame;
-    totalLength += *((uint16_t *) (buffer + pos));
-    pos += 2;
 
     rxFrame.rxs_basic = *((struct rx_status_basic *) (buffer + pos));
     pos += sizeof(struct rx_status_basic);
