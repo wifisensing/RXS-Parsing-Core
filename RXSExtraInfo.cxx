@@ -129,7 +129,6 @@ int ExtraInfo::fromBinary(const uint8_t *extraInfoPtr, struct ExtraInfo *extraIn
     GETVALUE(hasTxpower, txpower)
     GETVALUE(hasCF, cf)
     GETVALUE(hasTxTSF, txTSF)
-    GETVALUE(hasTxpower, txpower)
     GETVALUE(hasLastHWTxTSF, lastHwTxTSF)
     GETVALUE(hasChannelFlags, channelFlags)
     GETVALUE(hasTxNess, tx_ness)

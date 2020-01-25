@@ -32,7 +32,7 @@ std::optional<PicoScenesRxFrameStructure> PicoScenesRxFrameStructure::fromBuffer
     uint16_t totalLength = *((uint16_t *) (buffer));
     uint16_t pos = 2;
 
-    if(bufferLength && totalLength != bufferLength)
+    if(bufferLength && totalLength + 2 != bufferLength)
         throw std::overflow_error("PicoScenesFrame structure corrupted.");
 
     PicoScenesRxFrameStructure rxFrame;
