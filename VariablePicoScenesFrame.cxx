@@ -126,8 +126,7 @@ std::optional<uint16_t> PicoScenesRxFrameStructure::parseRxMACFramePart(const ui
     if (PicoScenesHeader) {
         if (PicoScenesHeader->magicValue != 0x20150315)
             return std::nullopt;
-        frameSegmentStarts = std::vector<uint16_t>(PicoScenesHeader->segments);
-        segmentMap = std::map<std::string, std::shared_ptr<uint8_t>>();
+        segmentMap = std::map<std::string, std::pair<uint32_t, std::shared_ptr<uint8_t>>>();
         char identifier[3];
         identifier[2] = '\0';
         for (auto i = 0; i < PicoScenesHeader->segments; i++) {
@@ -148,7 +147,7 @@ std::optional<uint16_t> PicoScenesRxFrameStructure::parseRxMACFramePart(const ui
             auto segmentBuffer = std::shared_ptr<uint8_t>(new uint8_t[segmentLength], std::default_delete<uint8_t[]>());
             memcpy(segmentBuffer.get(), buffer + pos, segmentLength);
             pos += segmentLength;
-            segmentMap->emplace(std::make_pair(identifierString, segmentBuffer));
+            segmentMap->emplace(std::make_pair(identifierString, std::make_pair(segmentLength, segmentBuffer)));
         }
         return pos;
     }
@@ -157,7 +156,26 @@ std::optional<uint16_t> PicoScenesRxFrameStructure::parseRxMACFramePart(const ui
 
 std::string PicoScenesRxFrameStructure::toString() const {
     std::stringstream ss;
-    ss << "RxFrame:{" << standardHeader << ", " << (PicoScenesHeader ? PicoScenesHeader->toString() : "") << ", Rx" << rxExtraInfo << ", Tx" << (txExtraInfo ? txExtraInfo->toString() : "") << "}";
+    ss << "RxFrame:{" << standardHeader;
+    if (PicoScenesHeader) {
+        ss << ", " << PicoScenesHeader->toString();
+    }
+    ss << ", Rx" << rxExtraInfo;
+    if (txExtraInfo)
+        ss << ", Tx" << txExtraInfo->toString();
+
+    if (segmentMap) {
+        std::stringstream segss;
+        segss << "Segment:(";
+        for (const auto pair: *segmentMap) {
+            segss << pair.first << ":" << pair.second.first << ", ";
+        }
+        auto temp = segss.str();
+        temp.erase(temp.end() - 2, temp.end());
+        temp.append(")");
+        ss << ", " << temp;
+    }
+    ss << "}";
     return ss.str();
 }
 

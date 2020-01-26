@@ -50,7 +50,7 @@ struct ieee80211_mac_frame_header {
     uint8_t addr3[6] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
     uint16_t seq = 0;
 
-    std::string toString() const;
+    [[nodiscard]] std::string toString() const;
 
 } __attribute__ ((__packed__));
 
@@ -66,7 +66,7 @@ struct PicoScenesFrameHeader {
 
     static std::optional<PicoScenesFrameHeader> fromBuffer(const uint8_t *buffer);
 
-    std::string toString() const;
+    [[nodiscard]] std::string toString() const;
 
 } __attribute__ ((__packed__));
 
@@ -86,9 +86,8 @@ public:
     CSIData csi;
     ieee80211_mac_frame_header standardHeader;
     std::optional<PicoScenesFrameHeader> PicoScenesHeader;
-    std::optional<std::vector<uint16_t>> frameSegmentStarts;
     std::optional<ExtraInfo> txExtraInfo;
-    std::optional<std::map<std::string, std::shared_ptr<uint8_t>>> segmentMap;
+    std::optional<std::map<std::string, std::pair<uint32_t, std::shared_ptr<uint8_t>>>> segmentMap;
     std::shared_ptr<uint8_t> rawBuffer;
     uint32_t rawBufferLength;
 
@@ -100,7 +99,7 @@ public:
 
     std::optional<uint16_t> parseRxMACFramePart(const uint8_t *buffer);
 
-    std::string toString() const;
+    [[nodiscard]] std::string toString() const;
 };
 
 std::ostream &operator<<(std::ostream &os, const PicoScenesRxFrameStructure &rxframe);
@@ -124,11 +123,11 @@ public:
 
     void reset();
 
-    uint16_t totalLength() const;
+    [[nodiscard]] uint16_t totalLength() const;
 
     int toBuffer(uint8_t *buffer, std::optional<uint16_t> bufferLength = std::nullopt) const;
 
-    std::shared_ptr<uint8_t> toBuffer() const;
+    [[nodiscard]] std::shared_ptr<uint8_t> toBuffer() const;
 
     PicoScenesTxFrameStructure &addExtraInfo(const ExtraInfo &txExtraInfo);
 
