@@ -153,8 +153,11 @@ struct ExtraInfo {
     void setAgc(uint8_t agc);
 
     void setAntennaSelection(const uint8_t ant_sel[3]);
+
+    std::string printExtraInfo() const;
 };
 
+std::ostream &operator<<(std::ostream &os, const ExtraInfo &extraInfo);
 
 /**
  * Test the presence of version field.

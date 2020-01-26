@@ -20,20 +20,9 @@ enum class PicoScenesDeviceType : uint16_t {
     Unknown = 0x404
 };
 
-inline std::string DeviceType2String(PicoScenesDeviceType type) {
-    switch (type) {
-        case PicoScenesDeviceType::QCA9300:
-            return "QCA9300";
-        case PicoScenesDeviceType::IWL5300:
-            return "IWL5300";
-        case PicoScenesDeviceType::MAC80211Compatible:
-            return "MAC80211 Compatible NIC";
-        case PicoScenesDeviceType::USRP:
-            return "USRP(SDR)";
-        case PicoScenesDeviceType::Unknown:
-            return "Unknown";
-    }
-}
+std::string DeviceType2String(PicoScenesDeviceType type);
+
+std::ostream &operator<<(std::ostream &os, const PicoScenesDeviceType &deviceType);
 
 struct ieee80211_mac_frame_header_frame_control_field {
     uint16_t version         :2,

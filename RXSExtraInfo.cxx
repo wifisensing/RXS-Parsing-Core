@@ -2,6 +2,7 @@
 // Created by 蒋志平 on 2018/11/10.
 //
 
+#include <iomanip>
 #include "RXSExtraInfo.h"
 #include "rxs_enhanced.h"
 
@@ -78,7 +79,6 @@ void inplaceAddRxExtraInfo(uint8_t *inBytes, uint32_t featureCode, uint8_t *valu
         *lengthField_ptr += length;
     }
 }
-
 
 int TxExtraInfoMinSet::getTxTSFPos() {
     if (extraInfoHasTxTSF(txExtraInfoFeatureCode)) {
@@ -371,3 +371,56 @@ void ExtraInfo::updateLength() {
     setLength(calculateBufferLength());
 }
 
+std::string ExtraInfo::printExtraInfo() const {
+    std::stringstream ss("ExtraInfo:[");
+    if (hasLength)
+        ss << "len=" << std::oct << std::to_string(length) << ", ";
+    if (hasVersion)
+        ss << "len=" << std::oct << std::to_string(version) << ", ";
+    if (hasMacAddr_cur)
+        ss << "mac_cur[4-6]=" << std::nouppercase << std::setfill('0') << std::setw(2) << std::hex << macaddr_cur[3] << ":" << macaddr_cur[4] << ":" << macaddr_cur[5] << ", ";
+    if (hasMacAddr_cur)
+        ss << "mac_rom[4-6]=" << std::nouppercase << std::setfill('0') << std::setw(2) << std::hex << macaddr_cur[3] << ":" << macaddr_cur[4] << ":" << macaddr_cur[5] << ", ";
+    if (hasChansel)
+        ss << "chansel=" << std::oct << std::to_string(chansel) << ", ";
+    if (hasBMode)
+        ss << "bmode=" << std::oct << std::to_string(bmode) << ", ";
+    if (hasEVM)
+        ss << "evm[0]=" << std::oct << std::to_string(evm[0]) << ", ";
+    if (hasTxChainMask)
+        ss << "txcm=" << std::oct << std::to_string(txChainMask) << ", ";
+    if (hasRxChainMask)
+        ss << "rxcm=" << std::oct << std::to_string(rxChainMask) << ", ";
+    if (hasTxpower)
+        ss << "txpower=" << std::oct << std::to_string(txpower) << ", ";
+    if (hasCF)
+        ss << "cf=" << std::oct << std::to_string(cf) << ", ";
+    if (hasTxTSF)
+        ss << "tx-tsf=" << std::oct << std::to_string(txTSF) << ", ";
+    if (hasLastHWTxTSF)
+        ss << "last-tsf=" << std::oct << std::to_string(lastHwTxTSF) << ", ";
+    if (hasChannelFlags)
+        ss << "flags=" << std::oct << std::to_string(channelFlags) << ", ";
+    if (hasTxNess)
+        ss << "tx_ness=" << std::oct << std::to_string(tx_ness) << ", ";
+    if (hasTuningPolicy)
+        ss << "cf_policy=" << std::oct << std::to_string(tuningPolicy) << ", ";
+    if (hasPLLRate)
+        ss << "pll_rate=" << std::oct << std::to_string(pll_rate) << ", ";
+    if (hasPLLRefDiv)
+        ss << "pll_refdiv=" << std::oct << std::to_string(pll_refdiv) << ", ";
+    if (hasPLLClkSel)
+        ss << "pll_clksel=" << std::oct << std::to_string(pll_clock_select) << ", ";
+    if (hasAGC)
+        ss << "agc=" << std::oct << std::to_string(agc) << ", ";
+    if (hasAntennaSelection)
+        ss << "ant_sel=[" << std::oct << std::to_string(ant_sel[0]) << " " << std::to_string(ant_sel[1]) << " " << std::to_string(ant_sel[2]) << "], ";
+    ss.seekp(-2, std::ios_base::end);
+    ss << "]";
+    return ss.str();
+}
+
+std::ostream &operator<<(std::ostream &os, const ExtraInfo &ei) {
+    os << ei.printExtraInfo();
+    return os;
+}

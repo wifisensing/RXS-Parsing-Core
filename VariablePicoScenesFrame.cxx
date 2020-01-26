@@ -4,6 +4,25 @@
 
 #include "VariablePicoScenesFrame.hxx"
 
+std::string DeviceType2String(PicoScenesDeviceType type) {
+    switch (type) {
+        case PicoScenesDeviceType::QCA9300:
+            return "QCA9300";
+        case PicoScenesDeviceType::IWL5300:
+            return "IWL5300";
+        case PicoScenesDeviceType::MAC80211Compatible:
+            return "MAC80211 Compatible NIC";
+        case PicoScenesDeviceType::USRP:
+            return "USRP(SDR)";
+        case PicoScenesDeviceType::Unknown:
+            return "Unknown";
+    }
+}
+
+std::ostream &operator<<(std::ostream &os, const PicoScenesDeviceType &deviceType) {
+    os << DeviceType2String(deviceType);
+    return os;
+}
 
 bool PicoScenesRxFrameStructure::isOldRXSEnhancedFrame(const uint8_t bufferHead[6]) {
     auto magicValue = *((uint32_t *) (bufferHead + 2));
@@ -32,7 +51,7 @@ std::optional<PicoScenesRxFrameStructure> PicoScenesRxFrameStructure::fromBuffer
     uint16_t totalLength = *((uint16_t *) (buffer));
     uint16_t pos = 2;
 
-    if(bufferLength && totalLength + 2 != bufferLength)
+    if (bufferLength && totalLength + 2 != bufferLength)
         throw std::overflow_error("PicoScenesFrame structure corrupted.");
 
     PicoScenesRxFrameStructure rxFrame;
