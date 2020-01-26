@@ -111,7 +111,11 @@ public:
     bool channelBonding = false;
     bool sgi = false;
     bool greenField = false;
+
+    std::string toString() const;
 };
+
+std::ostream &operator<<(std::ostream &os, const PicoScenesFrameTxParameters &parameters);
 
 class PicoScenesTxFrameStructure {
 public:
@@ -159,6 +163,8 @@ public:
     PicoScenesTxFrameStructure &setSourceAddress(const uint8_t macAddr[6]);
 
     PicoScenesTxFrameStructure &set3rdAddress(const uint8_t macAddr[6]);
+
+    std::string toString() const;
 };
 
 std::ostream &operator<<(std::ostream &os, const PicoScenesTxFrameStructure &txframe);

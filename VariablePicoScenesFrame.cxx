@@ -181,6 +181,12 @@ std::string PicoScenesRxFrameStructure::toString() const {
     return ss.str();
 }
 
+std::string PicoScenesFrameTxParameters::toString() const {
+    std::stringstream ss;
+    ss << "tx_param[mcs=" << int(mcs) << ", bonding=" << channelBonding << ", sgi=" << sgi << ", gf=" << greenField << "]";
+    return ss.str();
+}
+
 PicoScenesTxFrameStructure &PicoScenesTxFrameStructure::addSegmentBuffer(const std::string &identifier, const uint8_t *buffer, uint16_t length) {
     if (length > PICOSCENES_FRAME_SEGMENT_MAX_LENGTH)
         throw std::overflow_error("PicoScenes Frame segment max length :PICOSCENES_FRAME_SEGMENT_MAX_LENGTH");
@@ -327,6 +333,29 @@ uint16_t PicoScenesTxFrameStructure::getTaskId() const {
     return frameHeader.taskId;
 }
 
+std::string PicoScenesTxFrameStructure::toString() const {
+    std::stringstream ss;
+    ss << "TxFrame:{" << standardHeader;
+    ss << ", " << frameHeader.toString();
+    ss << ", " << txParameters;
+    if (extraInfo)
+        ss << ", Tx" << extraInfo->toString();
+
+    if ((frameHeader.segments > 1 && extraInfo) || (frameHeader.segments > 0 && !extraInfo)) {
+        std::stringstream segss;
+        segss << "Segment:(";
+        for (const auto &pair: segmentLength) {
+            segss << pair.first << ":" << pair.second << ", ";
+        }
+        auto temp = segss.str();
+        temp.erase(temp.end() - 2, temp.end());
+        temp.append(")");
+        ss << ", " << temp;
+    }
+    ss << "}";
+    return ss.str();
+}
+
 std::ostream &operator<<(std::ostream &os, const ieee80211_mac_frame_header &header) {
     os << header.toString();
     return os;
@@ -339,5 +368,15 @@ std::ostream &operator<<(std::ostream &os, const PicoScenesFrameHeader &frameHea
 
 std::ostream &operator<<(std::ostream &os, const PicoScenesRxFrameStructure &rxframe) {
     os << rxframe.toString();
+    return os;
+}
+
+std::ostream &operator<<(std::ostream &os, const PicoScenesTxFrameStructure &txframe) {
+    os << txframe.toString();
+    return os;
+}
+
+std::ostream &operator<<(std::ostream &os, const PicoScenesFrameTxParameters &parameters) {
+    os << parameters.toString();
     return os;
 }
