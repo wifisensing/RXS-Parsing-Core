@@ -74,10 +74,19 @@ struct PicoScenesFrameHeader {
 std::ostream &operator<<(std::ostream &os, const PicoScenesFrameHeader &frameHeader);
 
 struct CSIData {
+    uint8_t ntx;
+    uint8_t nrx;
+    uint8_t nltf;
+    uint8_t nss;
+    uint8_t num_tones;
     std::complex<double> csi_matrix[MAX_OFDM_TONES_UNWRAP];
     double unwrappedMag[MAX_OFDM_TONES_UNWRAP] = {0};
     double unwrappedPhase[MAX_OFDM_TONES_UNWRAP] = {0};
+
+    [[nodiscard]] std::string toString() const;
 };
+
+std::ostream &operator<<(std::ostream &os, const CSIData &data);
 
 class PicoScenesRxFrameStructure {
 public:

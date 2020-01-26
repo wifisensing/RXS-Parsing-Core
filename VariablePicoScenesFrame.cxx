@@ -52,6 +52,30 @@ std::string PicoScenesFrameHeader::toString() const {
     return ss.str();
 }
 
+std::string CSIData::toString() const {
+    char headerLineChar[300];
+    std::sprintf(headerLineChar, "CSI Print [NTx=%u, NRx=%u, NLTF=%u, NSS=%u, NTONES=%u]\n", ntx, nrx, nltf, nss, num_tones);
+//    headerLine += "-------------------------------\n";
+//    std::string tabularContent = "";
+//    {
+//        for (int i = 0; i < rxs.rxs_basic.num_tones; ++i) {
+//            std::string lineString = fmt::sprintf("Tone #%4d || ", i);
+//            for (int j = 0; j < rxs.rxs_basic.nss; ++j) {
+//                auto pos = rxs.rxs_basic.num_tones * j + i;
+//                lineString += fmt::sprintf("#%d(%6.2f %6.2fi %5.2f %6.2f) ", j, rxs.csi_matrix[pos].real(), rxs.csi_matrix[pos].imag(), rxs.unwrappedMag[pos], rxs.unwrappedPhase[pos]);
+//            }
+//            lineString += "\n";
+//            tabularContent += lineString;
+//        }
+//    }
+//
+//    baseString += headerLine;
+//    baseString += tabularContent;
+//    baseString += "-------------------------------\n";
+//    return baseString;
+    return "";
+}
+
 PicoScenesRxFrameStructure PicoScenesRxFrameStructure::fromRXSEnhanced(const RXS_enhanced &rxs) {
     return PicoScenesRxFrameStructure();
 }
@@ -378,5 +402,10 @@ std::ostream &operator<<(std::ostream &os, const PicoScenesTxFrameStructure &txf
 
 std::ostream &operator<<(std::ostream &os, const PicoScenesFrameTxParameters &parameters) {
     os << parameters.toString();
+    return os;
+}
+
+std::ostream &operator<<(std::ostream &os, const CSIData &data) {
+    os << data.toString();
     return os;
 }
