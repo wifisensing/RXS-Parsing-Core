@@ -112,7 +112,7 @@ public:
     bool sgi = false;
     bool greenField = false;
 
-    std::string toString() const;
+    [[nodiscard]] std::string toString() const;
 };
 
 std::ostream &operator<<(std::ostream &os, const PicoScenesFrameTxParameters &parameters);
@@ -164,7 +164,7 @@ public:
 
     PicoScenesTxFrameStructure &set3rdAddress(const uint8_t macAddr[6]);
 
-    std::string toString() const;
+    [[nodiscard]] std::string toString() const;
 };
 
 std::ostream &operator<<(std::ostream &os, const PicoScenesTxFrameStructure &txframe);
