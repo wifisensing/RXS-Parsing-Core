@@ -320,14 +320,14 @@ inline bool extraInfoHasAntennaSelection(uint32_t featureCode) {
     return static_cast<bool>(featureCode >> 20U & 0x1U);
 }
 
-enum RXSParsingLevel : uint8_t {
+enum class RXSParsingLevel : uint8_t {
     BASIC_NOEXTRA_NOCSI = 10,
     EXTRA_NOCSI,
     EXTRA_CSI,
     EXTRA_CSI_UNWRAP
 };
 
-enum ChannelMode : uint8_t {
+enum class ChannelMode : uint8_t {
     HT20 = 8,
     HT40_MINUS = 24,
     HT40_PLUS = 40,
@@ -335,11 +335,11 @@ enum ChannelMode : uint8_t {
 
 inline std::string channelModel2String(ChannelMode mode) {
     switch (mode) {
-        case HT40_PLUS:
+        case ChannelMode::HT40_PLUS:
             return "HT40_PLUS";
-        case HT40_MINUS:
+        case ChannelMode::HT40_MINUS:
             return "HT40_MINUS";
-        case HT20:
+        case ChannelMode::HT20:
             return "HT20";
     }
 }
@@ -358,18 +358,18 @@ inline ChannelMode channelFlags2ChannelMode(uint16_t channelFlags) {
     std::bitset<16> channelFlagSet(channelFlags);
 
     if (channelFlagSet.test(3) && channelFlagSet.test(4)) {
-        return HT40_PLUS;
+        return ChannelMode::HT40_PLUS;
     }
 
     if (channelFlagSet.test(3) && channelFlagSet.test(5)) {
-        return HT40_MINUS;
+        return ChannelMode::HT40_MINUS;
     }
 
     if (channelFlagSet.test(3)) {
-        return HT20;
+        return ChannelMode::HT20;
     }
 
-    return HT20;
+    return ChannelMode::HT20;
 }
 
 /**

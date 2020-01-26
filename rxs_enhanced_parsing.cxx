@@ -102,7 +102,7 @@ int parse_rxs_enhanced(const uint8_t * inBytes, struct RXS_enhanced *rxs, enum R
     }
 
     rxs->csi_pos = pos;
-    if (parsingLevel >= EXTRA_CSI ) {
+    if (parsingLevel >= RXSParsingLevel::EXTRA_CSI ) {
         if (rxs->isAR9300)
             ar_parse_csi_matrix(inBytes + rxs->csi_pos, rxs->rxs_basic.nss / rxs->rxs_basic.nrx, rxs->rxs_basic.nrx, rxs->rxs_basic.num_tones,
                             rxs->csi_matrix);
