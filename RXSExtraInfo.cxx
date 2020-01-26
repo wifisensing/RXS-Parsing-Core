@@ -389,19 +389,24 @@ std::string ExtraInfo::toString() const {
         ss << "tx_ness=" << std::oct << std::to_string(tx_ness) << ", ";
     if (hasTuningPolicy)
         ss << "cf_policy=" << std::oct << tuningPolicy << ", ";
-    if (hasPLLRate)
-        ss << "pll_rate=" << std::oct << std::to_string(pll_rate) << ", ";
-    if (hasPLLRefDiv)
-        ss << "pll_refdiv=" << std::oct << std::to_string(pll_refdiv) << ", ";
-    if (hasPLLClkSel)
-        ss << "pll_clksel=" << std::oct << std::to_string(pll_clock_select) << ", ";
+    if (hasPLLRate && hasPLLRefDiv && hasPLLClkSel) {
+        ss << "pll=(" << std::oct << std::to_string(pll_rate) << ", " << std::to_string(pll_refdiv) << ", " << std::to_string(pll_clock_select) << "), ";
+    } else {
+        if (hasPLLRate)
+            ss << "pll_rate=" << std::oct << std::to_string(pll_rate) << ", ";
+        if (hasPLLRefDiv)
+            ss << "pll_refdiv=" << std::oct << std::to_string(pll_refdiv) << ", ";
+        if (hasPLLClkSel)
+            ss << "pll_clksel=" << std::oct << std::to_string(pll_clock_select) << ", ";
+    }
     if (hasAGC)
         ss << "agc=" << std::oct << std::to_string(agc) << ", ";
     if (hasAntennaSelection)
         ss << "ant_sel=[" << std::oct << std::to_string(ant_sel[0]) << " " << std::to_string(ant_sel[1]) << " " << std::to_string(ant_sel[2]) << "], ";
-    ss.seekp(-2, std::ios_base::end);
-    ss << "]";
-    return ss.str();
+    auto temp = ss.str();
+    temp.erase(temp.end() - 2, temp.end());
+    temp.append("]");
+    return temp;
 }
 
 std::ostream &operator<<(std::ostream &os, const ExtraInfo &ei) {
