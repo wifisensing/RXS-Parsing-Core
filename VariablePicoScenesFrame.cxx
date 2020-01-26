@@ -126,7 +126,6 @@ std::optional<uint16_t> PicoScenesRxFrameStructure::parseRxMACFramePart(const ui
     if (PicoScenesHeader) {
         if (PicoScenesHeader->magicValue != 0x20150315)
             return std::nullopt;
-        segmentMap = std::map<std::string, std::pair<uint32_t, std::shared_ptr<uint8_t>>>();
         char identifier[3];
         identifier[2] = '\0';
         for (auto i = 0; i < PicoScenesHeader->segments; i++) {
@@ -142,6 +141,9 @@ std::optional<uint16_t> PicoScenesRxFrameStructure::parseRxMACFramePart(const ui
                 }
                 return std::nullopt;
             }
+
+            if (!segmentMap)
+                segmentMap = std::map<std::string, std::pair<uint32_t, std::shared_ptr<uint8_t>>>();
 
             auto segmentLength = *((uint16_t *) (buffer + pos));
             auto segmentBuffer = std::shared_ptr<uint8_t>(new uint8_t[segmentLength], std::default_delete<uint8_t[]>());
