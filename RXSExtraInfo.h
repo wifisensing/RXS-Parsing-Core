@@ -160,7 +160,7 @@ struct ExtraInfo {
 
     void setAntennaSelection(const uint8_t ant_sel[3]);
 
-    std::string printExtraInfo() const;
+    std::string toString() const;
 };
 
 std::ostream &operator<<(std::ostream &os, const ExtraInfo &extraInfo);

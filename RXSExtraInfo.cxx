@@ -354,7 +354,7 @@ void ExtraInfo::updateLength() {
     setLength(calculateBufferLength());
 }
 
-std::string ExtraInfo::printExtraInfo() const {
+std::string ExtraInfo::toString() const {
     std::stringstream ss;
     ss << "ExtraInfo:[";
     if (hasLength)
@@ -405,6 +405,6 @@ std::string ExtraInfo::printExtraInfo() const {
 }
 
 std::ostream &operator<<(std::ostream &os, const ExtraInfo &ei) {
-    os << ei.printExtraInfo();
+    os << ei.toString();
     return os;
 }

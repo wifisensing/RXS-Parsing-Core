@@ -8,6 +8,7 @@
 #include "rxs_enhanced.h"
 #include <optional>
 #include <memory>
+#include <iomanip>
 #include <map>
 
 #define PICOSCENES_FRAME_SEGMENT_MAX_LENGTH 2048
@@ -49,7 +50,11 @@ struct ieee80211_mac_frame_header {
     uint8_t addr3[6] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
     uint16_t seq = 0;
 
+    std::string toString() const;
+
 } __attribute__ ((__packed__));
+
+std::ostream &operator<<(std::ostream &os, const ieee80211_mac_frame_header &header);
 
 struct PicoScenesFrameHeader {
     uint32_t magicValue = 0x20150315;
@@ -60,7 +65,12 @@ struct PicoScenesFrameHeader {
     uint16_t taskId = 0;
 
     static std::optional<PicoScenesFrameHeader> fromBuffer(const uint8_t *buffer);
+
+    std::string toString() const;
+
 } __attribute__ ((__packed__));
+
+std::ostream &operator<<(std::ostream &os, const PicoScenesFrameHeader &frameHeader);
 
 struct CSIData {
     std::complex<double> csi_matrix[MAX_OFDM_TONES_UNWRAP];
@@ -89,8 +99,11 @@ public:
     static PicoScenesRxFrameStructure fromRXSEnhanced(const RXS_enhanced &rxs);
 
     std::optional<uint16_t> parseRxMACFramePart(const uint8_t *buffer);
+
+    std::string toString() const;
 };
 
+std::ostream &operator<<(std::ostream &os, const PicoScenesRxFrameStructure &rxframe);
 
 class PicoScenesFrameTxParameters {
 public:
@@ -146,5 +159,6 @@ public:
     PicoScenesTxFrameStructure &set3rdAddress(const uint8_t macAddr[6]);
 };
 
+std::ostream &operator<<(std::ostream &os, const PicoScenesTxFrameStructure &txframe);
 
 #endif //PICOSCENES_PLATFORM_VARIABLEPICOSCENESFRAME_HXX

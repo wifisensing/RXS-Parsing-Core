@@ -24,6 +24,14 @@ std::ostream &operator<<(std::ostream &os, const PicoScenesDeviceType &deviceTyp
     return os;
 }
 
+std::string ieee80211_mac_frame_header::toString() const {
+    std::stringstream ss;
+    ss << "MACHeader[dest[4-6]=" << std::nouppercase << std::setfill('0') << std::setw(2) << std::right << std::hex << int(addr1[3]) << ":" << int(addr1[4]) << ":" << int(addr1[5]) << ", ";
+    ss << "src[4-6]=" << std::nouppercase << std::setfill('0') << std::setw(2) << std::right << std::hex << int(addr2[3]) << ":" << int(addr2[4]) << ":" << int(addr2[5]) << ", ";
+    ss << "seq=" << std::oct << seq << "]";
+    return ss.str();
+}
+
 bool PicoScenesRxFrameStructure::isOldRXSEnhancedFrame(const uint8_t bufferHead[6]) {
     auto magicValue = *((uint32_t *) (bufferHead + 2));
     return (magicValue == 0x20150315 || magicValue == 0x20120930);
@@ -36,6 +44,12 @@ std::optional<PicoScenesFrameHeader> PicoScenesFrameHeader::fromBuffer(const uin
         return frameHeader;
     }
     return std::nullopt;
+}
+
+std::string PicoScenesFrameHeader::toString() const {
+    std::stringstream ss;
+    ss << "PSFHeader[ver=0x" << std::hex << version << std::oct << ", device=" << deviceType << ", seg=" << int(segments) << ", type=" << int(frameType) << ", taskId=" << int(taskId) << "]";
+    return ss.str();
 }
 
 PicoScenesRxFrameStructure PicoScenesRxFrameStructure::fromRXSEnhanced(const RXS_enhanced &rxs) {
@@ -139,6 +153,12 @@ std::optional<uint16_t> PicoScenesRxFrameStructure::parseRxMACFramePart(const ui
         return pos;
     }
     return std::nullopt;
+}
+
+std::string PicoScenesRxFrameStructure::toString() const {
+    std::stringstream ss;
+    ss << "RxFrame:{" << standardHeader << ", " << (PicoScenesHeader ? PicoScenesHeader->toString() : "") << ", Rx" << rxExtraInfo << ", Tx" << (txExtraInfo ? txExtraInfo->toString() : "") << "}";
+    return ss.str();
 }
 
 PicoScenesTxFrameStructure &PicoScenesTxFrameStructure::addSegmentBuffer(const std::string &identifier, const uint8_t *buffer, uint16_t length) {
@@ -276,4 +296,19 @@ PicoScenesTxFrameStructure &PicoScenesTxFrameStructure::setSourceAddress(const u
 PicoScenesTxFrameStructure &PicoScenesTxFrameStructure::set3rdAddress(const uint8_t macAddr[6]) {
     memcpy(standardHeader.addr3, macAddr, 6);
     return *this;
+}
+
+std::ostream &operator<<(std::ostream &os, const ieee80211_mac_frame_header &header) {
+    os << header.toString();
+    return os;
+}
+
+std::ostream &operator<<(std::ostream &os, const PicoScenesFrameHeader &frameHeader) {
+    os << frameHeader.toString();
+    return os;
+}
+
+std::ostream &operator<<(std::ostream &os, const PicoScenesRxFrameStructure &rxframe) {
+    os << rxframe.toString();
+    return os;
 }
