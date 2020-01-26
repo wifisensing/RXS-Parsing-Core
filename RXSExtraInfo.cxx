@@ -80,23 +80,6 @@ void inplaceAddRxExtraInfo(uint8_t *inBytes, uint32_t featureCode, uint8_t *valu
     }
 }
 
-int TxExtraInfoMinSet::getTxTSFPos() {
-    if (extraInfoHasTxTSF(txExtraInfoFeatureCode)) {
-        auto pos = sizeof(struct TxExtraInfoMinSet);
-        pos += extraInfoHasChansel(txExtraInfoFeatureCode) ? 4 : 0;
-        pos += extraInfoHasBMode(txExtraInfoFeatureCode) ? 1 : 0;
-        pos += extraInfoHasEVM(txExtraInfoFeatureCode) ? 20 : 0;
-        pos += extraInfoHasTxChainMask(txExtraInfoFeatureCode) ? 1 : 0;
-        pos += extraInfoHasRxChainMask(txExtraInfoFeatureCode) ? 1 : 0;
-        pos += extraInfoHasTxPower(txExtraInfoFeatureCode) ? 1 : 0;
-        pos += extraInfoHasCF(txExtraInfoFeatureCode) ? 8 : 0;
-
-        return pos;
-    }
-
-    return -1;
-}
-
 ExtraInfo::ExtraInfo() {
     memset(this, 0, sizeof(ExtraInfo));
     setLength(2);
@@ -328,7 +311,7 @@ void ExtraInfo::setTxNess(uint8_t txNess) {
 void ExtraInfo::setTuningPolicy(uint8_t tuningPolicyV) {
     hasTuningPolicy = true;
     featureCode |= PICOSCENES_EXTRAINFO_HASTUNINGPOLICY;
-    ExtraInfo::tuningPolicy = tuningPolicyV;
+    ExtraInfo::tuningPolicy = AtherosCFTuningPolicy(tuningPolicyV);
     updateLength();
 }
 
@@ -405,7 +388,7 @@ std::string ExtraInfo::printExtraInfo() const {
     if (hasTxNess)
         ss << "tx_ness=" << std::oct << std::to_string(tx_ness) << ", ";
     if (hasTuningPolicy)
-        ss << "cf_policy=" << std::oct << std::to_string(tuningPolicy) << ", ";
+        ss << "cf_policy=" << std::oct << tuningPolicy << ", ";
     if (hasPLLRate)
         ss << "pll_rate=" << std::oct << std::to_string(pll_rate) << ", ";
     if (hasPLLRefDiv)

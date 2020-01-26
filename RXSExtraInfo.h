@@ -19,6 +19,28 @@
 #define PACK( __Declaration__ ) __pragma( pack(push, 1) ) __Declaration__ __pragma( pack(pop))
 #endif
 
+enum AtherosCFTuningPolicy : uint8_t {
+    CFTuningByChansel = 30,
+    CFTuningByFastCC,
+    CFTuningByHardwareReset,
+    CFTuningByDefault,
+};
+
+inline std::string TuningPolicy2String(uint8_t policy) {
+    switch (policy) {
+        case CFTuningByChansel:
+            return "Chansel";
+        case CFTuningByFastCC:
+            return "FastCC";
+        case CFTuningByHardwareReset:
+            return "Reset";
+        case CFTuningByDefault:
+            return "Default";
+        default:
+            throw std::runtime_error("[RXS_Enhanced.h] Unknown Tuning Policy for value: " + std::to_string(policy));
+    }
+}
+
 #define PICOSCENES_EXTRAINFO_HASLENGTH                 0x00000001U
 #define PICOSCENES_EXTRAINFO_HASVERSION                0x00000002U
 #define PICOSCENES_EXTRAINFO_HASMACCUR                 0x00000004U
@@ -40,22 +62,6 @@
 #define PICOSCENES_EXTRAINFO_HASPLLCLKSEL              0x00040000U
 #define PICOSCENES_EXTRAINFO_HASAGC                    0x00080000U
 #define PICOSCENES_EXTRAINFO_HASANTENNASELECTION       0x00100000U
-
-
-/**
- The mininum set of ExtraInfo used for Tx fabrication.
-
- @see ExtraInfo
- */
-PACK(struct TxExtraInfoMinSet {
-         uint32_t txExtraInfoFeatureCode;
-         uint16_t txExtraInfoLength;
-         uint64_t txExtraInfoVersion;
-         uint8_t txExtraInfoMacAddr_cur[6];
-         uint8_t txExtraInfoMacAddr_rom[6];
-
-         int getTxTSFPos();
-     });
 
 struct ExtraInfo {
     uint32_t featureCode;
@@ -95,7 +101,7 @@ struct ExtraInfo {
     uint32_t lastHwTxTSF;
     uint16_t channelFlags;
     uint8_t tx_ness;
-    uint8_t tuningPolicy;
+    AtherosCFTuningPolicy tuningPolicy;
     uint16_t pll_rate;
     uint8_t pll_refdiv;
     uint8_t pll_clock_select;
@@ -341,28 +347,6 @@ inline std::string channelModel2String(ChannelMode mode) {
 inline std::ostream &operator<<(std::ostream &os, const ChannelMode &channelMode) {
     os << channelModel2String(channelMode);
     return os;
-}
-
-enum AtherosCFTuningPolicy : uint8_t {
-    CFTuningByChansel = 30,
-    CFTuningByFastCC,
-    CFTuningByHardwareReset,
-    CFTuningByDefault,
-};
-
-inline std::string TuningPolicy2String(uint8_t policy) {
-    switch (policy) {
-        case CFTuningByChansel:
-            return "Chansel";
-        case CFTuningByFastCC:
-            return "FastCC";
-        case CFTuningByHardwareReset:
-            return "Reset";
-        case CFTuningByDefault:
-            return "Default";
-        default:
-            throw std::runtime_error("[RXS_Enhanced.h] Unknown Tuning Policy for value: " + std::to_string(policy));
-    }
 }
 
 inline std::ostream &operator<<(std::ostream &os, const AtherosCFTuningPolicy &cfTuningPolicy) {
