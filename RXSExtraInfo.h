@@ -327,6 +327,22 @@ enum ChannelMode : uint8_t {
     HT40_PLUS = 40,
 };
 
+inline std::string channelModel2String(ChannelMode mode) {
+    switch (mode) {
+        case HT40_PLUS:
+            return "HT40_PLUS";
+        case HT40_MINUS:
+            return "HT40_MINUS";
+        case HT20:
+            return "HT20";
+    }
+}
+
+inline std::ostream &operator<<(std::ostream &os, const ChannelMode &channelMode) {
+    os << channelModel2String(channelMode);
+    return os;
+}
+
 enum AtherosCFTuningPolicy : uint8_t {
     CFTuningByChansel = 30,
     CFTuningByFastCC,
@@ -334,6 +350,25 @@ enum AtherosCFTuningPolicy : uint8_t {
     CFTuningByDefault,
 };
 
+inline std::string TuningPolicy2String(uint8_t policy) {
+    switch (policy) {
+        case CFTuningByChansel:
+            return "Chansel";
+        case CFTuningByFastCC:
+            return "FastCC";
+        case CFTuningByHardwareReset:
+            return "Reset";
+        case CFTuningByDefault:
+            return "Default";
+        default:
+            throw std::runtime_error("[RXS_Enhanced.h] Unknown Tuning Policy for value: " + std::to_string(policy));
+    }
+}
+
+inline std::ostream &operator<<(std::ostream &os, const AtherosCFTuningPolicy &cfTuningPolicy) {
+    os << TuningPolicy2String(cfTuningPolicy);
+    return os;
+}
 
 inline ChannelMode channelFlags2ChannelMode(uint16_t channelFlags) {
     std::bitset<16> channelFlagSet(channelFlags);
@@ -352,33 +387,6 @@ inline ChannelMode channelFlags2ChannelMode(uint16_t channelFlags) {
 
     return HT20;
 }
-
-inline std::string channelModel2String(ChannelMode mode) {
-    switch (mode) {
-        case HT40_PLUS:
-            return "HT40_PLUS";
-        case HT40_MINUS:
-            return "HT40_MINUS";
-        case HT20:
-            return "HT20";
-    }
-}
-
-inline std::string TuningPolicy2String(uint8_t policy) {
-    switch (policy) {
-        case CFTuningByChansel:
-            return "Chansel";
-        case CFTuningByFastCC:
-            return "FastCC";
-        case CFTuningByHardwareReset:
-            return "Reset";
-        case CFTuningByDefault:
-            return "Default";
-        default:
-            throw std::runtime_error("[RXS_Enhanced.h] Unknown Tuning Policy for value: " + std::to_string(policy));
-    }
-}
-
 
 /**
  * Parse 32-bit feature code into has* values of struct ExtraInfo

@@ -372,15 +372,16 @@ void ExtraInfo::updateLength() {
 }
 
 std::string ExtraInfo::printExtraInfo() const {
-    std::stringstream ss("ExtraInfo:[");
+    std::stringstream ss;
+    ss << "ExtraInfo:[";
     if (hasLength)
         ss << "len=" << std::oct << std::to_string(length) << ", ";
     if (hasVersion)
-        ss << "len=" << std::oct << std::to_string(version) << ", ";
+        ss << "ver=" << std::oct << std::to_string(version) << ", ";
     if (hasMacAddr_cur)
-        ss << "mac_cur[4-6]=" << std::nouppercase << std::setfill('0') << std::setw(2) << std::hex << macaddr_cur[3] << ":" << macaddr_cur[4] << ":" << macaddr_cur[5] << ", ";
+        ss << "mac_cur[4-6]=" << std::nouppercase << std::setfill('0') << std::setw(2) << std::right << std::hex << int(macaddr_cur[3]) << ":" << int(macaddr_cur[4]) << ":" << int(macaddr_cur[5]) << ", ";
     if (hasMacAddr_cur)
-        ss << "mac_rom[4-6]=" << std::nouppercase << std::setfill('0') << std::setw(2) << std::hex << macaddr_cur[3] << ":" << macaddr_cur[4] << ":" << macaddr_cur[5] << ", ";
+        ss << "mac_rom[4-6]=" << std::nouppercase << std::setfill('0') << std::setw(2) << std::right << std::hex << int(macaddr_rom[3]) << ":" << int(macaddr_rom[4]) << ":" << int(macaddr_rom[5]) << ", ";
     if (hasChansel)
         ss << "chansel=" << std::oct << std::to_string(chansel) << ", ";
     if (hasBMode)
