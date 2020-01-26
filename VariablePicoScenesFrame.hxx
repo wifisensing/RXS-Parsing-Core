@@ -10,6 +10,7 @@
 #include <memory>
 #include <iomanip>
 #include <map>
+#include <random>
 
 #define PICOSCENES_FRAME_SEGMENT_MAX_LENGTH 2048
 
@@ -134,6 +135,8 @@ public:
     PicoScenesTxFrameStructure &addSegmentBuffer(const std::string &identifier, const uint8_t *buffer, uint16_t length);
 
     PicoScenesTxFrameStructure &addSegmentBuffer(const std::string &identifier, const std::array<uint8_t, PICOSCENES_FRAME_SEGMENT_MAX_LENGTH> &bufferArray, uint16_t length);
+
+    uint16_t getTaskId() const;
 
     PicoScenesTxFrameStructure &setRetry();
 

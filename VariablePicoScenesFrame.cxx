@@ -169,7 +169,7 @@ std::string PicoScenesRxFrameStructure::toString() const {
     if (segmentMap) {
         std::stringstream segss;
         segss << "Segment:(";
-        for (const auto pair: *segmentMap) {
+        for (const auto &pair: *segmentMap) {
             segss << pair.first << ":" << pair.second.first << ", ";
         }
         auto temp = segss.str();
@@ -275,6 +275,11 @@ PicoScenesTxFrameStructure &PicoScenesTxFrameStructure::setTaskId(uint16_t taskI
 }
 
 PicoScenesTxFrameStructure &PicoScenesTxFrameStructure::setRandomTaskId() {
+    static std::random_device r;
+    static std::default_random_engine randomEngine(r());
+    static std::uniform_int_distribution<uint16_t> randomGenerator(10000, UINT16_MAX);
+    auto newValue = randomGenerator(randomEngine);
+    setTaskId(newValue);
     return *this;
 }
 
@@ -299,7 +304,7 @@ PicoScenesTxFrameStructure &PicoScenesTxFrameStructure::setMCS(uint8_t mcs) {
 }
 
 PicoScenesTxFrameStructure &PicoScenesTxFrameStructure::setGreenField(bool useGreenField) {
-    txParameters.greenField = true;
+    txParameters.greenField = useGreenField;
     return *this;
 }
 
@@ -316,6 +321,10 @@ PicoScenesTxFrameStructure &PicoScenesTxFrameStructure::setSourceAddress(const u
 PicoScenesTxFrameStructure &PicoScenesTxFrameStructure::set3rdAddress(const uint8_t macAddr[6]) {
     memcpy(standardHeader.addr3, macAddr, 6);
     return *this;
+}
+
+uint16_t PicoScenesTxFrameStructure::getTaskId() const {
+    return frameHeader.taskId;
 }
 
 std::ostream &operator<<(std::ostream &os, const ieee80211_mac_frame_header &header) {

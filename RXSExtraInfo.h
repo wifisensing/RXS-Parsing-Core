@@ -110,7 +110,7 @@ struct ExtraInfo {
 
     ExtraInfo();
 
-    uint16_t calculateBufferLength() const;
+    [[nodiscard]] uint16_t calculateBufferLength() const;
 
     void updateLength();
 
@@ -160,7 +160,7 @@ struct ExtraInfo {
 
     void setAntennaSelection(const uint8_t ant_sel[3]);
 
-    std::string toString() const;
+    [[nodiscard]] std::string toString() const;
 };
 
 std::ostream &operator<<(std::ostream &os, const ExtraInfo &extraInfo);
@@ -171,7 +171,7 @@ std::ostream &operator<<(std::ostream &os, const ExtraInfo &extraInfo);
  * @return true for the presence, and false for not.
  */
 inline bool extraInfoHasVersion(uint32_t featureCode) {
-    return static_cast<bool>(featureCode >> 0 & 0x1);
+    return static_cast<bool>(featureCode >> 0u & 0x1U);
 }
 
 /**
@@ -183,7 +183,7 @@ inline bool extraInfoHasVersion(uint32_t featureCode) {
  * @return true for the presence, and false for not.
  */
 inline bool extraInfoHasLength(uint32_t featureCode) {
-    return static_cast<bool>(featureCode >> 1 & 0x1);
+    return static_cast<bool>(featureCode >> 1U & 0x1U);
 }
 
 /**
@@ -197,7 +197,7 @@ inline bool extraInfoHasLength(uint32_t featureCode) {
  * @see extraInfoHasMacAddress_Rom
  */
 inline bool extraInfoHasMacAddress_Current(uint32_t featureCode) {
-    return static_cast<bool>(featureCode >> 2 & 0x1);
+    return static_cast<bool>(featureCode >> 2U & 0x1U);
 }
 
 /**
@@ -211,7 +211,7 @@ inline bool extraInfoHasMacAddress_Current(uint32_t featureCode) {
  * @see extraInfoHasMacAddress_Current
  */
 inline bool extraInfoHasMacAddress_Rom(uint32_t featureCode) {
-    return static_cast<bool>(featureCode >> 3 & 0x1);
+    return static_cast<bool>(featureCode >> 3U & 0x1U);
 }
 
 /**
@@ -225,7 +225,7 @@ inline bool extraInfoHasMacAddress_Rom(uint32_t featureCode) {
  * @see extraInfoHasBMode
  */
 inline bool extraInfoHasChansel(uint32_t featureCode) {
-    return static_cast<bool>(featureCode >> 4 & 0x1);
+    return static_cast<bool>(featureCode >> 4U & 0x1U);
 }
 
 /**
@@ -241,7 +241,7 @@ inline bool extraInfoHasChansel(uint32_t featureCode) {
  * @see extraInfoHasChansel
  */
 inline bool extraInfoHasBMode(uint32_t featureCode) {
-    return static_cast<bool>(featureCode >> 5 & 0x1);
+    return static_cast<bool>(featureCode >> 5U & 0x1U);
 }
 
 /**
@@ -251,7 +251,7 @@ inline bool extraInfoHasBMode(uint32_t featureCode) {
  * @return true for the presence, and false for not.
  */
 inline bool extraInfoHasEVM(uint32_t featureCode) {
-    return static_cast<bool>(featureCode >> 6 & 0x1);
+    return static_cast<bool>(featureCode >> 6U & 0x1U);
 }
 
 /**
@@ -265,59 +265,59 @@ inline bool extraInfoHasEVM(uint32_t featureCode) {
  * @return true for the presence, and false for not.
  */
 inline bool extraInfoHasTxChainMask(uint32_t featureCode) {
-    return static_cast<bool>(featureCode >> 7 & 0x1);
+    return static_cast<bool>(featureCode >> 7U & 0x1U);
 }
 
 inline bool extraInfoHasRxChainMask(uint32_t featureCode) {
-    return static_cast<bool>(featureCode >> 8 & 0x1);
+    return static_cast<bool>(featureCode >> 8U & 0x1U);
 }
 
 inline bool extraInfoHasTxPower(uint32_t featureCode) {
-    return static_cast<bool>(featureCode >> 9 & 0x1);
+    return static_cast<bool>(featureCode >> 9U & 0x1U);
 }
 
 inline bool extraInfoHasCF(uint32_t featureCode) {
-    return static_cast<bool>(featureCode >> 10 & 0x1);
+    return static_cast<bool>(featureCode >> 10U & 0x1U);
 }
 
 inline bool extraInfoHasTxTSF(uint32_t featureCode) {
-    return static_cast<bool>(featureCode >> 11 & 0x1);
+    return static_cast<bool>(featureCode >> 11U & 0x1U);
 }
 
 inline bool extraInfoHasLastHWTxTSF(uint32_t featureCode) {
-    return static_cast<bool>(featureCode >> 12 & 0x1);
+    return static_cast<bool>(featureCode >> 12U & 0x1U);
 }
 
 inline bool extraInfoHasChannelFlags(uint32_t featureCode) {
-    return static_cast<bool>(featureCode >> 13 & 0x1);
+    return static_cast<bool>(featureCode >> 13U & 0x1U);
 }
 
 inline bool extraInfoHasTxNess(uint32_t featureCode) {
-    return static_cast<bool>(featureCode >> 14 & 0x1);
+    return static_cast<bool>(featureCode >> 14U & 0x1U);
 }
 
 inline bool extraInfoHasTuningPolicy(uint32_t featureCode) {
-    return static_cast<bool>(featureCode >> 15 & 0x1);
+    return static_cast<bool>(featureCode >> 15U & 0x1U);
 }
 
 inline bool extraInfoHasPLLRate(uint32_t featureCode) {
-    return static_cast<bool>(featureCode >> 16 & 0x1);
+    return static_cast<bool>(featureCode >> 16U & 0x1U);
 }
 
 inline bool extraInfoHasPLLRefDiv(uint32_t featureCode) {
-    return static_cast<bool>(featureCode >> 17 & 0x1);
+    return static_cast<bool>(featureCode >> 17U & 0x1U);
 }
 
 inline bool extraInfoHasPLLClkSel(uint32_t featureCode) {
-    return static_cast<bool>(featureCode >> 18 & 0x1);
+    return static_cast<bool>(featureCode >> 18U & 0x1U);
 }
 
 inline bool extraInfoHasAGC(uint32_t featureCode) {
-    return static_cast<bool>(featureCode >> 19 & 0x1);
+    return static_cast<bool>(featureCode >> 19U & 0x1U);
 }
 
 inline bool extraInfoHasAntennaSelection(uint32_t featureCode) {
-    return static_cast<bool>(featureCode >> 20 & 0x1);
+    return static_cast<bool>(featureCode >> 20U & 0x1U);
 }
 
 enum RXSParsingLevel : uint8_t {
