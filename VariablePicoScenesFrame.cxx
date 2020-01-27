@@ -53,27 +53,31 @@ std::string PicoScenesFrameHeader::toString() const {
 }
 
 std::string CSIData::toString() const {
-    char headerLineChar[300];
+    std::string baseString;
+    char headerLineChar[128];
     std::sprintf(headerLineChar, "CSI Print [NTx=%u, NRx=%u, NLTF=%u, NSS=%u, NTONES=%u]\n", ntx, nrx, nltf, nss, num_tones);
-//    headerLine += "-------------------------------\n";
-//    std::string tabularContent = "";
-//    {
-//        for (int i = 0; i < rxs.rxs_basic.num_tones; ++i) {
-//            std::string lineString = fmt::sprintf("Tone #%4d || ", i);
-//            for (int j = 0; j < rxs.rxs_basic.nss; ++j) {
-//                auto pos = rxs.rxs_basic.num_tones * j + i;
-//                lineString += fmt::sprintf("#%d(%6.2f %6.2fi %5.2f %6.2f) ", j, rxs.csi_matrix[pos].real(), rxs.csi_matrix[pos].imag(), rxs.unwrappedMag[pos], rxs.unwrappedPhase[pos]);
-//            }
-//            lineString += "\n";
-//            tabularContent += lineString;
-//        }
-//    }
+    std::string headerLine(headerLineChar);
+    headerLine += "-------------------------------\n";
+    std::string tabularContent = "";
+    for (int i = 0; i < num_tones; ++i) {
+        char lineStringChar[50];
+        std::sprintf(lineStringChar, "Tone #%4d || ", i);
+        std::string lineString(lineStringChar);
+        for (int j = 0; j < nss; ++j) {
+            char dataChar[256];
+            auto pos = num_tones * j + i;
+            std::sprintf(dataChar, "#%d(%6.2f %6.2fi %5.2f %6.2f) ", j, csi_matrix[pos].real(), csi_matrix[pos].imag(), unwrappedMag[pos], unwrappedPhase[pos]);
+            std::string dataString(dataChar);
+            lineString += dataString;
+        }
+        lineString += "\n";
+        tabularContent += lineString;
+    }
 //
-//    baseString += headerLine;
-//    baseString += tabularContent;
-//    baseString += "-------------------------------\n";
-//    return baseString;
-    return "";
+    baseString += headerLine;
+    baseString += tabularContent;
+    baseString += "-------------------------------\n";
+    return baseString;
 }
 
 PicoScenesRxFrameStructure PicoScenesRxFrameStructure::fromRXSEnhanced(const RXS_enhanced &rxs) {
@@ -121,6 +125,11 @@ std::optional<PicoScenesRxFrameStructure> PicoScenesRxFrameStructure::fromBuffer
         // commit the following two lines to acquire raw csi matrix
         auto new_tones_num = phaseUnwrapAroundDC(rxFrame.csi.csi_matrix, rxFrame.csi.unwrappedMag, rxFrame.csi.unwrappedPhase, rxFrame.rxs_basic.nss / rxFrame.rxs_basic.nrx, rxFrame.rxs_basic.nrx, rxFrame.rxs_basic.num_tones, rxFrame.rxs_basic.channelBonding);
         rxFrame.rxs_basic.num_tones = new_tones_num;
+        rxFrame.csi.ntx = rxFrame.rxs_basic.ntx;
+        rxFrame.csi.nrx = rxFrame.rxs_basic.nrx;
+        rxFrame.csi.nss = rxFrame.rxs_basic.nss;
+        rxFrame.csi.nltf = rxFrame.rxs_basic.nltf;
+        rxFrame.csi.num_tones = rxFrame.rxs_basic.num_tones;
     }
     pos += rxFrame.rxs_basic.csi_len;
 
