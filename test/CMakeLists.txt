@@ -1,0 +1,7 @@
+add_subdirectory(googletest)
+if (EXISTS "${gtest_SOURCE_DIR}/include/gtest/internal/gtest-internal.h")
+#    message("Google Test included.")
+    include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
+    add_executable(PicoScenesFrameTest PicoScenesFrameTest.cxx)
+    target_link_libraries(PicoScenesFrameTest rxs_parsing gtest gtest_main)
+endif ()

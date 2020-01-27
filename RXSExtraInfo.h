@@ -9,54 +9,62 @@
 #include <cstdio>
 #include <complex>
 #include <bitset>
+#include <optional>
 
 #ifdef __GNUC__
-#define PACK( __Declaration__ ) __Declaration__ __attribute__((__packed__))
+#define PACK(__Declaration__) __Declaration__ __attribute__((__packed__))
 #endif
 
 #ifdef _MSC_VER
 #define PACK( __Declaration__ ) __pragma( pack(push, 1) ) __Declaration__ __pragma( pack(pop))
 #endif
 
-#define PICOSCENES_EXTRAINFO_HASLENGTH                 0x00000001
-#define PICOSCENES_EXTRAINFO_HASVERSION                0x00000002
-#define PICOSCENES_EXTRAINFO_HASMACCUR                 0x00000004
-#define PICOSCENES_EXTRAINFO_HASMACROM                 0x00000008
-#define PICOSCENES_EXTRAINFO_HASCHANSEL                0x00000010
-#define PICOSCENES_EXTRAINFO_HASBMODE                  0x00000020
-#define PICOSCENES_EXTRAINFO_HASEVM                    0x00000040
-#define PICOSCENES_EXTRAINFO_HASTXCHAINMASK            0x00000080
-#define PICOSCENES_EXTRAINFO_HASRXCHAINMASK            0x00000100
-#define PICOSCENES_EXTRAINFO_HASTXPOWER                0x00000200
-#define PICOSCENES_EXTRAINFO_HASCF                     0x00000400
-#define PICOSCENES_EXTRAINFO_HASTXTSF                  0x00000800
-#define PICOSCENES_EXTRAINFO_HASLASTHWTXTSF            0x00001000
-#define PICOSCENES_EXTRAINFO_HASCHANNELFLAGS           0x00002000
-#define PICOSCENES_EXTRAINFO_HASTXNESS                 0x00004000
-#define PICOSCENES_EXTRAINFO_HASTUNINGPOLICY           0x00008000
-#define PICOSCENES_EXTRAINFO_HASPLLRATE                0x00010000
-#define PICOSCENES_EXTRAINFO_HASPLLREFDIV              0x00020000
-#define PICOSCENES_EXTRAINFO_HASPLLCLKSEL              0x00040000
-#define PICOSCENES_EXTRAINFO_HASAGC                    0x00080000
-#define PICOSCENES_EXTRAINFO_HASANTENNASELECTION       0x00100000
+enum AtherosCFTuningPolicy : uint8_t {
+    CFTuningByChansel = 30,
+    CFTuningByFastCC,
+    CFTuningByHardwareReset,
+    CFTuningByDefault,
+};
 
+inline std::string TuningPolicy2String(uint8_t policy) {
+    switch (policy) {
+        case CFTuningByChansel:
+            return "Chansel";
+        case CFTuningByFastCC:
+            return "FastCC";
+        case CFTuningByHardwareReset:
+            return "Reset";
+        case CFTuningByDefault:
+            return "Default";
+        default:
+            throw std::runtime_error("[RXS_Enhanced.h] Unknown Tuning Policy for value: " + std::to_string(policy));
+    }
+}
 
-/**
- The mininum set of ExtraInfo used for Tx fabrication.
-
- @see ExtraInfo
- */
-PACK(struct TxExtraInfoMinSet {
-    uint32_t txExtraInfoFeatureCode;
-    uint16_t txExtraInfoLength;
-    uint64_t txExtraInfoVersion;
-    uint8_t txExtraInfoMacAddr_cur[6];
-    uint8_t txExtraInfoMacAddr_rom[6];
-
-    int getTxTSFPos();
-});
+#define PICOSCENES_EXTRAINFO_HASLENGTH                 0x00000001U
+#define PICOSCENES_EXTRAINFO_HASVERSION                0x00000002U
+#define PICOSCENES_EXTRAINFO_HASMACCUR                 0x00000004U
+#define PICOSCENES_EXTRAINFO_HASMACROM                 0x00000008U
+#define PICOSCENES_EXTRAINFO_HASCHANSEL                0x00000010U
+#define PICOSCENES_EXTRAINFO_HASBMODE                  0x00000020U
+#define PICOSCENES_EXTRAINFO_HASEVM                    0x00000040U
+#define PICOSCENES_EXTRAINFO_HASTXCHAINMASK            0x00000080U
+#define PICOSCENES_EXTRAINFO_HASRXCHAINMASK            0x00000100U
+#define PICOSCENES_EXTRAINFO_HASTXPOWER                0x00000200U
+#define PICOSCENES_EXTRAINFO_HASCF                     0x00000400U
+#define PICOSCENES_EXTRAINFO_HASTXTSF                  0x00000800U
+#define PICOSCENES_EXTRAINFO_HASLASTHWTXTSF            0x00001000U
+#define PICOSCENES_EXTRAINFO_HASCHANNELFLAGS           0x00002000U
+#define PICOSCENES_EXTRAINFO_HASTXNESS                 0x00004000U
+#define PICOSCENES_EXTRAINFO_HASTUNINGPOLICY           0x00008000U
+#define PICOSCENES_EXTRAINFO_HASPLLRATE                0x00010000U
+#define PICOSCENES_EXTRAINFO_HASPLLREFDIV              0x00020000U
+#define PICOSCENES_EXTRAINFO_HASPLLCLKSEL              0x00040000U
+#define PICOSCENES_EXTRAINFO_HASAGC                    0x00080000U
+#define PICOSCENES_EXTRAINFO_HASANTENNASELECTION       0x00100000U
 
 struct ExtraInfo {
+    uint32_t featureCode;
     bool hasLength;
     bool hasVersion;
     bool hasMacAddr_cur;
@@ -84,7 +92,7 @@ struct ExtraInfo {
     uint8_t macaddr_cur[6];
     uint32_t chansel;
     uint8_t bmode;
-    int8_t  evm[18];
+    int8_t evm[20];
     uint8_t txChainMask;
     uint8_t rxChainMask;
     uint8_t txpower;
@@ -93,17 +101,69 @@ struct ExtraInfo {
     uint32_t lastHwTxTSF;
     uint16_t channelFlags;
     uint8_t tx_ness;
-    uint8_t tuningPolicy;
+    AtherosCFTuningPolicy tuningPolicy;
     uint16_t pll_rate;
     uint8_t pll_refdiv;
     uint8_t pll_clock_select;
     uint8_t agc;
     uint8_t ant_sel[3];
 
-    static int fromBinary(const uint8_t *extraInfoPtr, struct ExtraInfo * extraInfo, uint32_t suppliedFeatureCode = 0);
-    static int toBinary(void * extraInfoPtr);
+    ExtraInfo();
+
+    [[nodiscard]] uint16_t calculateBufferLength() const;
+
+    void updateLength();
+
+    static int fromBinary(const uint8_t *extraInfoPtr, struct ExtraInfo *extraInfo, uint32_t suppliedFeatureCode = 0);
+
+    static std::optional<ExtraInfo> fromBuffer(const uint8_t *extraInfoPtr, uint32_t suppliedFeatureCode = 0);
+
+    int toBuffer(uint8_t *buffer) const;
+
+    void setLength(uint16_t length);
+
+    void setVersion(uint64_t version);
+
+    void setMacaddr_rom(const uint8_t addr_rom[6]);
+
+    void setMacaddr_cur(const uint8_t addr_cur[6]);
+
+    void setChansel(uint32_t chansel);
+
+    void setBmode(uint8_t bmode);
+
+    void setTxChainMask(uint8_t txChainMask);
+
+    void setRxChainMask(uint8_t rxChainMaskV);
+
+    void setTxpower(uint8_t txpowerV);
+
+    void setCf(uint64_t cf);
+
+    void setTxTsf(uint32_t txTsf);
+
+    void setLastHwTxTsf(uint32_t lastHwTxTsf);
+
+    void setChannelFlags(uint16_t channelFlags);
+
+    void setTxNess(uint8_t txNess);
+
+    void setTuningPolicy(uint8_t tuningPolicy);
+
+    void setPllRate(uint16_t pllRate);
+
+    void setPllRefdiv(uint8_t pllRefdiv);
+
+    void setPllClockSelect(uint8_t pllClockSelect);
+
+    void setAgc(uint8_t agc);
+
+    void setAntennaSelection(const uint8_t ant_sel[3]);
+
+    [[nodiscard]] std::string toString() const;
 };
 
+std::ostream &operator<<(std::ostream &os, const ExtraInfo &extraInfo);
 
 /**
  * Test the presence of version field.
@@ -111,7 +171,7 @@ struct ExtraInfo {
  * @return true for the presence, and false for not.
  */
 inline bool extraInfoHasVersion(uint32_t featureCode) {
-    return static_cast<bool>(featureCode >> 0 & 0x1);
+    return static_cast<bool>(featureCode >> 0u & 0x1U);
 }
 
 /**
@@ -123,7 +183,7 @@ inline bool extraInfoHasVersion(uint32_t featureCode) {
  * @return true for the presence, and false for not.
  */
 inline bool extraInfoHasLength(uint32_t featureCode) {
-    return static_cast<bool>(featureCode >> 1 & 0x1);
+    return static_cast<bool>(featureCode >> 1U & 0x1U);
 }
 
 /**
@@ -137,7 +197,7 @@ inline bool extraInfoHasLength(uint32_t featureCode) {
  * @see extraInfoHasMacAddress_Rom
  */
 inline bool extraInfoHasMacAddress_Current(uint32_t featureCode) {
-    return static_cast<bool>(featureCode >> 2 & 0x1);
+    return static_cast<bool>(featureCode >> 2U & 0x1U);
 }
 
 /**
@@ -151,7 +211,7 @@ inline bool extraInfoHasMacAddress_Current(uint32_t featureCode) {
  * @see extraInfoHasMacAddress_Current
  */
 inline bool extraInfoHasMacAddress_Rom(uint32_t featureCode) {
-    return static_cast<bool>(featureCode >> 3 & 0x1);
+    return static_cast<bool>(featureCode >> 3U & 0x1U);
 }
 
 /**
@@ -165,7 +225,7 @@ inline bool extraInfoHasMacAddress_Rom(uint32_t featureCode) {
  * @see extraInfoHasBMode
  */
 inline bool extraInfoHasChansel(uint32_t featureCode) {
-    return static_cast<bool>(featureCode >> 4 & 0x1);
+    return static_cast<bool>(featureCode >> 4U & 0x1U);
 }
 
 /**
@@ -181,16 +241,17 @@ inline bool extraInfoHasChansel(uint32_t featureCode) {
  * @see extraInfoHasChansel
  */
 inline bool extraInfoHasBMode(uint32_t featureCode) {
-    return static_cast<bool>(featureCode >> 5 & 0x1);
+    return static_cast<bool>(featureCode >> 5U & 0x1U);
+}
+
 /**
  * Test the presence of EVM data
  *
  * @param featureCode the 32-bit feature code
  * @return true for the presence, and false for not.
  */
-}
 inline bool extraInfoHasEVM(uint32_t featureCode) {
-    return static_cast<bool>(featureCode >> 6 & 0x1);
+    return static_cast<bool>(featureCode >> 6U & 0x1U);
 }
 
 /**
@@ -204,120 +265,119 @@ inline bool extraInfoHasEVM(uint32_t featureCode) {
  * @return true for the presence, and false for not.
  */
 inline bool extraInfoHasTxChainMask(uint32_t featureCode) {
-    return static_cast<bool>(featureCode >> 7 & 0x1);
-}
-inline bool extraInfoHasRxChainMask(uint32_t featureCode) {
-    return static_cast<bool>(featureCode >> 8 & 0x1);
-}
-inline bool extraInfoHasTxPower(uint32_t featureCode) {
-    return static_cast<bool>(featureCode >> 9 & 0x1);
-}
-inline bool extraInfoHasCF(uint32_t featureCode) {
-    return static_cast<bool>(featureCode >> 10 & 0x1);
-}
-inline bool extraInfoHasTxTSF(uint32_t featureCode) {
-    return static_cast<bool>(featureCode >> 11 & 0x1);
-}
-inline bool extraInfoHasLastHWTxTSF(uint32_t featureCode) {
-    return static_cast<bool>(featureCode >> 12 & 0x1);
-}
-inline bool extraInfoHasChannelFlags(uint32_t featureCode) {
-    return static_cast<bool>(featureCode >> 13 & 0x1);
-}
-inline bool extraInfoHasTxNess(uint32_t featureCode) {
-    return static_cast<bool>(featureCode >> 14 & 0x1);
-}
-inline bool extraInfoHasTuningPolicy(uint32_t featureCode) {
-    return static_cast<bool>(featureCode >> 15 & 0x1);
-}
-inline bool extraInfoHasPLLRate(uint32_t featureCode) {
-    return static_cast<bool>(featureCode >> 16 & 0x1);
-}
-inline bool extraInfoHasPLLRefDiv(uint32_t featureCode) {
-    return static_cast<bool>(featureCode >> 17 & 0x1);
-}
-inline bool extraInfoHasPLLClkSel(uint32_t featureCode) {
-    return static_cast<bool>(featureCode >> 18 & 0x1);
-}
-inline bool extraInfoHasAGC(uint32_t featureCode) {
-    return static_cast<bool>(featureCode >> 19 & 0x1);
-}
-inline bool extraInfoHasAntennaSelection(uint32_t featureCode) {
-    return static_cast<bool>(featureCode >> 20 & 0x1);
+    return static_cast<bool>(featureCode >> 7U & 0x1U);
 }
 
-enum RXSParsingLevel: uint8_t {
+inline bool extraInfoHasRxChainMask(uint32_t featureCode) {
+    return static_cast<bool>(featureCode >> 8U & 0x1U);
+}
+
+inline bool extraInfoHasTxPower(uint32_t featureCode) {
+    return static_cast<bool>(featureCode >> 9U & 0x1U);
+}
+
+inline bool extraInfoHasCF(uint32_t featureCode) {
+    return static_cast<bool>(featureCode >> 10U & 0x1U);
+}
+
+inline bool extraInfoHasTxTSF(uint32_t featureCode) {
+    return static_cast<bool>(featureCode >> 11U & 0x1U);
+}
+
+inline bool extraInfoHasLastHWTxTSF(uint32_t featureCode) {
+    return static_cast<bool>(featureCode >> 12U & 0x1U);
+}
+
+inline bool extraInfoHasChannelFlags(uint32_t featureCode) {
+    return static_cast<bool>(featureCode >> 13U & 0x1U);
+}
+
+inline bool extraInfoHasTxNess(uint32_t featureCode) {
+    return static_cast<bool>(featureCode >> 14U & 0x1U);
+}
+
+inline bool extraInfoHasTuningPolicy(uint32_t featureCode) {
+    return static_cast<bool>(featureCode >> 15U & 0x1U);
+}
+
+inline bool extraInfoHasPLLRate(uint32_t featureCode) {
+    return static_cast<bool>(featureCode >> 16U & 0x1U);
+}
+
+inline bool extraInfoHasPLLRefDiv(uint32_t featureCode) {
+    return static_cast<bool>(featureCode >> 17U & 0x1U);
+}
+
+inline bool extraInfoHasPLLClkSel(uint32_t featureCode) {
+    return static_cast<bool>(featureCode >> 18U & 0x1U);
+}
+
+inline bool extraInfoHasAGC(uint32_t featureCode) {
+    return static_cast<bool>(featureCode >> 19U & 0x1U);
+}
+
+inline bool extraInfoHasAntennaSelection(uint32_t featureCode) {
+    return static_cast<bool>(featureCode >> 20U & 0x1U);
+}
+
+enum class RXSParsingLevel : uint8_t {
     BASIC_NOEXTRA_NOCSI = 10,
     EXTRA_NOCSI,
     EXTRA_CSI,
     EXTRA_CSI_UNWRAP
 };
 
-enum ChannelMode : uint8_t {
+enum class ChannelMode : uint8_t {
     HT20 = 8,
     HT40_MINUS = 24,
     HT40_PLUS = 40,
 };
 
-enum AtherosCFTuningPolicy: uint8_t {
-    CFTuningByChansel = 30,
-    CFTuningByFastCC,
-    CFTuningByHardwareReset,
-    CFTuningByDefault,
-};
-
-
-inline ChannelMode channelFlags2ChannelMode(uint16_t channelFlags) {
-    std::bitset<16> channelFlagSet(channelFlags);
-
-    if  (channelFlagSet.test(3) && channelFlagSet.test(4)) {
-        return HT40_PLUS;
-    }
-
-    if  (channelFlagSet.test(3) && channelFlagSet.test(5)) {
-        return HT40_MINUS;
-    }
-
-    if  (channelFlagSet.test(3)) {
-        return HT20;
-    }
-
-    return HT20;
-}
-
 inline std::string channelModel2String(ChannelMode mode) {
     switch (mode) {
-        case HT40_PLUS:
+        case ChannelMode::HT40_PLUS:
             return "HT40_PLUS";
-        case HT40_MINUS:
+        case ChannelMode::HT40_MINUS:
             return "HT40_MINUS";
-        case HT20:
+        case ChannelMode::HT20:
             return "HT20";
     }
 }
 
-inline std::string TuningPolicy2String(uint8_t policy) {
-    switch (policy) {
-        case CFTuningByChansel:
-            return "Chansel";
-        case CFTuningByFastCC:
-            return "FastCC";
-        case CFTuningByHardwareReset:
-            return "Reset";
-        case CFTuningByDefault:
-            return "Default";
-        default:
-            throw std::runtime_error("[RXS_Enhanced.h] Unknown Tuning Policy for value: " + std::to_string(policy));
-    }
+inline std::ostream &operator<<(std::ostream &os, const ChannelMode &channelMode) {
+    os << channelModel2String(channelMode);
+    return os;
 }
 
+inline std::ostream &operator<<(std::ostream &os, const AtherosCFTuningPolicy &cfTuningPolicy) {
+    os << TuningPolicy2String(cfTuningPolicy);
+    return os;
+}
+
+inline ChannelMode channelFlags2ChannelMode(uint16_t channelFlags) {
+    std::bitset<16> channelFlagSet(channelFlags);
+
+    if (channelFlagSet.test(3) && channelFlagSet.test(4)) {
+        return ChannelMode::HT40_PLUS;
+    }
+
+    if (channelFlagSet.test(3) && channelFlagSet.test(5)) {
+        return ChannelMode::HT40_MINUS;
+    }
+
+    if (channelFlagSet.test(3)) {
+        return ChannelMode::HT20;
+    }
+
+    return ChannelMode::HT20;
+}
 
 /**
  * Parse 32-bit feature code into has* values of struct ExtraInfo
  * @param featureCode the input 32-bit feature code
  * @param extraInfo The ExtraInfo to be modified to reflect the feature code
  */
-void featureCodeInterpretation(uint32_t featureCode, struct ExtraInfo * extraInfo);
+void featureCodeInterpretation(uint32_t featureCode, struct ExtraInfo *extraInfo);
 
 
 /**
@@ -330,7 +390,7 @@ void featureCodeInterpretation(uint32_t featureCode, struct ExtraInfo * extraInf
  * @param data pointer to the value to be added
  * @param length value length
  */
-void inplaceAddRxExtraInfo(uint8_t *rxs_raw, uint32_t featureCode_added, uint8_t * data, int length);
+void inplaceAddRxExtraInfo(uint8_t *rxs_raw, uint32_t featureCode_added, uint8_t *data, int length);
 
 
 #endif //PICOSCENES_PLATFROM_RXSEXTRAINFO_H

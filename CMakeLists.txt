@@ -11,4 +11,4 @@ set(CMAKE_CXX_FLAGS_RELEASE  "-O3")
 
 file(GLOB rxs_parsing_source *.*)
 ADD_LIBRARY(rxs_parsing SHARED ${rxs_parsing_source})
-#install(TARGETS rxs_parsing DESTINATION ${INSTALL_TARGET_DIR})
+add_subdirectory(test)

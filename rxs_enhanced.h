@@ -87,20 +87,6 @@ PACK(struct ath_tx_status {
 	uint32_t duration; ///< Tx duration in microsecond
 });
 
-struct ieee80211_packet_header_frame_control {
-    uint16_t version         :2,
-             type            :2,
-             subtype         :4,
-             toDS            :1,
-             fromDS          :1,
-             moreFrags       :1,
-             retry           :1,
-             power_mgmt      :1,
-             more            :1,
-             protect         :1,
-             order           :1;
-};
-
 #ifdef __GNUC__
 struct ieee80211_packet_header_info {
     uint8_t version        :2,
