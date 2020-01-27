@@ -80,14 +80,10 @@ std::string CSIData::toString() const {
     return baseString;
 }
 
-PicoScenesRxFrameStructure PicoScenesRxFrameStructure::fromRXSEnhanced(const RXS_enhanced &rxs) {
-    return PicoScenesRxFrameStructure();
-}
 
 std::optional<PicoScenesRxFrameStructure> PicoScenesRxFrameStructure::fromBuffer(const uint8_t *buffer, std::optional<uint32_t> bufferLength, enum RXSParsingLevel parsingLevel) {
     if (PicoScenesRxFrameStructure::isOldRXSEnhancedFrame(buffer)) {
-        auto rxs = parseRXS(buffer, parsingLevel);
-        return PicoScenesRxFrameStructure::fromRXSEnhanced(rxs);
+        return PicoScenesRxFrameStructure::fromRXSEnhancedBuffer(buffer);
     }
 
     uint16_t totalLength = *((uint16_t *) (buffer));

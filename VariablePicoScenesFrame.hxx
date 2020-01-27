@@ -105,7 +105,7 @@ public:
 
     static std::optional<PicoScenesRxFrameStructure> fromBuffer(const uint8_t *buffer, std::optional<uint32_t> bufferLength = std::nullopt, RXSParsingLevel parsingLevel = RXSParsingLevel::EXTRA_NOCSI);
 
-    static PicoScenesRxFrameStructure fromRXSEnhanced(const RXS_enhanced &rxs);
+    static PicoScenesRxFrameStructure fromRXSEnhancedBuffer(const uint8_t *buffer);
 
     std::optional<uint16_t> parseRxMACFramePart(const uint8_t *buffer);
 
