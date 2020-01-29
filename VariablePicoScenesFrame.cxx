@@ -58,7 +58,7 @@ std::string CSIData::toString() const {
     std::sprintf(headerLineChar, "CSI Print [NTx=%u, NRx=%u, NLTF=%u, NSS=%u, NTONES=%u]\n", ntx, nrx, nltf, nss, num_tones);
     std::string headerLine(headerLineChar);
     headerLine += "-------------------------------\n";
-    std::string tabularContent = "";
+    std::string tabularContent;
     for (int i = 0; i < num_tones; ++i) {
         char lineStringChar[50];
         std::sprintf(lineStringChar, "Tone #%4d || ", i);
@@ -299,6 +299,11 @@ void PicoScenesTxFrameStructure::reset() {
     segmentLength.clear();
 }
 
+PicoScenesTxFrameStructure &PicoScenesTxFrameStructure::setMoreFrags() {
+    standardHeader.fc.moreFrags = 1;
+    return *this;
+}
+
 PicoScenesTxFrameStructure &PicoScenesTxFrameStructure::setRetry() {
     standardHeader.fc.retry = 1;
     return *this;
@@ -356,10 +361,6 @@ PicoScenesTxFrameStructure &PicoScenesTxFrameStructure::setSourceAddress(const u
 PicoScenesTxFrameStructure &PicoScenesTxFrameStructure::set3rdAddress(const uint8_t macAddr[6]) {
     memcpy(standardHeader.addr3, macAddr, 6);
     return *this;
-}
-
-uint16_t PicoScenesTxFrameStructure::getTaskId() const {
-    return frameHeader.taskId;
 }
 
 std::string PicoScenesTxFrameStructure::toString() const {
