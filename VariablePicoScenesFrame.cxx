@@ -129,8 +129,8 @@ std::optional<PicoScenesRxFrameStructure> PicoScenesRxFrameStructure::fromBuffer
     }
     pos += rxFrame.rxs_basic.csi_len;
 
-    if (auto extraLength = rxFrame.parseRxMACFramePart(buffer + pos)) {
-        pos += *extraLength;
+    if (auto psduLength = rxFrame.parseRxMACFramePart(buffer + pos)) {
+        pos += *psduLength;
     } else
         return std::nullopt;
 
@@ -175,9 +175,9 @@ std::optional<uint16_t> PicoScenesRxFrameStructure::parseRxMACFramePart(const ui
                 segmentMap = std::map<std::string, std::pair<uint32_t, std::shared_ptr<uint8_t>>>();
 
             auto segmentLength = *((uint16_t *) (buffer + pos));
+            pos += 2 + segmentLength;
             auto segmentBuffer = std::shared_ptr<uint8_t>(new uint8_t[segmentLength], std::default_delete<uint8_t[]>());
             memcpy(segmentBuffer.get(), buffer + pos, segmentLength);
-            pos += segmentLength;
             segmentMap->emplace(std::make_pair(identifierString, std::make_pair(segmentLength, segmentBuffer)));
         }
         return pos;
@@ -199,7 +199,7 @@ std::string PicoScenesRxFrameStructure::toString() const {
         std::stringstream segss;
         segss << "Segment:(";
         for (const auto &pair: *segmentMap) {
-            segss << pair.first << ":" << pair.second.first << ", ";
+            segss << pair.first << ":" << pair.second.first << "B, ";
         }
         auto temp = segss.str();
         temp.erase(temp.end() - 2, temp.end());
@@ -264,6 +264,7 @@ int PicoScenesTxFrameStructure::toBuffer(uint8_t *buffer, std::optional<uint16_t
     for (const auto &segmentPair : segmentLength) {
         *((char *) (buffer + pos++)) = segmentPair.first.c_str()[0];
         *((char *) (buffer + pos++)) = segmentPair.first.c_str()[1];
+        *((uint16_t *) (buffer + pos)) = segmentPair.second;
         pos += 2;
         memcpy(buffer + pos, segmentBuffer.at(segmentPair.first).data(), segmentPair.second);
         pos += segmentPair.second;
@@ -278,7 +279,7 @@ uint16_t PicoScenesTxFrameStructure::totalLength() const {
         length += extraInfo->calculateBufferLength() + 6; // 4B for Feature Code, 2B for 'EI'
     }
     for (const auto &segmentPair : segmentLength) {
-        length += (2 + segmentPair.second);
+        length += (4 + segmentPair.second); // 4B for 2B segment code and 2B length
     }
     return length;
 }
@@ -375,7 +376,7 @@ std::string PicoScenesTxFrameStructure::toString() const {
         std::stringstream segss;
         segss << "Segment:(";
         for (const auto &pair: segmentLength) {
-            segss << pair.first << ":" << pair.second << ", ";
+            segss << pair.first << ":" << pair.second << "B, ";
         }
         auto temp = segss.str();
         temp.erase(temp.end() - 2, temp.end());
