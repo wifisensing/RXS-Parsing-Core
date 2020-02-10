@@ -89,11 +89,12 @@ std::optional<PicoScenesRxFrameStructure> PicoScenesRxFrameStructure::fromBuffer
     uint16_t totalLength = *((uint16_t *) (buffer));
     uint16_t pos = 2;
 
-    if (bufferLength && totalLength + 2 != *bufferLength)
-        throw std::overflow_error("PicoScenesFrame structure corrupted.");
+    if (bufferLength && totalLength + 2 != *bufferLength) {
+        printf("Corrected PicoScenes frame, extracted length:%u, supplied length:%u\n", totalLength, *bufferLength);
+        return {};
+    }
 
     PicoScenesRxFrameStructure rxFrame;
-
     rxFrame.rxs_basic = *((struct rx_status_basic *) (buffer + pos));
     pos += sizeof(struct rx_status_basic);
     if (rxFrame.rxs_basic.nrx <= 0 || rxFrame.rxs_basic.nrx > 3 || rxFrame.rxs_basic.ntx <= 0 || rxFrame.rxs_basic.ntx > 3) {
