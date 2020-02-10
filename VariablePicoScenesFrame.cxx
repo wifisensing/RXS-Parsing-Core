@@ -89,7 +89,7 @@ std::optional<PicoScenesRxFrameStructure> PicoScenesRxFrameStructure::fromBuffer
     uint16_t totalLength = *((uint16_t *) (buffer));
     uint16_t pos = 2;
 
-    if (bufferLength && totalLength + 2 != bufferLength)
+    if (bufferLength && totalLength + 2 != *bufferLength)
         throw std::overflow_error("PicoScenesFrame structure corrupted.");
 
     PicoScenesRxFrameStructure rxFrame;
@@ -175,10 +175,11 @@ std::optional<uint16_t> PicoScenesRxFrameStructure::parseRxMACFramePart(const ui
                 segmentMap = std::map<std::string, std::pair<uint32_t, std::shared_ptr<uint8_t>>>();
 
             auto segmentLength = *((uint16_t *) (buffer + pos));
-            pos += 2 + segmentLength;
+            pos += 2;
             auto segmentBuffer = std::shared_ptr<uint8_t>(new uint8_t[segmentLength], std::default_delete<uint8_t[]>());
             memcpy(segmentBuffer.get(), buffer + pos, segmentLength);
             segmentMap->emplace(std::make_pair(identifierString, std::make_pair(segmentLength, segmentBuffer)));
+            pos += segmentLength;
         }
         return pos;
     }
