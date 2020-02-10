@@ -28,7 +28,7 @@ std::string ieee80211_mac_frame_header::toString() const {
     std::stringstream ss;
     ss << "MACHeader[dest[4-6]=" << std::nouppercase << std::setfill('0') << std::setw(2) << std::right << std::hex << int(addr1[3]) << ":" << int(addr1[4]) << ":" << int(addr1[5]) << ", ";
     ss << "src[4-6]=" << std::nouppercase << std::setfill('0') << std::setw(2) << std::right << std::hex << int(addr2[3]) << ":" << int(addr2[4]) << ":" << int(addr2[5]) << ", ";
-    ss << "seq=" << std::oct << seq << "]";
+    ss << "seq=" << std::dec << seq << "]";
     return ss.str();
 }
 
@@ -48,7 +48,7 @@ std::optional<PicoScenesFrameHeader> PicoScenesFrameHeader::fromBuffer(const uin
 
 std::string PicoScenesFrameHeader::toString() const {
     std::stringstream ss;
-    ss << "PSFHeader[ver=0x" << std::hex << version << std::oct << ", device=" << deviceType << ", seg=" << int(segments) << ", type=" << int(frameType) << ", taskId=" << int(taskId) << "]";
+    ss << "PSFHeader[ver=0x" << std::hex << version << std::dec << ", device=" << deviceType << ", seg=" << int(segments) << ", type=" << int(frameType) << ", taskId=" << int(taskId) << "]";
     return ss.str();
 }
 

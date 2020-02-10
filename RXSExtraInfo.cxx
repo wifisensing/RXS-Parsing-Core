@@ -358,51 +358,51 @@ std::string ExtraInfo::toString() const {
     std::stringstream ss;
     ss << "ExtraInfo:[";
     if (hasLength)
-        ss << "len=" << std::oct << std::to_string(length) << ", ";
+        ss << "len=" << std::to_string(length) << ", ";
     if (hasVersion)
-        ss << "ver=" << std::oct << std::to_string(version) << ", ";
+        ss << "ver=0x" << std::hex << version << ", ";
     if (hasMacAddr_cur)
         ss << "mac_cur[4-6]=" << std::nouppercase << std::setfill('0') << std::setw(2) << std::right << std::hex << int(macaddr_cur[3]) << ":" << int(macaddr_cur[4]) << ":" << int(macaddr_cur[5]) << ", ";
     if (hasMacAddr_cur)
         ss << "mac_rom[4-6]=" << std::nouppercase << std::setfill('0') << std::setw(2) << std::right << std::hex << int(macaddr_rom[3]) << ":" << int(macaddr_rom[4]) << ":" << int(macaddr_rom[5]) << ", ";
     if (hasChansel)
-        ss << "chansel=" << std::oct << std::to_string(chansel) << ", ";
+        ss << "chansel=" << std::to_string(chansel) << ", ";
     if (hasBMode)
-        ss << "bmode=" << std::oct << std::to_string(bmode) << ", ";
+        ss << "bmode=" << std::to_string(bmode) << ", ";
     if (hasEVM)
-        ss << "evm[0]=" << std::oct << std::to_string(evm[0]) << ", ";
+        ss << "evm[0]=" << std::to_string(evm[0]) << ", ";
     if (hasTxChainMask)
-        ss << "txcm=" << std::oct << std::to_string(txChainMask) << ", ";
+        ss << "txcm=" << std::to_string(txChainMask) << ", ";
     if (hasRxChainMask)
-        ss << "rxcm=" << std::oct << std::to_string(rxChainMask) << ", ";
+        ss << "rxcm=" << std::to_string(rxChainMask) << ", ";
     if (hasTxpower)
-        ss << "txpower=" << std::oct << std::to_string(txpower) << ", ";
+        ss << "txpower=" << std::to_string(txpower) << ", ";
     if (hasCF)
-        ss << "cf=" << std::oct << std::to_string(cf) << ", ";
+        ss << "cf=" << std::to_string(cf) << " Hz, ";
     if (hasTxTSF)
-        ss << "tx-tsf=" << std::oct << std::to_string(txTSF) << ", ";
+        ss << "tx-tsf=" << std::to_string(txTSF) << ", ";
     if (hasLastHWTxTSF)
-        ss << "last-tsf=" << std::oct << std::to_string(lastHwTxTSF) << ", ";
+        ss << "last-tsf=" << std::to_string(lastHwTxTSF) << ", ";
     if (hasChannelFlags)
-        ss << "flags=" << std::oct << std::to_string(channelFlags) << ", ";
+        ss << "flags=" << std::to_string(channelFlags) << ", ";
     if (hasTxNess)
-        ss << "tx_ness=" << std::oct << std::to_string(tx_ness) << ", ";
+        ss << "tx_ness=" << std::to_string(tx_ness) << ", ";
     if (hasTuningPolicy)
-        ss << "cf_policy=" << std::oct << tuningPolicy << ", ";
+        ss << "cf_policy=" << std::dec << tuningPolicy << ", ";
     if (hasPLLRate && hasPLLRefDiv && hasPLLClkSel) {
-        ss << "pll=(" << std::oct << std::to_string(pll_rate) << ", " << std::to_string(pll_refdiv) << ", " << std::to_string(pll_clock_select) << "), ";
+        ss << "pll=(" << std::to_string(pll_rate) << ", " << std::to_string(pll_refdiv) << ", " << std::to_string(pll_clock_select) << "), ";
     } else {
         if (hasPLLRate)
-            ss << "pll_rate=" << std::oct << std::to_string(pll_rate) << ", ";
+            ss << "pll_rate=" << std::to_string(pll_rate) << ", ";
         if (hasPLLRefDiv)
-            ss << "pll_refdiv=" << std::oct << std::to_string(pll_refdiv) << ", ";
+            ss << "pll_refdiv=" << std::to_string(pll_refdiv) << ", ";
         if (hasPLLClkSel)
-            ss << "pll_clksel=" << std::oct << std::to_string(pll_clock_select) << ", ";
+            ss << "pll_clksel=" << std::to_string(pll_clock_select) << ", ";
     }
     if (hasAGC)
-        ss << "agc=" << std::oct << std::to_string(agc) << ", ";
+        ss << "agc=" << std::to_string(agc) << ", ";
     if (hasAntennaSelection)
-        ss << "ant_sel=[" << std::oct << std::to_string(ant_sel[0]) << " " << std::to_string(ant_sel[1]) << " " << std::to_string(ant_sel[2]) << "], ";
+        ss << "ant_sel=[" << std::to_string(ant_sel[0]) << " " << std::to_string(ant_sel[1]) << " " << std::to_string(ant_sel[2]) << "], ";
     auto temp = ss.str();
     temp.erase(temp.end() - 2, temp.end());
     temp.append("]");
