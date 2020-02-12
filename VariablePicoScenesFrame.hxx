@@ -27,7 +27,7 @@ std::string DeviceType2String(PicoScenesDeviceType type);
 std::ostream &operator<<(std::ostream &os, const PicoScenesDeviceType &deviceType);
 
 struct ieee80211_mac_frame_header_frame_control_field {
-    uint16_t version         :2,
+    uint16_t version        :2,
             type            :2,
             subtype         :4,
             toDS            :1,
@@ -73,6 +73,34 @@ struct PicoScenesFrameHeader {
 
 std::ostream &operator<<(std::ostream &os, const PicoScenesFrameHeader &frameHeader);
 
+struct RxSBasic {
+    uint64_t   tstamp;      ///< h/w assigned RX timestamp
+    uint16_t   csi_len;     ///< csi length
+    uint16_t   channel;     ///< receiving channel frequency, unit is MHz, e.g, 2437
+    uint8_t	   sgi;	        ///< short GI, 1 for Short
+
+    int8_t     noise;       ///< noise floor
+    uint8_t	   rate;	    ///< MCS index
+    uint8_t    channelBonding; ///< receiving channel bandwidth, 0 for 20MHz, 1 for 40MHz
+    uint8_t    num_tones;   ///< number of tones (subcarriers), should be 56 or 114
+    uint8_t    nrx;         ///< number of receiving antennas, 1~3
+    uint8_t    ntx;         ///< number of transmitting antennas, 1~3
+    uint8_t    nltf;        ///< number of LTF field, 1~3
+    uint8_t    nss;         ///< number of CSI measurement groups
+
+    uint8_t    rssi;        ///< rx frame RSSI
+    uint8_t    rssi0;       ///< rx frame RSSI [ctl, chain 0]
+    uint8_t    rssi1;       ///< rx frame RSSI [ctl, chain 1]
+    uint8_t    rssi2;       ///< rx frame RSSI [ctl, chain 2]
+
+    static std::optional<RxSBasic> fromBuffer(const uint8_t *buffer);
+
+    [[nodiscard]] std::string toString() const;
+
+} __attribute__ ((__packed__));
+
+std::ostream &operator<<(std::ostream &os, const RxSBasic &rxSBasic);
+
 struct CSIData {
     uint8_t ntx;
     uint8_t nrx;
@@ -91,7 +119,7 @@ std::ostream &operator<<(std::ostream &os, const CSIData &data);
 class PicoScenesRxFrameStructure {
 public:
     PicoScenesDeviceType deviceType = PicoScenesDeviceType::QCA9300;
-    rx_status_basic rxs_basic = {};
+    RxSBasic rxs_basic = {};
     ExtraInfo rxExtraInfo;
     CSIData csi;
     ieee80211_mac_frame_header standardHeader;

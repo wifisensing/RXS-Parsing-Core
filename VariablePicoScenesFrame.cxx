@@ -26,9 +26,24 @@ std::ostream &operator<<(std::ostream &os, const PicoScenesDeviceType &deviceTyp
 
 std::string ieee80211_mac_frame_header::toString() const {
     std::stringstream ss;
-    ss << "MACHeader[dest[4-6]=" << std::nouppercase << std::setfill('0') << std::setw(2) << std::right << std::hex << int(addr1[3]) << ":" << int(addr1[4]) << ":" << int(addr1[5]) << ", ";
+    ss << "MACHeader:[dest[4-6]=" << std::nouppercase << std::setfill('0') << std::setw(2) << std::right << std::hex << int(addr1[3]) << ":" << int(addr1[4]) << ":" << int(addr1[5]) << ", ";
     ss << "src[4-6]=" << std::nouppercase << std::setfill('0') << std::setw(2) << std::right << std::hex << int(addr2[3]) << ":" << int(addr2[4]) << ":" << int(addr2[5]) << ", ";
     ss << "seq=" << std::dec << seq << "]";
+    return ss.str();
+}
+
+std::optional<RxSBasic> RxSBasic::fromBuffer(const uint8_t *buffer) {
+    RxSBasic basic = *((RxSBasic *) (buffer));
+    if (basic.num_tones != 56 && basic.num_tones != 114) {
+        printf("RxBasic: Impossible values in nrx (%d), ntx (%d), or num_tones (%d).\n", basic.nrx, basic.ntx, basic.num_tones);
+        return std::nullopt;
+    }
+    return basic;
+}
+
+std::string RxSBasic::toString() const {
+    std::stringstream ss;
+    ss << "RxS:[freq=" + std::to_string(channel) + ", bonding=" + std::to_string(channelBonding) + ", MCS=" + std::to_string(rate) + ", SGI=" + std::to_string(sgi) + ", CSI=" + std::to_string(csi_len) + "B(" + std::to_string(ntx) + ", " + std::to_string(nrx) + ", " + std::to_string(num_tones) + "), LTF=" + std::to_string(nltf) + ", NSS=" + std::to_string(nss) + ", timestamp=" + std::to_string(tstamp) + "]";
     return ss.str();
 }
 
@@ -48,7 +63,7 @@ std::optional<PicoScenesFrameHeader> PicoScenesFrameHeader::fromBuffer(const uin
 
 std::string PicoScenesFrameHeader::toString() const {
     std::stringstream ss;
-    ss << "PSFHeader[ver=0x" << std::hex << version << std::dec << ", device=" << deviceType << ", seg=" << int(segments) << ", type=" << int(frameType) << ", taskId=" << int(taskId) << "]";
+    ss << "PSFHeader:[ver=0x" << std::hex << version << std::dec << ", device=" << deviceType << ", seg=" << int(segments) << ", type=" << int(frameType) << ", taskId=" << int(taskId) << "]";
     return ss.str();
 }
 
@@ -95,12 +110,11 @@ std::optional<PicoScenesRxFrameStructure> PicoScenesRxFrameStructure::fromBuffer
     }
 
     PicoScenesRxFrameStructure rxFrame;
-    rxFrame.rxs_basic = *((struct rx_status_basic *) (buffer + pos));
-    pos += sizeof(struct rx_status_basic);
-    if (rxFrame.rxs_basic.nrx <= 0 || rxFrame.rxs_basic.nrx > 3 || rxFrame.rxs_basic.ntx <= 0 || rxFrame.rxs_basic.ntx > 3) {
-        printf("RXS Parser: Impossible values in nrx (%d), ntx (%d), or num_tones (%d). Error occurs in file format or parsing.\n", rxFrame.rxs_basic.nrx, rxFrame.rxs_basic.ntx, rxFrame.rxs_basic.num_tones);
+    if (auto basic = RxSBasic::fromBuffer(buffer + pos)) {
+        rxFrame.rxs_basic = *basic;
+        pos += sizeof(struct RxSBasic);
+    } else
         return std::nullopt;
-    }
 
     ExtraInfo::fromBinary(buffer + pos, &rxFrame.rxExtraInfo);
     pos += rxFrame.rxExtraInfo.length + 6; // + 6 for the rxFeatureCode (4B) and rxExtraInfoLength (2B)
@@ -189,7 +203,7 @@ std::optional<uint16_t> PicoScenesRxFrameStructure::parseRxMACFramePart(const ui
 
 std::string PicoScenesRxFrameStructure::toString() const {
     std::stringstream ss;
-    ss << "RxFrame:{" << standardHeader;
+    ss << "RxFrame:{" << rxs_basic << ", " << standardHeader;
     if (PicoScenesHeader) {
         ss << ", " << PicoScenesHeader->toString();
     }
@@ -396,6 +410,11 @@ std::ostream &operator<<(std::ostream &os, const ieee80211_mac_frame_header &hea
 
 std::ostream &operator<<(std::ostream &os, const PicoScenesFrameHeader &frameHeader) {
     os << frameHeader.toString();
+    return os;
+}
+
+std::ostream &operator<<(std::ostream &os, const RxSBasic &rxSBasic) {
+    os << rxSBasic.toString();
     return os;
 }
 
