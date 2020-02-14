@@ -140,7 +140,7 @@ public:
 
     static PicoScenesRxFrameStructure fromRXSEnhancedBuffer(const uint8_t *buffer);
 
-    int addOrReplaceSegment(const std::pair<std::string, std::pair<uint32_t, std::shared_ptr<uint8_t>>> &segment);
+    int addOrReplaceSegment(const std::pair<std::string, std::pair<uint32_t, std::shared_ptr<uint8_t>>> &newSegment);
 
     [[nodiscard]] std::string toString() const;
 };

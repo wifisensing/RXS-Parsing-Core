@@ -106,7 +106,7 @@ std::optional<PicoScenesRxFrameStructure> PicoScenesRxFrameStructure::fromBuffer
     uint16_t pos = 2;
 
     if (bufferLength && totalLength + 2 != *bufferLength) {
-        printf("Corrected PicoScenes frame, extracted length:%u, supplied length:%u\n", totalLength, *bufferLength);
+        printf("Corrupted PicoScenes frame, extracted length:%u, supplied length:%u\n", totalLength, *bufferLength);
         return {};
     }
 
@@ -247,9 +247,12 @@ int PicoScenesRxFrameStructure::addOrReplaceSegment(const std::pair<std::string,
         newBufferLength += (4 + segmentPair.second.first); // 4B for 2B segment code and 2B length
     }
     auto newBuffer = std::shared_ptr<uint8_t>(new uint8_t[newBufferLength], std::default_delete<uint8_t[]>());
-
-    // modify PSHeader
     memcpy(newBuffer.get(), rawBuffer.get(), *posSegments);
+
+    // modify MACHeader
+    auto *macHeader = (ieee80211_mac_frame_header *) (newBuffer.get() + posMSDU);
+    macHeader->fc.moreFrags = 0;
+    // modify PSHeader
     auto *PSHeader = (PicoScenesFrameHeader *) (newBuffer.get() + *posPicoScenesHeader);
     PSHeader->segments = segmentMap->size() + (txExtraInfo ? 1 : 0);
     // modify totalLength
@@ -267,13 +270,13 @@ int PicoScenesRxFrameStructure::addOrReplaceSegment(const std::pair<std::string,
         memcpy(newBuffer.get() + curPos, originalSegment.second.second.get(), originalSegment.second.first);
         curPos += originalSegment.second.first;
     }
-    assert(curPos == newBufferLength);
+    if (curPos != newBufferLength)
+        return 1;
     rawBuffer = newBuffer;
     rawBufferLength = newBufferLength;
     PicoScenesHeader->segments = segmentMap->size() + (txExtraInfo ? 1 : 0);
-    if (auto frame = PicoScenesRxFrameStructure::fromBuffer(newBuffer.get(), newBufferLength)) {
-        printf("Good !!!");
-    }
+
+    return 0;
 }
 
 std::string PicoScenesFrameTxParameters::toString() const {
