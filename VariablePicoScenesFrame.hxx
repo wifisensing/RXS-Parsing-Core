@@ -127,6 +127,11 @@ public:
     std::optional<ExtraInfo> txExtraInfo;
     std::optional<std::map<std::string, std::pair<uint32_t, std::shared_ptr<uint8_t>>>> segmentMap;
     std::shared_ptr<uint8_t> rawBuffer;
+    std::optional<std::pair<std::shared_ptr<uint8_t>, uint32_t>> msduBuffer;
+    uint32_t posMSDU;
+    std::optional<uint32_t> posPicoScenesHeader;
+    std::optional<uint32_t> posExtraInfo;
+    std::optional<uint32_t> posSegments;
     uint32_t rawBufferLength;
 
     static bool isOldRXSEnhancedFrame(const uint8_t bufferHead[6]);
@@ -135,7 +140,7 @@ public:
 
     static PicoScenesRxFrameStructure fromRXSEnhancedBuffer(const uint8_t *buffer);
 
-    std::optional<uint16_t> parseRxMACFramePart(const uint8_t *buffer);
+    int addOrReplaceSegment(const std::pair<std::string, std::pair<uint32_t, std::shared_ptr<uint8_t>>> &segment);
 
     [[nodiscard]] std::string toString() const;
 };
