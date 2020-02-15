@@ -155,7 +155,7 @@ std::optional<PicoScenesRxFrameStructure> PicoScenesRxFrameStructure::fromBuffer
         pos += sizeof(PicoScenesFrameHeader);
 
         if (rxFrame.PicoScenesHeader->magicValue != 0x20150315) {
-            printf("PicoScenesHeader->magicValue not corrected.\n");
+//            printf("PicoScenesHeader->magicValue is not correct.\n");
             return std::nullopt;
         }
 
