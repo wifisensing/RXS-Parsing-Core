@@ -16,6 +16,8 @@ std::string DeviceType2String(PicoScenesDeviceType type) {
             return "USRP(SDR)";
         case PicoScenesDeviceType::Unknown:
             return "Unknown";
+        default:
+            throw std::runtime_error("unrecoginized PicoScenesDeviceType.");
     }
 }
 
