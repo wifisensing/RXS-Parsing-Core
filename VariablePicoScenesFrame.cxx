@@ -107,7 +107,7 @@ std::optional<PicoScenesRxFrameStructure> PicoScenesRxFrameStructure::fromBuffer
     uint16_t totalLength = *((uint16_t *) (buffer));
     uint16_t pos = 2;
 
-    if (bufferLength && totalLength + 2 != *bufferLength) {
+    if (bufferLength && totalLength + 2U != *bufferLength) {
 //        printf("Corrupted PicoScenes frame, extracted length:%u, supplied length:%u\n", totalLength, *bufferLength);
         return {};
     }
