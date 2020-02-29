@@ -39,18 +39,8 @@ struct ieee80211_mac_frame_header_frame_control_field {
             protect         :1,
             order           :1;
 
-    ieee80211_mac_frame_header_frame_control_field() : version(0), type(2), subtype(8), toDS(0), fromDS(0), moreFrags(0), retry(0), power_mgmt(0), more(0), protect(0), order(1) {}
-
-} __attribute__ ((__packed__));
-
-struct ieee80211_mac_frame_header_qos_control_field {
-    uint16_t tid : 4,
-            EOSP : 1,
-            ackPolicy : 2,
-            reserved : 1,
-            txop : 8;
-
-    ieee80211_mac_frame_header_qos_control_field() : tid(7), EOSP(0), ackPolicy(1), reserved(0), txop(0) {}
+    // the frame type can ONLY be 1, coz 9300 rx will always ack the other types.
+    ieee80211_mac_frame_header_frame_control_field() : version(0), type(1), subtype(8), toDS(0), fromDS(0), moreFrags(0), retry(0), power_mgmt(0), more(0), protect(0), order(1) {}
 
 } __attribute__ ((__packed__));
 
@@ -62,7 +52,6 @@ struct ieee80211_mac_frame_header {
     uint8_t addr3[6] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
     uint16_t frag : 4,
             seq : 12;
-    ieee80211_mac_frame_header_qos_control_field qos_control;
 
     ieee80211_mac_frame_header() : seq(0), frag(0) {};
 
