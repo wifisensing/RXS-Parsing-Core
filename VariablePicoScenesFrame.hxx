@@ -39,17 +39,32 @@ struct ieee80211_mac_frame_header_frame_control_field {
             protect         :1,
             order           :1;
 
-    ieee80211_mac_frame_header_frame_control_field() : version(0), type(2), subtype(0), toDS(0), fromDS(0), moreFrags(0), retry(0), power_mgmt(0), more(0), protect(0), order(1) {}
+    ieee80211_mac_frame_header_frame_control_field() : version(0), type(2), subtype(8), toDS(0), fromDS(0), moreFrags(0), retry(0), power_mgmt(0), more(0), protect(0), order(1) {}
+
+} __attribute__ ((__packed__));
+
+struct ieee80211_mac_frame_header_qos_control_field {
+    uint16_t tid : 4,
+            EOSP : 1,
+            ackPolicy : 2,
+            reserved : 1,
+            txop : 8;
+
+    ieee80211_mac_frame_header_qos_control_field() : tid(7), EOSP(0), ackPolicy(1), reserved(0), txop(0) {}
 
 } __attribute__ ((__packed__));
 
 struct ieee80211_mac_frame_header {
-    struct ieee80211_mac_frame_header_frame_control_field fc;
+    ieee80211_mac_frame_header_frame_control_field fc;
     uint16_t dur = 0;
     uint8_t addr1[6] = {0x00, 0x16, 0xea, 0x12, 0x34, 0x56};
     uint8_t addr2[6] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
     uint8_t addr3[6] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
-    uint16_t seq = 0;
+    uint16_t frag : 4,
+            seq : 12;
+    ieee80211_mac_frame_header_qos_control_field qos_control;
+
+    ieee80211_mac_frame_header() : seq(0), frag(0) {};
 
     [[nodiscard]] std::string toString() const;
 
