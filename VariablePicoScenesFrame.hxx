@@ -78,6 +78,7 @@ struct PicoScenesFrameHeader {
 std::ostream &operator<<(std::ostream &os, const PicoScenesFrameHeader &frameHeader);
 
 struct RxSBasic {
+    uint16_t   deviceType;  ///< device type code
     uint64_t   tstamp;      ///< h/w assigned RX timestamp
     uint16_t   csi_len;     ///< csi length
     uint16_t   channel;     ///< receiving channel frequency, unit is MHz, e.g, 2437

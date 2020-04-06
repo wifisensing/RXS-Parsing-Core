@@ -119,8 +119,7 @@ std::optional<PicoScenesRxFrameStructure> PicoScenesRxFrameStructure::fromBuffer
     } else
         return std::nullopt;
 
-    ExtraInfo::fromBinary(buffer + pos, &rxFrame.rxExtraInfo);
-    pos += rxFrame.rxExtraInfo.length + 6; // + 6 for the rxFeatureCode (4B) and rxExtraInfoLength (2B)
+    pos += ExtraInfo::fromBinary(buffer + pos, &rxFrame.rxExtraInfo);
     if (rxFrame.rxExtraInfo.hasEVM) {
         for (auto &evm : rxFrame.rxExtraInfo.evm) {
             evm += rxFrame.rxs_basic.noise;
@@ -176,7 +175,7 @@ std::optional<PicoScenesRxFrameStructure> PicoScenesRxFrameStructure::fromBuffer
                 rxFrame.posExtraInfo = pos - 2;
                 if (auto extraInfo = ExtraInfo::fromBuffer(buffer + pos)) {
                     rxFrame.txExtraInfo = extraInfo;
-                    pos += extraInfo->length + 4;
+                    pos += extraInfo->length + 6;
                     rxFrame.posSegments = pos;
                     continue;
                 }
