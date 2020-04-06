@@ -116,6 +116,7 @@ std::optional<PicoScenesRxFrameStructure> PicoScenesRxFrameStructure::fromBuffer
     if (auto basic = RxSBasic::fromBuffer(buffer + pos)) {
         rxFrame.rxs_basic = *basic;
         pos += sizeof(struct RxSBasic);
+        rxFrame.deviceType = PicoScenesDeviceType(rxFrame.rxs_basic.deviceType);
     } else
         return std::nullopt;
 
@@ -128,8 +129,6 @@ std::optional<PicoScenesRxFrameStructure> PicoScenesRxFrameStructure::fromBuffer
             }
         }
     }
-    if (rxFrame.rxExtraInfo.hasVersion && rxFrame.rxExtraInfo.version == (uint16_t) PicoScenesDeviceType::USRP)
-        rxFrame.deviceType = PicoScenesDeviceType::USRP;
 
     if (parsingLevel >= RXSParsingLevel::EXTRA_CSI) {
         if (rxFrame.deviceType == PicoScenesDeviceType::QCA9300)
