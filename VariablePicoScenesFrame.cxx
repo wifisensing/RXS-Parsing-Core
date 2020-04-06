@@ -37,7 +37,7 @@ std::string ieee80211_mac_frame_header::toString() const {
 
 std::optional<RxSBasic> RxSBasic::fromBuffer(const uint8_t *buffer) {
     RxSBasic basic = *((RxSBasic *) (buffer));
-    if (basic.num_tones != 56 && basic.num_tones != 114) {
+    if (basic.num_tones != 52 && basic.num_tones != 56 && basic.num_tones != 114) {
         printf("RxBasic: Impossible values in nrx (%d), ntx (%d), or num_tones (%d).\n", basic.nrx, basic.ntx, basic.num_tones);
         return std::nullopt;
     }
@@ -129,13 +129,16 @@ std::optional<PicoScenesRxFrameStructure> PicoScenesRxFrameStructure::fromBuffer
             }
         }
     }
+    if (rxFrame.rxExtraInfo.hasVersion && rxFrame.rxExtraInfo.version == (uint16_t) PicoScenesDeviceType::USRP)
+        rxFrame.deviceType = PicoScenesDeviceType::USRP;
 
     if (parsingLevel >= RXSParsingLevel::EXTRA_CSI) {
         if (rxFrame.deviceType == PicoScenesDeviceType::QCA9300)
             ar_parse_csi_matrix(buffer + pos, rxFrame.rxs_basic.nss / rxFrame.rxs_basic.nrx, rxFrame.rxs_basic.nrx, rxFrame.rxs_basic.num_tones, rxFrame.csi.csi_matrix);
-        else
+        else if (rxFrame.deviceType == PicoScenesDeviceType::IWL5300)
             iwl_parse_csi_matrix(buffer + pos, rxFrame.rxs_basic.ntx, rxFrame.rxs_basic.nrx, rxFrame.rxs_basic.nltf, rxFrame.rxs_basic.num_tones, rxFrame.rxExtraInfo, rxFrame.csi.csi_matrix);
-
+        else if (rxFrame.deviceType == PicoScenesDeviceType::USRP)
+            usrp_parse_csi_matrix(buffer + pos, rxFrame.rxs_basic.nss / rxFrame.rxs_basic.nrx, rxFrame.rxs_basic.nrx, rxFrame.rxs_basic.num_tones, rxFrame.csi.csi_matrix);
         // commit the following two lines to acquire raw csi matrix
         auto new_tones_num = phaseUnwrapAroundDC(rxFrame.csi.csi_matrix, rxFrame.csi.unwrappedMag, rxFrame.csi.unwrappedPhase, rxFrame.rxs_basic.nss / rxFrame.rxs_basic.nrx, rxFrame.rxs_basic.nrx, rxFrame.rxs_basic.num_tones, rxFrame.rxs_basic.channelBonding);
         rxFrame.rxs_basic.num_tones = new_tones_num;

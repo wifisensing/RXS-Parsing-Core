@@ -351,7 +351,7 @@ void ExtraInfo::setAntennaSelection(const uint8_t sel[3]) {
 }
 
 void ExtraInfo::updateLength() {
-    setLength(calculateBufferLength());
+    setLength(calculateBufferLength() - 2);
 }
 
 std::string ExtraInfo::toString() const {
