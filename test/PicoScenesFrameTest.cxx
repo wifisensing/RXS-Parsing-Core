@@ -23,24 +23,4 @@ namespace PicoScenesFrameTest {
         EXPECT_TRUE(recovered);
         return;
     }
-
-    TEST(FrameStructure, IO) {
-        PicoScenesTxFrameStructure txFrameStructure;
-        txFrameStructure.frameHeader.taskId = 0x1234;
-        ExtraInfo txExtraInfo;
-//        txExtraInfo.setCf(12345);
-//        txExtraInfo.setAgc(30);
-//        txExtraInfo.setChansel(123423);
-//        txExtraInfo.setBmode(0);
-        txExtraInfo.setVersion(0x2323);
-        txFrameStructure.addExtraInfo(txExtraInfo);
-        uint8_t buffer[1024];
-        memset(buffer, 0, sizeof(buffer));
-        auto length = txFrameStructure.toBuffer(buffer);
-
-        PicoScenesRxFrameStructure rxFrame;
-        auto result = rxFrame.parseRxMACFramePart(buffer);
-        EXPECT_TRUE(result);
-        return;
-    }
 }

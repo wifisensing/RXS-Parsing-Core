@@ -27,7 +27,7 @@ std::string DeviceType2String(PicoScenesDeviceType type);
 std::ostream &operator<<(std::ostream &os, const PicoScenesDeviceType &deviceType);
 
 struct ieee80211_mac_frame_header_frame_control_field {
-    uint16_t version         :2,
+    uint16_t version        :2,
             type            :2,
             subtype         :4,
             toDS            :1,
@@ -39,17 +39,21 @@ struct ieee80211_mac_frame_header_frame_control_field {
             protect         :1,
             order           :1;
 
-    ieee80211_mac_frame_header_frame_control_field() : version(0), type(2), subtype(0), toDS(0), fromDS(0), moreFrags(0), retry(0), power_mgmt(0), more(0), protect(0), order(1) {}
+    // the frame type can ONLY be 1, coz 9300 rx will always ack the other types.
+    ieee80211_mac_frame_header_frame_control_field() : version(0), type(1), subtype(0), toDS(0), fromDS(0), moreFrags(0), retry(0), power_mgmt(0), more(0), protect(0), order(1) {}
 
 } __attribute__ ((__packed__));
 
 struct ieee80211_mac_frame_header {
-    struct ieee80211_mac_frame_header_frame_control_field fc;
+    ieee80211_mac_frame_header_frame_control_field fc;
     uint16_t dur = 0;
     uint8_t addr1[6] = {0x00, 0x16, 0xea, 0x12, 0x34, 0x56};
     uint8_t addr2[6] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
     uint8_t addr3[6] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
-    uint16_t seq = 0;
+    uint16_t frag : 4,
+            seq : 12;
+
+    ieee80211_mac_frame_header() : seq(0), frag(0) {};
 
     [[nodiscard]] std::string toString() const;
 
@@ -73,6 +77,35 @@ struct PicoScenesFrameHeader {
 
 std::ostream &operator<<(std::ostream &os, const PicoScenesFrameHeader &frameHeader);
 
+struct RxSBasic {
+    uint16_t   deviceType;  ///< device type code
+    uint64_t   tstamp;      ///< h/w assigned RX timestamp
+    uint16_t   csi_len;     ///< csi length
+    uint16_t   channel;     ///< receiving channel frequency, unit is MHz, e.g, 2437
+    uint8_t	   sgi;	        ///< short GI, 1 for Short
+
+    int8_t     noise;       ///< noise floor
+    uint8_t	   rate;	    ///< MCS index
+    uint8_t    channelBonding; ///< receiving channel bandwidth, 0 for 20MHz, 1 for 40MHz
+    uint8_t    num_tones;   ///< number of tones (subcarriers), should be 56 or 114
+    uint8_t    nrx;         ///< number of receiving antennas, 1~3
+    uint8_t    ntx;         ///< number of transmitting antennas, 1~3
+    uint8_t    nltf;        ///< number of LTF field, 1~3
+    uint8_t    nss;         ///< number of CSI measurement groups
+
+    uint8_t    rssi;        ///< rx frame RSSI
+    uint8_t    rssi0;       ///< rx frame RSSI [ctl, chain 0]
+    uint8_t    rssi1;       ///< rx frame RSSI [ctl, chain 1]
+    uint8_t    rssi2;       ///< rx frame RSSI [ctl, chain 2]
+
+    static std::optional<RxSBasic> fromBuffer(const uint8_t *buffer);
+
+    [[nodiscard]] std::string toString() const;
+
+} __attribute__ ((__packed__));
+
+std::ostream &operator<<(std::ostream &os, const RxSBasic &rxSBasic);
+
 struct CSIData {
     uint8_t ntx;
     uint8_t nrx;
@@ -91,7 +124,7 @@ std::ostream &operator<<(std::ostream &os, const CSIData &data);
 class PicoScenesRxFrameStructure {
 public:
     PicoScenesDeviceType deviceType = PicoScenesDeviceType::QCA9300;
-    rx_status_basic rxs_basic = {};
+    RxSBasic rxs_basic = {};
     ExtraInfo rxExtraInfo;
     CSIData csi;
     ieee80211_mac_frame_header standardHeader;
@@ -99,6 +132,11 @@ public:
     std::optional<ExtraInfo> txExtraInfo;
     std::optional<std::map<std::string, std::pair<uint32_t, std::shared_ptr<uint8_t>>>> segmentMap;
     std::shared_ptr<uint8_t> rawBuffer;
+    std::optional<std::pair<std::shared_ptr<uint8_t>, uint32_t>> msduBuffer;
+    uint32_t posMSDU;
+    std::optional<uint32_t> posPicoScenesHeader;
+    std::optional<uint32_t> posExtraInfo;
+    std::optional<uint32_t> posSegments;
     uint32_t rawBufferLength;
 
     static bool isOldRXSEnhancedFrame(const uint8_t bufferHead[6]);
@@ -107,7 +145,7 @@ public:
 
     static PicoScenesRxFrameStructure fromRXSEnhancedBuffer(const uint8_t *buffer);
 
-    std::optional<uint16_t> parseRxMACFramePart(const uint8_t *buffer);
+    int addOrReplaceSegment(const std::pair<std::string, std::pair<uint32_t, std::shared_ptr<uint8_t>>> &newSegment);
 
     [[nodiscard]] std::string toString() const;
 };
@@ -149,7 +187,7 @@ public:
 
     PicoScenesTxFrameStructure &addSegmentBuffer(const std::string &identifier, const std::array<uint8_t, PICOSCENES_FRAME_SEGMENT_MAX_LENGTH> &bufferArray, uint16_t length);
 
-    uint16_t getTaskId() const;
+    PicoScenesTxFrameStructure &setMoreFrags();
 
     PicoScenesTxFrameStructure &setRetry();
 

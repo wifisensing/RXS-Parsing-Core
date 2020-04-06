@@ -16,6 +16,8 @@ std::string DeviceType2String(PicoScenesDeviceType type) {
             return "USRP(SDR)";
         case PicoScenesDeviceType::Unknown:
             return "Unknown";
+        default:
+            throw std::runtime_error("unrecoginized PicoScenesDeviceType.");
     }
 }
 
@@ -26,9 +28,25 @@ std::ostream &operator<<(std::ostream &os, const PicoScenesDeviceType &deviceTyp
 
 std::string ieee80211_mac_frame_header::toString() const {
     std::stringstream ss;
-    ss << "MACHeader[dest[4-6]=" << std::nouppercase << std::setfill('0') << std::setw(2) << std::right << std::hex << int(addr1[3]) << ":" << int(addr1[4]) << ":" << int(addr1[5]) << ", ";
+    ss << "MACHeader:[dest[4-6]=" << std::nouppercase << std::setfill('0') << std::setw(2) << std::right << std::hex << int(addr1[3]) << ":" << int(addr1[4]) << ":" << int(addr1[5]) << ", ";
     ss << "src[4-6]=" << std::nouppercase << std::setfill('0') << std::setw(2) << std::right << std::hex << int(addr2[3]) << ":" << int(addr2[4]) << ":" << int(addr2[5]) << ", ";
-    ss << "seq=" << std::oct << seq << "]";
+    ss << "seq=" << std::dec << seq << ", frag=" << frag << ", ";
+    ss << "mfrags=" << std::to_string(fc.moreFrags) << "]";
+    return ss.str();
+}
+
+std::optional<RxSBasic> RxSBasic::fromBuffer(const uint8_t *buffer) {
+    RxSBasic basic = *((RxSBasic *) (buffer));
+    if (basic.num_tones != 52 && basic.num_tones != 56 && basic.num_tones != 114) {
+        printf("RxBasic: Impossible values in nrx (%d), ntx (%d), or num_tones (%d).\n", basic.nrx, basic.ntx, basic.num_tones);
+        return std::nullopt;
+    }
+    return basic;
+}
+
+std::string RxSBasic::toString() const {
+    std::stringstream ss;
+    ss << "RxS:[freq=" + std::to_string(channel) + ", bonding=" + std::to_string(channelBonding) + ", MCS=" + std::to_string(rate) + ", SGI=" + std::to_string(sgi) + ", CSI=" + std::to_string(csi_len) + "B(" + std::to_string(ntx) + ", " + std::to_string(nrx) + ", " + std::to_string(num_tones) + "), LTF=" + std::to_string(nltf) + ", NSS=" + std::to_string(nss) + ", timestamp=" + std::to_string(tstamp) + "]";
     return ss.str();
 }
 
@@ -48,7 +66,7 @@ std::optional<PicoScenesFrameHeader> PicoScenesFrameHeader::fromBuffer(const uin
 
 std::string PicoScenesFrameHeader::toString() const {
     std::stringstream ss;
-    ss << "PSFHeader[ver=0x" << std::hex << version << std::oct << ", device=" << deviceType << ", seg=" << int(segments) << ", type=" << int(frameType) << ", taskId=" << int(taskId) << "]";
+    ss << "PSFHeader:[ver=0x" << std::hex << version << std::dec << ", device=" << deviceType << ", seg=" << int(segments) << ", type=" << int(frameType) << ", taskId=" << int(taskId) << "]";
     return ss.str();
 }
 
@@ -58,7 +76,7 @@ std::string CSIData::toString() const {
     std::sprintf(headerLineChar, "CSI Print [NTx=%u, NRx=%u, NLTF=%u, NSS=%u, NTONES=%u]\n", ntx, nrx, nltf, nss, num_tones);
     std::string headerLine(headerLineChar);
     headerLine += "-------------------------------\n";
-    std::string tabularContent = "";
+    std::string tabularContent;
     for (int i = 0; i < num_tones; ++i) {
         char lineStringChar[50];
         std::sprintf(lineStringChar, "Tone #%4d || ", i);
@@ -89,20 +107,19 @@ std::optional<PicoScenesRxFrameStructure> PicoScenesRxFrameStructure::fromBuffer
     uint16_t totalLength = *((uint16_t *) (buffer));
     uint16_t pos = 2;
 
-    if (bufferLength && totalLength + 2 != bufferLength)
-        throw std::overflow_error("PicoScenesFrame structure corrupted.");
-
-    PicoScenesRxFrameStructure rxFrame;
-
-    rxFrame.rxs_basic = *((struct rx_status_basic *) (buffer + pos));
-    pos += sizeof(struct rx_status_basic);
-    if (rxFrame.rxs_basic.nrx <= 0 || rxFrame.rxs_basic.nrx > 3 || rxFrame.rxs_basic.ntx <= 0 || rxFrame.rxs_basic.ntx > 3) {
-        printf("RXS Parser: Impossible values in nrx (%d), ntx (%d), or num_tones (%d). Error occurs in file format or parsing.\n", rxFrame.rxs_basic.nrx, rxFrame.rxs_basic.ntx, rxFrame.rxs_basic.num_tones);
-        return std::nullopt;
+    if (bufferLength && totalLength + 2U != *bufferLength) {
+//        printf("Corrupted PicoScenes frame, extracted length:%u, supplied length:%u\n", totalLength, *bufferLength);
+        return {};
     }
 
-    ExtraInfo::fromBinary(buffer + pos, &rxFrame.rxExtraInfo);
-    pos += rxFrame.rxExtraInfo.length + 6; // + 6 for the rxFeatureCode (4B) and rxExtraInfoLength (2B)
+    PicoScenesRxFrameStructure rxFrame;
+    if (auto basic = RxSBasic::fromBuffer(buffer + pos)) {
+        rxFrame.rxs_basic = *basic;
+        pos += sizeof(struct RxSBasic);
+    } else
+        return std::nullopt;
+
+    pos += ExtraInfo::fromBinary(buffer + pos, &rxFrame.rxExtraInfo);
     if (rxFrame.rxExtraInfo.hasEVM) {
         for (auto &evm : rxFrame.rxExtraInfo.evm) {
             evm += rxFrame.rxs_basic.noise;
@@ -111,13 +128,16 @@ std::optional<PicoScenesRxFrameStructure> PicoScenesRxFrameStructure::fromBuffer
             }
         }
     }
+    if (rxFrame.rxExtraInfo.hasVersion && rxFrame.rxExtraInfo.version == (uint16_t) PicoScenesDeviceType::USRP)
+        rxFrame.deviceType = PicoScenesDeviceType::USRP;
 
     if (parsingLevel >= RXSParsingLevel::EXTRA_CSI) {
         if (rxFrame.deviceType == PicoScenesDeviceType::QCA9300)
             ar_parse_csi_matrix(buffer + pos, rxFrame.rxs_basic.nss / rxFrame.rxs_basic.nrx, rxFrame.rxs_basic.nrx, rxFrame.rxs_basic.num_tones, rxFrame.csi.csi_matrix);
-        else
+        else if (rxFrame.deviceType == PicoScenesDeviceType::IWL5300)
             iwl_parse_csi_matrix(buffer + pos, rxFrame.rxs_basic.ntx, rxFrame.rxs_basic.nrx, rxFrame.rxs_basic.nltf, rxFrame.rxs_basic.num_tones, rxFrame.rxExtraInfo, rxFrame.csi.csi_matrix);
-
+        else if (rxFrame.deviceType == PicoScenesDeviceType::USRP)
+            usrp_parse_csi_matrix(buffer + pos, rxFrame.rxs_basic.nss / rxFrame.rxs_basic.nrx, rxFrame.rxs_basic.nrx, rxFrame.rxs_basic.num_tones, rxFrame.csi.csi_matrix);
         // commit the following two lines to acquire raw csi matrix
         auto new_tones_num = phaseUnwrapAroundDC(rxFrame.csi.csi_matrix, rxFrame.csi.unwrappedMag, rxFrame.csi.unwrappedPhase, rxFrame.rxs_basic.nss / rxFrame.rxs_basic.nrx, rxFrame.rxs_basic.nrx, rxFrame.rxs_basic.num_tones, rxFrame.rxs_basic.channelBonding);
         rxFrame.rxs_basic.num_tones = new_tones_num;
@@ -129,65 +149,72 @@ std::optional<PicoScenesRxFrameStructure> PicoScenesRxFrameStructure::fromBuffer
     }
     pos += rxFrame.rxs_basic.csi_len;
 
-    if (auto extraLength = rxFrame.parseRxMACFramePart(buffer + pos)) {
-        pos += *extraLength;
-    } else
-        return std::nullopt;
-
-    if (pos == totalLength + 2) {
-        rxFrame.rawBuffer = std::shared_ptr<uint8_t>(new uint8_t[pos], std::default_delete<uint8_t[]>());
-        memcpy(rxFrame.rawBuffer.get(), buffer, pos);
-        rxFrame.rawBufferLength = pos;
-        return rxFrame;
-    }
-
-    return std::nullopt;
-}
-
-std::optional<uint16_t> PicoScenesRxFrameStructure::parseRxMACFramePart(const uint8_t *buffer) {
-    uint16_t pos = 0;
-    standardHeader = *((ieee80211_mac_frame_header *) (buffer + pos));
+    rxFrame.posMSDU = pos;
+    rxFrame.standardHeader = *((ieee80211_mac_frame_header *) (buffer + pos));
     pos += sizeof(ieee80211_mac_frame_header);
 
-    PicoScenesHeader = PicoScenesFrameHeader::fromBuffer(buffer + pos);
-    pos += sizeof(PicoScenesFrameHeader);
+    if (auto PSHeader = PicoScenesFrameHeader::fromBuffer(buffer + pos)) {
+        rxFrame.PicoScenesHeader = *PSHeader;
+        rxFrame.posPicoScenesHeader = pos;
+        pos += sizeof(PicoScenesFrameHeader);
 
-    if (PicoScenesHeader) {
-        if (PicoScenesHeader->magicValue != 0x20150315)
+        if (rxFrame.PicoScenesHeader->magicValue != 0x20150315) {
+            printf("PicoScenesHeader->magicValue is not correct.\n");
             return std::nullopt;
+        }
+
+        rxFrame.posSegments = pos;
         char identifier[3];
         identifier[2] = '\0';
-        for (auto i = 0; i < PicoScenesHeader->segments; i++) {
+        for (auto i = 0; i < rxFrame.PicoScenesHeader->segments; i++) {
             identifier[0] = *((char *) (buffer + pos++));
             identifier[1] = *((char *) (buffer + pos++));
             std::string identifierString = identifier;
 
             if (identifierString == "EI") { // Tx ExtraInfo is a special case.
+                rxFrame.posExtraInfo = pos - 2;
                 if (auto extraInfo = ExtraInfo::fromBuffer(buffer + pos)) {
-                    txExtraInfo = extraInfo;
-                    pos += extraInfo->length + 4;
+                    rxFrame.txExtraInfo = extraInfo;
+                    pos += extraInfo->length + 6;
+                    rxFrame.posSegments = pos;
                     continue;
                 }
                 return std::nullopt;
             }
 
-            if (!segmentMap)
-                segmentMap = std::map<std::string, std::pair<uint32_t, std::shared_ptr<uint8_t>>>();
+            if (!rxFrame.segmentMap) {
+                rxFrame.posSegments = pos - 2;
+                rxFrame.segmentMap = std::map<std::string, std::pair<uint32_t, std::shared_ptr<uint8_t>>>();
+            }
+
 
             auto segmentLength = *((uint16_t *) (buffer + pos));
+            pos += 2;
             auto segmentBuffer = std::shared_ptr<uint8_t>(new uint8_t[segmentLength], std::default_delete<uint8_t[]>());
             memcpy(segmentBuffer.get(), buffer + pos, segmentLength);
+            rxFrame.segmentMap->emplace(std::make_pair(identifierString, std::make_pair(segmentLength, segmentBuffer)));
             pos += segmentLength;
-            segmentMap->emplace(std::make_pair(identifierString, std::make_pair(segmentLength, segmentBuffer)));
         }
-        return pos;
+
+        if (pos == totalLength + 2) {
+            rxFrame.rawBuffer = std::shared_ptr<uint8_t>(new uint8_t[pos], std::default_delete<uint8_t[]>());
+            memcpy(rxFrame.rawBuffer.get(), buffer, pos);
+            rxFrame.rawBufferLength = pos;
+            return rxFrame;
+        }
+        return std::nullopt;
     }
-    return std::nullopt;
+
+    uint32_t msduLength = totalLength + 2 - pos;
+    auto msduBuffer = std::shared_ptr<uint8_t>(new uint8_t[msduLength], std::default_delete<uint8_t[]>());
+    memcpy(msduBuffer.get(), buffer + pos, msduLength);
+    rxFrame.msduBuffer = std::make_pair(msduBuffer, msduLength);
+    return rxFrame;
 }
 
 std::string PicoScenesRxFrameStructure::toString() const {
     std::stringstream ss;
-    ss << "RxFrame:{" << standardHeader;
+    ss << "RxFrame:{" << rxs_basic << ", " << standardHeader;
     if (PicoScenesHeader) {
         ss << ", " << PicoScenesHeader->toString();
     }
@@ -199,7 +226,7 @@ std::string PicoScenesRxFrameStructure::toString() const {
         std::stringstream segss;
         segss << "Segment:(";
         for (const auto &pair: *segmentMap) {
-            segss << pair.first << ":" << pair.second.first << ", ";
+            segss << pair.first << ":" << pair.second.first << "B, ";
         }
         auto temp = segss.str();
         temp.erase(temp.end() - 2, temp.end());
@@ -208,6 +235,52 @@ std::string PicoScenesRxFrameStructure::toString() const {
     }
     ss << "}";
     return ss.str();
+}
+
+int PicoScenesRxFrameStructure::addOrReplaceSegment(const std::pair<std::string, std::pair<uint32_t, std::shared_ptr<uint8_t>>> &newSegment) {
+    if (!PicoScenesHeader)
+        return 1;
+
+    if (!segmentMap)
+        segmentMap = std::map<std::string, std::pair<uint32_t, std::shared_ptr<uint8_t>>>();
+
+    segmentMap->erase(newSegment.first);
+    segmentMap->emplace(newSegment);
+    uint16_t newBufferLength = *posSegments;
+    for (const auto &segmentPair : *segmentMap) {
+        newBufferLength += (4 + segmentPair.second.first); // 4B for 2B segment code and 2B length
+    }
+    auto newBuffer = std::shared_ptr<uint8_t>(new uint8_t[newBufferLength], std::default_delete<uint8_t[]>());
+    memcpy(newBuffer.get(), rawBuffer.get(), *posSegments);
+
+    // modify MACHeader
+    auto *macHeader = (ieee80211_mac_frame_header *) (newBuffer.get() + posMSDU);
+    macHeader->fc.moreFrags = 0;
+    // modify PSHeader
+    auto *PSHeader = (PicoScenesFrameHeader *) (newBuffer.get() + *posPicoScenesHeader);
+    PSHeader->segments = segmentMap->size() + (txExtraInfo ? 1 : 0);
+    // modify totalLength
+    newBufferLength -= 2;
+    memcpy(newBuffer.get(), &newBufferLength, 2);
+    newBufferLength += 2;
+
+    // re-copy all segments
+    auto curPos = *posSegments;
+    for (const auto &originalSegment: *segmentMap) {
+        *((char *) (newBuffer.get() + curPos++)) = originalSegment.first.c_str()[0];
+        *((char *) (newBuffer.get() + curPos++)) = originalSegment.first.c_str()[1];
+        *((uint16_t *) (newBuffer.get() + curPos)) = originalSegment.second.first;
+        curPos += 2;
+        memcpy(newBuffer.get() + curPos, originalSegment.second.second.get(), originalSegment.second.first);
+        curPos += originalSegment.second.first;
+    }
+    if (curPos != newBufferLength)
+        return 1;
+    rawBuffer = newBuffer;
+    rawBufferLength = newBufferLength;
+    PicoScenesHeader->segments = segmentMap->size() + (txExtraInfo ? 1 : 0);
+
+    return 0;
 }
 
 std::string PicoScenesFrameTxParameters::toString() const {
@@ -264,6 +337,7 @@ int PicoScenesTxFrameStructure::toBuffer(uint8_t *buffer, std::optional<uint16_t
     for (const auto &segmentPair : segmentLength) {
         *((char *) (buffer + pos++)) = segmentPair.first.c_str()[0];
         *((char *) (buffer + pos++)) = segmentPair.first.c_str()[1];
+        *((uint16_t *) (buffer + pos)) = segmentPair.second;
         pos += 2;
         memcpy(buffer + pos, segmentBuffer.at(segmentPair.first).data(), segmentPair.second);
         pos += segmentPair.second;
@@ -278,7 +352,7 @@ uint16_t PicoScenesTxFrameStructure::totalLength() const {
         length += extraInfo->calculateBufferLength() + 6; // 4B for Feature Code, 2B for 'EI'
     }
     for (const auto &segmentPair : segmentLength) {
-        length += (2 + segmentPair.second);
+        length += (4 + segmentPair.second); // 4B for 2B segment code and 2B length
     }
     return length;
 }
@@ -297,6 +371,11 @@ void PicoScenesTxFrameStructure::reset() {
     extraInfo = std::nullopt;
     segmentBuffer.clear();
     segmentLength.clear();
+}
+
+PicoScenesTxFrameStructure &PicoScenesTxFrameStructure::setMoreFrags() {
+    standardHeader.fc.moreFrags = 1;
+    return *this;
 }
 
 PicoScenesTxFrameStructure &PicoScenesTxFrameStructure::setRetry() {
@@ -358,10 +437,6 @@ PicoScenesTxFrameStructure &PicoScenesTxFrameStructure::set3rdAddress(const uint
     return *this;
 }
 
-uint16_t PicoScenesTxFrameStructure::getTaskId() const {
-    return frameHeader.taskId;
-}
-
 std::string PicoScenesTxFrameStructure::toString() const {
     std::stringstream ss;
     ss << "TxFrame:{" << standardHeader;
@@ -374,7 +449,7 @@ std::string PicoScenesTxFrameStructure::toString() const {
         std::stringstream segss;
         segss << "Segment:(";
         for (const auto &pair: segmentLength) {
-            segss << pair.first << ":" << pair.second << ", ";
+            segss << pair.first << ":" << pair.second << "B, ";
         }
         auto temp = segss.str();
         temp.erase(temp.end() - 2, temp.end());
@@ -392,6 +467,11 @@ std::ostream &operator<<(std::ostream &os, const ieee80211_mac_frame_header &hea
 
 std::ostream &operator<<(std::ostream &os, const PicoScenesFrameHeader &frameHeader) {
     os << frameHeader.toString();
+    return os;
+}
+
+std::ostream &operator<<(std::ostream &os, const RxSBasic &rxSBasic) {
+    os << rxSBasic.toString();
     return os;
 }
 

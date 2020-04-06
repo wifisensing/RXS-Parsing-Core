@@ -231,4 +231,6 @@ inline uint64_t MACAddressSignature(const uint8_t *macaddr) {
     return macaddr[0] + macaddr[1] * (1UL << 8) + macaddr[2] * ( 1UL << 16) + macaddr[3] * ( 1UL << 24) + macaddr[4] * ( 1ULL << 32) + macaddr[5] * ( 1ULL << 40);
 }
 
+void hexDump(const uint8_t * inBytes, uint32_t length, std::optional<std::string> title);
+
 #endif // RXS_ENHANCED_H_
