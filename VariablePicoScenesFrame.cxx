@@ -17,7 +17,7 @@ std::string DeviceType2String(PicoScenesDeviceType type) {
         case PicoScenesDeviceType::Unknown:
             return "Unknown";
         default:
-            throw std::runtime_error("unrecoginized PicoScenesDeviceType.");
+            throw std::runtime_error("unrecognized PicoScenesDeviceType.");
     }
 }
 
