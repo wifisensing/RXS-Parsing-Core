@@ -287,7 +287,7 @@ int PicoScenesRxFrameStructure::addOrReplaceSegment(const std::pair<std::string,
 
 std::string PicoScenesFrameTxParameters::toString() const {
     std::stringstream ss;
-    ss << "tx_param[mcs=" << int(mcs) << ", bonding=" << channelBonding << ", sgi=" << sgi << ", gf=" << greenField << "]";
+    ss << "tx_param[mcs=" << int(mcs) << ", bonding=" << channelBonding << ", sgi=" << sgi << ", gf=" << greenField << ", sounding=" << forceSounding << ", LDPC=" << useLDPC << "]";
     return ss.str();
 }
 
@@ -436,6 +436,16 @@ PicoScenesTxFrameStructure &PicoScenesTxFrameStructure::setSourceAddress(const u
 
 PicoScenesTxFrameStructure &PicoScenesTxFrameStructure::set3rdAddress(const uint8_t macAddr[6]) {
     memcpy(standardHeader.addr3, macAddr, 6);
+    return *this;
+}
+
+PicoScenesTxFrameStructure &PicoScenesTxFrameStructure::setForceSounding(bool forceSounding) {
+    txParameters.forceSounding = forceSounding;
+    return *this;
+}
+
+PicoScenesTxFrameStructure &PicoScenesTxFrameStructure::useLDPC(bool useLDPC) {
+    txParameters.useLDPC = useLDPC;
     return *this;
 }
 
