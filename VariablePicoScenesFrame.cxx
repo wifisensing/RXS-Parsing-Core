@@ -204,6 +204,9 @@ std::optional<PicoScenesRxFrameStructure> PicoScenesRxFrameStructure::fromBuffer
         return std::nullopt;
     }
 
+    if (pos > totalLength + 2)
+        return std::nullopt;
+
     uint32_t msduLength = totalLength + 2 - pos;
     auto msduBuffer = std::shared_ptr<uint8_t>(new uint8_t[msduLength], std::default_delete<uint8_t[]>());
     memcpy(msduBuffer.get(), buffer + pos, msduLength);
