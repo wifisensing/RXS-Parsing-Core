@@ -46,7 +46,7 @@ std::optional<RxSBasic> RxSBasic::fromBuffer(const uint8_t *buffer) {
 
 std::string RxSBasic::toString() const {
     std::stringstream ss;
-    ss << "RxS:[freq=" + std::to_string(channel) + ", bonding=" + std::to_string(channelBonding) + ", MCS=" + std::to_string(rate) + ", SGI=" + std::to_string(sgi) + ", CSI=" + std::to_string(csi_len) + "B(" + std::to_string(ntx) + ", " + std::to_string(nrx) + ", " + std::to_string(num_tones) + "), LTF=" + std::to_string(nltf) + ", NSS=" + std::to_string(nss) + ", timestamp=" + std::to_string(tstamp) + "]";
+    ss << "RxS:[device=" + DeviceType2String((PicoScenesDeviceType(deviceType))) + ", freq=" + std::to_string(channel) + ", bonding=" + std::to_string(channelBonding) + ", MCS=" + std::to_string(rate) + ", SGI=" + std::to_string(sgi) + ", CSI=" + std::to_string(csi_len) + "B(" + std::to_string(ntx) + ", " + std::to_string(nrx) + ", " + std::to_string(num_tones) + "), LTF=" + std::to_string(nltf) + ", NSS=" + std::to_string(nss) + ", timestamp=" + std::to_string(tstamp) + "]";
     return ss.str();
 }
 
