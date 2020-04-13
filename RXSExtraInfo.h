@@ -62,6 +62,7 @@ inline std::string TuningPolicy2String(uint8_t policy) {
 #define PICOSCENES_EXTRAINFO_HASPLLCLKSEL              0x00040000U
 #define PICOSCENES_EXTRAINFO_HASAGC                    0x00080000U
 #define PICOSCENES_EXTRAINFO_HASANTENNASELECTION       0x00100000U
+#define PICOSCENES_EXTRAINFO_HASSAMPLINGRATE           0x00200000U
 
 struct ExtraInfo {
     uint32_t featureCode;
@@ -86,6 +87,7 @@ struct ExtraInfo {
     bool hasPLLClkSel;
     bool hasAGC;
     bool hasAntennaSelection;
+    bool hasSamplingRate;
     uint16_t length;
     uint64_t version;
     uint8_t macaddr_rom[6];
@@ -107,6 +109,7 @@ struct ExtraInfo {
     uint8_t pll_clock_select;
     uint8_t agc;
     uint8_t ant_sel[3];
+    uint64_t samplingRate;
 
     ExtraInfo();
 
@@ -159,6 +162,8 @@ struct ExtraInfo {
     void setAgc(uint8_t agc);
 
     void setAntennaSelection(const uint8_t ant_sel[3]);
+
+    void setSamplingRate(double sf);
 
     [[nodiscard]] std::string toString() const;
 };
@@ -318,6 +323,10 @@ inline bool extraInfoHasAGC(uint32_t featureCode) {
 
 inline bool extraInfoHasAntennaSelection(uint32_t featureCode) {
     return static_cast<bool>(featureCode >> 20U & 0x1U);
+}
+
+inline bool extraInfoHasSamplingRate(uint32_t featureCode) {
+    return static_cast<bool>(featureCode >> 21U & 0x1U);
 }
 
 enum class RXSParsingLevel : uint8_t {

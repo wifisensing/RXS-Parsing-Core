@@ -28,6 +28,7 @@ void featureCodeInterpretation(uint32_t featureCode, struct ExtraInfo *extraInfo
     extraInfo->hasPLLClkSel = extraInfoHasPLLClkSel(featureCode);
     extraInfo->hasAGC = extraInfoHasAGC(featureCode);
     extraInfo->hasAntennaSelection = extraInfoHasAntennaSelection(featureCode);
+    extraInfo->hasSamplingRate = extraInfoHasSamplingRate(featureCode);
 }
 
 
@@ -65,6 +66,7 @@ void inplaceAddRxExtraInfo(uint8_t *inBytes, uint32_t featureCode, uint8_t *valu
     pos += extraInfoHasPLLClkSel(*rxFeatureCode) ? 1 : 0;
     pos += extraInfoHasAGC(*rxFeatureCode) ? 1 : 0;
     pos += extraInfoHasAntennaSelection(*rxFeatureCode) ? 1 : 0;
+    pos += extraInfoHasSamplingRate(*rxFeatureCode) ? 8 : 0;
 
     *rxFeatureCode |= featureCode;
     if (insertPos == 0) {
@@ -126,6 +128,7 @@ int ExtraInfo::fromBinary(const uint8_t *extraInfoPtr, struct ExtraInfo *extraIn
         extraInfo->ant_sel[1] = (((unsigned) ant_sel_raw >> 0x2U) & 0x3U) + 1;
         extraInfo->ant_sel[2] = (((unsigned) ant_sel_raw >> 0x4U) & 0x3U) + 1;
     }
+    GETVALUE(hasSamplingRate, samplingRate)
 
     return pos;
 #undef GETVALUE
@@ -168,6 +171,7 @@ uint16_t ExtraInfo::calculateBufferLength() const {
     ADDLENGTH(hasPLLClkSel, pll_clock_select)
     ADDLENGTH(hasAGC, agc)
     pos += this->hasAntennaSelection ? 1 : 0;
+    ADDLENGTH(hasSamplingRate, samplingRate)
 
     return pos;
 #undef ADDLENGTH
@@ -206,6 +210,7 @@ int ExtraInfo::toBuffer(uint8_t *buffer) const {
         auto *antV = (uint8_t *) (buffer + pos++);
         *antV = (ant_sel[0] - 1) + ((unsigned) (ant_sel[1] - 1) << 2U) + ((unsigned) (ant_sel[2] - 1) << 4U);
     }
+    SETBUFF(hasSamplingRate, samplingRate)
 
     return pos;
 #undef SETBUFF
@@ -350,6 +355,13 @@ void ExtraInfo::setAntennaSelection(const uint8_t sel[3]) {
     updateLength();
 }
 
+void ExtraInfo::setSamplingRate(double sf) {
+    hasSamplingRate = true;
+    featureCode |= PICOSCENES_EXTRAINFO_HASSAMPLINGRATE;
+    samplingRate = sf;
+    updateLength();
+}
+
 void ExtraInfo::updateLength() {
     setLength(calculateBufferLength() - 2);
 }
@@ -378,7 +390,9 @@ std::string ExtraInfo::toString() const {
     if (hasTxpower)
         ss << "txpower=" << std::to_string(txpower) << ", ";
     if (hasCF)
-        ss << "cf=" << std::to_string(cf) << " Hz, ";
+        ss << "cf=" << std::to_string(cf / 1e6) << "MHz, ";
+    if (hasSamplingRate)
+        ss << "sf=" << std::to_string(samplingRate / 1e6) << "MHz, ";
     if (hasTxTSF)
         ss << "tx-tsf=" << std::to_string(txTSF) << ", ";
     if (hasLastHWTxTSF)
