@@ -46,7 +46,7 @@ struct ieee80211_mac_frame_header_frame_control_field {
 
 struct ieee80211_mac_frame_header {
     ieee80211_mac_frame_header_frame_control_field fc;
-    uint16_t dur = 0;
+    [[maybe_unused]] uint16_t dur = 0;
     uint8_t addr1[6] = {0x00, 0x16, 0xea, 0x12, 0x34, 0x56};
     uint8_t addr2[6] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
     uint8_t addr3[6] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
@@ -93,10 +93,10 @@ struct RxSBasic {
     uint8_t nltf;        ///< number of LTF field, 1~3
     uint8_t nss;         ///< number of CSI measurement groups
 
-    uint8_t rssi;        ///< rx frame RSSI
-    uint8_t rssi0;       ///< rx frame RSSI [ctl, chain 0]
-    uint8_t rssi1;       ///< rx frame RSSI [ctl, chain 1]
-    uint8_t rssi2;       ///< rx frame RSSI [ctl, chain 2]
+    [[maybe_unused]] uint8_t rssi;        ///< rx frame RSSI
+    [[maybe_unused]] uint8_t rssi0;       ///< rx frame RSSI [ctl, chain 0]
+    [[maybe_unused]] uint8_t rssi1;       ///< rx frame RSSI [ctl, chain 1]
+    [[maybe_unused]] uint8_t rssi2;       ///< rx frame RSSI [ctl, chain 2]
 
     static std::optional<RxSBasic> fromBuffer(const uint8_t *buffer);
 
@@ -132,12 +132,12 @@ public:
     std::optional<ExtraInfo> txExtraInfo;
     std::optional<std::map<std::string, std::pair<uint32_t, std::shared_ptr<uint8_t>>>> segmentMap;
     std::shared_ptr<uint8_t> rawBuffer;
-    std::optional<std::pair<std::shared_ptr<uint8_t>, uint32_t>> msduBuffer;
+    [[maybe_unused]] std::optional<std::pair<std::shared_ptr<uint8_t>, uint32_t>> msduBuffer;
     uint32_t posMSDU;
     std::optional<uint32_t> posPicoScenesHeader;
-    std::optional<uint32_t> posExtraInfo;
+    [[maybe_unused]] std::optional<uint32_t> posExtraInfo;
     std::optional<uint32_t> posSegments;
-    uint32_t rawBufferLength;
+    [[maybe_unused]] uint32_t rawBufferLength;
 
     static bool isOldRXSEnhancedFrame(const uint8_t bufferHead[6]);
 
