@@ -53,7 +53,7 @@ struct ieee80211_mac_frame_header {
     uint16_t frag : 4,
             seq : 12;
 
-    ieee80211_mac_frame_header() : seq(0), frag(0) {};
+    ieee80211_mac_frame_header() : frag(0), seq(0) {};
 
     [[nodiscard]] std::string toString() const;
 
