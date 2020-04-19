@@ -27,17 +27,17 @@ std::string DeviceType2String(PicoScenesDeviceType type);
 std::ostream &operator<<(std::ostream &os, const PicoScenesDeviceType &deviceType);
 
 struct ieee80211_mac_frame_header_frame_control_field {
-    uint16_t version        :2,
-            type            :2,
-            subtype         :4,
-            toDS            :1,
-            fromDS          :1,
-            moreFrags       :1,
-            retry           :1,
-            power_mgmt      :1,
-            more            :1,
-            protect         :1,
-            order           :1;
+    uint16_t version: 2,
+            type: 2,
+            subtype: 4,
+            toDS: 1,
+            fromDS: 1,
+            moreFrags: 1,
+            retry: 1,
+            power_mgmt: 1,
+            more: 1,
+            protect: 1,
+            order: 1;
 
     // the frame type can ONLY be 1, coz 9300 rx will always ack the other types.
     ieee80211_mac_frame_header_frame_control_field() : version(0), type(1), subtype(0), toDS(0), fromDS(0), moreFrags(0), retry(0), power_mgmt(0), more(0), protect(0), order(1) {}
@@ -50,8 +50,8 @@ struct ieee80211_mac_frame_header {
     uint8_t addr1[6] = {0x00, 0x16, 0xea, 0x12, 0x34, 0x56};
     uint8_t addr2[6] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
     uint8_t addr3[6] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
-    uint16_t frag : 4,
-            seq : 12;
+    uint16_t frag: 4,
+            seq: 12;
 
     ieee80211_mac_frame_header() : frag(0), seq(0) {};
 
@@ -190,6 +190,8 @@ public:
     PicoScenesTxFrameStructure &addSegmentBuffer(const std::string &identifier, const std::array<uint8_t, PICOSCENES_FRAME_SEGMENT_MAX_LENGTH> &bufferArray, uint16_t length);
 
     PicoScenesTxFrameStructure &setMoreFrags();
+
+    PicoScenesTxFrameStructure &setFragNumber(uint8_t fragNumber);
 
     PicoScenesTxFrameStructure &setRetry();
 

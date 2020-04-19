@@ -380,6 +380,11 @@ PicoScenesTxFrameStructure &PicoScenesTxFrameStructure::setMoreFrags() {
     return *this;
 }
 
+PicoScenesTxFrameStructure &PicoScenesTxFrameStructure::setFragNumber(uint8_t fragNumber) {
+    standardHeader.frag = fragNumber;
+    return *this;
+}
+
 PicoScenesTxFrameStructure &PicoScenesTxFrameStructure::setRetry() {
     standardHeader.fc.retry = 1;
     return *this;
