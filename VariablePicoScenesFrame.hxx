@@ -10,6 +10,7 @@
 #include <memory>
 #include <iomanip>
 #include <map>
+#include <set>
 #include <random>
 
 #define PICOSCENES_FRAME_SEGMENT_MAX_LENGTH 2048
@@ -148,6 +149,8 @@ public:
     static bool isOldRXSEnhancedFrame(const uint8_t bufferHead[6]);
 
     static std::optional<PicoScenesRxFrameStructure> fromBuffer(const uint8_t *buffer, std::optional<uint32_t> bufferLength = std::nullopt, RXSParsingLevel parsingLevel = RXSParsingLevel::EXTRA_NOCSI);
+
+    static std::optional<PicoScenesRxFrameStructure> concatenateFragmentedPicoScenesRxFrames(const std::vector<PicoScenesRxFrameStructure> &frameQueue);
 
     static PicoScenesRxFrameStructure fromRXSEnhancedBuffer(const uint8_t *buffer);
 

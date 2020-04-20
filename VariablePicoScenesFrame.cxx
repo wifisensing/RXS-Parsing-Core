@@ -326,6 +326,39 @@ bool PicoScenesRxFrameStructure::operator==(const PicoScenesRxFrameStructure &rh
     return headerEq && psHeaderEq && lengthEq;
 }
 
+std::optional<PicoScenesRxFrameStructure> PicoScenesRxFrameStructure::concatenateFragmentedPicoScenesRxFrames(const std::vector<PicoScenesRxFrameStructure> &frameQueue) {
+    std::set<std::string> segmentNames;
+    for (const auto &frame: frameQueue) {
+        std::transform(frame.segmentMap->cbegin(), frame.segmentMap->cend(), std::inserter(segmentNames, segmentNames.end()), [](const auto &pair) {
+            return pair.first;
+        });
+    }
+    std::map<std::string, std::pair<uint32_t, std::shared_ptr<uint8_t>>> mergedSegmentMap;
+    for (const auto &segmentName: segmentNames) {
+        uint32_t segmentLength = 0;
+        for (const auto &frame : frameQueue)
+            segmentLength += frame.segmentMap->at(segmentName).first;
+        auto segmentBuffer = std::shared_ptr<uint8_t>(new uint8_t[segmentLength], std::default_delete<uint8_t[]>());
+
+        auto curPos = 0;
+        for (const auto &frame : frameQueue) {
+            if (frame.segmentMap->find(segmentName) != frame.segmentMap->cend()) {
+                memcpy(segmentBuffer.get() + curPos, frame.segmentMap->at(segmentName).second.get(), frame.segmentMap->at(segmentName).first);
+                curPos += frame.segmentMap->at(segmentName).first;
+            }
+        }
+        mergedSegmentMap.emplace(std::make_pair(segmentName, std::make_pair(segmentLength, segmentBuffer)));
+    }
+
+    auto merged = frameQueue.front();
+    bool updateSegmentFailed = false;
+    for (const auto &pair : mergedSegmentMap) {
+        if (merged.addOrReplaceSegment(pair))
+            return std::nullopt;
+    }
+    return merged;
+}
+
 std::string PicoScenesFrameTxParameters::toString() const {
     std::stringstream ss;
     ss << "tx_param[mcs=" << int(mcs) << ", bonding=" << channelBonding << ", sgi=" << sgi << ", gf=" << greenField << ", sounding=" << forceSounding << ", LDPC=" << useLDPC << "]";
