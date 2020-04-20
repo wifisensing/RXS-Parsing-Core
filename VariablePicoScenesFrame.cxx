@@ -130,6 +130,21 @@ std::string CSIData::toString() const {
     return baseString;
 }
 
+AbstractPicoScenesFrameSegment::AbstractPicoScenesFrameSegment(const std::string &segIdString, uint32_t segLength, const std::shared_ptr<uint8_t> &segData, bool copyData) : segIdString(segIdString), segLength(segLength), segData(segData) {
+
+}
+
+std::optional<AbstractPicoScenesFrameSegment> AbstractPicoScenesFrameSegment::fromBuffer(uint16_t segLength, const uint8_t *buffer) {
+    return std::nullopt;
+}
+
+std::pair<uint32_t, std::shared_ptr<uint8_t>> AbstractPicoScenesFrameSegment::toBuffer() {
+    return std::pair<uint32_t, std::shared_ptr<uint8_t>>();
+}
+
+std::string AbstractPicoScenesFrameSegment::toString() {
+    return std::string();
+}
 
 std::optional<PicoScenesRxFrameStructure> PicoScenesRxFrameStructure::fromBuffer(const uint8_t *buffer, std::optional<uint32_t> bufferLength, enum RXSParsingLevel parsingLevel) {
     if (PicoScenesRxFrameStructure::isOldRXSEnhancedFrame(buffer)) {
