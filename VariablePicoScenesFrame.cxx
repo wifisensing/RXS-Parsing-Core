@@ -49,14 +49,6 @@ std::string ieee80211_mac_frame_header::toString() const {
     return ss.str();
 }
 
-bool ieee80211_mac_frame_header::operator<(const ieee80211_mac_frame_header &rhs) const {
-    if (seq < rhs.seq)
-        return true;
-    if (rhs.seq < seq)
-        return false;
-    return frag < rhs.frag;
-}
-
 bool ieee80211_mac_frame_header::operator==(const ieee80211_mac_frame_header &rhs) const {
     return fc == rhs.fc &&
            addr1 == rhs.addr1 &&
@@ -325,14 +317,13 @@ int PicoScenesRxFrameStructure::addOrReplaceSegment(const std::pair<std::string,
     return 0;
 }
 
-bool PicoScenesRxFrameStructure::operator<(const PicoScenesRxFrameStructure &rhs) const {
-    return standardHeader < rhs.standardHeader;
-}
-
 bool PicoScenesRxFrameStructure::operator==(const PicoScenesRxFrameStructure &rhs) const {
-    return standardHeader == rhs.standardHeader &&
-           PicoScenesHeader == rhs.PicoScenesHeader &&
-           rawBufferLength == rhs.rawBufferLength;
+    auto headerEq = standardHeader == rhs.standardHeader;
+    auto psHeaderEq = PicoScenesHeader == rhs.PicoScenesHeader;
+    if (!headerEq && psHeaderEq && standardHeader.frag == rhs.standardHeader.frag && standardHeader.fc == rhs.standardHeader.fc)
+        headerEq = true;
+    auto lengthEq = rawBufferLength == rhs.rawBufferLength;
+    return headerEq && psHeaderEq && lengthEq;
 }
 
 std::string PicoScenesFrameTxParameters::toString() const {
