@@ -26,6 +26,20 @@ std::ostream &operator<<(std::ostream &os, const PicoScenesDeviceType &deviceTyp
     return os;
 }
 
+bool ieee80211_mac_frame_header_frame_control_field::operator==(const ieee80211_mac_frame_header_frame_control_field &rhs) const {
+    return version == rhs.version &&
+           type == rhs.type &&
+           subtype == rhs.subtype &&
+           toDS == rhs.toDS &&
+           fromDS == rhs.fromDS &&
+           moreFrags == rhs.moreFrags &&
+           retry == rhs.retry &&
+           power_mgmt == rhs.power_mgmt &&
+           more == rhs.more &&
+           protect == rhs.protect &&
+           order == rhs.order;
+}
+
 std::string ieee80211_mac_frame_header::toString() const {
     std::stringstream ss;
     ss << "MACHeader:[dest[4-6]=" << std::nouppercase << std::setfill('0') << std::setw(2) << std::right << std::hex << int(addr1[3]) << ":" << int(addr1[4]) << ":" << int(addr1[5]) << ", ";
@@ -33,6 +47,23 @@ std::string ieee80211_mac_frame_header::toString() const {
     ss << "seq=" << std::dec << seq << ", frag=" << frag << ", ";
     ss << "mfrags=" << std::to_string(fc.moreFrags) << "]";
     return ss.str();
+}
+
+bool ieee80211_mac_frame_header::operator<(const ieee80211_mac_frame_header &rhs) const {
+    if (seq < rhs.seq)
+        return true;
+    if (rhs.seq < seq)
+        return false;
+    return frag < rhs.frag;
+}
+
+bool ieee80211_mac_frame_header::operator==(const ieee80211_mac_frame_header &rhs) const {
+    return fc == rhs.fc &&
+           addr1 == rhs.addr1 &&
+           addr2 == rhs.addr2 &&
+           addr3 == rhs.addr3 &&
+           frag == rhs.frag &&
+           seq == rhs.seq;
 }
 
 std::optional<RxSBasic> RxSBasic::fromBuffer(const uint8_t *buffer) {
@@ -68,6 +99,15 @@ std::string PicoScenesFrameHeader::toString() const {
     std::stringstream ss;
     ss << "PSFHeader:[ver=0x" << std::hex << version << std::dec << ", device=" << deviceType << ", seg=" << int(segments) << ", type=" << int(frameType) << ", taskId=" << int(taskId) << "]";
     return ss.str();
+}
+
+bool PicoScenesFrameHeader::operator==(const PicoScenesFrameHeader &rhs) const {
+    return magicValue == rhs.magicValue &&
+           version == rhs.version &&
+           deviceType == rhs.deviceType &&
+           segments == rhs.segments &&
+           frameType == rhs.frameType &&
+           taskId == rhs.taskId;
 }
 
 std::string CSIData::toString() const {
@@ -283,6 +323,16 @@ int PicoScenesRxFrameStructure::addOrReplaceSegment(const std::pair<std::string,
     PicoScenesHeader->segments = segmentMap->size() + (txExtraInfo ? 1 : 0);
 
     return 0;
+}
+
+bool PicoScenesRxFrameStructure::operator<(const PicoScenesRxFrameStructure &rhs) const {
+    return standardHeader < rhs.standardHeader;
+}
+
+bool PicoScenesRxFrameStructure::operator==(const PicoScenesRxFrameStructure &rhs) const {
+    return standardHeader == rhs.standardHeader &&
+           PicoScenesHeader == rhs.PicoScenesHeader &&
+           rawBufferLength == rhs.rawBufferLength;
 }
 
 std::string PicoScenesFrameTxParameters::toString() const {

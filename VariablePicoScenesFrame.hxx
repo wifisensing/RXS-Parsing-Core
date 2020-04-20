@@ -42,6 +42,8 @@ struct ieee80211_mac_frame_header_frame_control_field {
     // the frame type can ONLY be 1, coz 9300 rx will always ack the other types.
     ieee80211_mac_frame_header_frame_control_field() : version(0), type(1), subtype(0), toDS(0), fromDS(0), moreFrags(0), retry(0), power_mgmt(0), more(0), protect(0), order(1) {}
 
+    bool operator==(const ieee80211_mac_frame_header_frame_control_field &rhs) const;
+    
 } __attribute__ ((__packed__));
 
 struct ieee80211_mac_frame_header {
@@ -54,6 +56,10 @@ struct ieee80211_mac_frame_header {
             seq: 12;
 
     ieee80211_mac_frame_header() : frag(0), seq(0) {};
+
+    bool operator<(const ieee80211_mac_frame_header &rhs) const;
+
+    bool operator==(const ieee80211_mac_frame_header &rhs) const;
 
     [[nodiscard]] std::string toString() const;
 
@@ -70,6 +76,8 @@ struct PicoScenesFrameHeader {
     uint16_t taskId = 0;
 
     static std::optional<PicoScenesFrameHeader> fromBuffer(const uint8_t *buffer);
+
+    bool operator==(const PicoScenesFrameHeader &rhs) const;
 
     [[nodiscard]] std::string toString() const;
 
@@ -146,6 +154,10 @@ public:
     static PicoScenesRxFrameStructure fromRXSEnhancedBuffer(const uint8_t *buffer);
 
     int addOrReplaceSegment(const std::pair<std::string, std::pair<uint32_t, std::shared_ptr<uint8_t>>> &newSegment);
+
+    bool operator<(const PicoScenesRxFrameStructure &rhs) const;
+
+    bool operator==(const PicoScenesRxFrameStructure &rhs) const;
 
     [[nodiscard]] std::string toString() const;
 };
