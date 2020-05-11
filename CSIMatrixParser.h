@@ -36,6 +36,6 @@ void ar_parse_csi_matrix(const uint8_t *csi_addr, int ntx, int nrx, int num_tone
 
 void iwl_parse_csi_matrix(const uint8_t *csi_addr, int ntx, int nrx, int nltf, int num_tones, const struct ExtraInfo &rxExtraInfo, std::complex<double> *csi_matrix);
 
-void usrp_parse_csi_matrix(const uint8_t *csi_addr, int ntx, int nrx, int num_tones, std::complex<double> *csi_matrix);
+void usrp_parse_csi_matrix(const uint8_t *csi_addr, int ntx, int nrx, int num_tones, std::complex<double> *csi_matrix, std::complex<double> * nonht_csi);
 
 #endif //CSIMATRIXPARSER_H
