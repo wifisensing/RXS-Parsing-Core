@@ -120,7 +120,6 @@ struct CSIData {
     uint8_t nss;
     uint8_t num_tones;
     std::complex<double> csi_matrix[MAX_OFDM_TONES_UNWRAP];
-    std::complex<double> nonht_csi[52];
     double unwrappedMag[MAX_OFDM_TONES_UNWRAP] = {0};
     double unwrappedPhase[MAX_OFDM_TONES_UNWRAP] = {0};
 
