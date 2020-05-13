@@ -69,7 +69,8 @@ std::optional<RxSBasic> RxSBasic::fromBuffer(const uint8_t *buffer) {
 
 std::string RxSBasic::toString() const {
     std::stringstream ss;
-    ss << "RxS:[device=" + DeviceType2String((PicoScenesDeviceType(deviceType))) + ", freq=" + std::to_string(channel) + ", bonding=" + std::to_string(channelBonding) + ", MCS=" + std::to_string(rate) + ", SGI=" + std::to_string(sgi) + ", CSI=" + std::to_string(csi_len) + "B(" + std::to_string(ntx) + ", " + std::to_string(nrx) + ", " + std::to_string(num_tones) + "), LTF=" + std::to_string(nltf) + ", NSS=" + std::to_string(nss) + ", timestamp=" + std::to_string(tstamp) + ", NF=" + std::to_string(noise) + ", RSS=" + std::to_string(rssi)+"]";
+    ss << "RxS:[device=" + DeviceType2String((PicoScenesDeviceType(deviceType))) + ", freq=" + std::to_string(channel) + ", bonding=" + std::to_string(channelBonding) + ", MCS=" + std::to_string(rate) + ", SGI=" + std::to_string(sgi) + ", CSI=" + std::to_string(csi_len) + "B(" + std::to_string(ntx) + ", " + std::to_string(nrx) + ", " + std::to_string(num_tones) + "), LTF=" + std::to_string(nltf) + ", NSS=" + std::to_string(nss) + ", timestamp=" + std::to_string(tstamp) + ", NF=" +
+          std::to_string(noise) + ", RSS=" + std::to_string(rssi) + "]";
     return ss.str();
 }
 
@@ -376,7 +377,7 @@ std::optional<PicoScenesRxFrameStructure> PicoScenesRxFrameStructure::concatenat
 
 std::string PicoScenesFrameTxParameters::toString() const {
     std::stringstream ss;
-    ss << "tx_param[mcs=" << int(mcs) << ", bonding=" << channelBonding << ", sgi=" << sgi << ", gf=" << greenField << ", sounding=" << forceSounding << ", LDPC=" << useLDPC << "]";
+    ss << "tx_param[mcs=" << int(mcs) << ", bonding=" << channelBonding << ", sgi=" << useShortGI << ", sounding =" << forceSounding << ", NESS=" << numExtraSounding << ", LDPC=" << useLDPC << ", gf=" << useGreenField << "]";
     return ss.str();
 }
 
@@ -504,7 +505,7 @@ PicoScenesTxFrameStructure &PicoScenesTxFrameStructure::setChannelBonding(bool u
 }
 
 PicoScenesTxFrameStructure &PicoScenesTxFrameStructure::setSGI(bool useSGI) {
-    txParameters.sgi = useSGI;
+    txParameters.useShortGI = useSGI;
     return *this;
 }
 
@@ -514,7 +515,7 @@ PicoScenesTxFrameStructure &PicoScenesTxFrameStructure::setMCS(uint8_t mcs) {
 }
 
 PicoScenesTxFrameStructure &PicoScenesTxFrameStructure::setGreenField(bool useGreenField) {
-    txParameters.greenField = useGreenField;
+    txParameters.useGreenField = useGreenField;
     return *this;
 }
 
@@ -535,6 +536,11 @@ PicoScenesTxFrameStructure &PicoScenesTxFrameStructure::set3rdAddress(const uint
 
 PicoScenesTxFrameStructure &PicoScenesTxFrameStructure::setForceSounding(bool forceSounding) {
     txParameters.forceSounding = forceSounding;
+    return *this;
+}
+
+PicoScenesTxFrameStructure &PicoScenesTxFrameStructure::setNumExtraSounding(uint8_t numExtraSounding) {
+    txParameters.numExtraSounding = numExtraSounding;
     return *this;
 }
 

@@ -183,15 +183,19 @@ std::ostream &operator<<(std::ostream &os, const PicoScenesRxFrameStructure &rxf
 
 class PicoScenesFrameTxParameters {
 public:
-    uint8_t mcs = 0;
+    bool useHTRate = true;
+    uint8_t numTxAnt = 1;
     bool channelBonding = false;
-    bool sgi = false;
-    bool greenField = false;
+    uint8_t mcs = 0;
+    bool useShortGI = false;
+    bool useLDPC = true;
     bool forceSounding = true;
-    bool useLDPC = false;
+    uint8_t numExtraSounding = 0;
+    double interval = 0.0;
+    bool useGreenField = false;
 
     [[nodiscard]] std::string toString() const;
-};
+} __attribute__ ((__packed__));
 
 std::ostream &operator<<(std::ostream &os, const PicoScenesFrameTxParameters &parameters);
 
@@ -245,6 +249,8 @@ public:
     PicoScenesTxFrameStructure &set3rdAddress(const uint8_t macAddr[6]);
 
     PicoScenesTxFrameStructure &setForceSounding(bool forceSounding);
+
+    PicoScenesTxFrameStructure &setNumExtraSounding(uint8_t numExtraSounding);
 
     PicoScenesTxFrameStructure &useLDPC(bool useLDPC);
 
