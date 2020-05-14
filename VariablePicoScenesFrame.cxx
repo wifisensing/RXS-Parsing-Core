@@ -377,7 +377,7 @@ std::optional<PicoScenesRxFrameStructure> PicoScenesRxFrameStructure::concatenat
 
 std::string PicoScenesFrameTxParameters::toString() const {
     std::stringstream ss;
-    ss << "tx_param[mcs=" << int(mcs) << ", bonding=" << channelBonding << ", sgi=" << useShortGI << ", sounding =" << forceSounding << ", NESS=" << numExtraSounding << ", LDPC=" << useLDPC << ", gf=" << useGreenField << "]";
+    ss << "tx_param[mcs=" << int(mcs) << ", bonding=" << channelBonding << ", sgi=" << useShortGI << ", sounding =" << forceSounding << ", NESS=" << int(numExtraSounding) << ", LDPC=" << useLDPC << ", gf=" << useGreenField << "]";
     return ss.str();
 }
 
