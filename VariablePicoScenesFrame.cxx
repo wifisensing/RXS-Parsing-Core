@@ -69,7 +69,7 @@ std::optional<RxSBasic> RxSBasic::fromBuffer(const uint8_t *buffer) {
 
 std::string RxSBasic::toString() const {
     std::stringstream ss;
-    ss << "RxS:[device=" + DeviceType2String((PicoScenesDeviceType(deviceType))) + ", freq=" + std::to_string(channel) + ", bonding=" + std::to_string(channelBonding) + ", MCS=" + std::to_string(rate) + ", SGI=" + std::to_string(sgi) + ", CSI=" + std::to_string(csi_len) + "B(" + std::to_string(ntx) + ", " + std::to_string(nrx) + ", " + std::to_string(num_tones) + "), LTF=" + std::to_string(nltf) + ", NSS=" + std::to_string(nss) + ", timestamp=" + std::to_string(tstamp) + ", NF=" +
+    ss << "RxS:[device=" + DeviceType2String((PicoScenesDeviceType(deviceType))) + ", freq=" + std::to_string(channel) + ", bonding=" + std::to_string(channelBonding) + ", MCS=" + std::to_string(rate) + ", SGI=" + std::to_string(sgi) + ", CSI=" + std::to_string(csi_len) + "B(" + std::to_string(ntx) + ", " + std::to_string(nrx) + ", " + std::to_string(num_tones) + "), LTF=" + std::to_string(nltf) + ", NGroup=" + std::to_string(ncsi_group) + ", timestamp=" + std::to_string(tstamp) + ", NF=" +
           std::to_string(noise) + ", RSS=" + std::to_string(rssi) + "]";
     return ss.str();
 }
@@ -106,7 +106,7 @@ bool PicoScenesFrameHeader::operator==(const PicoScenesFrameHeader &rhs) const {
 std::string CSIData::toString() const {
     std::string baseString;
     char headerLineChar[128];
-    std::sprintf(headerLineChar, "CSI Print [NTx=%u, NRx=%u, NLTF=%u, NSS=%u, NTONES=%u]\n", ntx, nrx, nltf, nss, num_tones);
+    std::sprintf(headerLineChar, "CSI Print [NTx=%u, NRx=%u, NLTF=%u, NGroup=%u, NTONES=%u]\n", ntx, nrx, nltf, ncsi_group, num_tones);
     std::string headerLine(headerLineChar);
     headerLine += "-------------------------------\n";
     std::string tabularContent;
@@ -114,7 +114,7 @@ std::string CSIData::toString() const {
         char lineStringChar[50];
         std::sprintf(lineStringChar, "Tone #%4d || ", i);
         std::string lineString(lineStringChar);
-        for (int j = 0; j < nss; ++j) {
+        for (int j = 0; j < ncsi_group; ++j) {
             char dataChar[256];
             auto pos = num_tones * j + i;
             std::sprintf(dataChar, "#%d(%6.2f %6.2fi %5.2f %6.2f) ", j, csi_matrix[pos].real(), csi_matrix[pos].imag(), unwrappedMag[pos], unwrappedPhase[pos]);
@@ -180,17 +180,17 @@ std::optional<PicoScenesRxFrameStructure> PicoScenesRxFrameStructure::fromBuffer
 
     if (parsingLevel >= RXSParsingLevel::EXTRA_CSI) {
         if (rxFrame.deviceType == PicoScenesDeviceType::QCA9300)
-            ar_parse_csi_matrix(buffer + pos, rxFrame.rxs_basic.nss / rxFrame.rxs_basic.nrx, rxFrame.rxs_basic.nrx, rxFrame.rxs_basic.num_tones, rxFrame.csi.csi_matrix);
+            ar_parse_csi_matrix(buffer + pos, rxFrame.rxs_basic.ncsi_group / rxFrame.rxs_basic.nrx, rxFrame.rxs_basic.nrx, rxFrame.rxs_basic.num_tones, rxFrame.csi.csi_matrix);
         else if (rxFrame.deviceType == PicoScenesDeviceType::IWL5300)
             iwl_parse_csi_matrix(buffer + pos, rxFrame.rxs_basic.ntx, rxFrame.rxs_basic.nrx, rxFrame.rxs_basic.nltf, rxFrame.rxs_basic.num_tones, rxFrame.rxExtraInfo, rxFrame.csi.csi_matrix);
         else if (rxFrame.deviceType == PicoScenesDeviceType::USRP)
             usrp_parse_csi_matrix(buffer + pos, rxFrame.rxs_basic.nltf, rxFrame.rxs_basic.num_tones, rxFrame.csi.csi_matrix);
         // commit the following two lines to acquire raw csi matrix
-        auto new_tones_num = phaseUnwrapAroundDC(rxFrame.csi.csi_matrix, rxFrame.csi.unwrappedMag, rxFrame.csi.unwrappedPhase, rxFrame.rxs_basic.nss / rxFrame.rxs_basic.nrx, rxFrame.rxs_basic.nrx, rxFrame.rxs_basic.num_tones, rxFrame.rxs_basic.channelBonding);
+        auto new_tones_num = phaseUnwrapAroundDC(rxFrame.csi.csi_matrix, rxFrame.csi.unwrappedMag, rxFrame.csi.unwrappedPhase, rxFrame.rxs_basic.ncsi_group / rxFrame.rxs_basic.nrx, rxFrame.rxs_basic.nrx, rxFrame.rxs_basic.num_tones, rxFrame.rxs_basic.channelBonding);
         rxFrame.rxs_basic.num_tones = new_tones_num;
         rxFrame.csi.ntx = rxFrame.rxs_basic.ntx;
         rxFrame.csi.nrx = rxFrame.rxs_basic.nrx;
-        rxFrame.csi.nss = rxFrame.rxs_basic.nss;
+        rxFrame.csi.ncsi_group = rxFrame.rxs_basic.ncsi_group;
         rxFrame.csi.nltf = rxFrame.rxs_basic.nltf;
         rxFrame.csi.num_tones = rxFrame.rxs_basic.num_tones;
     }

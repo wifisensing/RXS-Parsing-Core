@@ -49,7 +49,7 @@ struct ieee80211_mac_frame_header_frame_control_field {
 
 struct ieee80211_mac_frame_header {
     ieee80211_mac_frame_header_frame_control_field fc;
-    [[maybe_unused]] uint16_t dur = 0;
+    uint16_t dur = 0;
     uint8_t addr1[6] = {0x00, 0x16, 0xea, 0x12, 0x34, 0x56};
     uint8_t addr2[6] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
     uint8_t addr3[6] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
@@ -95,15 +95,15 @@ struct RxSBasic {
     uint8_t rate;         ///< MCS index
     uint8_t channelBonding; ///< receiving channel bandwidth, 0 for 20MHz, 1 for 40MHz
     uint8_t num_tones;   ///< number of tones (subcarriers), should be 56 or 114
-    uint8_t nrx;         ///< number of receiving antennas, 1~3
-    uint8_t ntx;         ///< number of transmitting antennas, 1~3
-    uint8_t nltf;        ///< number of LTF field, 1~3
-    uint8_t nss;         ///< number of CSI measurement groups
+    uint8_t nrx;         ///< number of RX antennas, 1~3
+    uint8_t ntx;         ///< number of TX spatial time stream (N_{STS})
+    uint8_t nltf;        ///< number of HT-LTF fields appeared in the received packet, i.e., 1-5 for 11n packet (N_{HT-LTF} = N_{STS} + N_{ESS})
+    uint8_t ncsi_group;  ///< number of CSI measurement groups (N_{CSI Group} = N_{HT-LTF} x N_{RX-Ant})
 
-    [[maybe_unused]] uint8_t rssi;        ///< rx frame RSSI
-    [[maybe_unused]] uint8_t rssi0;       ///< rx frame RSSI [ctl, chain 0]
-    [[maybe_unused]] uint8_t rssi1;       ///< rx frame RSSI [ctl, chain 1]
-    [[maybe_unused]] uint8_t rssi2;       ///< rx frame RSSI [ctl, chain 2]
+    uint8_t rssi;        ///< rx frame RSSI
+    uint8_t rssi0;       ///< rx frame RSSI [ctl, chain 0]
+    uint8_t rssi1;       ///< rx frame RSSI [ctl, chain 1]
+    uint8_t rssi2;       ///< rx frame RSSI [ctl, chain 2]
 
     static std::optional<RxSBasic> fromBuffer(const uint8_t *buffer);
 
@@ -114,10 +114,10 @@ struct RxSBasic {
 std::ostream &operator<<(std::ostream &os, const RxSBasic &rxSBasic);
 
 struct CSIData {
-    uint8_t ntx;
-    uint8_t nrx;
-    uint8_t nltf;
-    uint8_t nss;
+    uint8_t nrx;         ///< number of RX antennas, 1~3
+    uint8_t ntx;         ///< number of TX spatial time stream (N_{STS})
+    uint8_t nltf;        ///< number of HT-LTF fields appeared in the received packet, i.e., 1-5 for 11n packet (N_{HT-LTF} = N_{STS} + N_{ESS})
+    uint8_t ncsi_group;  ///< number of CSI measurement groups (N_{CSI Group} = N_{HT-LTF} x N_{RX-Ant})
     uint8_t num_tones;
     std::complex<double> csi_matrix[MAX_OFDM_TONES_UNWRAP];
     double unwrappedMag[MAX_OFDM_TONES_UNWRAP] = {0};
@@ -157,12 +157,12 @@ public:
     std::optional<ExtraInfo> txExtraInfo;
     std::optional<std::map<std::string, std::pair<uint32_t, std::shared_ptr<uint8_t>>>> segmentMap;
     std::shared_ptr<uint8_t> rawBuffer;
-    [[maybe_unused]] std::optional<std::pair<std::shared_ptr<uint8_t>, uint32_t>> msduBuffer;
+    std::optional<std::pair<std::shared_ptr<uint8_t>, uint32_t>> msduBuffer;
     uint32_t posMSDU;
     std::optional<uint32_t> posPicoScenesHeader;
-    [[maybe_unused]] std::optional<uint32_t> posExtraInfo;
+    std::optional<uint32_t> posExtraInfo;
     std::optional<uint32_t> posSegments;
-    [[maybe_unused]] uint32_t rawBufferLength;
+    uint32_t rawBufferLength;
 
     static bool isOldRXSEnhancedFrame(const uint8_t bufferHead[6]);
 
