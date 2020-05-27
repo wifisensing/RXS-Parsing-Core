@@ -40,7 +40,8 @@ struct ieee80211_mac_frame_header_frame_control_field {
             protect: 1,
             order: 1;
 
-    ieee80211_mac_frame_header_frame_control_field() : version(0), type(2), subtype(0), toDS(0), fromDS(0), moreFrags(0), retry(0), power_mgmt(0), more(0), protect(0), order(1) {}
+    // type 0 -- Management Frame, subtype 0xE -- Action Frame NO ACK.  Supported by both QCA9300 and IWL5300.
+    ieee80211_mac_frame_header_frame_control_field() : version(0), type(0), subtype(0xe), toDS(0), fromDS(0), moreFrags(0), retry(0), power_mgmt(0), more(0), protect(0), order(1) {}
 
     bool operator==(const ieee80211_mac_frame_header_frame_control_field &rhs) const;
 

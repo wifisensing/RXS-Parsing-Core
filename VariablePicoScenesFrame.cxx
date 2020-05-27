@@ -66,10 +66,8 @@ std::optional<RxSBasic> RxSBasic::fromBuffer(const uint8_t *buffer) {
     } else if (basic.deviceType == (uint16_t) PicoScenesDeviceType::IWL5300 && basic.num_tones != 30) {
         printf("RxBasic(IWL5300): Impossible values in nrx (%d), ntx (%d), or num_tones (%d).\n", basic.nrx, basic.ntx, basic.num_tones);
         return std::nullopt;
-    } else {
-        printf("RxBasic(Unknown Device): device_type(0x%xh), with nrx (%d), ntx (%d), and num_tones (%d).\n", basic.deviceType, basic.nrx, basic.ntx, basic.num_tones);
-        return std::nullopt;
     }
+
     return basic;
 }
 
