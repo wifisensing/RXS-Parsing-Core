@@ -60,8 +60,14 @@ bool ieee80211_mac_frame_header::operator==(const ieee80211_mac_frame_header &rh
 
 std::optional<RxSBasic> RxSBasic::fromBuffer(const uint8_t *buffer) {
     RxSBasic basic = *((RxSBasic *) (buffer));
-    if (basic.num_tones != 52 && basic.num_tones != 56 && basic.num_tones != 114) {
-        printf("RxBasic: Impossible values in nrx (%d), ntx (%d), or num_tones (%d).\n", basic.nrx, basic.ntx, basic.num_tones);
+    if ((basic.deviceType == (uint16_t) PicoScenesDeviceType::QCA9300 || basic.deviceType == (uint16_t) PicoScenesDeviceType::USRP) && (basic.num_tones != 52 && basic.num_tones != 56 && basic.num_tones != 114)) {
+        printf("RxBasic(QCA9300 or SDR): Impossible values in nrx (%d), ntx (%d), or num_tones (%d).\n", basic.nrx, basic.ntx, basic.num_tones);
+        return std::nullopt;
+    } else if (basic.deviceType == (uint16_t) PicoScenesDeviceType::IWL5300 && basic.num_tones != 30) {
+        printf("RxBasic(IWL5300): Impossible values in nrx (%d), ntx (%d), or num_tones (%d).\n", basic.nrx, basic.ntx, basic.num_tones);
+        return std::nullopt;
+    } else {
+        printf("RxBasic(Unknown Device): device_type(0x%xh), with nrx (%d), ntx (%d), and num_tones (%d).\n", basic.deviceType, basic.nrx, basic.ntx, basic.num_tones);
         return std::nullopt;
     }
     return basic;
