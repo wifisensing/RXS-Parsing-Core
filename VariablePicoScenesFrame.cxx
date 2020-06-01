@@ -381,7 +381,7 @@ std::optional<PicoScenesRxFrameStructure> PicoScenesRxFrameStructure::concatenat
 
 std::string PicoScenesFrameTxParameters::toString() const {
     std::stringstream ss;
-    ss << "tx_param[mcs=" << int(mcs) << ", bonding=" << channelBonding << ", sgi=" << useShortGI << ", sounding =" << forceSounding << ", NESS=" << int(numExtraSounding) << ", LDPC=" << useLDPC << ", gf=" << useGreenField << "]";
+    ss << "tx_param[mcs=" << int(mcs) << ", bonding=" << channelBonding << ", sgi=" << useShortGI << ", sounding =" << forceSounding << ", NESS=" << int(numExtraSounding) << ", LDPC=" << useLDPC <<"]";
     return ss.str();
 }
 
@@ -515,11 +515,6 @@ PicoScenesTxFrameStructure &PicoScenesTxFrameStructure::setSGI(bool useSGI) {
 
 PicoScenesTxFrameStructure &PicoScenesTxFrameStructure::setMCS(uint8_t mcs) {
     txParameters.mcs = mcs;
-    return *this;
-}
-
-PicoScenesTxFrameStructure &PicoScenesTxFrameStructure::setGreenField(bool useGreenField) {
-    txParameters.useGreenField = useGreenField;
     return *this;
 }
 

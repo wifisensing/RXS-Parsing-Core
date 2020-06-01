@@ -192,7 +192,6 @@ public:
     bool forceSounding = true;
     uint8_t numExtraSounding = 0;
     double interval = 0.0;
-    bool useGreenField = false;
 
     [[nodiscard]] std::string toString() const;
 } __attribute__ ((__packed__));
