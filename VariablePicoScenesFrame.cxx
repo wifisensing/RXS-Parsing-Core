@@ -182,6 +182,17 @@ std::optional<PicoScenesRxFrameStructure> PicoScenesRxFrameStructure::fromBuffer
         }
     }
 
+    char identifier[3];
+    identifier[2] = '\0';
+    memcpy(identifier, buffer + pos , 2);
+    if (std::string(identifier) == "SG") {
+        pos +=2;
+        auto signalLength = *((uint16_t *) (buffer + pos));
+        pos += 2;
+        std::copy((std::complex<float> *)(buffer + pos), (std::complex<float> *)(buffer + pos + sizeof(std::complex<float>) * signalLength), std::back_inserter(rxFrame.basebandSignals));
+        pos += sizeof(std::complex<float>) * signalLength;
+    }
+
     if (parsingLevel >= RXSParsingLevel::EXTRA_CSI) {
         if (rxFrame.deviceType == PicoScenesDeviceType::QCA9300)
             ar_parse_csi_matrix(buffer + pos, rxFrame.rxs_basic.ncsi_group / rxFrame.rxs_basic.nrx, rxFrame.rxs_basic.nrx, rxFrame.rxs_basic.num_tones, rxFrame.csi.csi_matrix);

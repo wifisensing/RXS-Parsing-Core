@@ -151,6 +151,7 @@ public:
     PicoScenesDeviceType deviceType = PicoScenesDeviceType::QCA9300;
     RxSBasic rxs_basic = {};
     ExtraInfo rxExtraInfo;
+    std::vector<std::complex<float>> basebandSignals;
     CSIData csi;
     ieee80211_mac_frame_header standardHeader;
     std::optional<PicoScenesFrameHeader> PicoScenesHeader;
