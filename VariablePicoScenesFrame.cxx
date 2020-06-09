@@ -151,6 +151,10 @@ std::string AbstractPicoScenesFrameSegment::toString() {
     return std::string();
 }
 
+AbstractPicoScenesFrameSegment::~AbstractPicoScenesFrameSegment() {
+
+}
+
 std::optional<PicoScenesRxFrameStructure> PicoScenesRxFrameStructure::fromBuffer(const uint8_t *buffer, std::optional<uint32_t> bufferLength, enum RXSParsingLevel parsingLevel) {
     if (PicoScenesRxFrameStructure::isOldRXSEnhancedFrame(buffer)) {
         return PicoScenesRxFrameStructure::fromRXSEnhancedBuffer(buffer);
@@ -385,7 +389,6 @@ std::optional<PicoScenesRxFrameStructure> PicoScenesRxFrameStructure::concatenat
     }
 
     auto merged = frameQueue.front();
-    bool updateSegmentFailed = false;
     for (const auto &pair : mergedSegmentMap) {
         if (merged.addOrReplaceSegment(pair))
             return std::nullopt;

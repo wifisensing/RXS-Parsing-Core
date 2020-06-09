@@ -143,6 +143,7 @@ public:
 
     virtual std::string toString();
 
+    virtual ~AbstractPicoScenesFrameSegment();
     // TODO to finish this class
 };
 
