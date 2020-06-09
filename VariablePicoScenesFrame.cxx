@@ -279,7 +279,10 @@ std::optional<PicoScenesRxFrameStructure> PicoScenesRxFrameStructure::fromBuffer
 
 std::string PicoScenesRxFrameStructure::toString() const {
     std::stringstream ss;
-    ss << "RxFrame:{" << rxs_basic << ", " << standardHeader;
+    ss << "RxFrame:{" << rxs_basic;
+    if (basebandSignals.size() > 0)
+        ss << ", BB signal=" << basebandSignals.size();
+    ss << ", " << standardHeader;
     if (PicoScenesHeader) {
         ss << ", " << PicoScenesHeader->toString();
     }
