@@ -185,18 +185,38 @@ std::ostream &operator<<(std::ostream &os, const PicoScenesRxFrameStructure &rxf
 
 class PicoScenesFrameTxParameters {
 public:
-    bool useHTRate = true;
-    uint8_t numTxAnt = 1;
-    bool channelBonding = false;
-    uint8_t mcs = 0;
-    bool useShortGI = false;
-    bool useLDPC = true;
-    bool forceSounding = true;
-    uint8_t numExtraSounding = 0;
-    double interval = 0.0;
+    bool useHTRate;
+    double mcs;
+    bool useShortGI;
+    bool useLDPC;
+    bool channelBonding;
+    bool forceSounding;
+    double numExtraSounding;
+    double actualNumTxAnts;
+    double idleTime;
+    double scramblerState;
+    bool maxPowerScaleTo1;
+    double txIQAmplitudeImbalance_dB;
+    double txIQPhaseImbalance_rad;
+
+    PicoScenesFrameTxParameters() {
+        useHTRate = true;
+        mcs = 0;
+        useShortGI = true;
+        useLDPC = true;
+        channelBonding = false;
+        forceSounding = true;
+        numExtraSounding = 0;
+        actualNumTxAnts = 1;
+        idleTime = 20e-6;
+        scramblerState = 39;
+        maxPowerScaleTo1 = 1;
+        txIQAmplitudeImbalance_dB = 0;
+        txIQPhaseImbalance_rad = 0;
+    }
 
     [[nodiscard]] std::string toString() const;
-} __attribute__ ((__packed__));
+};
 
 std::ostream &operator<<(std::ostream &os, const PicoScenesFrameTxParameters &parameters);
 
