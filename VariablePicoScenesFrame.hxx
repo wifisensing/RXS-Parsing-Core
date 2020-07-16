@@ -261,8 +261,6 @@ public:
 
     PicoScenesTxFrameStructure &setMCS(uint8_t mcs);
 
-    PicoScenesTxFrameStructure &setGreenField(bool useGreenField);
-
     PicoScenesTxFrameStructure &setDestinationAddress(const uint8_t macAddr[6]);
 
     PicoScenesTxFrameStructure &setSourceAddress(const uint8_t macAddr[6]);
