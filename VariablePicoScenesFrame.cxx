@@ -155,16 +155,20 @@ AbstractPicoScenesFrameSegment::~AbstractPicoScenesFrameSegment() {
 
 }
 
-std::optional<PicoScenesRxFrameStructure> PicoScenesRxFrameStructure::fromBuffer(const uint8_t *buffer, std::optional<uint32_t> bufferLength, enum RXSParsingLevel parsingLevel) {
+std::optional<PicoScenesRxFrameStructure> PicoScenesRxFrameStructure::fromBuffer(const uint8_t *buffer, uint32_t bufferLength, enum RXSParsingLevel parsingLevel) {
     if (PicoScenesRxFrameStructure::isOldRXSEnhancedFrame(buffer)) {
         return PicoScenesRxFrameStructure::fromRXSEnhancedBuffer(buffer);
     }
 
-    uint16_t totalLength = *((uint16_t *) (buffer));
-    uint16_t pos = 2;
+    uint32_t totalLength = 0, pos = 0;
 
-    if (bufferLength && totalLength + 2U != *bufferLength) {
-//        printf("Corrupted PicoScenes frame, extracted length:%u, supplied length:%u\n", totalLength, *bufferLength);
+    if (*((uint16_t *) (buffer)) + 2U == bufferLength) {
+        totalLength = *((uint16_t *) (buffer));
+        pos += 2;
+    } else if (*((uint32_t *) (buffer)) + 4U == bufferLength) {
+        totalLength = *((uint32_t *) (buffer));
+        pos += 4;
+    } else {
         return {};
     }
 
@@ -188,12 +192,12 @@ std::optional<PicoScenesRxFrameStructure> PicoScenesRxFrameStructure::fromBuffer
 
     char identifier[3];
     identifier[2] = '\0';
-    memcpy(identifier, buffer + pos , 2);
+    memcpy(identifier, buffer + pos, 2);
     if (std::string(identifier) == "SG") {
-        pos +=2;
+        pos += 2;
         auto signalLength = *((uint16_t *) (buffer + pos));
         pos += 2;
-        std::copy((std::complex<float> *)(buffer + pos), (std::complex<float> *)(buffer + pos + sizeof(std::complex<float>) * signalLength), std::back_inserter(rxFrame.basebandSignals));
+        std::copy((std::complex<float> *) (buffer + pos), (std::complex<float> *) (buffer + pos + sizeof(std::complex<float>) * signalLength), std::back_inserter(rxFrame.basebandSignals));
         pos += sizeof(std::complex<float>) * signalLength;
     }
 
@@ -262,7 +266,7 @@ std::optional<PicoScenesRxFrameStructure> PicoScenesRxFrameStructure::fromBuffer
             pos += segmentLength;
         }
 
-        if (pos == totalLength + 2) {
+        if (pos == bufferLength) {
             rxFrame.rawBuffer = std::shared_ptr<uint8_t>(new uint8_t[pos], std::default_delete<uint8_t[]>());
             memcpy(rxFrame.rawBuffer.get(), buffer, pos);
             rxFrame.rawBufferLength = pos;
@@ -271,10 +275,10 @@ std::optional<PicoScenesRxFrameStructure> PicoScenesRxFrameStructure::fromBuffer
         return std::nullopt;
     }
 
-    if (pos > totalLength + 2)
+    if (pos > bufferLength)
         return std::nullopt;
 
-    uint32_t msduLength = totalLength + 2 - pos;
+    uint32_t msduLength = bufferLength - pos;
     auto msduBuffer = std::shared_ptr<uint8_t>(new uint8_t[msduLength], std::default_delete<uint8_t[]>());
     memcpy(msduBuffer.get(), buffer + pos, msduLength);
     rxFrame.msduBuffer = std::make_pair(msduBuffer, msduLength);
@@ -284,7 +288,7 @@ std::optional<PicoScenesRxFrameStructure> PicoScenesRxFrameStructure::fromBuffer
 std::string PicoScenesRxFrameStructure::toString() const {
     std::stringstream ss;
     ss << "RxFrame:{" << rxs_basic;
-    if (basebandSignals.size() > 0)
+    if (!basebandSignals.empty())
         ss << ", BB signal=" << basebandSignals.size();
     ss << ", " << standardHeader;
     if (PicoScenesHeader) {
@@ -398,7 +402,7 @@ std::optional<PicoScenesRxFrameStructure> PicoScenesRxFrameStructure::concatenat
 
 std::string PicoScenesFrameTxParameters::toString() const {
     std::stringstream ss;
-    ss << "tx_param[mcs=" << int(mcs) << ", bonding=" << channelBonding << ", sgi=" << useShortGI << ", sounding =" << forceSounding << ", NESS=" << int(numExtraSounding) << ", LDPC=" << useLDPC <<"]";
+    ss << "tx_param[mcs=" << int(mcs) << ", bonding=" << channelBonding << ", sgi=" << useShortGI << ", sounding =" << forceSounding << ", NESS=" << int(numExtraSounding) << ", LDPC=" << useLDPC << "]";
     return ss.str();
 }
 
