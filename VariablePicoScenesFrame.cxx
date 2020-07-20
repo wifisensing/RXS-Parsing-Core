@@ -307,7 +307,11 @@ std::string PicoScenesRxFrameStructure::toString() const {
     std::stringstream ss;
     ss << "RxFrame:{" << rxs_basic;
     if (!basebandSignals.empty())
-        ss << ", BB signal=" << basebandSignals.size();
+        ss << ", BB=" << basebandSignals.size();
+    if (!preEqualizedDataSymbols.empty())
+        ss << ", preEQData=" << preEqualizedDataSymbols.size();
+    if (!nonHTCSI.empty())
+        ss << ", nonHTCSI=" << nonHTCSI.size();
     ss << ", " << standardHeader;
     if (PicoScenesHeader) {
         ss << ", " << PicoScenesHeader->toString();
