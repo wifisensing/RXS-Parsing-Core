@@ -153,6 +153,8 @@ public:
     RxSBasic rxs_basic = {};
     ExtraInfo rxExtraInfo;
     std::vector<std::complex<float>> basebandSignals;
+    std::vector<std::complex<float>> preEqualizedDataSymbols;
+    std::vector<std::complex<float>> nonHTCSI;
     CSIData csi;
     ieee80211_mac_frame_header standardHeader;
     std::optional<PicoScenesFrameHeader> PicoScenesHeader;

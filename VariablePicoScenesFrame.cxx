@@ -201,6 +201,24 @@ std::optional<PicoScenesRxFrameStructure> PicoScenesRxFrameStructure::fromBuffer
         pos += sizeof(std::complex<float>) * signalLength;
     }
 
+    memcpy(identifier, buffer + pos, 2);
+    if (std::string(identifier) == "PE") {
+        pos += 2;
+        auto signalLength = *((uint16_t *) (buffer + pos));
+        pos += 2;
+        std::copy((std::complex<float> *) (buffer + pos), (std::complex<float> *) (buffer + pos + sizeof(std::complex<float>) * signalLength), std::back_inserter(rxFrame.preEqualizedDataSymbols));
+        pos += sizeof(std::complex<float>) * signalLength;
+    }
+
+    memcpy(identifier, buffer + pos, 2);
+    if (std::string(identifier) == "NH") {
+        pos += 2;
+        auto signalLength = *((uint16_t *) (buffer + pos));
+        pos += 2;
+        std::copy((std::complex<float> *) (buffer + pos), (std::complex<float> *) (buffer + pos + sizeof(std::complex<float>) * signalLength), std::back_inserter(rxFrame.nonHTCSI));
+        pos += sizeof(std::complex<float>) * signalLength;
+    }
+
     if (parsingLevel >= RXSParsingLevel::EXTRA_CSI) {
         if (rxFrame.deviceType == PicoScenesDeviceType::QCA9300)
             ar_parse_csi_matrix(buffer + pos, rxFrame.rxs_basic.ncsi_group / rxFrame.rxs_basic.nrx, rxFrame.rxs_basic.nrx, rxFrame.rxs_basic.num_tones, rxFrame.csi.csi_matrix);
