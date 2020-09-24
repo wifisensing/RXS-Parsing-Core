@@ -351,6 +351,7 @@ inline std::string channelModel2String(ChannelMode mode) {
         case ChannelMode::HT20:
             return "HT20";
     }
+    return "channel mode error.";
 }
 
 inline std::ostream &operator<<(std::ostream &os, const ChannelMode &channelMode) {
