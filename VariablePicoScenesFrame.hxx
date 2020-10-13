@@ -191,6 +191,7 @@ public:
     double mcs;
     bool useShortGI;
     bool useLDPC;
+    //TODO 改成枚举class
     bool channelBonding;
     bool forceSounding;
     double numExtraSounding;
