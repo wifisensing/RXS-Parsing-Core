@@ -162,10 +162,7 @@ std::optional<PicoScenesRxFrameStructure> PicoScenesRxFrameStructure::fromBuffer
 
     uint32_t totalLength = 0, pos = 0;
 
-    if (*((uint16_t *) (buffer)) + 2U == bufferLength) {
-        totalLength = *((uint16_t *) (buffer));
-        pos += 2;
-    }else if (*((uint32_t *) (buffer)) + 4U == bufferLength) {
+    if (*((uint32_t *) (buffer)) + 4U == bufferLength) {
         totalLength = *((uint32_t *) (buffer));
         pos += 4;
     } else {
