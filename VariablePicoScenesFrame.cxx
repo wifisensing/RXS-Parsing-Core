@@ -277,8 +277,8 @@ std::optional<PicoScenesRxFrameStructure> PicoScenesRxFrameStructure::fromBuffer
             }
 
 
-            auto segmentLength = *((uint16_t *) (buffer + pos));
-            pos += 2;
+            auto segmentLength = *((uint32_t *) (buffer + pos));
+            pos += 4;
             auto segmentBuffer = std::shared_ptr<uint8_t>(new uint8_t[segmentLength], std::default_delete<uint8_t[]>());
             memcpy(segmentBuffer.get(), buffer + pos, segmentLength);
             rxFrame.segmentMap->emplace(std::make_pair(identifierString, std::make_pair(segmentLength, segmentBuffer)));
@@ -431,7 +431,7 @@ std::string PicoScenesFrameTxParameters::toString() const {
     return ss.str();
 }
 
-PicoScenesTxFrameStructure &PicoScenesTxFrameStructure::addSegmentBuffer(const std::string &identifier, const uint8_t *buffer, uint16_t length) {
+PicoScenesTxFrameStructure &PicoScenesTxFrameStructure::addSegmentBuffer(const std::string &identifier, const uint8_t *buffer, uint32_t length) {
     if (length > PICOSCENES_FRAME_SEGMENT_MAX_LENGTH)
         throw std::overflow_error("PicoScenes Frame segment max length :PICOSCENES_FRAME_SEGMENT_MAX_LENGTH");
     auto bufferArray = std::array<uint8_t, PICOSCENES_FRAME_SEGMENT_MAX_LENGTH>();
@@ -441,7 +441,7 @@ PicoScenesTxFrameStructure &PicoScenesTxFrameStructure::addSegmentBuffer(const s
     return *this;
 }
 
-PicoScenesTxFrameStructure &PicoScenesTxFrameStructure::addSegmentBuffer(const std::string &identifier, const std::array<uint8_t, PICOSCENES_FRAME_SEGMENT_MAX_LENGTH> &bufferArray, uint16_t length) {
+PicoScenesTxFrameStructure &PicoScenesTxFrameStructure::addSegmentBuffer(const std::string &identifier, const std::array<uint8_t, PICOSCENES_FRAME_SEGMENT_MAX_LENGTH> &bufferArray, uint32_t length) {
     if (segmentLength.find(identifier) != segmentLength.end())
         throw std::runtime_error("Duplicated segment buffer identifier: " + identifier);
 
@@ -488,13 +488,13 @@ int PicoScenesTxFrameStructure::toBuffer(uint8_t *buffer, std::optional<uint16_t
     return pos;
 }
 
-uint16_t PicoScenesTxFrameStructure::totalLength() const {
-    uint16_t length = sizeof(decltype(standardHeader)) + sizeof(decltype(frameHeader));
+uint32_t PicoScenesTxFrameStructure::totalLength() const {
+    uint32_t length = sizeof(decltype(standardHeader)) + sizeof(decltype(frameHeader));
     if (extraInfo) {
         length += extraInfo->calculateBufferLength() + 6; // 4B for Feature Code, 2B for 'EI'
     }
     for (const auto &segmentPair : segmentLength) {
-        length += (4 + segmentPair.second); // 4B for 2B segment code and 2B length
+        length += (6 + segmentPair.second); // 4B for 2B segment code and 2B length
     }
     return length;
 }

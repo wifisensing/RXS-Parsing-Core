@@ -230,11 +230,11 @@ public:
     PicoScenesFrameTxParameters txParameters;
     std::optional<ExtraInfo> extraInfo;
     std::map<std::string, std::array<uint8_t, PICOSCENES_FRAME_SEGMENT_MAX_LENGTH>> segmentBuffer;
-    std::map<std::string, uint16_t> segmentLength;
+    std::map<std::string, uint32_t> segmentLength;
 
     void reset();
 
-    [[nodiscard]] uint16_t totalLength() const;
+    [[nodiscard]] uint32_t totalLength() const;
 
     int toBuffer(uint8_t *buffer, std::optional<uint16_t> bufferLength = std::nullopt) const;
 
@@ -242,9 +242,9 @@ public:
 
     PicoScenesTxFrameStructure &addExtraInfo(const ExtraInfo &txExtraInfo);
 
-    PicoScenesTxFrameStructure &addSegmentBuffer(const std::string &identifier, const uint8_t *buffer, uint16_t length);
+    PicoScenesTxFrameStructure &addSegmentBuffer(const std::string &identifier, const uint8_t *buffer, uint32_t length);
 
-    PicoScenesTxFrameStructure &addSegmentBuffer(const std::string &identifier, const std::array<uint8_t, PICOSCENES_FRAME_SEGMENT_MAX_LENGTH> &bufferArray, uint16_t length);
+    PicoScenesTxFrameStructure &addSegmentBuffer(const std::string &identifier, const std::array<uint8_t, PICOSCENES_FRAME_SEGMENT_MAX_LENGTH> &bufferArray, uint32_t length);
 
     PicoScenesTxFrameStructure &setMoreFrags();
 
