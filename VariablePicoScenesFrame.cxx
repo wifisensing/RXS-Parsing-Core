@@ -3,6 +3,7 @@
 //
 
 #include "VariablePicoScenesFrame.hxx"
+#include "rxs_enhanced.h"
 
 std::string DeviceType2String(PicoScenesDeviceType type) {
     switch (type) {
@@ -172,6 +173,9 @@ std::optional<PicoScenesRxFrameStructure> PicoScenesRxFrameStructure::fromBuffer
     PicoScenesRxFrameStructure rxFrame;
     if (auto basic = RxSBasic::fromBuffer(buffer + pos)) {
         rxFrame.rxs_basic = *basic;
+//        const uint8_t *temp;
+//        temp = reinterpret_cast<const uint8_t *>(&rxFrame.rxs_basic);
+//        hexDump(temp, 200, {});
         pos += sizeof(struct RxSBasic);
         rxFrame.deviceType = PicoScenesDeviceType(rxFrame.rxs_basic.deviceType);
     } else
@@ -192,8 +196,8 @@ std::optional<PicoScenesRxFrameStructure> PicoScenesRxFrameStructure::fromBuffer
     memcpy(identifier, buffer + pos, 2);
     if (std::string(identifier) == "SG") {
         pos += 2;
-        auto signalLength = *((uint16_t *) (buffer + pos));
-        pos += 2;
+        auto signalLength = *((uint32_t *) (buffer + pos));
+        pos += 4;
         std::copy((std::complex<float> *) (buffer + pos), (std::complex<float> *) (buffer + pos + sizeof(std::complex<float>) * signalLength), std::back_inserter(rxFrame.basebandSignals));
         pos += sizeof(std::complex<float>) * signalLength;
     }
@@ -201,8 +205,8 @@ std::optional<PicoScenesRxFrameStructure> PicoScenesRxFrameStructure::fromBuffer
     memcpy(identifier, buffer + pos, 2);
     if (std::string(identifier) == "PE") {
         pos += 2;
-        auto signalLength = *((uint16_t *) (buffer + pos));
-        pos += 2;
+        auto signalLength = *((uint32_t *) (buffer + pos));
+        pos += 4;
         std::copy((std::complex<float> *) (buffer + pos), (std::complex<float> *) (buffer + pos + sizeof(std::complex<float>) * signalLength), std::back_inserter(rxFrame.preEqualizedDataSymbols));
         pos += sizeof(std::complex<float>) * signalLength;
     }
@@ -210,8 +214,8 @@ std::optional<PicoScenesRxFrameStructure> PicoScenesRxFrameStructure::fromBuffer
     memcpy(identifier, buffer + pos, 2);
     if (std::string(identifier) == "NH") {
         pos += 2;
-        auto signalLength = *((uint16_t *) (buffer + pos));
-        pos += 2;
+        auto signalLength = *((uint32_t *) (buffer + pos));
+        pos += 4;
         std::copy((std::complex<float> *) (buffer + pos), (std::complex<float> *) (buffer + pos + sizeof(std::complex<float>) * signalLength), std::back_inserter(rxFrame.nonHTCSI));
         pos += sizeof(std::complex<float>) * signalLength;
     }
@@ -366,6 +370,8 @@ int PicoScenesRxFrameStructure::addOrReplaceSegment(const std::pair<std::string,
         *((char *) (newBuffer.get() + curPos++)) = originalSegment.first.c_str()[1];
         *((uint16_t *) (newBuffer.get() + curPos)) = originalSegment.second.first;
         curPos += 2;
+//        *((uint32_t *) (newBuffer.get() + curPos)) = originalSegment.second.first;
+//        curPos += 4;
         memcpy(newBuffer.get() + curPos, originalSegment.second.second.get(), originalSegment.second.first);
         curPos += originalSegment.second.first;
     }
@@ -461,7 +467,7 @@ int PicoScenesTxFrameStructure::toBuffer(uint8_t *buffer, std::optional<uint16_t
 
     memcpy(buffer, &standardHeader, sizeof(ieee80211_mac_frame_header));
     memcpy(buffer + sizeof(ieee80211_mac_frame_header), &frameHeader, sizeof(PicoScenesFrameHeader));
-    uint16_t pos = sizeof(ieee80211_mac_frame_header) + sizeof(PicoScenesFrameHeader);
+    uint32_t pos = sizeof(ieee80211_mac_frame_header) + sizeof(PicoScenesFrameHeader);
 
     if (extraInfo) {
         *((char *) (buffer + pos++)) = 'E';
@@ -473,8 +479,8 @@ int PicoScenesTxFrameStructure::toBuffer(uint8_t *buffer, std::optional<uint16_t
     for (const auto &segmentPair : segmentLength) {
         *((char *) (buffer + pos++)) = segmentPair.first.c_str()[0];
         *((char *) (buffer + pos++)) = segmentPair.first.c_str()[1];
-        *((uint16_t *) (buffer + pos)) = segmentPair.second;
-        pos += 2;
+        *((uint32_t *) (buffer + pos)) = segmentPair.second;
+        pos += 4;
         memcpy(buffer + pos, segmentBuffer.at(segmentPair.first).data(), segmentPair.second);
         pos += segmentPair.second;
     }
