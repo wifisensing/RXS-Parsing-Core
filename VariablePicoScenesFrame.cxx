@@ -427,7 +427,7 @@ std::optional<PicoScenesRxFrameStructure> PicoScenesRxFrameStructure::concatenat
 
 std::string PicoScenesFrameTxParameters::toString() const {
     std::stringstream ss;
-    ss << "tx_param[mcs=" << int(mcs) << ", bonding=" << channelBonding << ", sgi=" << useShortGI << ", sounding =" << forceSounding << ", NESS=" << int(numExtraSounding) << ", LDPC=" << useLDPC << "]";
+//    ss << "tx_param[mcs=" << int(mcs) << ", bonding=" << channelBonding << ", sgi=" << useShortGI << ", sounding =" << forceSounding << ", NESS=" << int(numExtraSounding) << ", LDPC=" << useLDPC << "]";
     return ss.str();
 }
 
@@ -549,18 +549,19 @@ PicoScenesTxFrameStructure &PicoScenesTxFrameStructure::setPicoScenesFrameType(u
     return *this;
 }
 
-PicoScenesTxFrameStructure &PicoScenesTxFrameStructure::setChannelBonding(bool useChannelBonding) {
-    txParameters.channelBonding = useChannelBonding;
+PicoScenesTxFrameStructure &PicoScenesTxFrameStructure::setChannelBandwidth(const ChannelBandwidthEnum &cbw) {
+    txParameters.cbw = cbw;
     return *this;
 }
 
-PicoScenesTxFrameStructure &PicoScenesTxFrameStructure::setSGI(bool useSGI) {
-    txParameters.useShortGI = useSGI;
+PicoScenesTxFrameStructure &PicoScenesTxFrameStructure::setGuardInterval(GuardIntervalEnum guardInterval) {
+    txParameters.guardInterval = guardInterval;
     return *this;
 }
 
 PicoScenesTxFrameStructure &PicoScenesTxFrameStructure::setMCS(uint8_t mcs) {
-    txParameters.mcs = mcs;
+    txParameters.mcs.clear();
+    txParameters.mcs.emplace_back(mcs);
     return *this;
 }
 
@@ -589,8 +590,30 @@ PicoScenesTxFrameStructure &PicoScenesTxFrameStructure::setNumExtraSounding(uint
     return *this;
 }
 
-PicoScenesTxFrameStructure &PicoScenesTxFrameStructure::useLDPC(bool useLDPC) {
-    txParameters.useLDPC = useLDPC;
+PicoScenesTxFrameStructure &PicoScenesTxFrameStructure::setChannelCoding(ChannelCodingEnum codings) {
+    txParameters.coding.clear();
+    txParameters.coding.emplace_back(codings);
+    return *this;
+}
+
+PicoScenesTxFrameStructure &PicoScenesTxFrameStructure::setChannelCoding(const std::vector<ChannelCodingEnum> &channelCoding) {
+    txParameters.coding = channelCoding;
+    return *this;
+}
+
+PicoScenesTxFrameStructure &PicoScenesTxFrameStructure::setMCS(const std::vector<uint8_t> &mcs) {
+    txParameters.mcs = mcs;
+    return *this;
+}
+
+PicoScenesTxFrameStructure &PicoScenesTxFrameStructure::setNumSTS(uint8_t numSTS) {
+    txParameters.numSTS.clear();
+    txParameters.numSTS.emplace_back(numSTS);
+    return *this;
+}
+
+PicoScenesTxFrameStructure &PicoScenesTxFrameStructure::setNumSTS(const std::vector<uint8_t> &numSTSs) {
+
     return *this;
 }
 

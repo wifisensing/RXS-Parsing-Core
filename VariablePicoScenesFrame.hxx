@@ -23,6 +23,36 @@ enum class PicoScenesDeviceType : uint16_t {
     Unknown = 0x404
 };
 
+enum class PacketFormatEnum : int8_t {
+    PacketFormat_NonHT = 0,
+    PacketFormat_HT = 1,
+    PacketFormat_VHT = 2,
+    PacketFormat_HESU = 3,
+    PacketFormat_HEMU = 4,
+    PacketFormat_Unknown = -1
+};
+
+enum class ChannelBandwidthEnum : uint16_t {
+    CBW_5 = 5,
+    CBW_10 = 10,
+    CBW_20 = 20,
+    CBW_40 = 40,
+    CBW_80 = 80,
+    CBW_160 = 160,
+};
+
+enum class GuardIntervalEnum : uint16_t {
+    GI_400 = 400,
+    GI_800 = 800,
+    GI_1600 = 1600,
+    GI_3200 = 3200
+};
+
+enum class ChannelCodingEnum : uint8_t {
+    BCC = 0,
+    LDPC = 1,
+};
+
 std::string DeviceType2String(PicoScenesDeviceType type);
 
 std::ostream &operator<<(std::ostream &os, const PicoScenesDeviceType &deviceType);
@@ -187,35 +217,43 @@ std::ostream &operator<<(std::ostream &os, const PicoScenesRxFrameStructure &rxf
 
 class PicoScenesFrameTxParameters {
 public:
-    bool useHTRate;
-    double mcs;
-    bool useShortGI;
-    bool useLDPC;
-    //TODO 改成枚举class
-    bool channelBonding;
-    bool forceSounding;
+    PacketFormatEnum frameType;
+    std::vector<uint8_t> mcs;
+    std::vector<uint8_t> numSTS;
+    double numAntenna;
+    ChannelBandwidthEnum cbw;
+    GuardIntervalEnum guardInterval;
+    std::vector<ChannelCodingEnum> coding;
+    bool useAMPDU4HTRate;
     double numExtraSounding;
-    double actualNumTxAnts;
+    bool forceSounding;
     double idleTime;
     double scramblerState;
-    bool maxPowerScaleTo1;
     double txIQAmplitudeImbalance_dB;
     double txIQPhaseImbalance_rad;
+    bool maxPowerScaleTo1;
+    double vhtGroupId;
+    std::vector<uint8_t> heAllocationIndex;
+    double heLTFType;
 
     PicoScenesFrameTxParameters() {
-        useHTRate = true;
-        mcs = 0;
-        useShortGI = true;
-        useLDPC = true;
-        channelBonding = false;
-        forceSounding = true;
+        frameType = PacketFormatEnum::PacketFormat_HT;
+        mcs = std::vector<uint8_t>(1, 0);
+        numSTS = std::vector<uint8_t>(1, 1);
+        numAntenna = 1;
+        cbw = ChannelBandwidthEnum::CBW_20;
+        guardInterval = GuardIntervalEnum::GI_800;
+        coding = std::vector<ChannelCodingEnum>(1, ChannelCodingEnum::BCC);
+        useAMPDU4HTRate = false;
         numExtraSounding = 0;
-        actualNumTxAnts = 1;
+        forceSounding = true;
         idleTime = 20e-6;
         scramblerState = 39;
-        maxPowerScaleTo1 = 1;
         txIQAmplitudeImbalance_dB = 0;
         txIQPhaseImbalance_rad = 0;
+        maxPowerScaleTo1 = true;
+        vhtGroupId = 0;
+        heAllocationIndex = std::vector<uint8_t>(1, 0);
     }
 
     [[nodiscard]] std::string toString() const;
@@ -230,11 +268,11 @@ public:
     PicoScenesFrameTxParameters txParameters;
     std::optional<ExtraInfo> extraInfo;
     std::map<std::string, std::array<uint8_t, PICOSCENES_FRAME_SEGMENT_MAX_LENGTH>> segmentBuffer;
-    std::map<std::string, uint32_t> segmentLength;
+    std::map<std::string, uint16_t> segmentLength;
 
     void reset();
 
-    [[nodiscard]] uint32_t totalLength() const;
+    [[nodiscard]] uint16_t totalLength() const;
 
     int toBuffer(uint8_t *buffer, std::optional<uint16_t> bufferLength = std::nullopt) const;
 
@@ -258,11 +296,17 @@ public:
 
     PicoScenesTxFrameStructure &setPicoScenesFrameType(uint8_t frameType);
 
-    PicoScenesTxFrameStructure &setChannelBonding(bool useChannelBonding);
+    PicoScenesTxFrameStructure &setChannelBandwidth(const ChannelBandwidthEnum &cbw);
 
-    PicoScenesTxFrameStructure &setSGI(bool useSGI);
+    PicoScenesTxFrameStructure &setGuardInterval(GuardIntervalEnum guardInterval);
 
     PicoScenesTxFrameStructure &setMCS(uint8_t mcs);
+
+    PicoScenesTxFrameStructure &setMCS(const std::vector<uint8_t> &mcs);
+
+    PicoScenesTxFrameStructure &setNumSTS(uint8_t numSTS);
+
+    PicoScenesTxFrameStructure &setNumSTS(const std::vector<uint8_t> &numSTSs);
 
     PicoScenesTxFrameStructure &setDestinationAddress(const uint8_t macAddr[6]);
 
@@ -274,7 +318,9 @@ public:
 
     PicoScenesTxFrameStructure &setNumExtraSounding(uint8_t numExtraSounding);
 
-    PicoScenesTxFrameStructure &useLDPC(bool useLDPC);
+    PicoScenesTxFrameStructure &setChannelCoding(ChannelCodingEnum codings);
+
+    PicoScenesTxFrameStructure &setChannelCoding(const std::vector<ChannelCodingEnum> &codings);
 
     [[nodiscard]] std::string toString() const;
 };
