@@ -272,9 +272,9 @@ public:
 
     void reset();
 
-    [[nodiscard]] uint16_t totalLength() const;
+    [[nodiscard]] uint32_t totalLength() const;
 
-    int toBuffer(uint8_t *buffer, std::optional<uint16_t> bufferLength = std::nullopt) const;
+    int toBuffer(uint8_t *buffer, std::optional<uint32_t> bufferLength = std::nullopt) const;
 
     [[nodiscard]] std::shared_ptr<uint8_t> toBuffer() const;
 

@@ -457,7 +457,7 @@ PicoScenesTxFrameStructure &PicoScenesTxFrameStructure::addExtraInfo(const Extra
     return *this;
 }
 
-int PicoScenesTxFrameStructure::toBuffer(uint8_t *buffer, std::optional<uint16_t> bufferLength) const {
+int PicoScenesTxFrameStructure::toBuffer(uint8_t *buffer, std::optional<uint32_t> bufferLength) const {
     if (bufferLength) {
         if (*bufferLength < totalLength())
             throw std::overflow_error("Buffer not long enough for TX frame dumping...");
