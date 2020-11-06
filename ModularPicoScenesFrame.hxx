@@ -11,6 +11,7 @@
 #include "RxSBasicSegment.hxx"
 #include "ExtraInfoSegment.hxx"
 #include "BasebandSignalSegment.hxx"
+#include "PicoScenesFrameTxParameters.hxx"
 
 struct ieee80211_mac_frame_header_frame_control_field {
     uint16_t version: 2,
@@ -53,7 +54,7 @@ std::ostream &operator<<(std::ostream &os, const ieee80211_mac_frame_header &hea
 
 struct PicoScenesFrameHeader {
     uint32_t magicValue = 0x20150315;
-    uint32_t version = 0x20191218;
+    uint32_t version = 0x20201106;
     PicoScenesDeviceType deviceType = PicoScenesDeviceType::QCA9300;
     uint8_t numSegments = 0;
     uint8_t frameType = 0;
@@ -74,7 +75,8 @@ class ModularPicoScenesRxFrame {
 public:
     RxSBasicSegment rxSBasicSegment;
     CSISegment csiSegment;
-    ExtraInfoSegment extraInfoSegment;
+    ExtraInfoSegment rxExtraInfoSegment;
+    ExtraInfoSegment txExtraInfoSegment;
     BasebandSignalSegment basebandSignalSegment;
 
     ieee80211_mac_frame_header standardHeader;
@@ -82,11 +84,78 @@ public:
 
     static std::optional<ModularPicoScenesRxFrame> fromBuffer(const uint8_t *buffer, uint32_t bufferLength);
 
+    static std::optional<ModularPicoScenesRxFrame> concatenateFragmentedPicoScenesRxFrames(const std::vector<ModularPicoScenesRxFrame> &frameQueue);
+
     Uint8Vector rawBuffer;
     Uint8Vector nonPicoScenesMSDUContent;
 
-    std::map<std::string, std::vector<uint8_t>> rxSegmentMap;
-    std::map<std::string, std::vector<uint8_t>> txSegmentMap;
+    std::map<std::string, std::vector<uint8_t>> rxUnknownSegmentMap;
+    std::map<std::string, std::vector<uint8_t>> txUnknownSegmentMap;
+
+    bool operator==(const ModularPicoScenesRxFrame &rhs) const;
+
+    std::string toString() const;
 };
+
+std::ostream &operator<<(std::ostream &os, const ModularPicoScenesRxFrame &parameters);
+
+class ModularPicoScenesTxFrame {
+public:
+    ieee80211_mac_frame_header standardHeader;
+    PicoScenesFrameHeader frameHeader;
+    PicoScenesFrameTxParameters txParameters;
+    std::vector<std::shared_ptr<AbstractPicoScenesFrameSegment>> segments;
+
+    void reset();
+
+    uint32_t totalLength() const;
+
+    int toBuffer(uint8_t *buffer, uint32_t bufferLength) const;
+
+    Uint8Vector toBuffer() const;
+
+    ModularPicoScenesTxFrame &setMoreFrags();
+
+    ModularPicoScenesTxFrame &setFragNumber(uint8_t fragNumber);
+
+    ModularPicoScenesTxFrame &setRetry();
+
+    ModularPicoScenesTxFrame &setTaskId(uint16_t taskId);
+
+    ModularPicoScenesTxFrame &setRandomTaskId();
+
+    ModularPicoScenesTxFrame &setPicoScenesFrameType(uint8_t frameType);
+
+    ModularPicoScenesTxFrame &setChannelBandwidth(const ChannelBandwidthEnum &cbw);
+
+    ModularPicoScenesTxFrame &setGuardInterval(GuardIntervalEnum guardInterval);
+
+    ModularPicoScenesTxFrame &setMCS(uint8_t mcs);
+
+    ModularPicoScenesTxFrame &setMCS(const std::vector<uint8_t> &mcs);
+
+    ModularPicoScenesTxFrame &setNumSTS(uint8_t numSTS);
+
+    ModularPicoScenesTxFrame &setNumSTS(const std::vector<uint8_t> &numSTSs);
+
+    ModularPicoScenesTxFrame &setDestinationAddress(const uint8_t macAddr[6]);
+
+    ModularPicoScenesTxFrame &setSourceAddress(const uint8_t macAddr[6]);
+
+    ModularPicoScenesTxFrame &set3rdAddress(const uint8_t macAddr[6]);
+
+    ModularPicoScenesTxFrame &setForceSounding(bool forceSounding);
+
+    ModularPicoScenesTxFrame &setNumExtraSounding(uint8_t numExtraSounding);
+
+    ModularPicoScenesTxFrame &setChannelCoding(ChannelCodingEnum codings);
+
+    ModularPicoScenesTxFrame &setChannelCoding(const std::vector<ChannelCodingEnum> &codings);
+
+    [[nodiscard]] std::string toString() const;
+};
+
+std::ostream &operator<<(std::ostream &os, const ModularPicoScenesTxFrame &txframe);
+
 
 #endif //PICOSCENES_PLATFORM_MODULARPICOSCENESFRAME_HXX

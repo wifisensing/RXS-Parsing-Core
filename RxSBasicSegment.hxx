@@ -51,7 +51,6 @@ public:
 
     void fromBuffer(const uint8_t *string, uint32_t length) override;
 
-
 private:
     RxSBasic basic;
 

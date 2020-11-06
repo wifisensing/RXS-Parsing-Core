@@ -7,7 +7,7 @@
 
 #include "AbstractPicoScenesFrameSegment.hxx"
 #include "PicoScenesCommons.hxx"
-#include "../RXSExtraInfo.h"
+#include "RXSExtraInfo.hxx"
 
 class ExtraInfoSegment : AbstractPicoScenesFrameSegment {
 public:

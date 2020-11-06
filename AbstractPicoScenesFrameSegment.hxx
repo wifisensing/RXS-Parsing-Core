@@ -33,23 +33,25 @@ public:
 
     void addField(const std::string &fieldName, const std::pair<std::shared_ptr<uint8_t>, uint32_t> &buffer);
 
-    std::vector<uint8_t> getField(const std::string &fieldName);
+    std::vector<uint8_t> getField(const std::string &fieldName) const;
 
-    uint32_t getField(const std::string &fieldName, uint8_t *buffer, std::optional<uint32_t> capacity);
+    uint32_t getField(const std::string &fieldName, uint8_t *buffer, std::optional<uint32_t> capacity) const;
 
     void removeField(const std::string &fieldName);
 
-    uint32_t totalLength(bool includeItself);
+    uint32_t totalLength() const;
 
-    virtual std::vector<uint8_t> toBuffer(bool totalLengthIncluded);
+    virtual std::vector<uint8_t> toBuffer(bool totalLengthIncluded) const;
 
-    virtual uint32_t toBuffer(bool totalLengthIncluded, uint8_t *buffer, std::optional<uint32_t> capacity);
+    virtual uint32_t toBuffer(bool totalLengthIncluded, uint8_t *buffer, std::optional<uint32_t> capacity = std::nullopt) const;
 
     virtual void fromBuffer(const uint8_t *buffer, uint32_t bufferLength) = 0;
 
     static std::tuple<std::string, uint32_t, uint16_t, uint32_t> extractSegmentMetaData(const uint8_t *buffer, uint32_t bufferLength);
 
-    virtual std::string toString();
+    virtual std::string toString() const;
+
+    virtual ~AbstractPicoScenesFrameSegment() {};
 
 protected:
     std::vector<std::string> fieldNames;

@@ -3,7 +3,8 @@
 //
 
 #include <iomanip>
-#include "RXSExtraInfo.hxx"
+#include "RXSExtraInfo.h"
+#include "rxs_enhanced.h"
 
 void featureCodeInterpretation(uint32_t featureCode, struct ExtraInfo *extraInfo) {
     extraInfo->hasLength = extraInfoHasLength(featureCode);
@@ -41,6 +42,7 @@ void inplaceAddRxExtraInfo(uint8_t *inBytes, uint32_t featureCode, uint8_t *valu
 
     rxFeatureCode = (uint32_t *) (inBytes + pos);
     pos += 4;
+    pos += sizeof(struct rx_status_basic);
     lengthField_ptr = extraInfoHasLength(*rxFeatureCode) ? (uint16_t *) inBytes + pos : nullptr;
     pos += extraInfoHasLength(*rxFeatureCode) ? 2 : 0;
     pos += extraInfoHasVersion(*rxFeatureCode) ? 8 : 0;

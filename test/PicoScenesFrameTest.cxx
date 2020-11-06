@@ -3,7 +3,7 @@
 //
 
 #include "gtest/gtest.h"
-#include "../VariablePicoScenesFrame.hxx"
+#include "../old/VariablePicoScenesFrame.hxx"
 
 
 namespace PicoScenesFrameTest {
