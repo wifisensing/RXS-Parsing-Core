@@ -1,0 +1,3 @@
+file(GLOB modular_ps_core_source *.cxx)
+ADD_LIBRARY(modular_parsing_core SHARED ${modular_ps_core_source} )
+install(TARGETS modular_parsing_core DESTINATION ${INSTALL_LIBRARY_DIR})

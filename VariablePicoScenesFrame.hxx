@@ -158,25 +158,6 @@ struct CSIData {
 
 std::ostream &operator<<(std::ostream &os, const CSIData &data);
 
-class AbstractPicoScenesFrameSegment {
-public:
-    char segId[2]{'S', 'G'};
-    std::string segIdString;
-    uint32_t segLength = 0;
-    std::shared_ptr<uint8_t> segData = nullptr;
-
-    AbstractPicoScenesFrameSegment(const std::string &segIdString, uint32_t segLength, const std::shared_ptr<uint8_t> &segData, bool copyData);
-
-    static std::optional<AbstractPicoScenesFrameSegment> fromBuffer(uint16_t segLength, const uint8_t *buffer);
-
-    std::pair<uint32_t, std::shared_ptr<uint8_t>> toBuffer();
-
-    virtual std::string toString();
-
-    virtual ~AbstractPicoScenesFrameSegment();
-    // TODO to finish this class
-};
-
 class PicoScenesRxFrameStructure {
 public:
     PicoScenesDeviceType deviceType = PicoScenesDeviceType::QCA9300;
