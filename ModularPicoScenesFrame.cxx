@@ -65,11 +65,11 @@ std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::fromBuffer(con
     for (auto i = 0 ; i < numRxSegments; i ++) {
         auto[segmentName, segmentLength, versionId, offset] = AbstractPicoScenesFrameSegment::extractSegmentMetaData(buffer + pos, bufferLength - pos);
         if (boost::iequals(segmentName, "RxSBasic")) {
-            frame.rxSBasicSegment.fromBuffer(buffer + pos, segmentLength);
+            frame.rxSBasicSegment.fromBuffer(buffer + pos, segmentLength + 4);
         } else if (boost::iequals(segmentName, "ExtraInfo")) {
-            frame.rxExtraInfoSegment.fromBuffer(buffer + pos, segmentLength);
+            frame.rxExtraInfoSegment.fromBuffer(buffer + pos, segmentLength + 4);
         } else if (boost::iequals(segmentName, "CSI")) {
-            frame.csiSegment.fromBuffer(buffer + pos, segmentLength);
+            frame.csiSegment.fromBuffer(buffer + pos, segmentLength + 4);
         } else {
             frame.rxUnknownSegmentMap.emplace(segmentName, Uint8Vector(buffer + pos, buffer + pos + segmentLength));
         }

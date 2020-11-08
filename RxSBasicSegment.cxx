@@ -4,17 +4,62 @@
 
 #include "RxSBasicSegment.hxx"
 
-std::optional<RxSBasic> RxSBasic::fromBuffer(const uint8_t *buffer) {
-    RxSBasic basic = *((RxSBasic *) (buffer));
-//    if ((basic.deviceType == (uint16_t) PicoScenesDeviceType::QCA9300 || basic.deviceType == (uint16_t) PicoScenesDeviceType::USRP) && (basic.num_tones != 52 && basic.num_tones != 56 && basic.num_tones != 114)) {
-//        printf("RxBasic(QCA9300 or SDR): Impossible values in nrx (%d), ntx (%d), or num_tones (%d).\n", basic.nrx, basic.ntx, basic.num_tones);
-//        return std::nullopt;
-//    } else if (basic.deviceType == (uint16_t) PicoScenesDeviceType::IWL5300 && basic.num_tones != 30) {
-//        printf("RxBasic(IWL5300): Impossible values in nrx (%d), ntx (%d), or num_tones (%d).\n", basic.nrx, basic.ntx, basic.num_tones);
-//        return std::nullopt;
-//    }
+struct QCA9300RxsBasicContentV1 {
+    uint16_t deviceType;  /* device type code */
+    uint64_t tstamp;      /* h/w assigned timestamp */
+    uint16_t channelFreq;     /* receiving channel frequency */
+    int8_t packetFormat;/* 0 for NonHT, 1 for HT, 2 for VHT, 3 for HE-SU, 4 for HE-MU */
+    uint16_t cbw;         /* channel bandwidth [20, 40, 80, 160] */
+    uint16_t guardInterval; /* 400/800/1600/3200ns */
+    uint8_t mcs;
+    uint8_t numSTS;
+    uint8_t numESS;
+    uint8_t numRx;
+    int8_t noiseFloor;       /* noise floor */
+    uint8_t rssi;        /* rx frame RSSI */
+    uint8_t rssi_ctl0;   /* rx frame RSSI [ctl, chain 0] */
+    uint8_t rssi_ctl1;   /* rx frame RSSI [ctl, chain 1] */
+    uint8_t rssi_ctl2;   /* rx frame RSSI [ctl, chain 2] */
+} __attribute__((packed));
 
-    return basic;
+static auto v1Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> RxSBasic {
+    uint32_t pos = 0;
+    if (bufferLength < sizeof(RxSBasic))
+        throw std::runtime_error("RxSBasicSegment v1Parser cannot parse the segment with insufficient buffer length.");
+
+//    if (sizeof(QCA9300RxsBasicContentV1) != sizeof(RxSBasic))
+//        throw std::runtime_error("RxSBasicSegment v1Parser is incompatible with current RxSBasicSegment format.");
+
+    auto r = RxSBasic();
+    r.deviceType = *(uint16_t *) (buffer + pos);
+    pos += 2;
+    r.tstamp = *(uint64_t *) (buffer + pos); pos +=8;
+    r.channelFreq = *(uint16_t *) (buffer + pos);
+    pos += 2;
+    r.packetFormat = *(uint8_t *) (buffer + pos++);
+    r.cbw = *(uint16_t *) (buffer + pos);
+    pos += 2;
+    r.guardInterval = *(uint16_t *) (buffer + pos);
+    pos += 2;
+    r.mcs = *(uint8_t *) (buffer + pos++);
+    r.numSTS = *(uint8_t *) (buffer + pos++);
+    r.numESS = *(uint8_t *) (buffer + pos++);
+    r.numRx = *(uint8_t *) (buffer + pos++);
+    r.noiseFloor = *(int8_t *) (buffer + pos++);
+    r.rssi = *(uint8_t *) (buffer + pos++);
+    r.rssi_ctl0 = *(uint8_t *) (buffer + pos++);
+    r.rssi_ctl1 = *(uint8_t *) (buffer + pos++);
+    r.rssi_ctl2 = *(uint8_t *) (buffer + pos++);
+
+    return r;
+};
+
+std::map<uint16_t, std::function<RxSBasic(const uint8_t *, uint32_t)>> RxSBasicSegment::versionedSolutionMap = initializeSolutionMap();
+
+std::map<uint16_t, std::function<RxSBasic(const uint8_t *, uint32_t)>> RxSBasicSegment::initializeSolutionMap() noexcept {
+    std::map<uint16_t, std::function<RxSBasic(const uint8_t *, uint32_t)>> map;
+    map.emplace(0x1U, v1Parser);
+    return map;
 }
 
 std::string RxSBasic::toString() const {
@@ -35,6 +80,15 @@ void RxSBasicSegment::updateFieldMap() {
     addField("basic", basic);
 }
 
-void RxSBasicSegment::fromBuffer(const uint8_t *string, uint32_t length) {
+void RxSBasicSegment::fromBuffer(const uint8_t *buffer, uint32_t bufferLength) {
+    auto[segmentName, segmentLength, versionId, offset] = extractSegmentMetaData(buffer, bufferLength);
+    if (segmentName != "RxSBasic")
+        throw std::runtime_error("RxSBasicSegment cannot parse the segment named " + segmentName + ".");
+    if (segmentLength + 4 > bufferLength)
+        throw std::underflow_error("RxSBasicSegment cannot parse the segment with less than " + std::to_string(segmentLength + 4) + "B.");
+    if (!versionedSolutionMap.contains(versionId)) {
+        throw std::runtime_error("RxSBasicSegment cannot parse the segment with version v" + std::to_string(versionId) + ".");
+    }
 
+    basic = versionedSolutionMap.at(versionId)(buffer + offset, bufferLength - offset);
 }
