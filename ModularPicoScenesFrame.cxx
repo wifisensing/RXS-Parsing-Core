@@ -97,6 +97,7 @@ std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::fromBuffer(con
         std::copy(buffer + pos, buffer + bufferLength, frame.nonPicoScenesMSDUContent.begin());
     }
 
+    frame.rawBuffer.resize(bufferLength);
     std::copy(buffer, buffer + pos, frame.rawBuffer.begin());
 
     return frame;
