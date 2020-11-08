@@ -9,7 +9,6 @@
 #include "AbstractPicoScenesFrameSegment.hxx"
 #include "PicoScenesCommons.hxx"
 
-
 struct RxSBasic {
     uint16_t deviceType;  /* device type code */
     uint64_t tstamp;      /* h/w assigned timestamp */
@@ -41,12 +40,15 @@ public:
 
     void fromBuffer(const uint8_t *buffer, uint32_t bufferLength) override;
 
+    RxSBasic basic;
+
 private:
     static std::map<uint16_t, std::function<RxSBasic(const uint8_t *, uint32_t)>> versionedSolutionMap;
+
     static std::map<uint16_t, std::function<RxSBasic(const uint8_t *, uint32_t)>> initializeSolutionMap() noexcept;
 
-    RxSBasic basic;
-    void updateFieldMap() override;
+
+    void updateFieldMap() override {}
 };
 
 #endif //PICOSCENES_PLATFORM_RXSBASICSEGMENT_HXX

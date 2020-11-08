@@ -68,15 +68,6 @@ std::string RxSBasic::toString() const {
 
 RxSBasicSegment::RxSBasicSegment() : AbstractPicoScenesFrameSegment("RxSBasic", 0x1U) {}
 
-void RxSBasicSegment::setRxsBasic(const RxSBasic &basicV) {
-    basic = basicV;
-}
-
-void RxSBasicSegment::updateFieldMap() {
-    fieldMap.clear();
-    addField("basic", basic);
-}
-
 void RxSBasicSegment::fromBuffer(const uint8_t *buffer, uint32_t bufferLength) {
     auto[segmentName, segmentLength, versionId, offset] = extractSegmentMetaData(buffer, bufferLength);
     if (segmentName != "RxSBasic")
