@@ -47,7 +47,6 @@ private:
 
     static std::map<uint16_t, std::function<RxSBasic(const uint8_t *, uint32_t)>> initializeSolutionMap() noexcept;
 
-
     void updateFieldMap() override {}
 };
 
