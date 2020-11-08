@@ -27,9 +27,6 @@ static auto v1Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> RxSBa
     if (bufferLength < sizeof(RxSBasic))
         throw std::runtime_error("RxSBasicSegment v1Parser cannot parse the segment with insufficient buffer length.");
 
-//    if (sizeof(QCA9300RxsBasicContentV1) != sizeof(RxSBasic))
-//        throw std::runtime_error("RxSBasicSegment v1Parser is incompatible with current RxSBasicSegment format.");
-
     auto r = RxSBasic();
     r.deviceType = *(uint16_t *) (buffer + pos);
     pos += 2;
