@@ -110,10 +110,9 @@ std::string AbstractPicoScenesFrameSegment::toString() const {
 std::tuple<std::string, uint32_t, uint16_t, uint32_t> AbstractPicoScenesFrameSegment::extractSegmentMetaData(const uint8_t *buffer, uint32_t bufferLength) {
     uint32_t rxPos = 0;
     uint32_t segmentLength = *(uint32_t *) (buffer + rxPos);
-    if (segmentLength > bufferLength)
-        throw std::runtime_error("corrected segment...");
-
     rxPos += 4;
+    if (segmentLength > bufferLength)
+        throw std::runtime_error("corrupted segment...");
     auto segNameLength = *(buffer + rxPos++);
     auto segmentName = std::string((char *) (buffer + rxPos));
     rxPos += segNameLength;

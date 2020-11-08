@@ -56,11 +56,13 @@ std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::fromBuffer(con
 
     // next 2 bytes is the frame version
     uint16_t frameVersion = *(uint16_t *) (buffer + pos);
+    pos += 2;
     if (frameVersion != 0x1U)
         return {};
+    uint8_t numRxSegments = *(uint16_t *) (buffer + pos++);
 
     auto frame = ModularPicoScenesRxFrame();
-    while (pos < bufferLength) {
+    for (auto i = 0 ; i < numRxSegments; i ++) {
         auto[segmentName, segmentLength, versionId, offset] = AbstractPicoScenesFrameSegment::extractSegmentMetaData(buffer + pos, bufferLength - pos);
         if (boost::iequals(segmentName, "RxSBasic")) {
             frame.rxSBasicSegment.fromBuffer(buffer + pos, segmentLength);
@@ -71,7 +73,7 @@ std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::fromBuffer(con
         } else {
             frame.rxUnknownSegmentMap.emplace(segmentName, Uint8Vector(buffer + pos, buffer + pos + segmentLength));
         }
-        pos += segmentLength;
+        pos += (segmentLength + 4);
     }
 
     frame.standardHeader = *((ieee80211_mac_frame_header *) (buffer + pos));

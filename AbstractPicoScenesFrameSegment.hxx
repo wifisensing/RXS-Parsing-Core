@@ -11,6 +11,8 @@
 #include <string>
 #include <type_traits>
 #include <tuple>
+#include <memory>
+#include <cstring>
 
 class AbstractPicoScenesFrameSegment {
 public:

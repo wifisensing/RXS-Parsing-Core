@@ -10,6 +10,7 @@
 #include <complex>
 #include <bitset>
 #include <optional>
+#include <cstring>
 
 #ifdef __GNUC__
 #define PACK(__Declaration__) __Declaration__ __attribute__((__packed__))
