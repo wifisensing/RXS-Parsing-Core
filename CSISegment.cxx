@@ -136,12 +136,12 @@ static auto v1Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> CSI {
     pos += 4;
 
     if (deviceType == 0x9300) {
-        auto CSI = CSI::fromQCA9300(buffer + pos, bufferLength - pos, numSTS, numRx, numSTS + numESS, numTone);
+        auto CSI = CSI::fromQCA9300(buffer + pos, CSIBufferLength, numSTS, numRx, numSTS + numESS, numTone);
         return CSI;
     }
 
     if (deviceType == 0x5300) {
-        auto CSI = CSI::fromIWL5300(buffer + pos, bufferLength - pos, numSTS, numRx, numSTS + numESS, numTone, std::nullopt);
+        auto CSI = CSI::fromIWL5300(buffer + pos, CSIBufferLength, numSTS, numRx, numSTS + numESS, numTone, std::nullopt);
         return CSI;
     }
 
