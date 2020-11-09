@@ -5,6 +5,7 @@
 #ifndef PICOSCENES_PLATFORM_CSISEGMENT_HXX
 #define PICOSCENES_PLATFORM_CSISEGMENT_HXX
 
+#include <functional>
 #include "AbstractPicoScenesFrameSegment.hxx"
 #include "PicoScenesCommons.hxx"
 
@@ -38,8 +39,12 @@ public:
 
     void addCSI(const CSI &perUserCSI);
 
-private:
     std::vector<CSI> muCSI;
+private:
+    static std::map<uint16_t, std::function<CSI(const uint8_t *, uint32_t)>> versionedSolutionMap;
+
+    static std::map<uint16_t, std::function<CSI(const uint8_t *, uint32_t)>> initializeSolutionMap() noexcept;
+
 
     void updateFieldMap() override;
 };

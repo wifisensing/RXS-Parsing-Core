@@ -97,6 +97,19 @@ CSI CSI::fromIWL5300(const uint8_t *buffer, uint32_t bufferLength, uint8_t numTx
     return csi;
 }
 
+
+static auto v1Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> CSI {
+    uint32_t pos = 0;
+
+    throw std::runtime_error("ExtraInfoSegment cannot decode the given buffer.");
+};
+
+std::map<uint16_t, std::function<CSI(const uint8_t *, uint32_t)>> CSISegment::versionedSolutionMap = initializeSolutionMap();
+
+std::map<uint16_t, std::function<CSI(const uint8_t *, uint32_t)>> CSISegment::initializeSolutionMap() noexcept {
+    return std::map<uint16_t, std::function<CSI(const uint8_t *, uint32_t)>> {{0x1U, v1Parser}};
+}
+
 CSISegment::CSISegment() : AbstractPicoScenesFrameSegment("CSI", 0x1u) {
 
 }
@@ -124,5 +137,15 @@ void CSISegment::updateFieldMap() {
 }
 
 void CSISegment::fromBuffer(const uint8_t *buffer, uint32_t bufferLength) {
+    auto[segmentName, segmentLength, versionId, offset] = extractSegmentMetaData(buffer, bufferLength);
+    if (segmentName != "CSI")
+        throw std::runtime_error("CSISegment cannot parse the segment named " + segmentName + ".");
+    if (segmentLength + 4 > bufferLength)
+        throw std::underflow_error("CSISegment cannot parse the segment with less than " + std::to_string(segmentLength + 4) + "B.");
+    if (!versionedSolutionMap.contains(versionId)) {
+        throw std::runtime_error("CSISegment cannot parse the segment with version v" + std::to_string(versionId) + ".");
+    }
 
+    auto csi = versionedSolutionMap.at(versionId)(buffer + offset, bufferLength - offset);
+    addCSI(csi);
 }
