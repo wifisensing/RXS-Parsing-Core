@@ -189,5 +189,7 @@ void CSISegment::fromBuffer(const uint8_t *buffer, uint32_t bufferLength) {
     }
 
     auto csi = versionedSolutionMap.at(versionId)(buffer + offset, bufferLength - offset);
+    rawBuffer.resize(bufferLength);
+    std::copy(buffer, buffer + bufferLength, rawBuffer.begin());
     addCSI(csi);
 }

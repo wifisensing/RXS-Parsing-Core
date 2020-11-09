@@ -79,4 +79,6 @@ void RxSBasicSegment::fromBuffer(const uint8_t *buffer, uint32_t bufferLength) {
     }
 
     basic = versionedSolutionMap.at(versionId)(buffer + offset, bufferLength - offset);
+    rawBuffer.resize(bufferLength);
+    std::copy(buffer, buffer + bufferLength, rawBuffer.begin());
 }
