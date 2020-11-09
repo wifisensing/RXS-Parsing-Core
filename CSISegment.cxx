@@ -6,6 +6,27 @@
 #include <utility>
 #include "CSISegment.hxx"
 
+struct QCA9300CSISegmentContentDescriptorV1 {
+    uint16_t deviceType;
+    uint8_t numCSIGroup;
+    uint16_t numTone;
+    uint8_t   numSTS;        /* number of Spatial-time Stream */
+    uint8_t   numESS;        /* number of Extra Spatial-time Stream */
+    uint16_t numRx;
+    uint32_t rawDataLength;
+} __attribute__ ((__packed__));
+
+
+struct IWL5300CSISegmentContentDescriptorV1 {
+    uint16_t deviceType;
+    uint8_t numCSIGroup;
+    uint16_t numTone;
+    uint8_t   numSTS;        /* number of Spatial-time Stream */
+    uint8_t   numESS;        /* number of Extra Spatial-time Stream */
+    uint16_t numRx;
+    uint32_t rawDataLength;
+} __attribute__ ((__packed__));
+
 
 void parseQCA9300CSIData(std::complex<double> *outputArray, const uint8_t *csiData, int ntx, int nrx, int num_tones) {
 
@@ -82,6 +103,7 @@ void parseIWL5300CSIData(std::complex<double> *csi_matrix, const uint8_t *payloa
 CSI CSI::fromQCA9300(const uint8_t *buffer, uint32_t bufferLength, uint8_t numTx, uint8_t numRx, uint8_t numLTF, uint8_t numTones) {
     auto csi = CSI{.deviceType = PicoScenesDeviceType::QCA9300, .packetFormat = PacketFormatEnum::PacketFormat_HT, .dimensions = CSIDimension{.numTones = numTones, .numTx = numTx, .numRx = numRx}};
     csi.CSIArrays.resize(numTx * numRx * numLTF * numTones);
+    csi.rawCSIData.resize(bufferLength);
     parseQCA9300CSIData(&csi.CSIArrays[0], buffer, numTx, numRx, numTones);
     std::copy(buffer, buffer + bufferLength, csi.rawCSIData.begin());
 
@@ -91,6 +113,7 @@ CSI CSI::fromQCA9300(const uint8_t *buffer, uint32_t bufferLength, uint8_t numTx
 CSI CSI::fromIWL5300(const uint8_t *buffer, uint32_t bufferLength, uint8_t numTx, uint8_t numRx, uint8_t numLTF, uint8_t numTones, std::optional<Uint8Vector> ant_sel) {
     auto csi = CSI{.deviceType = PicoScenesDeviceType::IWL5300, .packetFormat=PacketFormatEnum::PacketFormat_HT, .dimensions = CSIDimension{.numTones = numTones, .numTx = numTx, .numRx = numRx, .numLTF = numLTF}};
     csi.CSIArrays.resize(numTx * numRx * numLTF * numTones);
+    csi.rawCSIData.resize(bufferLength);
     parseIWL5300CSIData(&csi.CSIArrays[0], buffer, numTx, numRx, std::move(ant_sel));
     std::copy(buffer, buffer + bufferLength, csi.rawCSIData.begin());
 
@@ -100,6 +123,27 @@ CSI CSI::fromIWL5300(const uint8_t *buffer, uint32_t bufferLength, uint8_t numTx
 
 static auto v1Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> CSI {
     uint32_t pos = 0;
+    uint32_t deviceType = *(uint16_t *) (buffer + pos);
+    pos += 2;
+    uint8_t numCSIGroup = *(uint8_t *) (buffer + pos++);
+    uint16_t numTone = *(uint16_t *) (buffer + pos);
+    pos += 2;
+    uint8_t numSTS = *(uint8_t *) (buffer + pos++);
+    uint8_t numESS =  *(uint8_t *) (buffer + pos++);
+    uint8_t numRx =  *(uint8_t *) (buffer + pos);
+    pos += 2;
+    uint32_t CSIBufferLength = *(uint32_t *) (buffer + pos);
+    pos += 4;
+
+    if (deviceType == 0x9300) {
+        auto CSI = CSI::fromQCA9300(buffer + pos, bufferLength - pos, numSTS, numRx, numSTS + numESS, numTone);
+        return CSI;
+    }
+
+    if (deviceType == 0x5300) {
+        auto CSI = CSI::fromIWL5300(buffer + pos, bufferLength - pos, numSTS, numRx, numSTS + numESS, numTone, std::nullopt);
+        return CSI;
+    }
 
     throw std::runtime_error("ExtraInfoSegment cannot decode the given buffer.");
 };
