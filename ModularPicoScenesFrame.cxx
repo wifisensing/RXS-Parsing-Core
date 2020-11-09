@@ -39,11 +39,10 @@ std::string PicoScenesFrameHeader::toString() const {
 
 
 std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::fromBuffer(const uint8_t *buffer, uint32_t bufferLength) {
-    uint32_t totalLength = 0, pos = 0;
+    uint32_t pos = 0;
 
     // first 4 bytes should be the buffer length
     if (*(uint32_t *) buffer + 4 == bufferLength) {
-        totalLength = *(uint32_t *) buffer;
         pos += 4;
     } else {
         return {};
@@ -71,7 +70,7 @@ std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::fromBuffer(con
         } else if (boost::iequals(segmentName, "CSI")) {
             frame.csiSegment.fromBuffer(buffer + pos, segmentLength + 4);
         } else {
-            frame.rxUnknownSegmentMap.emplace(segmentName, Uint8Vector(buffer + pos, buffer + pos + segmentLength));
+            frame.rxUnknownSegmentMap.emplace(segmentName, Uint8Vector(buffer + pos, buffer + pos + segmentLength + 4));
         }
         pos += (segmentLength + 4);
     }
