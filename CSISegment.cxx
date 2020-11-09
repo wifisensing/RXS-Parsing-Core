@@ -10,8 +10,8 @@ struct QCA9300CSISegmentContentDescriptorV1 {
     uint16_t deviceType;
     uint8_t numCSIGroup;
     uint16_t numTone;
-    uint8_t   numSTS;        /* number of Spatial-time Stream */
-    uint8_t   numESS;        /* number of Extra Spatial-time Stream */
+    uint8_t numSTS;        /* number of Spatial-time Stream */
+    uint8_t numESS;        /* number of Extra Spatial-time Stream */
     uint8_t numRx;
     uint32_t rawDataLength;
 } __attribute__ ((__packed__));
@@ -21,8 +21,8 @@ struct IWL5300CSISegmentContentDescriptorV1 {
     uint16_t deviceType;
     uint8_t numCSIGroup;
     uint16_t numTone;
-    uint8_t   numSTS;        /* number of Spatial-time Stream */
-    uint8_t   numESS;        /* number of Extra Spatial-time Stream */
+    uint8_t numSTS;        /* number of Spatial-time Stream */
+    uint8_t numESS;        /* number of Extra Spatial-time Stream */
     uint8_t numRx;
     uint32_t rawDataLength;
 } __attribute__ ((__packed__));
@@ -129,8 +129,8 @@ static auto v1Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> CSI {
     uint16_t numTone = *(uint16_t *) (buffer + pos);
     pos += 2;
     uint8_t numSTS = *(uint8_t *) (buffer + pos++);
-    uint8_t numESS =  *(uint8_t *) (buffer + pos++);
-    uint8_t numRx =  *(uint8_t *) (buffer + pos);
+    uint8_t numESS = *(uint8_t *) (buffer + pos++);
+    uint8_t numRx = *(uint8_t *) (buffer + pos);
     pos += 2;
     uint32_t CSIBufferLength = *(uint32_t *) (buffer + pos);
     pos += 4;
@@ -151,7 +151,7 @@ static auto v1Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> CSI {
 std::map<uint16_t, std::function<CSI(const uint8_t *, uint32_t)>> CSISegment::versionedSolutionMap = initializeSolutionMap();
 
 std::map<uint16_t, std::function<CSI(const uint8_t *, uint32_t)>> CSISegment::initializeSolutionMap() noexcept {
-    return std::map<uint16_t, std::function<CSI(const uint8_t *, uint32_t)>> {{0x1U, v1Parser}};
+    return std::map<uint16_t, std::function<CSI(const uint8_t *, uint32_t)>>{{0x1U, v1Parser}};
 }
 
 CSISegment::CSISegment() : AbstractPicoScenesFrameSegment("CSI", 0x1u) {
@@ -177,7 +177,6 @@ void CSISegment::updateFieldMap() {
         addField("rawData" + std::to_string(groupCount), csi.rawCSIData);
         groupCount++;
     }
-
 }
 
 void CSISegment::fromBuffer(const uint8_t *buffer, uint32_t bufferLength) {
