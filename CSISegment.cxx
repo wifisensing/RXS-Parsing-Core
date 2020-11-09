@@ -12,7 +12,7 @@ struct QCA9300CSISegmentContentDescriptorV1 {
     uint16_t numTone;
     uint8_t   numSTS;        /* number of Spatial-time Stream */
     uint8_t   numESS;        /* number of Extra Spatial-time Stream */
-    uint16_t numRx;
+    uint8_t numRx;
     uint32_t rawDataLength;
 } __attribute__ ((__packed__));
 
@@ -23,7 +23,7 @@ struct IWL5300CSISegmentContentDescriptorV1 {
     uint16_t numTone;
     uint8_t   numSTS;        /* number of Spatial-time Stream */
     uint8_t   numESS;        /* number of Extra Spatial-time Stream */
-    uint16_t numRx;
+    uint8_t numRx;
     uint32_t rawDataLength;
 } __attribute__ ((__packed__));
 
