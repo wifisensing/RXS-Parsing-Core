@@ -130,8 +130,7 @@ static auto v1Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> CSI {
     pos += 2;
     uint8_t numSTS = *(uint8_t *) (buffer + pos++);
     uint8_t numESS = *(uint8_t *) (buffer + pos++);
-    uint8_t numRx = *(uint8_t *) (buffer + pos);
-    pos += 2;
+    uint8_t numRx = *(uint8_t *) (buffer + pos++);
     uint32_t CSIBufferLength = *(uint32_t *) (buffer + pos);
     pos += 4;
 
