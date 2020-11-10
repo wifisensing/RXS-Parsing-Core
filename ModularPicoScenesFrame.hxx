@@ -54,11 +54,12 @@ std::ostream &operator<<(std::ostream &os, const ieee80211_mac_frame_header &hea
 
 struct PicoScenesFrameHeader {
     uint32_t magicValue = 0x20150315;
-    uint32_t version = 0x20201106;
+    uint32_t version = 0x20201110;
     PicoScenesDeviceType deviceType = PicoScenesDeviceType::QCA9300;
     uint8_t numSegments = 0;
     uint8_t frameType = 0;
     uint16_t taskId = 0;
+    uint16_t txId = 0;
 
     static std::optional<PicoScenesFrameHeader> fromBuffer(const uint8_t *buffer);
 

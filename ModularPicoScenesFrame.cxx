@@ -24,7 +24,7 @@ std::ostream &operator<<(std::ostream &os, const ieee80211_mac_frame_header &hea
 
 std::optional<PicoScenesFrameHeader> PicoScenesFrameHeader::fromBuffer(const uint8_t *buffer) {
     auto magicValue = *((uint32_t *) (buffer));
-    if (magicValue == 0x20150315 || magicValue == 0x20120930) {
+    if (magicValue == 0x20150315) {
         auto frameHeader = *((PicoScenesFrameHeader *) (buffer));
         return frameHeader;
     }
@@ -33,7 +33,7 @@ std::optional<PicoScenesFrameHeader> PicoScenesFrameHeader::fromBuffer(const uin
 
 std::string PicoScenesFrameHeader::toString() const {
     std::stringstream ss;
-    ss << "PSFHeader:[ver=0x" << std::hex << version << std::dec << ", device=" << deviceType << ", numSegs=" << int(numSegments) << ", type=" << int(frameType) << ", taskId=" << int(taskId) << "]";
+    ss << "PSFHeader:[ver=0x" << std::hex << version << std::dec << ", device=" << deviceType << ", numSegs=" << int(numSegments) << ", type=" << int(frameType) << ", taskId=" << int(taskId) << ", txId=" << int(txId) << "]";
     return ss.str();
 }
 
