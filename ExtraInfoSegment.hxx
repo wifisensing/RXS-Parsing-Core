@@ -10,9 +10,11 @@
 #include "PicoScenesCommons.hxx"
 #include "RXSExtraInfo.hxx"
 
-class ExtraInfoSegment : AbstractPicoScenesFrameSegment {
+class ExtraInfoSegment : public AbstractPicoScenesFrameSegment {
 public:
     ExtraInfoSegment();
+
+    explicit ExtraInfoSegment(const ExtraInfo & extraInfo);
 
     void fromBuffer(const uint8_t *buffer, uint32_t bufferLength) override;
 

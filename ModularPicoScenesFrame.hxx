@@ -107,6 +107,8 @@ public:
     PicoScenesFrameTxParameters txParameters;
     std::vector<std::shared_ptr<AbstractPicoScenesFrameSegment>> segments;
 
+    void addSegments(const std::shared_ptr<AbstractPicoScenesFrameSegment>& segment);
+
     void reset();
 
     uint32_t totalLength() const;

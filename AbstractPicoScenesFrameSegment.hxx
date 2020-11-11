@@ -45,7 +45,7 @@ public:
 
     virtual std::vector<uint8_t> toBuffer(bool totalLengthIncluded) const;
 
-    virtual uint32_t toBuffer(bool totalLengthIncluded, uint8_t *buffer, std::optional<uint32_t> capacity = std::nullopt) const;
+    uint32_t toBuffer(bool totalLengthIncluded, uint8_t *buffer, std::optional<uint32_t> capacity = std::nullopt) const;
 
     virtual void fromBuffer(const uint8_t *buffer, uint32_t bufferLength) = 0;
 
@@ -56,13 +56,14 @@ public:
     virtual ~AbstractPicoScenesFrameSegment() {};
 
 protected:
-    std::vector<std::string> fieldNames;
     std::map<std::string, std::vector<uint8_t>> fieldMap;
     std::map<std::string, std::pair<uint32_t, uint32_t>> fieldIndices;
     std::vector<uint8_t> rawBuffer;
     uint32_t rxPos;
 
     virtual void updateFieldMap() {};
+
+    void clearAllFieldRecords();
 };
 
 

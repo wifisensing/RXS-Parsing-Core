@@ -119,6 +119,10 @@ std::ostream &operator<<(std::ostream &os, const ModularPicoScenesRxFrame &rxfra
     return os;
 }
 
+void ModularPicoScenesTxFrame::addSegments(const std::shared_ptr<AbstractPicoScenesFrameSegment>& segment) {
+    segments.emplace_back(segment);
+}
+
 uint32_t ModularPicoScenesTxFrame::totalLength() const {
     uint32_t length = sizeof(decltype(standardHeader)) + sizeof(decltype(frameHeader));
     for (const auto &segment : segments) {
@@ -285,6 +289,7 @@ std::string ModularPicoScenesTxFrame::toString() const {
     ss << "}";
     return ss.str();
 }
+
 
 
 std::ostream &operator<<(std::ostream &os, const ModularPicoScenesTxFrame &txframe) {

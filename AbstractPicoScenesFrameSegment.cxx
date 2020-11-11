@@ -121,3 +121,9 @@ std::tuple<std::string, uint32_t, uint16_t, uint32_t> AbstractPicoScenesFrameSeg
 
     return std::make_tuple(segmentName, segmentLength, segmentVersionId, rxPos);
 }
+
+void AbstractPicoScenesFrameSegment::clearAllFieldRecords() {
+    fieldMap.clear();
+    fieldIndices.clear();
+    rawBuffer.clear();
+}

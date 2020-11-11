@@ -9,7 +9,7 @@
 #include "AbstractPicoScenesFrameSegment.hxx"
 #include "PicoScenesCommons.hxx"
 
-class MPDUContentsSegment : AbstractPicoScenesFrameSegment {
+class MPDUContentsSegment : public AbstractPicoScenesFrameSegment {
 public:
     MPDUContentsSegment();
 

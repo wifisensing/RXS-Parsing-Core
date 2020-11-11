@@ -33,7 +33,7 @@ struct RxSBasic {
 std::ostream &operator<<(std::ostream &os, const RxSBasic &rxSBasic);
 
 
-class RxSBasicSegment : AbstractPicoScenesFrameSegment {
+class RxSBasicSegment : public AbstractPicoScenesFrameSegment {
 
 public:
     RxSBasicSegment();

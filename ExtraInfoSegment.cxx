@@ -4,7 +4,6 @@
 
 #include "ExtraInfoSegment.hxx"
 
-
 static auto v1Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> ExtraInfo {
     uint32_t pos = 0;
 
@@ -25,6 +24,10 @@ std::map<uint16_t, std::function<ExtraInfo(const uint8_t *, uint32_t)>> ExtraInf
 }
 
 ExtraInfoSegment::ExtraInfoSegment() : AbstractPicoScenesFrameSegment("EI", 0x1U) {}
+
+ExtraInfoSegment::ExtraInfoSegment(const ExtraInfo &extraInfoV): ExtraInfoSegment() {
+    extraInfo = extraInfoV;
+}
 
 void ExtraInfoSegment::updateFieldMap() {
     uint8_t array[500];
@@ -48,4 +51,3 @@ void ExtraInfoSegment::fromBuffer(const uint8_t *buffer, uint32_t bufferLength) 
     rawBuffer.resize(bufferLength);
     std::copy(buffer, buffer + bufferLength, rawBuffer.begin());
 }
-
