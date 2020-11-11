@@ -61,7 +61,7 @@ std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::fromBuffer(con
     uint8_t numRxSegments = *(uint16_t *) (buffer + pos++);
 
     auto frame = ModularPicoScenesRxFrame();
-    for (auto i = 0 ; i < numRxSegments; i ++) {
+    for (auto i = 0; i < numRxSegments; i++) {
         auto[segmentName, segmentLength, versionId, offset] = AbstractPicoScenesFrameSegment::extractSegmentMetaData(buffer + pos, bufferLength - pos);
         if (boost::iequals(segmentName, "RxSBasic")) {
             frame.rxSBasicSegment.fromBuffer(buffer + pos, segmentLength + 4);
@@ -119,8 +119,9 @@ std::ostream &operator<<(std::ostream &os, const ModularPicoScenesRxFrame &rxfra
     return os;
 }
 
-void ModularPicoScenesTxFrame::addSegments(const std::shared_ptr<AbstractPicoScenesFrameSegment>& segment) {
+void ModularPicoScenesTxFrame::addSegments(const std::shared_ptr<AbstractPicoScenesFrameSegment> &segment) {
     segments.emplace_back(segment);
+    frameHeader.numSegments++;
 }
 
 uint32_t ModularPicoScenesTxFrame::totalLength() const {
@@ -289,7 +290,6 @@ std::string ModularPicoScenesTxFrame::toString() const {
     ss << "}";
     return ss.str();
 }
-
 
 
 std::ostream &operator<<(std::ostream &os, const ModularPicoScenesTxFrame &txframe) {
