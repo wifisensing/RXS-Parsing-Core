@@ -46,7 +46,10 @@ static auto v1Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> RxSBa
     r.rssi = *(uint8_t *) (buffer + pos++);
     r.rssi_ctl0 = *(uint8_t *) (buffer + pos++);
     r.rssi_ctl1 = *(uint8_t *) (buffer + pos++);
-    r.rssi_ctl2 = *(uint8_t *) (buffer + pos);
+    r.rssi_ctl2 = *(uint8_t *) (buffer + pos++);
+
+    if (pos != bufferLength)
+        throw std::runtime_error("RxSBasicSegment v1Parser cannot parse the segment with mismatched buffer length.");
 
     return r;
 };

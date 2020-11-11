@@ -7,6 +7,7 @@
 
 #include <cstdlib>
 #include <cstdio>
+#include <vector>
 #include <complex>
 #include <bitset>
 #include <optional>
@@ -123,6 +124,8 @@ struct ExtraInfo {
     static std::optional<ExtraInfo> fromBuffer(const uint8_t *extraInfoPtr, uint32_t suppliedFeatureCode = 0);
 
     int toBuffer(uint8_t *buffer) const;
+
+    std::vector<uint8_t> toBuffer() const;
 
     void setLength(uint16_t length);
 

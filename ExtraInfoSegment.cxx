@@ -23,18 +23,11 @@ std::map<uint16_t, std::function<ExtraInfo(const uint8_t *, uint32_t)>> ExtraInf
     return std::map<uint16_t, std::function<ExtraInfo(const uint8_t *, uint32_t)>> {{0x1U, v1Parser}};
 }
 
-ExtraInfoSegment::ExtraInfoSegment() : AbstractPicoScenesFrameSegment("EI", 0x1U) {}
+ExtraInfoSegment::ExtraInfoSegment() : AbstractPicoScenesFrameSegment("ExtraInfo", 0x1U) {}
 
 ExtraInfoSegment::ExtraInfoSegment(const ExtraInfo &extraInfoV): ExtraInfoSegment() {
     extraInfo = extraInfoV;
-}
-
-void ExtraInfoSegment::updateFieldMap() {
-    uint8_t array[500];
-    memset(array, 0, sizeof(array));
-    auto length = extraInfo.toBuffer(array);
-    fieldMap.clear();
-    addField("EI", array, length);
+    addField("EI", extraInfoV.toBuffer());
 }
 
 void ExtraInfoSegment::fromBuffer(const uint8_t *buffer, uint32_t bufferLength) {

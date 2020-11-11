@@ -12,6 +12,7 @@ AbstractPicoScenesFrameSegment::AbstractPicoScenesFrameSegment(std::string segme
 void AbstractPicoScenesFrameSegment::addField(const std::string &fieldName, const std::vector<uint8_t> &data) {
     fieldMap[fieldName] = data;
     updateFieldMap();
+    segmentLength = totalLength();
 }
 
 void AbstractPicoScenesFrameSegment::addField(const std::string &fieldName, const uint8_t *buffer, uint32_t bufferLength) {
@@ -29,7 +30,6 @@ void AbstractPicoScenesFrameSegment::addField(const std::string &fieldName, cons
 void AbstractPicoScenesFrameSegment::addField(const std::string &fieldName, const std::pair<std::shared_ptr<uint8_t>, uint32_t> &buffer) {
     fieldMap[fieldName] = std::vector<uint8_t>(buffer.first.get(), buffer.first.get() + buffer.second);
     updateFieldMap();
-    segmentLength = totalLength();
     segmentLength = totalLength();
 }
 
@@ -57,7 +57,7 @@ void AbstractPicoScenesFrameSegment::removeField(const std::string &fieldName) {
 
 uint32_t AbstractPicoScenesFrameSegment::totalLength() const {
     uint32_t length = 0;
-    length += segmentName.size();
+    length += segmentName.size() + 1;
     length += 1;
     length += sizeof(segmentVersionId);
     for (const auto &field: fieldMap) {

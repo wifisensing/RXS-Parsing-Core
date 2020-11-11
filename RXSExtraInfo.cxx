@@ -175,6 +175,13 @@ uint16_t ExtraInfo::calculateBufferLength() const {
 #undef ADDLENGTH
 }
 
+
+std::vector<uint8_t> ExtraInfo::toBuffer() const {
+    static uint8_t array[500];
+    auto length = toBuffer(array);
+    return std::vector<uint8_t>(array, array + length);
+}
+
 int ExtraInfo::toBuffer(uint8_t *buffer) const {
 #define SETBUFF(hasV, v) \
     if (hasV) { \
