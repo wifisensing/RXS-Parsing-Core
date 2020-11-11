@@ -89,6 +89,7 @@ std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::fromBuffer(con
             } else {
                 frame.txUnknownSegmentMap.emplace(segmentName, Uint8Vector(buffer + pos, buffer + pos + segmentLength + 4));
             }
+            pos += segmentLength + 4;
         }
     } else {
         uint32_t msduLength = bufferLength - pos;
