@@ -19,6 +19,7 @@ public:
     std::string segmentName;
     uint16_t segmentVersionId;
     uint32_t segmentLength = 0;
+    std::vector<uint8_t> rawBuffer;
 
     AbstractPicoScenesFrameSegment(std::string segmentName, uint16_t segmentVersionId);
 
@@ -59,8 +60,6 @@ protected:
     std::vector<std::string> fieldNames; // fieldMap is not ordered by the insertion, so we need another list to hold the input order.
     std::map<std::string, std::vector<uint8_t>> fieldMap;
     std::map<std::string, std::pair<uint32_t, uint32_t>> fieldIndices;
-    std::vector<uint8_t> rawBuffer;
-    uint32_t rxPos;
 
     virtual void updateFieldMap() {};
 
