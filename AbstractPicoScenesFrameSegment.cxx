@@ -11,24 +11,28 @@ AbstractPicoScenesFrameSegment::AbstractPicoScenesFrameSegment(std::string segme
 
 void AbstractPicoScenesFrameSegment::addField(const std::string &fieldName, const std::vector<uint8_t> &data) {
     fieldMap[fieldName] = data;
+    fieldNames.emplace_back(fieldName);
     updateFieldMap();
     segmentLength = totalLength();
 }
 
 void AbstractPicoScenesFrameSegment::addField(const std::string &fieldName, const uint8_t *buffer, uint32_t bufferLength) {
     fieldMap[fieldName] = std::vector<uint8_t>(buffer, buffer + bufferLength);
+    fieldNames.emplace_back(fieldName);
     updateFieldMap();
     segmentLength = totalLength();
 }
 
 void AbstractPicoScenesFrameSegment::addField(const std::string &fieldName, const std::pair<const uint8_t *, uint32_t> &buffer) {
     fieldMap[fieldName] = std::vector<uint8_t>(buffer.first, buffer.first + buffer.second);
+    fieldNames.emplace_back(fieldName);
     updateFieldMap();
     segmentLength = totalLength();
 }
 
 void AbstractPicoScenesFrameSegment::addField(const std::string &fieldName, const std::pair<std::shared_ptr<uint8_t>, uint32_t> &buffer) {
     fieldMap[fieldName] = std::vector<uint8_t>(buffer.first.get(), buffer.first.get() + buffer.second);
+    fieldNames.emplace_back(fieldName);
     updateFieldMap();
     segmentLength = totalLength();
 }
@@ -51,6 +55,7 @@ uint32_t AbstractPicoScenesFrameSegment::getField(const std::string &fieldName, 
 
 void AbstractPicoScenesFrameSegment::removeField(const std::string &fieldName) {
     fieldMap.erase(fieldMap.find(fieldName));
+    fieldNames.erase(std::find(fieldNames.cbegin(), fieldNames.cend(), fieldName));
     updateFieldMap();
     segmentLength = totalLength();
 }
@@ -94,9 +99,10 @@ uint32_t AbstractPicoScenesFrameSegment::toBuffer(bool totalLengthIncluded, uint
     std::memcpy(buffer + pos, &segmentVersionId, sizeof(segmentVersionId));
     pos += sizeof(segmentVersionId);
     // copy fields
-    for (const auto &field: fieldMap) {
-        std::copy(field.second.cbegin(), field.second.cend(), buffer + pos);
-        pos += field.second.size();
+    for (const auto &field: fieldNames) {
+        const auto & fieldContent = fieldMap.at(field);
+        std::copy(fieldContent.cbegin(), fieldContent.cend(), buffer + pos);
+        pos += fieldContent.size();
     }
 
     return pos;
@@ -125,5 +131,6 @@ std::tuple<std::string, uint32_t, uint16_t, uint32_t> AbstractPicoScenesFrameSeg
 void AbstractPicoScenesFrameSegment::clearAllFieldRecords() {
     fieldMap.clear();
     fieldIndices.clear();
+    fieldNames.clear();
     rawBuffer.clear();
 }
