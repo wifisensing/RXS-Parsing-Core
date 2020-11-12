@@ -193,3 +193,9 @@ void CSISegment::fromBuffer(const uint8_t *buffer, uint32_t bufferLength) {
     std::copy(buffer, buffer + bufferLength, rawBuffer.begin());
     addCSI(csi);
 }
+
+CSISegment CSISegment::createByBuffer(const uint8_t *buffer, uint32_t bufferLength) {
+    CSISegment csiSegment;
+    csiSegment.fromBuffer(buffer, bufferLength);
+    return csiSegment;
+}
