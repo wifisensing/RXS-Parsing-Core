@@ -64,8 +64,8 @@ std::map<uint16_t, std::function<RxSBasic(const uint8_t *, uint32_t)>> RxSBasicS
 
 std::string RxSBasic::toString() const {
     std::stringstream ss;
-//    ss << "RxS:[device=" + DeviceType2String((PicoScenesDeviceType(deviceType))) + ", freq=" + std::to_string(channel) + ", CBW=" + ChannelBandwidth2String(cbw) + ", MCS=" + std::to_string(rate) + ", SGI=" + std::to_string(sgi) + ", CSI=" + std::to_string(csi_len) + "B(" + std::to_string(ntx) + ", " + std::to_string(nrx) + ", " + std::to_string(num_tones) + "), NLTF=" + std::to_string(nltf) + ", NGroup=" + std::to_string(ncsi_group) + ", timestamp=" + std::to_string(tstamp) + ", NF=" +
-//          std::to_string(noise) + ", RSS=" + std::to_string(rssi) + "]";
+    ss << "RxS:[device=" + DeviceType2String((PicoScenesDeviceType(deviceType))) + ", freq=" + std::to_string(channelFreq) + ", CBW=" + std::to_string(cbw) + ", MCS=" + std::to_string(mcs) + ", numSTS=" + std::to_string(numSTS) + ", GI=" + GuardInterval2String(GuardIntervalEnum(guardInterval)) + ", timestamp=" + std::to_string(tstamp) + ", NF=" +
+          std::to_string(noiseFloor) + ", RSS=" + std::to_string(rssi) + "]";
     return ss.str();
 }
 
@@ -90,4 +90,9 @@ RxSBasicSegment RxSBasicSegment::createByBuffer(const uint8_t *buffer, uint32_t 
     RxSBasicSegment rxSBasicSegment;
     rxSBasicSegment.fromBuffer(buffer, bufferLength);
     return rxSBasicSegment;
+}
+
+std::ostream &operator<<(std::ostream &os, const RxSBasic &rxSBasic) {
+    os << rxSBasic.toString();
+    return os;
 }

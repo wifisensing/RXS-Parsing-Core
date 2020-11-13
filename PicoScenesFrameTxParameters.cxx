@@ -7,7 +7,7 @@
 
 std::string PicoScenesFrameTxParameters::toString() const {
     std::stringstream ss;
-//    ss << "tx_param[mcs=" << int(mcs) << ", bonding=" << channelBonding << ", sgi=" << useShortGI << ", sounding =" << forceSounding << ", NESS=" << int(numExtraSounding) << ", LDPC=" << useLDPC << "]";
+    ss << "tx_param[mcs=" << mcs[0] << ", cbw=" << ChannelBandwidth2String(cbw) << ", gi=" << GuardInterval2String(guardInterval) << ", sounding =" << forceSounding << ", NESS=" << int(numExtraSounding) << ", coding=" << ChannelCoding2String(coding[0]) << "]";
     return ss.str();
 }
 

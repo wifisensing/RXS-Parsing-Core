@@ -104,7 +104,40 @@ std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::fromBuffer(con
 }
 
 std::string ModularPicoScenesRxFrame::toString() const {
-    return std::string();
+    std::stringstream ss;
+    ss << "RxFrame:{";
+    ss << rxSBasicSegment.basic;
+    ss << ", " << rxExtraInfoSegment.extraInfo;
+    ss << ", " << csiSegment.toString();
+    if (!rxUnknownSegmentMap.empty()) {
+        std::stringstream segss;
+        segss << "RxSegments:(";
+        for (const auto &segment: rxUnknownSegmentMap) {
+            segss << segment.first << ":" << segment.second.size() << "B, ";
+        }
+        auto temp = segss.str();
+        temp.erase(temp.end() - 2, temp.end());
+        temp.append(")");
+        ss << ", " << temp;
+    }
+
+    ss << ", " << standardHeader;
+    ss << ", " << PicoScenesHeader->toString();
+    ss << ", " << txExtraInfoSegment.extraInfo;
+
+    if (!txUnknownSegmentMap.empty()) {
+        std::stringstream segss;
+        segss << "TxSegments:(";
+        for (const auto &segment: txUnknownSegmentMap) {
+            segss << segment.first << ":" << segment.second.size() << "B, ";
+        }
+        auto temp = segss.str();
+        temp.erase(temp.end() - 2, temp.end());
+        temp.append(")");
+        ss << ", " << temp;
+    }
+    ss << "}";
+    return ss.str();
 }
 
 std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::concatenateFragmentedPicoScenesRxFrames(const std::vector<ModularPicoScenesRxFrame> &frameQueue) {
@@ -283,7 +316,7 @@ std::string ModularPicoScenesTxFrame::toString() const {
 
     if (!segments.empty()) {
         std::stringstream segss;
-        segss << "Segment:(";
+        segss << "Segments:(";
         for (const auto &segment: segments) {
             segss << segment->segmentName << ":" << segment->segmentLength << "B, ";
         }
