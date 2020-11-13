@@ -63,8 +63,6 @@ struct PicoScenesFrameHeader {
 
     static std::optional<PicoScenesFrameHeader> fromBuffer(const uint8_t *buffer);
 
-    bool operator==(const PicoScenesFrameHeader &rhs) const;
-
     [[nodiscard]] std::string toString() const;
 
 } __attribute__ ((__packed__));
@@ -124,6 +122,8 @@ public:
     ModularPicoScenesTxFrame &setRetry();
 
     ModularPicoScenesTxFrame &setTaskId(uint16_t taskId);
+
+    ModularPicoScenesTxFrame &setTxId(uint16_t txId);
 
     ModularPicoScenesTxFrame &setRandomTaskId();
 

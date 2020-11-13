@@ -220,6 +220,11 @@ ModularPicoScenesTxFrame &ModularPicoScenesTxFrame::setTaskId(uint16_t taskId) {
     return *this;
 }
 
+ModularPicoScenesTxFrame &ModularPicoScenesTxFrame::setTxId(uint16_t txId) {
+    frameHeader.txId = txId;
+    return *this;
+}
+
 ModularPicoScenesTxFrame &ModularPicoScenesTxFrame::setRandomTaskId() {
     static std::random_device r;
     static std::default_random_engine randomEngine(r());
