@@ -12,28 +12,24 @@ AbstractPicoScenesFrameSegment::AbstractPicoScenesFrameSegment(std::string segme
 void AbstractPicoScenesFrameSegment::addField(const std::string &fieldName, const std::vector<uint8_t> &data) {
     fieldMap[fieldName] = data;
     fieldNames.emplace_back(fieldName);
-    updateFieldMap();
     segmentLength = totalLength();
 }
 
 void AbstractPicoScenesFrameSegment::addField(const std::string &fieldName, const uint8_t *buffer, uint32_t bufferLength) {
     fieldMap[fieldName] = std::vector<uint8_t>(buffer, buffer + bufferLength);
     fieldNames.emplace_back(fieldName);
-    updateFieldMap();
     segmentLength = totalLength();
 }
 
 void AbstractPicoScenesFrameSegment::addField(const std::string &fieldName, const std::pair<const uint8_t *, uint32_t> &buffer) {
     fieldMap[fieldName] = std::vector<uint8_t>(buffer.first, buffer.first + buffer.second);
     fieldNames.emplace_back(fieldName);
-    updateFieldMap();
     segmentLength = totalLength();
 }
 
 void AbstractPicoScenesFrameSegment::addField(const std::string &fieldName, const std::pair<std::shared_ptr<uint8_t>, uint32_t> &buffer) {
     fieldMap[fieldName] = std::vector<uint8_t>(buffer.first.get(), buffer.first.get() + buffer.second);
     fieldNames.emplace_back(fieldName);
-    updateFieldMap();
     segmentLength = totalLength();
 }
 
@@ -56,7 +52,6 @@ uint32_t AbstractPicoScenesFrameSegment::getField(const std::string &fieldName, 
 void AbstractPicoScenesFrameSegment::removeField(const std::string &fieldName) {
     fieldMap.erase(fieldMap.find(fieldName));
     fieldNames.erase(std::find(fieldNames.cbegin(), fieldNames.cend(), fieldName));
-    updateFieldMap();
     segmentLength = totalLength();
 }
 
@@ -126,11 +121,4 @@ std::tuple<std::string, uint32_t, uint16_t, uint32_t> AbstractPicoScenesFrameSeg
     rxPos += 2;
 
     return std::make_tuple(segmentName, segmentLength, segmentVersionId, rxPos);
-}
-
-void AbstractPicoScenesFrameSegment::clearAllFieldRecords() {
-    fieldMap.clear();
-    fieldIndices.clear();
-    fieldNames.clear();
-    rawBuffer.clear();
 }

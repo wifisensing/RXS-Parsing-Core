@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <utility>
+#include <deque>
 #include "CSISegment.hxx"
 
 struct QCA9300CSISegmentContentDescriptorV1 {
@@ -30,9 +31,9 @@ struct IWL5300CSISegmentContentDescriptorV1 {
 
 void parseQCA9300CSIData(std::complex<double> *outputArray, const uint8_t *csiData, int ntx, int nrx, int num_tones) {
 
-    auto parse10bitsValues = [](const uint8_t *rawByte, int outputArray[4]) {
-        static auto negativeSignBit = (1 << (10 - 1));
-        static auto minNegativeValue = (1 << 10);
+    auto parse10bitsValues = [](const uint8_t rawByte[5], int outputArray[4]) {
+        static uint16_t negativeSignBit = (1 << (10 - 1));
+        static uint16_t minNegativeValue = (1 << 10);
         outputArray[0] = ((rawByte[0] & 0xffU) >> 0U) + ((rawByte[1] & 0x03u) << 8u);
         outputArray[1] = ((rawByte[1] & 0xfcU) >> 2U) + ((rawByte[2] & 0x0fU) << 6U);
         outputArray[2] = ((rawByte[2] & 0xf0U) >> 4U) + ((rawByte[3] & 0x3fU) << 4U);
@@ -87,7 +88,7 @@ void parseIWL5300CSIData(std::complex<double> *csi_matrix, const uint8_t *payloa
         index += 3;
         remainder = index % 8;
 
-        for (auto nrxIdx = 0; nrxIdx < nrx; nrxIdx++)
+        for (auto nrxIdx = 0; nrxIdx < nrx; nrxIdx++) {
             for (auto ntxIdx = 0; ntxIdx < ntx; ntxIdx++) {
                 auto position = positionComputationWRTPermutation(nrx, 30, ntxIdx, nrxIdx, subcarrierIdx, ant_sel);
                 char tmp1 = (payload[index / 8] >> remainder) | (payload[index / 8 + 1] << (8 - remainder));
@@ -95,8 +96,8 @@ void parseIWL5300CSIData(std::complex<double> *csi_matrix, const uint8_t *payloa
                 csi_matrix[position].real((double) tmp1);
                 csi_matrix[position].imag((double) tmp2);
                 index += 16;
-                //                printf("pos=%3d, subcarrierIdx=%2d, nrxIdx=%d, ntxIdx=%d, real=%f, imag=%f\n", position, subcarrierIdx, nrxIdx, ntxIdx, csi_matrix[position].real(), csi_matrix[position].imag());
             }
+        }
     }
 }
 
@@ -106,7 +107,6 @@ CSI CSI::fromQCA9300(const uint8_t *buffer, uint32_t bufferLength, uint8_t numTx
     csi.rawCSIData.resize(bufferLength);
     parseQCA9300CSIData(&csi.CSIArrays[0], buffer, numTx, numRx, numTones);
     std::copy(buffer, buffer + bufferLength, csi.rawCSIData.begin());
-
     return csi;
 }
 
@@ -116,7 +116,6 @@ CSI CSI::fromIWL5300(const uint8_t *buffer, uint32_t bufferLength, uint8_t numTx
     csi.rawCSIData.resize(bufferLength);
     parseIWL5300CSIData(&csi.CSIArrays[0], buffer, numTx, numRx, std::move(ant_sel));
     std::copy(buffer, buffer + bufferLength, csi.rawCSIData.begin());
-
     return csi;
 }
 
@@ -159,11 +158,9 @@ CSISegment::CSISegment() : AbstractPicoScenesFrameSegment("CSI", 0x1u) {
 
 void CSISegment::addCSI(const CSI &perUserCSI) {
     muCSI.emplace_back(perUserCSI);
-}
 
-void CSISegment::updateFieldMap() {
     fieldMap.clear();
-    addField("numCSIGroup", Uint8Vector(1, fieldMap.size()));
+    addField("numCSIGroup", uint8_t(muCSI.size()));
 
     auto groupCount = 0;
     for (const auto &csi : muCSI) {

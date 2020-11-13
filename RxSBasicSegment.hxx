@@ -48,8 +48,6 @@ private:
     static std::map<uint16_t, std::function<RxSBasic(const uint8_t *, uint32_t)>> versionedSolutionMap;
 
     static std::map<uint16_t, std::function<RxSBasic(const uint8_t *, uint32_t)>> initializeSolutionMap() noexcept;
-
-    void updateFieldMap() override {}
 };
 
 #endif //PICOSCENES_PLATFORM_RXSBASICSEGMENT_HXX
