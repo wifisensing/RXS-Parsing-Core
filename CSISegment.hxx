@@ -35,6 +35,8 @@ class CSISegment : public AbstractPicoScenesFrameSegment {
 public:
     CSISegment();
 
+    static CSISegment createByBuffer(const uint8_t *buffer, uint32_t bufferLength);
+
     void fromBuffer(const uint8_t *buffer, uint32_t bufferLength) override;
 
     void addCSI(const CSI &perUserCSI);

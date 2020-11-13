@@ -129,6 +129,8 @@ public:
 
     ModularPicoScenesTxFrame &setPicoScenesFrameType(uint8_t frameType);
 
+    ModularPicoScenesTxFrame &setFrameFormat(PacketFormatEnum format);
+
     ModularPicoScenesTxFrame &setChannelBandwidth(const ChannelBandwidthEnum &cbw);
 
     ModularPicoScenesTxFrame &setGuardInterval(GuardIntervalEnum guardInterval);

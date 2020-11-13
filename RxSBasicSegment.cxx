@@ -85,3 +85,9 @@ void RxSBasicSegment::fromBuffer(const uint8_t *buffer, uint32_t bufferLength) {
     rawBuffer.resize(bufferLength);
     std::copy(buffer, buffer + bufferLength, rawBuffer.begin());
 }
+
+RxSBasicSegment RxSBasicSegment::createByBuffer(const uint8_t *buffer, uint32_t bufferLength) {
+    RxSBasicSegment rxSBasicSegment;
+    rxSBasicSegment.fromBuffer(buffer, bufferLength);
+    return rxSBasicSegment;
+}

@@ -16,6 +16,9 @@ public:
 
     explicit ExtraInfoSegment(const ExtraInfo & extraInfo);
 
+
+    static ExtraInfoSegment createByBuffer(const uint8_t *buffer, uint32_t bufferLength);
+
     void fromBuffer(const uint8_t *buffer, uint32_t bufferLength) override;
 
     ExtraInfo extraInfo;

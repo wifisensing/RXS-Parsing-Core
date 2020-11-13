@@ -201,6 +201,11 @@ ModularPicoScenesTxFrame &ModularPicoScenesTxFrame::setPicoScenesFrameType(uint8
     return *this;
 }
 
+ModularPicoScenesTxFrame &ModularPicoScenesTxFrame::setFrameFormat(PacketFormatEnum format) {
+    txParameters.frameType = format;
+    return *this;
+}
+
 ModularPicoScenesTxFrame &ModularPicoScenesTxFrame::setChannelBandwidth(const ChannelBandwidthEnum &cbw) {
     txParameters.cbw = cbw;
     return *this;
@@ -233,7 +238,6 @@ ModularPicoScenesTxFrame &ModularPicoScenesTxFrame::setMCS(const std::vector<uin
     txParameters.mcs = mcs;
     return *this;
 }
-
 
 ModularPicoScenesTxFrame &ModularPicoScenesTxFrame::setDestinationAddress(const uint8_t macAddr[6]) {
     memcpy(standardHeader.addr1, macAddr, 6);
@@ -291,7 +295,6 @@ std::string ModularPicoScenesTxFrame::toString() const {
     ss << "}";
     return ss.str();
 }
-
 
 std::ostream &operator<<(std::ostream &os, const ModularPicoScenesTxFrame &txframe) {
     os << txframe.toString();

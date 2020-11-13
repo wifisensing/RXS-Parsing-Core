@@ -44,3 +44,9 @@ void ExtraInfoSegment::fromBuffer(const uint8_t *buffer, uint32_t bufferLength) 
     rawBuffer.resize(bufferLength);
     std::copy(buffer, buffer + bufferLength, rawBuffer.begin());
 }
+
+ExtraInfoSegment ExtraInfoSegment::createByBuffer(const uint8_t *buffer, uint32_t bufferLength) {
+    ExtraInfoSegment extraInfoSegment;
+    extraInfoSegment.fromBuffer(buffer, bufferLength);
+    return extraInfoSegment;
+}
