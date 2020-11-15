@@ -12,6 +12,11 @@
 #include <complex>
 #include <numeric>
 
+#ifdef BUILD_WITH_MEX
+    #include "mex.h"
+    #define printf mexPrintf
+#endif
+
 using ComplexData = std::complex<double>;
 using ComplexArray = std::vector<ComplexData>;
 using Uint8Vector = std::vector<uint8_t>;

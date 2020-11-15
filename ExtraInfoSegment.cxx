@@ -5,8 +5,6 @@
 #include "ExtraInfoSegment.hxx"
 
 static auto v1Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> ExtraInfo {
-    uint32_t pos = 0;
-
     if (auto eiOpt = ExtraInfo::fromBuffer(buffer, 0)) {
         auto calculatedLength = eiOpt->calculateBufferLength();
         if (calculatedLength != bufferLength - 4)
