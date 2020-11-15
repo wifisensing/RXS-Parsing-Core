@@ -112,7 +112,7 @@ std::string ModularPicoScenesRxFrame::toString() const {
     ss << "RxFrame:{";
     ss << rxSBasicSegment.basic;
     ss << ", " << rxExtraInfoSegment.extraInfo;
-    ss << ", " << csiSegment;
+    ss << ", Rx" << csiSegment;
     if (!rxUnknownSegmentMap.empty()) {
         std::stringstream segss;
         segss << "RxSegments:(";
@@ -130,6 +130,8 @@ std::string ModularPicoScenesRxFrame::toString() const {
         ss << ", " << *PicoScenesHeader;
     if (txExtraInfoSegment)
         ss << ", " << txExtraInfoSegment->extraInfo;
+    if (txCSISegment)
+        ss << ", Tx" << *txCSISegment;
 
     if (!txUnknownSegmentMap.empty()) {
         std::stringstream segss;
