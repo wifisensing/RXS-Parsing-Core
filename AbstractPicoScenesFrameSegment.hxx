@@ -60,6 +60,7 @@ protected:
     std::vector<std::string> fieldNames; // fieldMap is not ordered by the insertion, so we need another list to hold the input order.
     std::map<std::string, std::vector<uint8_t>> fieldMap;
     std::map<std::string, std::pair<uint32_t, uint32_t>> fieldIndices;
+    bool isSuccessfullyDecoded = false;
 };
 
 

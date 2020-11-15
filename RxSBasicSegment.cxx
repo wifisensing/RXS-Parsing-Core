@@ -30,7 +30,8 @@ static auto v1Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> RxSBa
     auto r = RxSBasic();
     r.deviceType = *(uint16_t *) (buffer + pos);
     pos += 2;
-    r.tstamp = *(uint64_t *) (buffer + pos); pos +=8;
+    r.tstamp = *(uint64_t *) (buffer + pos);
+    pos += 8;
     r.channelFreq = *(uint16_t *) (buffer + pos);
     pos += 2;
     r.packetFormat = *(uint8_t *) (buffer + pos++);
@@ -84,6 +85,8 @@ void RxSBasicSegment::fromBuffer(const uint8_t *buffer, uint32_t bufferLength) {
     basic = versionedSolutionMap.at(versionId)(buffer + offset, bufferLength - offset);
     rawBuffer.resize(bufferLength);
     std::copy(buffer, buffer + bufferLength, rawBuffer.begin());
+    this->segmentLength = bufferLength - 4;
+    isSuccessfullyDecoded = true;
 }
 
 RxSBasicSegment RxSBasicSegment::createByBuffer(const uint8_t *buffer, uint32_t bufferLength) {

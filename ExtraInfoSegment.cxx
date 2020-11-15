@@ -20,12 +20,12 @@ static auto v1Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> Extra
 std::map<uint16_t, std::function<ExtraInfo(const uint8_t *, uint32_t)>> ExtraInfoSegment::versionedSolutionMap = initializeSolutionMap();
 
 std::map<uint16_t, std::function<ExtraInfo(const uint8_t *, uint32_t)>> ExtraInfoSegment::initializeSolutionMap() noexcept {
-    return std::map<uint16_t, std::function<ExtraInfo(const uint8_t *, uint32_t)>> {{0x1U, v1Parser}};
+    return std::map<uint16_t, std::function<ExtraInfo(const uint8_t *, uint32_t)>>{{0x1U, v1Parser}};
 }
 
 ExtraInfoSegment::ExtraInfoSegment() : AbstractPicoScenesFrameSegment("ExtraInfo", 0x1U) {}
 
-ExtraInfoSegment::ExtraInfoSegment(const ExtraInfo &extraInfoV): ExtraInfoSegment() {
+ExtraInfoSegment::ExtraInfoSegment(const ExtraInfo &extraInfoV) : ExtraInfoSegment() {
     extraInfo = extraInfoV;
     addField("EI", extraInfoV.toBuffer());
 }
@@ -43,6 +43,8 @@ void ExtraInfoSegment::fromBuffer(const uint8_t *buffer, uint32_t bufferLength) 
     extraInfo = versionedSolutionMap.at(versionId)(buffer + offset, bufferLength - offset);
     rawBuffer.resize(bufferLength);
     std::copy(buffer, buffer + bufferLength, rawBuffer.begin());
+    this->segmentLength = bufferLength - 4;
+    isSuccessfullyDecoded = true;
 }
 
 ExtraInfoSegment ExtraInfoSegment::createByBuffer(const uint8_t *buffer, uint32_t bufferLength) {

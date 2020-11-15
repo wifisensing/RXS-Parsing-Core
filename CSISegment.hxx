@@ -14,7 +14,7 @@ public:
     uint16_t numTones = 1;
     uint8_t numTx = 1;
     uint8_t numRx = 1;
-    uint8_t numLTF = 1;
+    uint8_t numESS = 0;
 };
 
 class CSI {
@@ -48,15 +48,15 @@ public:
 
     void fromBuffer(const uint8_t *buffer, uint32_t bufferLength) override;
 
-    void addCSI(const CSI &perUserCSI);
+    void buildTxFields();
 
     std::vector <CSI> muCSI;
 
-    std::string toString() const;
+    [[nodiscard]] std::string toString() const;
 private:
-    static std::map <uint16_t, std::function<CSI(const uint8_t *, uint32_t)>> versionedSolutionMap;
+    static std::map <uint16_t, std::function<std::vector<CSI>(const uint8_t *, uint32_t)>> versionedSolutionMap;
 
-    static std::map <uint16_t, std::function<CSI(const uint8_t *, uint32_t)>> initializeSolutionMap() noexcept;
+    static std::map <uint16_t, std::function<std::vector<CSI>(const uint8_t *, uint32_t)>> initializeSolutionMap() noexcept;
 };
 
 std::ostream &operator<<(std::ostream &os, const CSISegment &csiSegment);

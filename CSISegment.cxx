@@ -156,7 +156,7 @@ CSI CSI::fromQCA9300(const uint8_t *buffer, uint32_t bufferLength, uint8_t numTx
 }
 
 CSI CSI::fromIWL5300(const uint8_t *buffer, uint32_t bufferLength, uint8_t numTx, uint8_t numRx, uint8_t numLTF, uint8_t numTones, ChannelBandwidthEnum cbw, uint8_t ant_sel) {
-    auto csi = CSI{.deviceType = PicoScenesDeviceType::IWL5300, .packetFormat=PacketFormatEnum::PacketFormat_HT, .cbw = cbw, .dimensions = CSIDimension{.numTones = numTones, .numTx = numTx, .numRx = numRx, .numLTF = numLTF}, .antSel = ant_sel};
+    auto csi = CSI{.deviceType = PicoScenesDeviceType::IWL5300, .packetFormat=PacketFormatEnum::PacketFormat_HT, .cbw = cbw, .dimensions = CSIDimension{.numTones = numTones, .numTx = numTx, .numRx = numRx, .numESS = numLTF}, .antSel = ant_sel};
     csi.CSIArrays.resize(numTx * numRx * numLTF * numTones);
     csi.rawCSIData.resize(bufferLength);
     parseIWL5300CSIData(&csi.CSIArrays[0], buffer, numTx, numRx, ant_sel);
@@ -170,61 +170,67 @@ CSI CSI::fromIWL5300(const uint8_t *buffer, uint32_t bufferLength, uint8_t numTx
 }
 
 
-static auto v1Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> CSI {
+static auto v1Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> std::vector<CSI> {
     uint32_t pos = 0;
-    PicoScenesDeviceType deviceType = *(PicoScenesDeviceType *) (buffer + pos);
-    pos += sizeof(PicoScenesDeviceType);
-    PacketFormatEnum packetFormat = *(PacketFormatEnum *) (buffer + pos);
-    pos += sizeof(PacketFormatEnum);
-    ChannelBandwidthEnum cbw = *(ChannelBandwidthEnum *) (buffer + pos);
-    pos += sizeof(ChannelBandwidthEnum);
     uint8_t numCSIGroup = *(uint8_t *) (buffer + pos++);
-    uint16_t numTone = *(uint16_t *) (buffer + pos);
-    pos += 2;
-    uint8_t numSTS = *(uint8_t *) (buffer + pos++);
-    uint8_t numESS = *(uint8_t *) (buffer + pos++);
-    uint8_t numRx = *(uint8_t *) (buffer + pos++);
-    uint8_t antSelByte = *(uint8_t *) (buffer + pos++);
-    uint32_t CSIBufferLength = *(uint32_t *) (buffer + pos);
-    pos += 4;
+    std::vector<CSI> results;
+    results.reserve(numCSIGroup);
+    for (auto i = 0; i < numCSIGroup; i++) {
+        PicoScenesDeviceType deviceType = *(PicoScenesDeviceType *) (buffer + pos);
+        pos += sizeof(PicoScenesDeviceType);
+        PacketFormatEnum packetFormat = *(PacketFormatEnum *) (buffer + pos);
+        pos += sizeof(PacketFormatEnum);
+        ChannelBandwidthEnum cbw = *(ChannelBandwidthEnum *) (buffer + pos);
+        pos += sizeof(ChannelBandwidthEnum);
+        uint16_t numTone = *(uint16_t *) (buffer + pos);
+        pos += 2;
+        uint8_t numSTS = *(uint8_t *) (buffer + pos++);
+        uint8_t numRx = *(uint8_t *) (buffer + pos++);
+        uint8_t numESS = *(uint8_t *) (buffer + pos++);
+        uint8_t antSelByte = *(uint8_t *) (buffer + pos++);
+        uint32_t CSIBufferLength = *(uint32_t *) (buffer + pos);
+        pos += 4;
 
-    if (deviceType == PicoScenesDeviceType::QCA9300) {
-        auto CSI = CSI::fromQCA9300(buffer + pos, CSIBufferLength, numSTS, numRx, numSTS + numESS, numTone, cbw);
-        return CSI;
+        if (deviceType == PicoScenesDeviceType::QCA9300) {
+            results.emplace_back(CSI::fromQCA9300(buffer + pos, CSIBufferLength, numSTS, numRx, numSTS + numESS, numTone, cbw));
+            continue;
+        } else if (deviceType == PicoScenesDeviceType::IWL5300) {
+            results.emplace_back(CSI::fromIWL5300(buffer + pos, CSIBufferLength, numSTS, numRx, numSTS + numESS, numTone, cbw, antSelByte));
+            continue;
+        } else if (deviceType == PicoScenesDeviceType::USRP) {
+            //
+        } else
+            throw std::runtime_error("ExtraInfoSegment cannot decode the given buffer.");
     }
 
-    if (deviceType == PicoScenesDeviceType::IWL5300) {
-        auto CSI = CSI::fromIWL5300(buffer + pos, CSIBufferLength, numSTS, numRx, numSTS + numESS, numTone, cbw, antSelByte);
-        return CSI;
-    }
-
-    throw std::runtime_error("ExtraInfoSegment cannot decode the given buffer.");
+    return results;
 };
 
-std::map<uint16_t, std::function<CSI(const uint8_t *, uint32_t)>> CSISegment::versionedSolutionMap = initializeSolutionMap();
+std::map<uint16_t, std::function<std::vector<CSI>(const uint8_t *, uint32_t)>> CSISegment::versionedSolutionMap = initializeSolutionMap();
 
-std::map<uint16_t, std::function<CSI(const uint8_t *, uint32_t)>> CSISegment::initializeSolutionMap() noexcept {
-    return std::map<uint16_t, std::function<CSI(const uint8_t *, uint32_t)>>{{0x1U, v1Parser}};
+std::map<uint16_t, std::function<std::vector<CSI>(const uint8_t *, uint32_t)>> CSISegment::initializeSolutionMap() noexcept {
+    return std::map<uint16_t, std::function<std::vector<CSI>(const uint8_t *, uint32_t)>>{{0x1U, v1Parser}};
 }
 
 CSISegment::CSISegment() : AbstractPicoScenesFrameSegment("CSI", 0x1u) {
 
 }
 
-void CSISegment::addCSI(const CSI &perUserCSI) {
-    muCSI.emplace_back(perUserCSI);
-
+void CSISegment::buildTxFields() {
     fieldMap.clear();
+    fieldIndices.clear();
+    fieldNames.clear();
     addField("numCSIGroup", uint8_t(muCSI.size()));
-    addField("format", perUserCSI.packetFormat);
-    addField("cbw", perUserCSI.cbw);
+
     auto groupCount = 0;
     for (const auto &csi : muCSI) {
         addField("deviceType" + std::to_string(groupCount), csi.deviceType);
+        addField("format" + std::to_string(groupCount), csi.packetFormat);
+        addField("cbw" + std::to_string(groupCount), csi.cbw);
         addField("numTone" + std::to_string(groupCount), csi.dimensions.numTones);
         addField("numTx" + std::to_string(groupCount), csi.dimensions.numTx);
         addField("numRx" + std::to_string(groupCount), csi.dimensions.numRx);
-        addField("numLTF" + std::to_string(groupCount), csi.dimensions.numLTF);
+        addField("numESS" + std::to_string(groupCount), csi.dimensions.numESS);
         addField("antsel" + std::to_string(groupCount), csi.antSel);
         addField("rawDataLength" + std::to_string(groupCount), csi.rawCSIData.size());
         addField("rawData" + std::to_string(groupCount), csi.rawCSIData);
@@ -243,10 +249,11 @@ void CSISegment::fromBuffer(const uint8_t *buffer, uint32_t bufferLength) {
         throw std::runtime_error("CSISegment cannot parse the segment with version v" + std::to_string(versionId) + ".");
     }
 
-    auto csi = versionedSolutionMap.at(versionId)(buffer + offset, bufferLength - offset);
+    muCSI = versionedSolutionMap.at(versionId)(buffer + offset, bufferLength - offset);
     rawBuffer.resize(bufferLength);
     std::copy(buffer, buffer + bufferLength, rawBuffer.begin());
-    addCSI(csi);
+    this->segmentLength = bufferLength - 4;
+    isSuccessfullyDecoded = true;
 }
 
 CSISegment CSISegment::createByBuffer(const uint8_t *buffer, uint32_t bufferLength) {
@@ -259,7 +266,7 @@ std::string CSISegment::toString() const {
     std::stringstream ss;
     ss << "CSISegments(NumUser=" << muCSI.size() << ")={";
     for (const auto &csi: muCSI) {
-        ss << "(device=" << csi.deviceType << ", format=" << csi.packetFormat << ", CBW=" << csi.cbw << ", dim(nTones,nTx,nLTF,nRx)=(" + std::to_string(csi.dimensions.numTones) + "," + std::to_string(csi.dimensions.numTx) + "," + std::to_string(csi.dimensions.numLTF) + "," + std::to_string(csi.dimensions.numRx) + "), raw=" + std::to_string(csi.rawCSIData.size()) + "B), ";
+        ss << "(device=" << csi.deviceType << ", format=" << csi.packetFormat << ", CBW=" << csi.cbw << ", dim(nTones,nSTS,nESS,nRx)=(" + std::to_string(csi.dimensions.numTones) + "," + std::to_string(csi.dimensions.numTx) + "," + std::to_string(csi.dimensions.numESS) + "," + std::to_string(csi.dimensions.numRx) + "), raw=" + std::to_string(csi.rawCSIData.size()) + "B), ";
     }
     auto temp = ss.str();
     temp.erase(temp.end() - 2, temp.end());

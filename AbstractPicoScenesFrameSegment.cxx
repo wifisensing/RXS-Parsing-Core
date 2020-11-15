@@ -56,6 +56,9 @@ void AbstractPicoScenesFrameSegment::removeField(const std::string &fieldName) {
 }
 
 uint32_t AbstractPicoScenesFrameSegment::totalLength() const {
+    if (isSuccessfullyDecoded && !rawBuffer.empty())
+        return rawBuffer.size() - 4;
+
     uint32_t length = 0;
     length += segmentName.size() + 1;
     length += 1;
@@ -74,6 +77,11 @@ std::vector<uint8_t> AbstractPicoScenesFrameSegment::toBuffer(bool totalLengthIn
 }
 
 uint32_t AbstractPicoScenesFrameSegment::toBuffer(bool totalLengthIncluded, uint8_t *buffer, std::optional<uint32_t> capacity) const {
+    if (isSuccessfullyDecoded && !rawBuffer.empty() && rawBuffer.size() == segmentLength + 4) {
+        std::copy(rawBuffer.cbegin(), rawBuffer.cend(), buffer);
+        return rawBuffer.size();
+    }
+
     uint32_t finalTotalLength = totalLength() + (totalLengthIncluded ? 4 : 0);
     if (capacity && *capacity < finalTotalLength)
         throw std::runtime_error("buffer capacity not enough for PicoScenes frame segment [" + segmentName + " (" + std::to_string(finalTotalLength) + "B)]");
@@ -95,7 +103,7 @@ uint32_t AbstractPicoScenesFrameSegment::toBuffer(bool totalLengthIncluded, uint
     pos += sizeof(segmentVersionId);
     // copy fields
     for (const auto &field: fieldNames) {
-        const auto & fieldContent = fieldMap.at(field);
+        const auto &fieldContent = fieldMap.at(field);
         std::copy(fieldContent.cbegin(), fieldContent.cend(), buffer + pos);
         pos += fieldContent.size();
     }
@@ -106,7 +114,6 @@ uint32_t AbstractPicoScenesFrameSegment::toBuffer(bool totalLengthIncluded, uint
 std::string AbstractPicoScenesFrameSegment::toString() const {
     return "";
 }
-
 
 std::tuple<std::string, uint32_t, uint16_t, uint32_t> AbstractPicoScenesFrameSegment::extractSegmentMetaData(const uint8_t *buffer, uint32_t bufferLength) {
     uint32_t rxPos = 0;

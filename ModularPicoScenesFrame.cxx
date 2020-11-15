@@ -90,6 +90,8 @@ std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::fromBuffer(con
             auto[segmentName, segmentLength, versionId, offset] = AbstractPicoScenesFrameSegment::extractSegmentMetaData(buffer + pos, bufferLength);
             if (boost::iequals(segmentName, "ExtraInfo")) {
                 frame.txExtraInfoSegment = ExtraInfoSegment::createByBuffer(buffer + pos, segmentLength + 4);
+            } else if (boost::iequals(segmentName, "CSI")) {
+                frame.txCSISegment = CSISegment::createByBuffer(buffer + pos, segmentLength + 4);
             } else {
                 frame.txUnknownSegmentMap.emplace(segmentName, Uint8Vector(buffer + pos, buffer + pos + segmentLength + 4));
             }
@@ -331,7 +333,7 @@ std::string ModularPicoScenesTxFrame::toString() const {
         std::stringstream segss;
         segss << "Segments:(";
         for (const auto &segment: segments) {
-            segss << segment->segmentName << ":" << segment->segmentLength << "B, ";
+            segss << segment->segmentName << ":" << segment->totalLength() << "B, ";
         }
         auto temp = segss.str();
         temp.erase(temp.end() - 2, temp.end());
