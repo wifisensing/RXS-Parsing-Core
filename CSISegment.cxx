@@ -254,3 +254,20 @@ CSISegment CSISegment::createByBuffer(const uint8_t *buffer, uint32_t bufferLeng
     csiSegment.fromBuffer(buffer, bufferLength);
     return csiSegment;
 }
+
+std::string CSISegment::toString() const {
+    std::stringstream ss;
+    ss << "CSISegments(NumUser=" << muCSI.size() << ")={";
+    for (const auto &csi: muCSI) {
+        ss << "(device=" << csi.deviceType << ", format=" << csi.packetFormat << ", CBW=" << csi.cbw << ", dim(nTones,nTx,nLTF,nRx)=(" + std::to_string(csi.dimensions.numTones) + "," + std::to_string(csi.dimensions.numTx) + "," + std::to_string(csi.dimensions.numLTF) + "," + std::to_string(csi.dimensions.numRx) + "), raw=" + std::to_string(csi.rawCSIData.size()) + "B), ";
+    }
+    auto temp = ss.str();
+    temp.erase(temp.end() - 2, temp.end());
+    temp.append("}");
+    return temp;
+}
+
+std::ostream &operator<<(std::ostream &os, const CSISegment &csiSegment) {
+    os << csiSegment.toString();
+    return os;
+}

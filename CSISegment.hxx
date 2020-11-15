@@ -51,12 +51,15 @@ public:
     void addCSI(const CSI &perUserCSI);
 
     std::vector <CSI> muCSI;
+
+    std::string toString() const;
 private:
     static std::map <uint16_t, std::function<CSI(const uint8_t *, uint32_t)>> versionedSolutionMap;
 
     static std::map <uint16_t, std::function<CSI(const uint8_t *, uint32_t)>> initializeSolutionMap() noexcept;
 };
 
+std::ostream &operator<<(std::ostream &os, const CSISegment &csiSegment);
 
 template<typename T>
 std::vector <size_t> sort_indexes(const std::vector <T> &v) {

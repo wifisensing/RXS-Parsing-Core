@@ -37,6 +37,10 @@ std::string PicoScenesFrameHeader::toString() const {
     return ss.str();
 }
 
+std::ostream &operator<<(std::ostream &os, const PicoScenesFrameHeader &frameHeader) {
+    os << frameHeader.toString();
+    return os;
+}
 
 std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::fromBuffer(const uint8_t *buffer, uint32_t bufferLength) {
     uint32_t pos = 0;
@@ -79,13 +83,13 @@ std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::fromBuffer(con
     pos += sizeof(ieee80211_mac_frame_header);
 
     if (auto PSHeader = PicoScenesFrameHeader::fromBuffer(buffer + pos)) {
-        frame.PicoScenesHeader = *PSHeader;
+        frame.PicoScenesHeader = PSHeader;
         pos += sizeof(PicoScenesFrameHeader);
 
         for (auto i = 0; i < frame.PicoScenesHeader->numSegments; i++) {
             auto[segmentName, segmentLength, versionId, offset] = AbstractPicoScenesFrameSegment::extractSegmentMetaData(buffer + pos, bufferLength);
             if (boost::iequals(segmentName, "ExtraInfo")) {
-                frame.txExtraInfoSegment.fromBuffer(buffer + pos, segmentLength + 4);
+                frame.txExtraInfoSegment = ExtraInfoSegment::createByBuffer(buffer + pos, segmentLength + 4);
             } else {
                 frame.txUnknownSegmentMap.emplace(segmentName, Uint8Vector(buffer + pos, buffer + pos + segmentLength + 4));
             }
@@ -108,7 +112,7 @@ std::string ModularPicoScenesRxFrame::toString() const {
     ss << "RxFrame:{";
     ss << rxSBasicSegment.basic;
     ss << ", " << rxExtraInfoSegment.extraInfo;
-    ss << ", " << csiSegment.toString();
+    ss << ", " << csiSegment;
     if (!rxUnknownSegmentMap.empty()) {
         std::stringstream segss;
         segss << "RxSegments:(";
@@ -122,8 +126,10 @@ std::string ModularPicoScenesRxFrame::toString() const {
     }
 
     ss << ", " << standardHeader;
-    ss << ", " << PicoScenesHeader->toString();
-    ss << ", " << txExtraInfoSegment.extraInfo;
+    if (PicoScenesHeader)
+        ss << ", " << *PicoScenesHeader;
+    if (txExtraInfoSegment)
+        ss << ", " << txExtraInfoSegment->extraInfo;
 
     if (!txUnknownSegmentMap.empty()) {
         std::stringstream segss;
@@ -239,7 +245,7 @@ ModularPicoScenesTxFrame &ModularPicoScenesTxFrame::setPicoScenesFrameType(uint8
     return *this;
 }
 
-ModularPicoScenesTxFrame &ModularPicoScenesTxFrame::setFrameFormat(PacketFormatEnum format) {
+[[maybe_unused]] ModularPicoScenesTxFrame &ModularPicoScenesTxFrame::setFrameFormat(PacketFormatEnum format) {
     txParameters.frameType = format;
     return *this;
 }
@@ -272,7 +278,7 @@ ModularPicoScenesTxFrame &ModularPicoScenesTxFrame::setNumSTS(const std::vector<
 }
 
 
-ModularPicoScenesTxFrame &ModularPicoScenesTxFrame::setMCS(const std::vector<uint8_t> &mcs) {
+[[maybe_unused]] ModularPicoScenesTxFrame &ModularPicoScenesTxFrame::setMCS(const std::vector<uint8_t> &mcs) {
     txParameters.mcs = mcs;
     return *this;
 }
@@ -316,7 +322,7 @@ ModularPicoScenesTxFrame &ModularPicoScenesTxFrame::setChannelCoding(const std::
 std::string ModularPicoScenesTxFrame::toString() const {
     std::stringstream ss;
     ss << "TxFrame:{" << standardHeader;
-    ss << ", " << frameHeader.toString();
+    ss << ", " << frameHeader;
     ss << ", " << txParameters;
 
     if (!segments.empty()) {

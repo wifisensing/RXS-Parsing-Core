@@ -29,8 +29,6 @@ struct ieee80211_mac_frame_header_frame_control_field {
     // type 0 -- Management Frame, subtype 0xE -- Action Frame NO ACK.  Supported by both QCA9300 and IWL5300.
     ieee80211_mac_frame_header_frame_control_field() : version(0), type(0), subtype(0xe), toDS(0), fromDS(0), moreFrags(0), retry(0), power_mgmt(0), more(0), protect(0), order(1) {}
 
-    bool operator==(const ieee80211_mac_frame_header_frame_control_field &rhs) const;
-
 } __attribute__ ((__packed__));
 
 struct ieee80211_mac_frame_header {
@@ -44,8 +42,6 @@ struct ieee80211_mac_frame_header {
 
     ieee80211_mac_frame_header() : frag(0), seq(0) {};
 
-    bool operator==(const ieee80211_mac_frame_header &rhs) const;
-
     [[nodiscard]] std::string toString() const;
 
 } __attribute__ ((__packed__));
@@ -53,7 +49,7 @@ struct ieee80211_mac_frame_header {
 std::ostream &operator<<(std::ostream &os, const ieee80211_mac_frame_header &header);
 
 struct PicoScenesFrameHeader {
-    uint32_t magicValue = 0x20150315;
+    [[maybe_unused]] uint32_t magicValue = 0x20150315;
     uint32_t version = 0x20201110;
     PicoScenesDeviceType deviceType = PicoScenesDeviceType::QCA9300;
     uint8_t numSegments = 0;
@@ -72,28 +68,30 @@ std::ostream &operator<<(std::ostream &os, const PicoScenesFrameHeader &frameHea
 
 class ModularPicoScenesRxFrame {
 public:
+    // Rx side segments
     RxSBasicSegment rxSBasicSegment;
-    CSISegment csiSegment;
     ExtraInfoSegment rxExtraInfoSegment;
-    ExtraInfoSegment txExtraInfoSegment;
+    CSISegment csiSegment;
     BasebandSignalSegment basebandSignalSegment;
 
+    // Tx side header and segments
     ieee80211_mac_frame_header standardHeader;
     std::optional<PicoScenesFrameHeader> PicoScenesHeader;
+    std::optional<ExtraInfoSegment> txExtraInfoSegment;
+    std::optional<CSISegment> txCSISegment;
+
+    std::map<std::string, std::vector<uint8_t>> rxUnknownSegmentMap;
+    std::map<std::string, std::vector<uint8_t>> txUnknownSegmentMap;
+    Uint8Vector nonPicoScenesMSDUContent;
+    Uint8Vector rawBuffer;
 
     static std::optional<ModularPicoScenesRxFrame> fromBuffer(const uint8_t *buffer, uint32_t bufferLength);
 
     static std::optional<ModularPicoScenesRxFrame> concatenateFragmentedPicoScenesRxFrames(const std::vector<ModularPicoScenesRxFrame> &frameQueue);
 
-    Uint8Vector rawBuffer;
-    Uint8Vector nonPicoScenesMSDUContent;
-
-    std::map<std::string, std::vector<uint8_t>> rxUnknownSegmentMap;
-    std::map<std::string, std::vector<uint8_t>> txUnknownSegmentMap;
-
     bool operator==(const ModularPicoScenesRxFrame &rhs) const;
 
-    std::string toString() const;
+    [[nodiscard]] std::string toString() const;
 };
 
 std::ostream &operator<<(std::ostream &os, const ModularPicoScenesRxFrame &parameters);
@@ -105,15 +103,15 @@ public:
     PicoScenesFrameTxParameters txParameters;
     std::vector<std::shared_ptr<AbstractPicoScenesFrameSegment>> segments;
 
-    void addSegments(const std::shared_ptr<AbstractPicoScenesFrameSegment>& segment);
+    void addSegments(const std::shared_ptr<AbstractPicoScenesFrameSegment> &segment);
 
     void reset();
 
-    uint32_t totalLength() const;
+    [[nodiscard]] uint32_t totalLength() const;
 
     int toBuffer(uint8_t *buffer, uint32_t bufferLength) const;
 
-    Uint8Vector toBuffer() const;
+    [[nodiscard]] Uint8Vector toBuffer() const;
 
     ModularPicoScenesTxFrame &setMoreFrags();
 
@@ -129,7 +127,7 @@ public:
 
     ModularPicoScenesTxFrame &setPicoScenesFrameType(uint8_t frameType);
 
-    ModularPicoScenesTxFrame &setFrameFormat(PacketFormatEnum format);
+    [[maybe_unused]] ModularPicoScenesTxFrame &setFrameFormat(PacketFormatEnum format);
 
     ModularPicoScenesTxFrame &setChannelBandwidth(const ChannelBandwidthEnum &cbw);
 
@@ -137,7 +135,7 @@ public:
 
     ModularPicoScenesTxFrame &setMCS(uint8_t mcs);
 
-    ModularPicoScenesTxFrame &setMCS(const std::vector<uint8_t> &mcs);
+    [[maybe_unused]] ModularPicoScenesTxFrame &setMCS(const std::vector<uint8_t> &mcs);
 
     ModularPicoScenesTxFrame &setNumSTS(uint8_t numSTS);
 
@@ -155,7 +153,7 @@ public:
 
     ModularPicoScenesTxFrame &setChannelCoding(ChannelCodingEnum codings);
 
-    ModularPicoScenesTxFrame &setChannelCoding(const std::vector<ChannelCodingEnum> &codings);
+    [[maybe_unused]] ModularPicoScenesTxFrame &setChannelCoding(const std::vector<ChannelCodingEnum> &codings);
 
     [[nodiscard]] std::string toString() const;
 };
