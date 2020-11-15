@@ -53,6 +53,8 @@ std::string ChannelBandwidth2String(ChannelBandwidthEnum cbw) {
             return "80";
         case ChannelBandwidthEnum::CBW_160:
             return "160";
+        default:
+            throw std::runtime_error("Unsupported ChannelBandwidthEnum...");
     }
 }
 
@@ -66,6 +68,8 @@ std::string GuardInterval2String(GuardIntervalEnum gi) {
             return "1.6us";
         case GuardIntervalEnum::GI_3200:
             return "3.2us";
+        default:
+            throw std::runtime_error("Unsupported GuardIntervalEnum...");
     }
 }
 
@@ -75,6 +79,8 @@ std::string ChannelCoding2String(ChannelCodingEnum coding) {
             return "LDPC";
         case ChannelCodingEnum::BCC:
             return "BCC";
+        default:
+            throw std::runtime_error("Unsupported ChannelCodingEnum...");
     }
 }
 
