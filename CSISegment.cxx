@@ -68,8 +68,8 @@ void parseQCA9300CSIData(std::complex<double> *outputArray, const uint8_t *csiDa
         txIndex = (valuePos / nrx) % ntx;
         toneIndex = valuePos / (nrx * ntx);
         pos = rxIndex * (ntx * num_tones) + txIndex * num_tones + toneIndex;
-        outputArray[pos].real(tempArray[1]);
-        outputArray[pos].imag(tempArray[0]);
+        outputArray[pos].real(tempArray[3]);
+        outputArray[pos].imag(tempArray[2]);
     }
 }
 
