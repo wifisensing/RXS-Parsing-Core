@@ -42,7 +42,7 @@ std::ostream &operator<<(std::ostream &os, const PicoScenesFrameHeader &frameHea
     return os;
 }
 
-std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::fromBuffer(const uint8_t *buffer, uint32_t bufferLength) {
+std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::fromBuffer(const uint8_t *buffer, uint32_t bufferLength, bool interpolateCSI) {
     uint32_t pos = 0;
 
     // first 4 bytes should be the buffer length
@@ -73,6 +73,10 @@ std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::fromBuffer(con
             frame.rxExtraInfoSegment.fromBuffer(buffer + pos, segmentLength + 4);
         } else if (boost::iequals(segmentName, "CSI")) {
             frame.csiSegment.fromBuffer(buffer + pos, segmentLength + 4);
+            if (interpolateCSI) {
+                for(auto & csi: frame.csiSegment.muCSI)
+                    csi.interpolateCSI();
+            }
         } else {
             frame.rxUnknownSegmentMap.emplace(segmentName, Uint8Vector(buffer + pos, buffer + pos + segmentLength + 4));
         }
@@ -92,6 +96,10 @@ std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::fromBuffer(con
                 frame.txExtraInfoSegment = ExtraInfoSegment::createByBuffer(buffer + pos, segmentLength + 4);
             } else if (boost::iequals(segmentName, "CSI")) {
                 frame.txCSISegment = CSISegment::createByBuffer(buffer + pos, segmentLength + 4);
+                if (interpolateCSI) {
+                    for(auto & csi: frame.txCSISegment->muCSI)
+                        csi.interpolateCSI();
+                }
             } else {
                 frame.txUnknownSegmentMap.emplace(segmentName, Uint8Vector(buffer + pos, buffer + pos + segmentLength + 4));
             }
