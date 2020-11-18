@@ -6,6 +6,7 @@
 #include <utility>
 #include <deque>
 #include "CSISegment.hxx"
+#include "preprocessor/generated/CSIPreprocessor.h"
 
 // The following definition is for reference use.
 //struct QCA9300CSISegmentContentDescriptorV1 {
@@ -169,6 +170,37 @@ CSI CSI::fromIWL5300(const uint8_t *buffer, uint32_t bufferLength, uint8_t numTx
     return csi;
 }
 
+void CSI::interpolateCSI() {
+    coder::array<creal_T, 2U> CSI;
+    coder::array<creal_T, 2U> newCSI;
+    coder::array<short, 1U> interpedIndex_int16;
+    coder::array<short, 1U> subcarrierIndex_int16;
+
+    CSI.set_size(dimensions.numTones, dimensions.numTx * dimensions.numRx);
+    for (auto toneIndex = 0; toneIndex < CSI.size(0); toneIndex++) {
+        for (auto txIndex = 0; txIndex < CSI.size(1); txIndex++) {
+            for (auto rxIndex = 0; rxIndex < CSI.size(2); rxIndex++) {
+                auto pos = toneIndex + txIndex * CSI.size(0) + rxIndex * CSI.size(0) * CSI.size(1);
+                CSI[pos] = *(creal_T *) (&CSIArrays[pos]);
+            }
+        }
+    }
+
+    subcarrierIndex_int16.set_size(subcarrierIndices.size());
+    for (auto scIndex = 0; scIndex < subcarrierIndex_int16.size(0); scIndex++) {
+        subcarrierIndex_int16[scIndex] = subcarrierIndices[scIndex];
+    }
+
+    CSIPreprocessor(CSI, subcarrierIndex_int16, newCSI, interpedIndex_int16);
+
+    CSIArrays.clear();
+    CSIArrays.resize(CSI.numel());
+    std::copy((std::complex<double> *) CSI.data(), (std::complex<double> *) CSI.data() + CSI.numel(), CSIArrays.begin());
+
+    subcarrierIndices.clear();
+    subcarrierIndices.resize(interpedIndex_int16.numel());
+    std::copy((int16_t *) interpedIndex_int16.data(), (int16_t *) interpedIndex_int16.data() + interpedIndex_int16.numel(), subcarrierIndices.begin());
+}
 
 static auto v1Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> std::vector<CSI> {
     uint32_t pos = 0;
@@ -178,7 +210,7 @@ static auto v1Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> std::
     for (auto i = 0; i < numCSIGroup; i++) {
         PicoScenesDeviceType deviceType = *(PicoScenesDeviceType *) (buffer + pos);
         pos += sizeof(PicoScenesDeviceType);
-        // PacketFormatEnum packetFormat = *(PacketFormatEnum *) (buffer + pos);
+        PacketFormatEnum packetFormat = *(PacketFormatEnum *) (buffer + pos);
         pos += sizeof(PacketFormatEnum);
         ChannelBandwidthEnum cbw = *(ChannelBandwidthEnum *) (buffer + pos);
         pos += sizeof(ChannelBandwidthEnum);
@@ -214,29 +246,6 @@ std::map<uint16_t, std::function<std::vector<CSI>(const uint8_t *, uint32_t)>> C
 
 CSISegment::CSISegment() : AbstractPicoScenesFrameSegment("CSI", 0x1u) {
 
-}
-
-void CSISegment::buildTxFields() {
-    fieldMap.clear();
-    fieldIndices.clear();
-    fieldNames.clear();
-    addField("numCSIGroup", uint8_t(muCSI.size()));
-
-    auto groupCount = 0;
-    for (const auto &csi : muCSI) {
-        addField("deviceType" + std::to_string(groupCount), csi.deviceType);
-        addField("format" + std::to_string(groupCount), csi.packetFormat);
-        addField("cbw" + std::to_string(groupCount), csi.cbw);
-        addField("numTone" + std::to_string(groupCount), csi.dimensions.numTones);
-        addField("numTx" + std::to_string(groupCount), csi.dimensions.numTx);
-        addField("numRx" + std::to_string(groupCount), csi.dimensions.numRx);
-        addField("numESS" + std::to_string(groupCount), csi.dimensions.numESS);
-        addField("antsel" + std::to_string(groupCount), csi.antSel);
-        addField("rawDataLength" + std::to_string(groupCount), csi.rawCSIData.size());
-        addField("rawData" + std::to_string(groupCount), csi.rawCSIData);
-        addField("subcarrierIndex" + std::to_string(groupCount), (uint8_t *) (&csi.subcarrierIndices[0]), csi.subcarrierIndices.size() * sizeof(int16_t));
-        groupCount++;
-    }
 }
 
 void CSISegment::fromBuffer(const uint8_t *buffer, uint32_t bufferLength) {

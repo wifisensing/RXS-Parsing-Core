@@ -26,8 +26,9 @@ public:
     uint8_t antSel;
     ComplexArray CSIArrays;
     std::vector <int16_t> subcarrierIndices;
-
     Uint8Vector rawCSIData;
+
+    void interpolateCSI();
 
     static CSI fromQCA9300(const uint8_t *buffer, uint32_t bufferLength, uint8_t numTx, uint8_t numRx, uint8_t numLTF, uint8_t numTones, ChannelBandwidthEnum cbw);
 
@@ -48,11 +49,9 @@ public:
 
     void fromBuffer(const uint8_t *buffer, uint32_t bufferLength) override;
 
-    void buildTxFields();
-
     std::vector <CSI> muCSI;
 
-    [[nodiscard]] std::string toString() const;
+    [[nodiscard]] std::string toString() const override;
 private:
     static std::map <uint16_t, std::function<std::vector<CSI>(const uint8_t *, uint32_t)>> versionedSolutionMap;
 
