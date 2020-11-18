@@ -178,11 +178,9 @@ void CSI::interpolateCSI() {
 
     CSI.set_size(dimensions.numTones, dimensions.numTx * dimensions.numRx);
     for (auto toneIndex = 0; toneIndex < CSI.size(0); toneIndex++) {
-        for (auto txIndex = 0; txIndex < CSI.size(1); txIndex++) {
-            for (auto rxIndex = 0; rxIndex < CSI.size(2); rxIndex++) {
-                auto pos = toneIndex + txIndex * CSI.size(0) + rxIndex * CSI.size(0) * CSI.size(1);
+        for (auto txTrIndex = 0; txTrIndex < CSI.size(1); txTrIndex++) {
+                auto pos = toneIndex + txTrIndex * CSI.size(0);
                 CSI[pos] = *(creal_T *) (&CSIArrays[pos]);
-            }
         }
     }
 
