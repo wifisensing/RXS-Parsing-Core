@@ -179,8 +179,8 @@ void CSI::interpolateCSI() {
     CSI.set_size(dimensions.numTones, dimensions.numTx * dimensions.numRx);
     for (auto toneIndex = 0; toneIndex < CSI.size(0); toneIndex++) {
         for (auto txTrIndex = 0; txTrIndex < CSI.size(1); txTrIndex++) {
-                auto pos = toneIndex + txTrIndex * CSI.size(0);
-                CSI[pos] = *(creal_T *) (&CSIArrays[pos]);
+            auto pos = toneIndex + txTrIndex * CSI.size(0);
+            CSI[pos] = *(creal_T *) (&CSIArrays[pos]);
         }
     }
 
@@ -192,12 +192,13 @@ void CSI::interpolateCSI() {
     CSIPreprocessor(CSI, subcarrierIndex_int16, newCSI, interpedIndex_int16);
 
     CSIArrays.clear();
-    CSIArrays.resize(CSI.numel());
-    std::copy((std::complex<double> *) CSI.data(), (std::complex<double> *) CSI.data() + CSI.numel(), CSIArrays.begin());
+    CSIArrays.resize(newCSI.numel());
+    std::copy((std::complex<double> *) newCSI.data(), (std::complex<double> *) newCSI.data() + newCSI.numel(), CSIArrays.begin());
 
     subcarrierIndices.clear();
     subcarrierIndices.resize(interpedIndex_int16.numel());
     std::copy((int16_t *) interpedIndex_int16.data(), (int16_t *) interpedIndex_int16.data() + interpedIndex_int16.numel(), subcarrierIndices.begin());
+    dimensions.numTones = subcarrierIndices.size();
 }
 
 static auto v1Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> std::vector<CSI> {
