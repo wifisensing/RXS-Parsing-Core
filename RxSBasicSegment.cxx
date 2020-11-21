@@ -70,6 +70,10 @@ std::string RxSBasic::toString() const {
     return ss.str();
 }
 
+std::vector<uint8_t> RxSBasic::toBuffer() {
+    return std::vector<uint8_t>((uint8_t *) this, (uint8_t *) this + sizeof(RxSBasic));
+}
+
 RxSBasicSegment::RxSBasicSegment() : AbstractPicoScenesFrameSegment("RxSBasic", 0x1U) {}
 
 void RxSBasicSegment::fromBuffer(const uint8_t *buffer, uint32_t bufferLength) {
@@ -93,6 +97,12 @@ RxSBasicSegment RxSBasicSegment::createByBuffer(const uint8_t *buffer, uint32_t 
     RxSBasicSegment rxSBasicSegment;
     rxSBasicSegment.fromBuffer(buffer, bufferLength);
     return rxSBasicSegment;
+}
+
+std::vector<uint8_t> RxSBasicSegment::toBuffer() {
+    clearFieldCache();
+    addField("core", basic.toBuffer());
+    return AbstractPicoScenesFrameSegment::toBuffer(true);
 }
 
 std::ostream &operator<<(std::ostream &os, const RxSBasic &rxSBasic) {

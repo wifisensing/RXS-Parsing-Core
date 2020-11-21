@@ -28,6 +28,8 @@ struct RxSBasic {
 
     [[nodiscard]] std::string toString() const;
 
+    std::vector<uint8_t> toBuffer();
+
 } __attribute__ ((__packed__));
 
 std::ostream &operator<<(std::ostream &os, const RxSBasic &rxSBasic);
@@ -41,6 +43,8 @@ public:
     RxSBasicSegment createByBuffer(const uint8_t *buffer, uint32_t bufferLength);
 
     void fromBuffer(const uint8_t *buffer, uint32_t bufferLength) override;
+
+    std::vector<uint8_t> toBuffer();
 
     RxSBasic basic;
 

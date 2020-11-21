@@ -50,6 +50,8 @@ public:
 
     virtual void fromBuffer(const uint8_t *buffer, uint32_t bufferLength) = 0;
 
+    void clearFieldCache();
+
     static std::tuple<std::string, uint32_t, uint16_t, uint32_t> extractSegmentMetaData(const uint8_t *buffer, uint32_t bufferLength);
 
     virtual std::string toString() const;
