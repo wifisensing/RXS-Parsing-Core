@@ -20,7 +20,9 @@ struct RxSBasic {
     uint8_t numSTS;
     uint8_t numESS;
     uint8_t numRx;
-    int8_t noiseFloor;       /* noise floor */
+    uint8_t numUser;
+    uint8_t userIndex;
+    int8_t noiseFloor;   /* noise floor */
     uint8_t rssi;        /* rx frame RSSI */
     uint8_t rssi_ctl0;   /* rx frame RSSI [ctl, chain 0] */
     uint8_t rssi_ctl1;   /* rx frame RSSI [ctl, chain 1] */
