@@ -18,7 +18,9 @@
 #endif
 
 using ComplexData = std::complex<double>;
+using ComplexFloatData = std::complex<float>;
 using ComplexArray = std::vector<ComplexData>;
+using ComplexFloatArray = std::vector<ComplexData>;
 using Uint8Vector = std::vector<uint8_t>;
 
 enum class PicoScenesDeviceType : uint16_t {

@@ -74,8 +74,7 @@ std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::fromBuffer(con
         } else if (boost::iequals(segmentName, "CSI")) {
             frame.csiSegment.fromBuffer(buffer + pos, segmentLength + 4);
             if (interpolateCSI) {
-                for(auto & csi: frame.csiSegment.muCSI)
-                    csi.interpolateCSI();
+                frame.csiSegment.csi.interpolateCSI();
             }
         } else {
             frame.rxUnknownSegmentMap.emplace(segmentName, Uint8Vector(buffer + pos, buffer + pos + segmentLength + 4));
@@ -97,8 +96,7 @@ std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::fromBuffer(con
             } else if (boost::iequals(segmentName, "CSI")) {
                 frame.txCSISegment = CSISegment::createByBuffer(buffer + pos, segmentLength + 4);
                 if (interpolateCSI) {
-                    for(auto & csi: frame.txCSISegment->muCSI)
-                        csi.interpolateCSI();
+                    frame.txCSISegment->csi.interpolateCSI();
                 }
             } else {
                 frame.txUnknownSegmentMap.emplace(segmentName, Uint8Vector(buffer + pos, buffer + pos + segmentLength + 4));

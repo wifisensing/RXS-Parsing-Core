@@ -257,7 +257,8 @@ void CSISegment::fromBuffer(const uint8_t *buffer, uint32_t bufferLength) {
         throw std::runtime_error("CSISegment cannot parse the segment with version v" + std::to_string(versionId) + ".");
     }
 
-    muCSI = versionedSolutionMap.at(versionId)(buffer + offset, bufferLength - offset);
+    auto muCSIs = versionedSolutionMap.at(versionId)(buffer + offset, bufferLength - offset);
+    csi = muCSIs[0];
     rawBuffer.resize(bufferLength);
     std::copy(buffer, buffer + bufferLength, rawBuffer.begin());
     this->segmentLength = bufferLength - 4;
@@ -272,10 +273,8 @@ CSISegment CSISegment::createByBuffer(const uint8_t *buffer, uint32_t bufferLeng
 
 std::string CSISegment::toString() const {
     std::stringstream ss;
-    ss << "CSISegments(NumUser=" << muCSI.size() << ")={";
-    for (const auto &csi: muCSI) {
-        ss << "(device=" << csi.deviceType << ", format=" << csi.packetFormat << ", CBW=" << csi.cbw << ", dim(nTones,nSTS,nESS,nRx)=(" + std::to_string(csi.dimensions.numTones) + "," + std::to_string(csi.dimensions.numTx) + "," + std::to_string(csi.dimensions.numESS) + "," + std::to_string(csi.dimensions.numRx) + "), raw=" + std::to_string(csi.rawCSIData.size()) + "B), ";
-    }
+    ss << "CSISegments={";
+        ss << "(device=" << csi.deviceType << ", format=" << csi.packetFormat << ", CBW=" << csi.cbw << ", dim(nTones,nSTS,nESS,nRx)=(" + std::to_string(csi.dimensions.numTones) + "," + std::to_string(csi.dimensions.numTx) + "," + std::to_string(csi.dimensions.numESS) + "," + std::to_string(csi.dimensions.numRx) + "), raw=" + std::to_string(csi.rawCSIData.size()) + "B)}";
     auto temp = ss.str();
     temp.erase(temp.end() - 2, temp.end());
     temp.append("}");
