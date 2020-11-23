@@ -92,6 +92,9 @@ public:
     bool operator==(const ModularPicoScenesRxFrame &rhs) const;
 
     [[nodiscard]] std::string toString() const;
+
+protected:
+    bool isSynthesized = false;
 };
 
 std::ostream &operator<<(std::ostream &os, const ModularPicoScenesRxFrame &parameters);

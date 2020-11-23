@@ -3,6 +3,8 @@
 //
 
 #include "ModularPicoScenesFrame.hxx"
+#include "../../headers/ModularPicoScenesFrame.hxx"
+
 #include <boost/algorithm/string.hpp>
 #include <random>
 #include <iomanip>
@@ -162,6 +164,10 @@ std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::concatenateFra
 
 bool ModularPicoScenesRxFrame::operator==(const ModularPicoScenesRxFrame &rhs) const {
     return false;
+}
+
+Uint8Vector ModularPicoScenesRxFrame::toBuffer() {
+    return Uint8Vector();
 }
 
 std::ostream &operator<<(std::ostream &os, const ModularPicoScenesRxFrame &rxframe) {
