@@ -3,8 +3,6 @@
 //
 
 #include "ModularPicoScenesFrame.hxx"
-#include "../../headers/ModularPicoScenesFrame.hxx"
-
 #include <boost/algorithm/string.hpp>
 #include <random>
 #include <iomanip>
@@ -108,7 +106,8 @@ std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::fromBuffer(con
     } else {
         uint32_t msduLength = bufferLength - pos;
         auto msduBuffer = std::shared_ptr<uint8_t>(new uint8_t[msduLength], std::default_delete<uint8_t[]>());
-        std::copy(buffer + pos, buffer + bufferLength, frame.nonPicoScenesMSDUContent.begin());
+        frame.nonPicoScenesMSDUContent.resize(1);
+        std::copy(buffer + pos, buffer + bufferLength, frame.nonPicoScenesMSDUContent[0].begin());
     }
 
     frame.rawBuffer.resize(bufferLength);
