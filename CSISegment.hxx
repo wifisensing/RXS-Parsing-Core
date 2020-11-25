@@ -6,7 +6,6 @@
 #define PICOSCENES_PLATFORM_CSISEGMENT_HXX
 
 #include <functional>
-#include <openssl/x509v3.h>
 #include "AbstractPicoScenesFrameSegment.hxx"
 #include "PicoScenesCommons.hxx"
 
