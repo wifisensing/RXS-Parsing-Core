@@ -72,6 +72,7 @@ public:
     RxSBasicSegment rxSBasicSegment;
     ExtraInfoSegment rxExtraInfoSegment;
     CSISegment csiSegment;
+    CSISegment legacyCSISegment;
     BasebandSignalSegment basebandSignalSegment;
 
     // Tx side header and segments
