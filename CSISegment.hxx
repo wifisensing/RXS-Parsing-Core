@@ -6,6 +6,7 @@
 #define PICOSCENES_PLATFORM_CSISEGMENT_HXX
 
 #include <functional>
+#include <openssl/x509v3.h>
 #include "AbstractPicoScenesFrameSegment.hxx"
 #include "PicoScenesCommons.hxx"
 
@@ -25,7 +26,7 @@ public:
     CSIDimension dimensions;
     uint8_t antSel;
     ComplexArray CSIArrays;
-    std::vector <int16_t> subcarrierIndices;
+    std::vector<int16_t> subcarrierIndices;
     Uint8Vector rawCSIData;
 
     void interpolateCSI();
@@ -34,11 +35,20 @@ public:
 
     static CSI fromIWL5300(const uint8_t *buffer, uint32_t bufferLength, uint8_t numTx, uint8_t numRx, uint8_t numLTF, uint8_t numTones, ChannelBandwidthEnum cbw, uint8_t ant_sel);
 
+    template<typename OutputValueType, typename InputValueType>
+    static std::vector<std::complex<OutputValueType>> convertCSIArrayType(const std::vector<std::complex<InputValueType>> &inputArray) {
+        std::vector<std::complex<OutputValueType>> outputArray(inputArray.size());
+        for (auto i = 0; i < inputArray.size(); i++) {
+            outputArray[i] = std::complex<OutputValueType>(inputArray[i].real(), inputArray[i].imag());
+        }
+        return outputArray;
+    }
+
 private:
-    static std::vector <int16_t> QCA9300SubcarrierIndices_CBW20;
-    static std::vector <int16_t> QCA9300SubcarrierIndices_CBW40;
-    static std::vector <int16_t> IWL5300SubcarrierIndices_CBW20;
-    static std::vector <int16_t> IWL5300SubcarrierIndices_CBW40;
+    static std::vector<int16_t> QCA9300SubcarrierIndices_CBW20;
+    static std::vector<int16_t> QCA9300SubcarrierIndices_CBW40;
+    static std::vector<int16_t> IWL5300SubcarrierIndices_CBW20;
+    static std::vector<int16_t> IWL5300SubcarrierIndices_CBW40;
 };
 
 class CSISegment : public AbstractPicoScenesFrameSegment {
@@ -49,22 +59,23 @@ public:
 
     void fromBuffer(const uint8_t *buffer, uint32_t bufferLength) override;
 
-    std::vector <CSI> muCSI;
+    CSI csi;
 
     [[nodiscard]] std::string toString() const override;
-private:
-    static std::map <uint16_t, std::function<std::vector<CSI>(const uint8_t *, uint32_t)>> versionedSolutionMap;
 
-    static std::map <uint16_t, std::function<std::vector<CSI>(const uint8_t *, uint32_t)>> initializeSolutionMap() noexcept;
+private:
+    static std::map<uint16_t, std::function<std::vector<CSI>(const uint8_t *, uint32_t)>> versionedSolutionMap;
+
+    static std::map<uint16_t, std::function<std::vector<CSI>(const uint8_t *, uint32_t)>> initializeSolutionMap() noexcept;
 };
 
 std::ostream &operator<<(std::ostream &os, const CSISegment &csiSegment);
 
 template<typename T>
-std::vector <size_t> sort_indexes(const std::vector <T> &v) {
+std::vector<size_t> sort_indexes(const std::vector<T> &v) {
 
     // initialize original index locations
-    std::vector <size_t> idx(v.size());
+    std::vector<size_t> idx(v.size());
     std::iota(idx.begin(), idx.end(), 0);
 
     // sort indexes based on comparing values in v

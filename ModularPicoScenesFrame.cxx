@@ -74,8 +74,7 @@ std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::fromBuffer(con
         } else if (boost::iequals(segmentName, "CSI")) {
             frame.csiSegment.fromBuffer(buffer + pos, segmentLength + 4);
             if (interpolateCSI) {
-                for(auto & csi: frame.csiSegment.muCSI)
-                    csi.interpolateCSI();
+                frame.csiSegment.csi.interpolateCSI();
             }
         } else {
             frame.rxUnknownSegmentMap.emplace(segmentName, Uint8Vector(buffer + pos, buffer + pos + segmentLength + 4));
@@ -97,8 +96,7 @@ std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::fromBuffer(con
             } else if (boost::iequals(segmentName, "CSI")) {
                 frame.txCSISegment = CSISegment::createByBuffer(buffer + pos, segmentLength + 4);
                 if (interpolateCSI) {
-                    for(auto & csi: frame.txCSISegment->muCSI)
-                        csi.interpolateCSI();
+                    frame.txCSISegment->csi.interpolateCSI();
                 }
             } else {
                 frame.txUnknownSegmentMap.emplace(segmentName, Uint8Vector(buffer + pos, buffer + pos + segmentLength + 4));
@@ -108,7 +106,8 @@ std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::fromBuffer(con
     } else {
         uint32_t msduLength = bufferLength - pos;
         auto msduBuffer = std::shared_ptr<uint8_t>(new uint8_t[msduLength], std::default_delete<uint8_t[]>());
-        std::copy(buffer + pos, buffer + bufferLength, frame.nonPicoScenesMSDUContent.begin());
+        frame.nonPicoScenesMSDUContent.resize(1);
+        std::copy(buffer + pos, buffer + bufferLength, frame.nonPicoScenesMSDUContent[0].begin());
     }
 
     frame.rawBuffer.resize(bufferLength);
@@ -164,6 +163,10 @@ std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::concatenateFra
 
 bool ModularPicoScenesRxFrame::operator==(const ModularPicoScenesRxFrame &rhs) const {
     return false;
+}
+
+Uint8Vector ModularPicoScenesRxFrame::toBuffer() {
+    return Uint8Vector();
 }
 
 std::ostream &operator<<(std::ostream &os, const ModularPicoScenesRxFrame &rxframe) {

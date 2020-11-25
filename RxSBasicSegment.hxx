@@ -20,13 +20,17 @@ struct RxSBasic {
     uint8_t numSTS;
     uint8_t numESS;
     uint8_t numRx;
-    int8_t noiseFloor;       /* noise floor */
+    uint8_t numUser;
+    uint8_t userIndex;
+    int8_t noiseFloor;   /* noise floor */
     uint8_t rssi;        /* rx frame RSSI */
     uint8_t rssi_ctl0;   /* rx frame RSSI [ctl, chain 0] */
     uint8_t rssi_ctl1;   /* rx frame RSSI [ctl, chain 1] */
     uint8_t rssi_ctl2;   /* rx frame RSSI [ctl, chain 2] */
 
     [[nodiscard]] std::string toString() const;
+
+    std::vector<uint8_t> toBuffer();
 
 } __attribute__ ((__packed__));
 
@@ -41,6 +45,8 @@ public:
     RxSBasicSegment createByBuffer(const uint8_t *buffer, uint32_t bufferLength);
 
     void fromBuffer(const uint8_t *buffer, uint32_t bufferLength) override;
+
+    std::vector<uint8_t> toBuffer();
 
     RxSBasic basic;
 
