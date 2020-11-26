@@ -11,6 +11,7 @@
 #include <string>
 #include <complex>
 #include <numeric>
+#include "SignalMatrix.hxx"
 
 #ifdef BUILD_WITH_MEX
     #include "mex.h"

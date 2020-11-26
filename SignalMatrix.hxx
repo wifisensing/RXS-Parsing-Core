@@ -5,10 +5,13 @@
 #ifndef PICOSCENES_PLATFORM_SIGNALMATRIX_HXX
 #define PICOSCENES_PLATFORM_SIGNALMATRIX_HXX
 
+#include <utility>
 #include <vector>
 #include <cstdint>
 #include <complex>
 #include <iterator>
+#include <string>
+#include <cstring>
 
 template<typename>
 struct is_std_complex : std::false_type {
@@ -22,23 +25,47 @@ template<typename InputType, typename = std::enable_if<std::is_arithmetic_v<Inpu
 class SignalMatrix {
     using ElementType = typename std::conditional<std::is_arithmetic_v<InputType>, InputType, typename std::remove_reference<decltype(std::declval<typename std::conditional<std::is_arithmetic_v<InputType>, std::complex<InputType>, InputType>::type>().real())>::type>::type;
 public:
+    SignalMatrix() = default;
+
+    template<typename DimensionContainerType>
+    SignalMatrix(const std::vector<InputType> &array, const DimensionContainerType &dimensionsV) : array(array) {
+        for (auto it = std::cbegin(dimensionsV); it != std::cend(dimensionsV); it++) {
+            dimensions.emplace_back(*it);
+        }
+
+        if ([&] {
+            auto sum = 1;
+            for (const auto &dimension : dimensions)
+                sum *= dimension;
+            return sum;
+        }() != array.size())
+            throw std::invalid_argument("SignalMatrix creation failed due to the inconsistent dimensions.");
+    }
+
     std::vector<InputType> array;
     std::vector<int32_t> dimensions;
 
 
-    template<typename Iterator>
-    static SignalMatrix<typename std::iterator_traits<Iterator>::value_type> loadFromBuffer(Iterator begin, Iterator end) {
-        using value_type = typename std::iterator_traits<Iterator>::value_type;
-        uint8_t fileHeader[3];
-        uint8_t fileVersion[3];
-        memset(fileHeader, 0, sizeof(fileHeader));
-        memset(fileVersion, 0, sizeof(fileVersion));
-        std::copy(begin, begin + 2, std::begin(fileHeader));
-        std::copy(begin, begin + 2, std::begin(fileVersion));
+//    template<typename Iterator>
+//    static SignalMatrix<typename std::iterator_traits<Iterator>::value_type> loadFromBuffer(Iterator begin, Iterator end) {
+//        using value_type = typename std::iterator_traits<Iterator>::value_type;
+//        if (!verifyCompatibility(begin)) {
+//            throw std::runtime_error("Incompatible SignalMatrix format");
+//        }
 
-        
-        return SignalMatrix<typename std::iterator_traits<Iterator>::value_type>();
-    }
+//    }
+
+//    template<typename Iterator>
+//    static bool verifyCompatibility(Iterator begin) {
+//        char fileHeader[3];
+//        char fileVersion[3];
+//        memset(fileHeader, 0, sizeof(fileHeader));
+//        memset(fileVersion, 0, sizeof(fileVersion));
+//        std::copy(begin, begin + 2, std::begin(fileHeader));
+//        std::copy(begin, begin + 2, std::begin(fileVersion));
+//
+//        return std::strcmp(fileHeader, "BB") == 0 && std::strcmp(fileVersion, "v1") == 0;
+//    }
 
 //    template<typename DumpType = ValueType, typename = std::enable_if<std::is_signed_v<DumpType>>>
 //    std::vector<uint8_t> toBuffer() {
