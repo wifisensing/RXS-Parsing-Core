@@ -39,13 +39,13 @@
 SignalMatrix<std::complex<double>> parseQCA9300CSIData(const uint8_t *csiData, int ntx, int nrx, int num_tones) {
     std::vector<std::complex<double>> CSIArray(ntx * nrx * num_tones);
     parseQCA9300CSIData(CSIArray.begin(), csiData, ntx, nrx, num_tones);
-    return SignalMatrix(CSIArray, std::vector<int32_t>{num_tones, ntx, nrx});
+    return SignalMatrix(CSIArray, std::vector<int32_t>{num_tones, ntx, nrx}, SignalMatrixStorageMajority::ColumnMajor);
 }
 
 SignalMatrix<std::complex<double>> parseIWL5300CSIData(const uint8_t *payload, int ntx, int nrx, uint8_t ant_sel) {
     std::vector<std::complex<double>> CSIArray(ntx * nrx * 30);
     parseIWL5300CSIData(CSIArray.begin(), payload, ntx, nrx, ant_sel);
-    return SignalMatrix(CSIArray, std::vector<int32_t>{30, ntx, nrx});
+    return SignalMatrix(CSIArray, std::vector<int32_t>{30, ntx, nrx}, SignalMatrixStorageMajority::ColumnMajor);
 }
 
 std::vector<int16_t> CSI::QCA9300SubcarrierIndices_CBW20 = []() noexcept -> std::vector<int16_t> {

@@ -13,6 +13,12 @@
 #include <string>
 #include <cstring>
 
+enum class SignalMatrixStorageMajority : char {
+    RowMajor = 'R',
+    ColumnMajor = 'C',
+    UndefinedMajority = 'U'
+};
+
 template<typename>
 struct is_std_complex : std::false_type {
 };
@@ -21,29 +27,29 @@ template<typename ValueType>
 struct is_std_complex<std::complex<ValueType>> : std::true_type {
 };
 
-template<typename InputType, typename = std::enable_if<std::is_arithmetic_v<InputType> || is_std_complex<InputType>::value>>
+template<typename InputType = std::complex<double>, typename = std::enable_if<std::is_arithmetic_v<InputType> || is_std_complex<InputType>::value>>
 class SignalMatrix {
     using ElementType = typename std::conditional<std::is_arithmetic_v<InputType>, InputType, typename std::remove_reference<decltype(std::declval<typename std::conditional<std::is_arithmetic_v<InputType>, std::complex<InputType>, InputType>::type>().real())>::type>::type;
 public:
-    SignalMatrix() = default;
-
-    template<typename DimensionContainerType>
-    SignalMatrix(const std::vector<InputType> &array, const DimensionContainerType &dimensionsV) : array(array) {
-        for (auto it = std::cbegin(dimensionsV); it != std::cend(dimensionsV); it++) {
-            dimensions.emplace_back(*it);
-        }
-
-        if ([&] {
-            auto sum = 1;
-            for (const auto &dimension : dimensions)
-                sum *= dimension;
-            return sum;
-        }() != array.size())
-            throw std::invalid_argument("SignalMatrix creation failed due to the inconsistent dimensions.");
-    }
 
     std::vector<InputType> array;
     std::vector<int32_t> dimensions;
+    SignalMatrixStorageMajority major = SignalMatrixStorageMajority::UndefinedMajority;
+
+    SignalMatrix() = default;
+
+    template<typename DimensionContainerType>
+    SignalMatrix(const std::vector<InputType> &array, const DimensionContainerType &dimensionsV, SignalMatrixStorageMajority majority) : array(array), major(majority) {
+        for (auto it = std::cbegin(dimensionsV); it != std::cend(dimensionsV); it++) {
+            dimensions.emplace_back(*it);
+        }
+        auto sum = 1;
+        for (const auto &dimension : dimensions)
+            sum *= dimension;
+
+        if (sum != array.size())
+            throw std::invalid_argument("SignalMatrix creation failed due to the inconsistent dimensions.");
+    }
 
 
 //    template<typename Iterator>
