@@ -58,10 +58,8 @@ public:
         for (auto it = std::cbegin(dimensionsV); it != std::cend(dimensionsV); it++) {
             dimensions.emplace_back(*it);
         }
-        auto sum = 1;
-        for (const auto &dimension : dimensions)
-            sum *= dimension;
 
+        auto sum = std::accumulate(dimensions.cbegin(), dimensions.cend(), 1, std::multiplies<>());
         if (sum != array.size())
             throw std::invalid_argument("SignalMatrix creation failed due to the inconsistent dimensions.");
     }
