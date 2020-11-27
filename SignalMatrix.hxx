@@ -13,6 +13,9 @@
 #include <string>
 #include <cstring>
 #include <numeric>
+#include <filesystem>
+#include <iostream>
+#include <fstream>
 
 enum class SignalMatrixStorageMajority : char {
     RowMajor = 'R',
@@ -28,7 +31,7 @@ template<typename ValueType>
 struct is_std_complex<std::complex<ValueType>> : std::true_type {
 };
 
-template<typename InputType = std::complex<double>, typename = std::enable_if<std::is_arithmetic_v<InputType> || is_std_complex<InputType>::value>>
+template<typename InputType = std::complex<double>, typename = std::enable_if_t<std::is_arithmetic_v<InputType> || is_std_complex<InputType>::value>>
 class SignalMatrix {
     using ElementType = typename std::conditional<std::is_arithmetic_v<InputType>, InputType, typename std::remove_reference<decltype(std::declval<typename std::conditional<std::is_arithmetic_v<InputType>, std::complex<InputType>, InputType>::type>().real())>::type>::type;
 public:
@@ -54,7 +57,7 @@ public:
         return array.at(computeIndex4Coordinates(dimensions, majority, coordinates));
     }
 
-    ElementType  valueAt(uint32_t index) {
+    ElementType valueAt(uint32_t index) {
         return array.at(index);
     }
 
@@ -70,7 +73,7 @@ public:
         return computeCoordinate4Index(dimensions, majority, pos);
     }
 
-    std::vector<uint8_t> toBuffer(SignalMatrixStorageMajority outputMajority = SignalMatrixStorageMajority::UndefinedMajority) {
+    std::vector<uint8_t> toBuffer(SignalMatrixStorageMajority outputMajority = SignalMatrixStorageMajority::UndefinedMajority) const {
         std::vector<uint8_t> vout;
         vout.reserve(array.size() * sizeof(InputType) + 50);
         std::string header_version("BBv1");
@@ -110,19 +113,19 @@ public:
         return vout;
     }
 
-    template<typename ContainerType, typename = std::enable_if<std::is_same_v<typename ContainerType::value_type, uint8_t>>>
-    static SignalMatrix<typename ContainerType::value_type> fromBuffer(const ContainerType &container, SignalMatrixStorageMajority storageMajority = SignalMatrixStorageMajority::UndefinedMajority) {
+    template<typename ContainerType, typename = std::enable_if_t<std::is_same_v<typename ContainerType::value_type, uint8_t>>>
+    static SignalMatrix<ElementType> fromBuffer(const ContainerType &container, SignalMatrixStorageMajority storageMajority = SignalMatrixStorageMajority::UndefinedMajority) {
         return fromBuffer(container.begin(), container.end(), storageMajority);
     }
 
-    template<typename Iterator, typename = std::enable_if<std::is_same_v<typename std::iterator_traits<Iterator>::value_type, uint8_t>>>
-    static SignalMatrix<typename std::iterator_traits<Iterator>::value_type> fromBuffer(Iterator begin, Iterator end, SignalMatrixStorageMajority storageMajority = SignalMatrixStorageMajority::UndefinedMajority) {
+    template<typename Iterator, typename = std::enable_if_t<std::is_same_v<typename std::iterator_traits<Iterator>::value_type, uint8_t>>>
+    static SignalMatrix<ElementType> fromBuffer(Iterator begin, Iterator end, SignalMatrixStorageMajority storageMajority = SignalMatrixStorageMajority::UndefinedMajority) {
         using value_type = typename std::iterator_traits<Iterator>::value_type;
         if (!verifyCompatibility(begin)) {
             throw std::runtime_error("Incompatible SignalMatrix format");
         }
 
-        SignalMatrix<typename std::iterator_traits<Iterator>::value_type> signal;
+        SignalMatrix<ElementType> signal;
         uint8_t numDimensions = *begin++;
         for (auto i = 0; i < numDimensions; i++) {
             auto v = *(uint32_t *) (&(*begin));
@@ -150,9 +153,11 @@ public:
         signal.majority = (storageMajority == SignalMatrixStorageMajority::UndefinedMajority ? inputMajority : storageMajority);
 
         auto numel = std::accumulate(signal.dimensions.cbegin(), signal.dimensions.cend(), 1, std::multiplies<>());
-        auto distanceIterator = std::distance(begin, end);
-        if (distanceIterator != numel * sizeof(ElementType))
-            throw std::runtime_error("Inconsistent SignalMatrix data buffer");
+//        if (end) {
+//            auto distanceIterator = std::distance(begin, *end);
+//            if (distanceIterator != numel * sizeof(ElementType))
+//                throw std::runtime_error("Inconsistent SignalMatrix data buffer");
+//        }
         signal.array.resize(numel);
 
         if (signal.majority == inputMajority) {
@@ -169,6 +174,23 @@ public:
         }
 
         return signal;
+    }
+
+    static SignalMatrix<ElementType> fromFile(const std::string &filePath) {
+        auto inputStream = std::ifstream(filePath, std::ios::binary | std::ios::in);
+        std::vector<uint8_t> bufferV;
+        std::copy(std::istream_iterator<uint8_t>(inputStream), std::istream_iterator<uint8_t>(), std::back_inserter(bufferV));
+        auto parseResult = SignalMatrix<ElementType>::fromBuffer(bufferV, SignalMatrixStorageMajority::UndefinedMajority);
+        return parseResult;
+    }
+
+    void dump2File(const std::string &filePath, SignalMatrixStorageMajority outputMajority = SignalMatrixStorageMajority::UndefinedMajority) const {
+        auto outputStream = std::ofstream(filePath, std::ios::binary | std::ios::out);
+        auto bufferV = toBuffer(outputMajority);
+        std::ostream_iterator<uint8_t> ostreamIterator(outputStream);
+        std::copy(bufferV.cbegin(), bufferV.cend(), ostreamIterator);
+        outputStream.flush();
+        outputStream.close();
     }
 
 private:
@@ -261,6 +283,17 @@ private:
 
         return oldPos;
     };
+};
+
+template<typename ElementType>
+void operator<<(SignalMatrix<ElementType> &signalMatrix, const std::string &filePath) {
+    signalMatrix = SignalMatrix<ElementType>::fromFile(filePath);
+};
+
+
+template<typename InputType>
+void operator>>(const SignalMatrix<InputType> &signalMatrix, const std::string &filePath) {
+    signalMatrix.dump2File(filePath);
 };
 
 
