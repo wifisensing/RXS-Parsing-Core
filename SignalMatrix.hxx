@@ -20,20 +20,6 @@ enum class SignalMatrixStorageMajority : char {
     UndefinedMajority = 'U',
 };
 
-//std::ostream &operator<<(std::ostream &os, SignalMatrixStorageMajority majority) {
-//    switch (majority) {
-//        case SignalMatrixStorageMajority::RowMajor :
-//            return os << "ARP";
-//        case SignalMatrixStorageMajority::ColumnMajor:
-//            return os << "IPv4";
-//        case SignalMatrixStorageMajority::UndefinedMajority:
-//            return os << "VLAN";
-//        case SignalMatrixStorageMajority::Default:
-//            return os << "IPv6";
-//    };
-//    return os << static_cast<uint8_t>(majority);
-//}
-
 template<typename>
 struct is_std_complex : std::false_type {
 };
@@ -65,44 +51,6 @@ public:
     }
 
     std::vector<uint8_t> toBuffer(SignalMatrixStorageMajority outputMajority = SignalMatrixStorageMajority::UndefinedMajority) {
-        auto getTypeChar = [] {
-            if (std::is_same_v<ElementType, float>) { return 'F'; }
-            else if (std::is_same_v<ElementType, double>) { return 'D'; }
-            else if (std::is_same_v<ElementType, uint8_t>) { return 'U'; }
-            else if (std::is_same_v<ElementType, uint16_t>) { return 'U'; }
-            else if (std::is_same_v<ElementType, uint32_t>) { return 'U'; }
-            else if (std::is_same_v<ElementType, uint64_t>) { return 'U'; }
-            else if (std::is_same_v<ElementType, int8_t>) { return 'I'; }
-            else if (std::is_same_v<ElementType, int16_t>) { return 'I'; }
-            else if (std::is_same_v<ElementType, int32_t>) { return 'I'; }
-            else if (std::is_same_v<ElementType, int64_t>) { return 'I'; }
-            else if (std::is_same_v<ElementType, char>) { return 'C'; }
-            else if (std::is_same_v<ElementType, bool>) { return 'L'; }
-            throw std::runtime_error("BBSignalsFileWriter: unsupported element type.");
-        };
-
-        auto computePositionUnderInversedMajority = [&](uint32_t newPos) -> uint32_t {
-            auto revD = dimensions;
-            std::reverse(revD.begin(), revD.end());
-            std::vector<uint32_t> coordinates(revD.size(), 0);
-            auto inputPos = newPos;
-            for (auto i = 1; i <= revD.size(); i++) {
-                auto numElementsPerDimension = std::accumulate(revD.cbegin(), revD.cend() - i, 1, std::multiplies<>());
-                coordinates[dimensions.size() - i] = inputPos / numElementsPerDimension;
-                inputPos %= numElementsPerDimension;
-            }
-            auto oldCoordinates = coordinates;
-            std::reverse(oldCoordinates.begin(), oldCoordinates.end());
-
-            auto oldPos = 0;
-            for (auto i = 0; i < coordinates.size(); i++) {
-                auto numElementsPerDimension = std::accumulate(dimensions.cbegin(), dimensions.cbegin() + i, 1, std::multiplies<>());
-                oldPos += numElementsPerDimension * oldCoordinates[i];
-            }
-
-            return oldPos;
-        };
-
         std::vector<uint8_t> vout;
         vout.reserve(array.size() * sizeof(InputType) + 50);
         std::string header_version("BBv1");
@@ -113,7 +61,7 @@ public:
         }
 
         vout.emplace_back(is_std_complex<InputType>::value ? 'C' : 'R');
-        vout.emplace_back(getTypeChar());
+        vout.emplace_back(getTypeChar<ElementType>());
         vout.emplace_back(sizeof(ElementType) * 8);
 
         outputMajority = outputMajority == SignalMatrixStorageMajority::UndefinedMajority ? majority : outputMajority;
@@ -134,7 +82,7 @@ public:
             }
         } else {
             for (auto i = 0; i < array.size(); i++) {
-                auto pos = computePositionUnderInversedMajority(i);
+                auto pos = computePositionUnderInversedMajority(i, dimensions);
                 std::copy((uint8_t *) &array[pos], ((uint8_t *) &array[pos]) + sizeof(InputType), std::back_inserter(vout));
             }
         }
@@ -142,58 +90,119 @@ public:
         return vout;
     }
 
+    template<typename ContainerType, typename = std::enable_if<std::is_same_v<typename ContainerType::value_type, uint8_t>>>
+    static SignalMatrix<typename ContainerType::value_type> fromBuffer(const ContainerType &container, SignalMatrixStorageMajority storageMajority = SignalMatrixStorageMajority::UndefinedMajority) {
+        return fromBuffer(container.begin(), container.end(), storageMajority);
+    }
 
-//    template<typename Iterator>
-//    static SignalMatrix<typename std::iterator_traits<Iterator>::value_type> loadFromBuffer(Iterator begin, Iterator end) {
-//        using value_type = typename std::iterator_traits<Iterator>::value_type;
-//        if (!verifyCompatibility(begin)) {
-//            throw std::runtime_error("Incompatible SignalMatrix format");
-//        }
+    template<typename Iterator, typename = std::enable_if<std::is_same_v<typename std::iterator_traits<Iterator>::value_type, uint8_t>>>
+    static SignalMatrix<typename std::iterator_traits<Iterator>::value_type> fromBuffer(Iterator begin, Iterator end, SignalMatrixStorageMajority storageMajority = SignalMatrixStorageMajority::UndefinedMajority) {
+        using value_type = typename std::iterator_traits<Iterator>::value_type;
+        if (!verifyCompatibility(begin)) {
+            throw std::runtime_error("Incompatible SignalMatrix format");
+        }
 
-//    }
+        SignalMatrix<typename std::iterator_traits<Iterator>::value_type> signal;
+        uint8_t numDimensions = *begin++;
+        for (auto i = 0; i < numDimensions; i++) {
+            auto v = *(uint32_t *) (&(*begin));
+            signal.dimensions.emplace_back(v);
+            begin += 4;
+        }
+        auto complexChar = (char) *begin++;
+        auto inputComplexityChar = (is_std_complex<InputType>::value ? 'C' : 'R');
+        if (inputComplexityChar != complexChar) {
+            throw std::runtime_error("Incompatible SignalMatrix complexity");
+        }
 
-//    template<typename Iterator>
-//    static bool verifyCompatibility(Iterator begin) {
-//        char fileHeader[3];
-//        char fileVersion[3];
-//        memset(fileHeader, 0, sizeof(fileHeader));
-//        memset(fileVersion, 0, sizeof(fileVersion));
-//        std::copy(begin, begin + 2, std::begin(fileHeader));
-//        std::copy(begin, begin + 2, std::begin(fileVersion));
-//
-//        return std::strcmp(fileHeader, "BB") == 0 && std::strcmp(fileVersion, "v1") == 0;
-//    }
+        auto typeChar = (char) *begin++;
+        if (typeChar != getTypeChar<ElementType>()) {
+            throw std::runtime_error("Incompatible SignalMatrix value type");
+        }
 
-//    template<typename DumpType = ValueType, typename = std::enable_if<std::is_signed_v<DumpType>>>
-//    std::vector<uint8_t> toBuffer() {
-//        std::vector<uint8_t> outputArray;
-//
-//        if constexpr (std::is_same_v<ValueType, DumpType>) {
-//            for (const auto &v: array) {
-//                std::copy((uint8_t *) &v, (uint8_t *) &v + sizeof(DumpType), std::back_inserter(outputArray));
-//            }
-//        } else {
-//            if constexpr (std::is_floating_point_v<ValueType> && std::is_floating_point_v<DumpType>) {
-//                for (const auto &v: array) {
-//                    std::complex<DumpType> nv(v.real(), v.imag());
-//                    std::copy((uint8_t *) &nv, (uint8_t *) &nv + sizeof(DumpType), std::back_inserter(outputArray));
-//                }
-//            } else {
-//                if constexpr (std::is_floating_point_v<ValueType> && !std::is_floating_point_v<DumpType>) {
-//                    auto scaleRatio = std::numeric_limits<DumpType>::max();
-//                    for (const auto &v: array) {
-//                        std::complex<DumpType> nv(scaleRatio * v.real(), scaleRatio * v.imag());
-//                        std::copy((uint8_t *) &nv, (uint8_t *) &nv + sizeof(DumpType), std::back_inserter(outputArray));
-//                    }
-//                } else {
-//                    for (const auto &v: array) {
-//                        std::complex<DumpType> nv(1.0 * v.real() / std::numeric_limits<ValueType>::max(), 1.0 * v.imag() / std::numeric_limits<ValueType>::max());
-//                        std::copy((uint8_t *) &nv, (uint8_t *) &nv + sizeof(DumpType), std::back_inserter(outputArray));
-//                    }
-//                }
-//            }
-//        }
-//    }
+        auto numTypeBits = *begin++;
+        if (numTypeBits != sizeof(ElementType) * 8) {
+            throw std::runtime_error("Incompatible SignalMatrix value sizeof");
+        }
+
+        auto majorityChar = (char) *begin++;
+        auto inputMajority = SignalMatrixStorageMajority(majorityChar);
+        signal.majority = (storageMajority == SignalMatrixStorageMajority::UndefinedMajority ? inputMajority : storageMajority);
+
+        auto numel = std::accumulate(signal.dimensions.cbegin(), signal.dimensions.cend(), 1, std::multiplies<>());
+        auto distanceIterator = std::distance(begin, end);
+        if (distanceIterator != numel * sizeof(ElementType))
+            throw std::runtime_error("Inconsistent SignalMatrix data buffer");
+        signal.array.resize(numel);
+
+        if (signal.majority == inputMajority) {
+            for (auto i = 0; i < numel; i++) {
+                signal.array[i] = *(ElementType *) (&(*begin));
+                begin += sizeof(ElementType);
+            }
+        } else {
+            for (auto i = 0; i < numel; i++) {
+                auto newPos = computePositionUnderInversedMajority(i, signal.dimensions);
+                signal.array[newPos] = *(ElementType *) (&(*begin));;
+                begin += sizeof(ElementType);
+            }
+        }
+
+        return signal;
+    }
+
+private:
+    template<typename Iterator>
+    static bool verifyCompatibility(Iterator &begin) {
+        char fileHeader[3];
+        char fileVersion[3];
+        memset(fileHeader, 0, sizeof(fileHeader));
+        memset(fileVersion, 0, sizeof(fileVersion));
+        std::copy(begin, begin + 2, std::begin(fileHeader));
+        begin += 2;
+        std::copy(begin, begin + 2, std::begin(fileVersion));
+        begin += 2;
+        return std::strcmp(fileHeader, "BB") == 0 && std::strcmp(fileVersion, "v1") == 0;
+    }
+
+    template<typename TypeForChecking>
+    static char getTypeChar() {
+        if (std::is_same_v<TypeForChecking, float>) { return 'F'; }
+        else if (std::is_same_v<TypeForChecking, double>) { return 'D'; }
+        else if (std::is_same_v<TypeForChecking, uint8_t>) { return 'U'; }
+        else if (std::is_same_v<TypeForChecking, uint16_t>) { return 'U'; }
+        else if (std::is_same_v<TypeForChecking, uint32_t>) { return 'U'; }
+        else if (std::is_same_v<TypeForChecking, uint64_t>) { return 'U'; }
+        else if (std::is_same_v<TypeForChecking, int8_t>) { return 'I'; }
+        else if (std::is_same_v<TypeForChecking, int16_t>) { return 'I'; }
+        else if (std::is_same_v<TypeForChecking, int32_t>) { return 'I'; }
+        else if (std::is_same_v<TypeForChecking, int64_t>) { return 'I'; }
+        else if (std::is_same_v<TypeForChecking, char>) { return 'C'; }
+        else if (std::is_same_v<TypeForChecking, bool>) { return 'L'; }
+        throw std::runtime_error("BBSignalsFileWriter: unsupported element type.");
+    };
+
+    static uint32_t computePositionUnderInversedMajority(uint32_t newPos, const std::vector<int32_t> &originalDimensions) {
+        auto revD = originalDimensions;
+        std::reverse(revD.begin(), revD.end());
+        std::vector<uint32_t> coordinates(revD.size(), 0);
+        auto inputPos = newPos;
+        for (auto i = 1; i <= revD.size(); i++) {
+            auto numElementsPerDimension = std::accumulate(revD.cbegin(), revD.cend() - i, 1, std::multiplies<>());
+            coordinates[originalDimensions.size() - i] = inputPos / numElementsPerDimension;
+            inputPos %= numElementsPerDimension;
+        }
+        auto oldCoordinates = coordinates;
+        std::reverse(oldCoordinates.begin(), oldCoordinates.end());
+
+        auto oldPos = 0;
+        for (auto i = 0; i < coordinates.size(); i++) {
+            auto numElementsPerDimension = std::accumulate(originalDimensions.cbegin(), originalDimensions.cbegin() + i, 1, std::multiplies<>());
+            oldPos += numElementsPerDimension * oldCoordinates[i];
+        }
+
+        return oldPos;
+    };
 };
 
 
