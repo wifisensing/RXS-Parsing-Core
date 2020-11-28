@@ -166,7 +166,10 @@ bool ModularPicoScenesRxFrame::operator==(const ModularPicoScenesRxFrame &rhs) c
 }
 
 Uint8Vector ModularPicoScenesRxFrame::toBuffer() {
-    return Uint8Vector();
+    if (!rawBuffer.empty())
+        return rawBuffer;
+
+    Uint8Vector buffer;
 }
 
 std::ostream &operator<<(std::ostream &os, const ModularPicoScenesRxFrame &rxframe) {
