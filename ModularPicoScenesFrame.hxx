@@ -100,7 +100,6 @@ public:
     std::map<std::string, std::vector<uint8_t>> txUnknownSegmentMap;
     Uint8Vector mpdu;
     std::vector<Uint8Vector> nonPicoScenesMSDUContent;
-    Uint8Vector rawBuffer;
 
     static std::optional<ModularPicoScenesRxFrame> fromBuffer(const uint8_t *buffer, uint32_t bufferLength, bool interpolateCSI = false);
 
@@ -110,10 +109,10 @@ public:
 
     [[nodiscard]] std::string toString() const;
 
-protected:
-    bool isSynthesized = false;
-
     Uint8Vector toBuffer();
+
+private:
+    Uint8Vector rawBuffer;
 };
 
 std::ostream &operator<<(std::ostream &os, const ModularPicoScenesRxFrame &parameters);
