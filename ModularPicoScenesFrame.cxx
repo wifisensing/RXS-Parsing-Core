@@ -51,10 +51,10 @@ std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::fromBuffer(con
         return {};
     }
     pos += sizeof(ModularPicoScenesRxFrameHeader);
-    auto numRxSegments = rxFrameHeader.numRxSegments;
 
     auto frame = ModularPicoScenesRxFrame();
-    for (auto i = 0; i < numRxSegments; i++) {
+    frame.rxFrameHeader = rxFrameHeader;
+    for (auto i = 0; i < frame.rxFrameHeader.numRxSegments; i++) {
         auto[segmentName, segmentLength, versionId, offset] = AbstractPicoScenesFrameSegment::extractSegmentMetaData(buffer + pos, bufferLength - pos);
         if (boost::iequals(segmentName, "RxSBasic")) {
             frame.rxSBasicSegment.fromBuffer(buffer + pos, segmentLength + 4);
@@ -71,6 +71,7 @@ std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::fromBuffer(con
         pos += (segmentLength + 4);
     }
 
+    auto mpduPos = pos;
     frame.standardHeader = *((ieee80211_mac_frame_header *) (buffer + pos));
     pos += sizeof(ieee80211_mac_frame_header);
 
@@ -96,11 +97,11 @@ std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::fromBuffer(con
         uint32_t msduLength = bufferLength - pos;
         auto msduBuffer = std::shared_ptr<uint8_t>(new uint8_t[msduLength], std::default_delete<uint8_t[]>());
         frame.nonPicoScenesMSDUContent.resize(1);
-        std::copy(buffer + pos, buffer + bufferLength, frame.nonPicoScenesMSDUContent[0].begin());
+        std::copy(buffer + pos, buffer + bufferLength, std::back_inserter(frame.nonPicoScenesMSDUContent[0]));
     }
 
-    frame.rawBuffer.resize(bufferLength);
-    std::copy(buffer, buffer + pos, frame.rawBuffer.begin());
+    std::copy(buffer, buffer + pos, std::back_inserter(frame.rawBuffer));
+    std::copy(buffer + mpduPos, buffer + pos, std::back_inserter(frame.mpdu));
 
     return frame;
 }
@@ -158,14 +159,34 @@ Uint8Vector ModularPicoScenesRxFrame::toBuffer() {
     if (!rawBuffer.empty())
         return rawBuffer;
 
-    Uint8Vector buffer;
+    // Rx segments
+    Uint8Vector rxSegmentBuffer;
+    auto modularFrameHeader = ModularPicoScenesRxFrameHeader().initialize2Default();
+    modularFrameHeader.numRxSegments = 3;
     auto rxsBasicBuffer = rxSBasicSegment.toBuffer();
     auto rxsExtraInfoBuffer = rxExtraInfoSegment.toBuffer();
     auto csiBuffer = csiSegment.toBuffer();
-    auto legacyCSIBuffer = legacyCSISegment.toBuffer();
+    std::copy(rxsBasicBuffer.cbegin(), rxsBasicBuffer.cend(), std::back_inserter(rxSegmentBuffer));
+    std::copy(rxsExtraInfoBuffer.cbegin(), rxsExtraInfoBuffer.cend(), std::back_inserter(rxSegmentBuffer));
+    std::copy(csiBuffer.cbegin(), csiBuffer.cend(), std::back_inserter(rxSegmentBuffer));
+    if (legacyCSISegment) {
+        auto legacyCSIBuffer = legacyCSISegment->toBuffer();
+        std::copy(legacyCSIBuffer.cbegin(), legacyCSIBuffer.cend(), std::back_inserter(rxSegmentBuffer));
+        modularFrameHeader.numRxSegments++;
+    }
+    if (basebandSignalSegment) {
+        auto segmentBuffer = basebandSignalSegment->toBuffer();
+        std::copy(segmentBuffer.cbegin(), segmentBuffer.cend(), std::back_inserter(rxSegmentBuffer));
+        modularFrameHeader.numRxSegments++;
+    }
 
+    // Assembly the full buffer
+    Uint8Vector frameBuffer;
+    std::copy((uint8_t *) &modularFrameHeader, (uint8_t *) &modularFrameHeader + sizeof(ModularPicoScenesRxFrameHeader), std::back_inserter(frameBuffer));
+    std::copy(rxSegmentBuffer.cbegin(), rxSegmentBuffer.cend(), std::back_inserter(frameBuffer));
+    std::copy(mpdu.cbegin(), mpdu.cend(), std::back_inserter(frameBuffer));
 
-    return buffer;
+    return frameBuffer;
 }
 
 std::ostream &operator<<(std::ostream &os, const ModularPicoScenesRxFrame &rxframe) {

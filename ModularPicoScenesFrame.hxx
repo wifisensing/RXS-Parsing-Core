@@ -67,10 +67,16 @@ std::ostream &operator<<(std::ostream &os, const PicoScenesFrameHeader &frameHea
 
 class ModularPicoScenesRxFrameHeader {
 public:
-    uint32_t frameLength;
-    uint32_t magicWord;
-    uint16_t frameVersion;
-    uint8_t numRxSegments;
+    uint32_t frameLength = 0;
+    uint32_t magicWord = 0x20150315;
+    uint16_t frameVersion = 0x1U;
+    uint8_t numRxSegments = 0;
+
+    ModularPicoScenesRxFrameHeader &initialize2Default() {
+        magicWord = 0x20150315;
+        frameVersion = 0x1U;
+        return *this;
+    }
 
 } __attribute__ ((__packed__));
 
@@ -81,8 +87,8 @@ public:
     RxSBasicSegment rxSBasicSegment;
     ExtraInfoSegment rxExtraInfoSegment;
     CSISegment csiSegment;
-    CSISegment legacyCSISegment;
-    BasebandSignalSegment basebandSignalSegment;
+    std::optional<CSISegment> legacyCSISegment;
+    std::optional<BasebandSignalSegment> basebandSignalSegment;
 
     // Tx side header and segments
     ieee80211_mac_frame_header standardHeader;
@@ -92,6 +98,7 @@ public:
 
     std::map<std::string, std::vector<uint8_t>> rxUnknownSegmentMap;
     std::map<std::string, std::vector<uint8_t>> txUnknownSegmentMap;
+    Uint8Vector mpdu;
     std::vector<Uint8Vector> nonPicoScenesMSDUContent;
     Uint8Vector rawBuffer;
 
