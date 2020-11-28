@@ -12,7 +12,7 @@ namespace PicoScenesFrameTest {
         for (auto i = 0; i < 24; i++)
             a.emplace_back(i);
         SignalMatrix sm(a, std::vector<int16_t>{4, 3, 2}, SignalMatrixStorageMajority::ColumnMajor);
-        for(auto i = 0 ; i < a.size(); i ++) {
+        for (auto i = 0; i < a.size(); i++) {
             auto coordinates = sm.getCoordinate4Index(i);
             auto newPos = sm.getIndex4Coordinates(coordinates);
             EXPECT_EQ(i, newPos);
@@ -32,6 +32,7 @@ namespace PicoScenesFrameTest {
             a.emplace_back(i);
         SignalMatrix sm(a, std::vector<int16_t>{4, 3, 2}, SignalMatrixStorageMajority::ColumnMajor);
         auto smOut = sm.toBuffer();
+        auto resignal = SignalMatrix<int8_t>::fromBuffer(smOut);
         sm >> "test.bbsignals";
 
         SignalMatrix<int8_t> sm2;
