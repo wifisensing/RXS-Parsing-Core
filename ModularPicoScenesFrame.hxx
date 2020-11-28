@@ -65,9 +65,18 @@ struct PicoScenesFrameHeader {
 
 std::ostream &operator<<(std::ostream &os, const PicoScenesFrameHeader &frameHeader);
 
+class ModularPicoScenesRxFrameHeader {
+public:
+    uint32_t frameLength;
+    uint32_t magicWord;
+    uint16_t frameVersion;
+    uint8_t numRxSegments;
+
+} __attribute__ ((__packed__));
 
 class ModularPicoScenesRxFrame {
 public:
+    ModularPicoScenesRxFrameHeader rxFrameHeader;
     // Rx side segments
     RxSBasicSegment rxSBasicSegment;
     ExtraInfoSegment rxExtraInfoSegment;

@@ -44,25 +44,14 @@ std::ostream &operator<<(std::ostream &os, const PicoScenesFrameHeader &frameHea
 
 std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::fromBuffer(const uint8_t *buffer, uint32_t bufferLength, bool interpolateCSI) {
     uint32_t pos = 0;
-
-    // first 4 bytes should be the buffer length
-    if (*(uint32_t *) buffer + 4 == bufferLength) {
-        pos += 4;
-    } else {
+    auto rxFrameHeader = *(ModularPicoScenesRxFrameHeader *) buffer;
+    if (rxFrameHeader.frameLength + 4 != bufferLength ||
+        rxFrameHeader.magicWord != 0x20150315 ||
+        rxFrameHeader.frameVersion != 0x1U) {
         return {};
     }
-
-    // next 4 bytes should be the magic number
-    if (*(uint32_t *) (buffer + pos) != 0x20150315)
-        return {};
-    pos += 4;
-
-    // next 2 bytes is the frame version
-    uint16_t frameVersion = *(uint16_t *) (buffer + pos);
-    pos += 2;
-    if (frameVersion != 0x1U)
-        return {};
-    uint8_t numRxSegments = *(uint16_t *) (buffer + pos++);
+    pos += sizeof(ModularPicoScenesRxFrameHeader);
+    auto numRxSegments = rxFrameHeader.numRxSegments;
 
     auto frame = ModularPicoScenesRxFrame();
     for (auto i = 0; i < numRxSegments; i++) {
@@ -170,6 +159,13 @@ Uint8Vector ModularPicoScenesRxFrame::toBuffer() {
         return rawBuffer;
 
     Uint8Vector buffer;
+    auto rxsBasicBuffer = rxSBasicSegment.toBuffer();
+    auto rxsExtraInfoBuffer = rxExtraInfoSegment.toBuffer();
+    auto csiBuffer = csiSegment.toBuffer();
+    auto legacyCSIBuffer = legacyCSISegment.toBuffer();
+
+
+    return buffer;
 }
 
 std::ostream &operator<<(std::ostream &os, const ModularPicoScenesRxFrame &rxframe) {
