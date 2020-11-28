@@ -153,13 +153,18 @@ std::vector<uint8_t> CSI::toBuffer() {
     std::copy((uint8_t *) &dimensions.numRx, (uint8_t *) &dimensions.numRx + sizeof(&dimensions.numRx), std::back_inserter(buffer));
     std::copy((uint8_t *) &dimensions.numESS, (uint8_t *) &dimensions.numESS + sizeof(&dimensions.numESS), std::back_inserter(buffer));
     std::copy((uint8_t *) &antSel, (uint8_t *) &antSel + sizeof(&antSel), std::back_inserter(buffer));
-    for (const auto &subcarrierIndex: subcarrierIndices) {
-        std::copy((uint8_t *) &subcarrierIndex, (uint8_t *) &subcarrierIndex + sizeof(subcarrierIndex), std::back_inserter(buffer));
-    }
-    auto csiBuffer = CSIArray.toBuffer();
-    std::copy(csiBuffer.cbegin(), csiBuffer.cend(), std::back_inserter(buffer));
+    if (deviceType == PicoScenesDeviceType::IWL5300 || deviceType == PicoScenesDeviceType::QCA9300) {
+        std::copy(rawCSIData.cbegin(), rawCSIData.cend(), std::back_inserter(buffer));
+    } else if (deviceType == PicoScenesDeviceType::USRP) {
+        for (const auto &subcarrierIndex: subcarrierIndices) {
+            std::copy((uint8_t *) &subcarrierIndex, (uint8_t *) &subcarrierIndex + sizeof(subcarrierIndex), std::back_inserter(buffer));
+        }
+        auto csiBuffer = CSIArray.toBuffer();
+        std::copy(csiBuffer.cbegin(), csiBuffer.cend(), std::back_inserter(buffer));
 
-return buffer;
+    }
+
+    return buffer;
 }
 
 static auto v1Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> std::vector<CSI> {
