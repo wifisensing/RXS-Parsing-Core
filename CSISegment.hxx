@@ -126,6 +126,8 @@ public:
 
     void interpolateCSI();
 
+    std::vector<uint8_t> toBuffer();
+
     static CSI fromQCA9300(const uint8_t *buffer, uint32_t bufferLength, uint8_t numTx, uint8_t numRx, uint8_t numLTF, uint8_t numTones, ChannelBandwidthEnum cbw);
 
     static CSI fromIWL5300(const uint8_t *buffer, uint32_t bufferLength, uint8_t numTx, uint8_t numRx, uint8_t numLTF, uint8_t numTones, ChannelBandwidthEnum cbw, uint8_t ant_sel);
@@ -148,13 +150,15 @@ private:
 
 class CSISegment : public AbstractPicoScenesFrameSegment {
 public:
+    CSI csi;
+
     CSISegment();
 
     static CSISegment createByBuffer(const uint8_t *buffer, uint32_t bufferLength);
 
-    void fromBuffer(const uint8_t *buffer, uint32_t bufferLength) override;
+    std::vector<uint8_t> toBuffer() override;
 
-    CSI csi;
+    void fromBuffer(const uint8_t *buffer, uint32_t bufferLength) override;
 
     [[nodiscard]] std::string toString() const override;
 

@@ -9,3 +9,7 @@ BasebandSignalSegment::BasebandSignalSegment() : AbstractPicoScenesFrameSegment(
 void BasebandSignalSegment::fromBuffer(const uint8_t *buffer, uint32_t bufferLength) {
 
 }
+
+std::vector<uint8_t> BasebandSignalSegment::toBuffer() {
+    return std::vector<uint8_t>();
+}

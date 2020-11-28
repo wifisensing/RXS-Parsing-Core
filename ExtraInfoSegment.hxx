@@ -21,7 +21,7 @@ public:
 
     void fromBuffer(const uint8_t *buffer, uint32_t bufferLength) override;
 
-    std::vector<uint8_t> toBuffer();
+    std::vector<uint8_t> toBuffer() override;
 
     ExtraInfo extraInfo;
 private:

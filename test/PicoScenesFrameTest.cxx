@@ -27,18 +27,20 @@ namespace PicoScenesFrameTest {
     }
 
     TEST(SignalMatrix, T2) {
-        std::vector<int8_t> a;
+        std::vector<std::complex<int16_t>> a;
         for (auto i = 0; i < 24; i++)
-            a.emplace_back(i);
+            a.emplace_back(std::complex<int16_t>(i, i*10));
         SignalMatrix sm(a, std::vector<int16_t>{4, 3, 2}, SignalMatrixStorageMajority::ColumnMajor);
         auto smOut = sm.toBuffer();
-        auto resignal = SignalMatrix<int8_t>::fromBuffer(smOut);
+        auto resignal = SignalMatrix<std::complex<int16_t>>::fromBuffer(smOut);
+        auto resignal2 = SignalMatrix<std::complex<int16_t>>::fromBuffer(smOut);
+
         sm >> "test.bbsignals";
-
-        SignalMatrix<int8_t> sm2;
-        sm2 << "test1.bbsignals";
-
-        SignalMatrix<int8_t> sm3;
-        sm3 << "test1.bbsignals";
+//
+        SignalMatrix<std::complex<int16_t>> sm2;
+        sm2 << "test.bbsignals";
+//
+        SignalMatrix<std::complex<int8_t>> sm3;
+//        sm3 << "test.bbsignals";
     }
 }

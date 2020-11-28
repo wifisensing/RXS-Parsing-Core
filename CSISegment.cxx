@@ -143,6 +143,25 @@ void CSI::interpolateCSI() {
     dimensions.numTones = subcarrierIndices.size();
 }
 
+std::vector<uint8_t> CSI::toBuffer() {
+    auto buffer = std::vector<uint8_t>();
+    std::copy((uint8_t *) &deviceType, (uint8_t *) &deviceType + sizeof(deviceType), std::back_inserter(buffer));
+    std::copy((uint8_t *) &packetFormat, (uint8_t *) &packetFormat + sizeof(packetFormat), std::back_inserter(buffer));
+    std::copy((uint8_t *) &cbw, (uint8_t *) cbw + sizeof(cbw), std::back_inserter(buffer));
+    std::copy((uint8_t *) &dimensions.numTones, (uint8_t *) &dimensions.numTones + sizeof(dimensions.numTones), std::back_inserter(buffer));
+    std::copy((uint8_t *) &dimensions.numTx, (uint8_t *) &dimensions.numTx + sizeof(&dimensions.numTx), std::back_inserter(buffer));
+    std::copy((uint8_t *) &dimensions.numRx, (uint8_t *) &dimensions.numRx + sizeof(&dimensions.numRx), std::back_inserter(buffer));
+    std::copy((uint8_t *) &dimensions.numESS, (uint8_t *) &dimensions.numESS + sizeof(&dimensions.numESS), std::back_inserter(buffer));
+    std::copy((uint8_t *) &antSel, (uint8_t *) &antSel + sizeof(&antSel), std::back_inserter(buffer));
+    for (const auto &subcarrierIndex: subcarrierIndices) {
+        std::copy((uint8_t *) &subcarrierIndex, (uint8_t *) &subcarrierIndex + sizeof(subcarrierIndex), std::back_inserter(buffer));
+    }
+    auto csiBuffer = CSIArray.toBuffer();
+    std::copy(csiBuffer.cbegin(), csiBuffer.cend(), std::back_inserter(buffer));
+
+return buffer;
+}
+
 static auto v1Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> std::vector<CSI> {
     uint32_t pos = 0;
     uint8_t numCSIGroup = *(uint8_t *) (buffer + pos++);
@@ -221,6 +240,12 @@ std::string CSISegment::toString() const {
     temp.erase(temp.end() - 2, temp.end());
     temp.append("}");
     return temp;
+}
+
+std::vector<uint8_t> CSISegment::toBuffer() {
+    clearFieldCache();
+    addField("core", csi.toBuffer());
+    return AbstractPicoScenesFrameSegment::toBuffer(true);
 }
 
 std::ostream &operator<<(std::ostream &os, const CSISegment &csiSegment) {
