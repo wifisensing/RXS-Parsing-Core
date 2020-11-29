@@ -97,7 +97,7 @@ uint32_t AbstractPicoScenesFrameSegment::toBuffer(bool totalLengthIncluded, uint
     *(buffer + pos++) = segmentName.size();
     // copy the segment name
     std::memcpy(buffer + pos, segmentName.data(), segmentName.size());
-    pos += segmentName.size() + 1;
+    pos += segmentName.size();
     // version Id
     std::memcpy(buffer + pos, &segmentVersionId, sizeof(segmentVersionId));
     pos += sizeof(segmentVersionId);
