@@ -122,7 +122,7 @@ std::tuple<std::string, uint32_t, uint16_t, uint32_t> AbstractPicoScenesFrameSeg
     if (segmentLength > bufferLength)
         throw std::runtime_error("corrupted segment...");
     auto segNameLength = *(buffer + rxPos++);
-    auto segmentName = std::string((char *) (buffer + rxPos));
+    auto segmentName = std::string((char *) (buffer + rxPos), (char *) (buffer + rxPos + segNameLength));
     rxPos += segNameLength;
     uint16_t segmentVersionId = *(uint16_t *) (buffer + rxPos);
     rxPos += 2;

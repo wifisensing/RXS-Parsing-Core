@@ -206,7 +206,7 @@ static auto v1Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> CSI {
                 .dimensions = CSIDimension{.numTones = numTone, .numTx = numSTS, .numRx = numRx, .numESS = numESS},
                 .antSel = 0,
                 .subcarrierIndices = subcarrierIndices,
-                .CSIArray = SignalMatrix<std::complex<double>>::fromBuffer(buffer + pos, buffer + pos + pos + csiArrayLength, SignalMatrixStorageMajority::RowMajor)
+                .CSIArray = SignalMatrix<std::complex<double>>::fromBuffer(buffer + pos, buffer + pos + csiArrayLength, SignalMatrixStorageMajority::RowMajor)
         };
 
         return csi;
