@@ -150,22 +150,28 @@ private:
 
 class CSISegment : public AbstractPicoScenesFrameSegment {
 public:
-    CSI csi;
-
     CSISegment();
 
     static CSISegment createByBuffer(const uint8_t *buffer, uint32_t bufferLength);
 
-    std::vector<uint8_t> toBuffer() override;
+    std::vector<uint8_t> toBuffer() const override;
 
     void fromBuffer(const uint8_t *buffer, uint32_t bufferLength) override;
 
     [[nodiscard]] std::string toString() const override;
 
+    CSI & getCSI();
+
+    const CSI &getCSI() const;
+
+    void setCSI(const CSI &csi);
+
 private:
     static std::map<uint16_t, std::function<std::vector<CSI>(const uint8_t *, uint32_t)>> versionedSolutionMap;
 
     static std::map<uint16_t, std::function<std::vector<CSI>(const uint8_t *, uint32_t)>> initializeSolutionMap() noexcept;
+
+    CSI csi;
 };
 
 std::ostream &operator<<(std::ostream &os, const CSISegment &csiSegment);

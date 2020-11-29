@@ -63,7 +63,7 @@ std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::fromBuffer(con
         } else if (boost::iequals(segmentName, "CSI")) {
             frame.csiSegment.fromBuffer(buffer + pos, segmentLength + 4);
             if (interpolateCSI) {
-                frame.csiSegment.csi.interpolateCSI();
+                frame.csiSegment.getCSI().interpolateCSI();
             }
         } else {
             frame.rxUnknownSegmentMap.emplace(segmentName, Uint8Vector(buffer + pos, buffer + pos + segmentLength + 4));
@@ -86,7 +86,7 @@ std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::fromBuffer(con
             } else if (boost::iequals(segmentName, "CSI")) {
                 frame.txCSISegment = CSISegment::createByBuffer(buffer + pos, segmentLength + 4);
                 if (interpolateCSI) {
-                    frame.txCSISegment->csi.interpolateCSI();
+                    frame.txCSISegment->getCSI().interpolateCSI();
                 }
             } else {
                 frame.txUnknownSegmentMap.emplace(segmentName, Uint8Vector(buffer + pos, buffer + pos + segmentLength + 4));
@@ -109,8 +109,8 @@ std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::fromBuffer(con
 std::string ModularPicoScenesRxFrame::toString() const {
     std::stringstream ss;
     ss << "RxFrame:{";
-    ss << rxSBasicSegment.basic;
-    ss << ", " << rxExtraInfoSegment.extraInfo;
+    ss << rxSBasicSegment.getBasic();
+    ss << ", " << rxExtraInfoSegment.getExtraInfo();
     ss << ", Rx" << csiSegment;
     if (!rxUnknownSegmentMap.empty()) {
         std::stringstream segss;
@@ -128,7 +128,7 @@ std::string ModularPicoScenesRxFrame::toString() const {
     if (PicoScenesHeader)
         ss << ", " << *PicoScenesHeader;
     if (txExtraInfoSegment)
-        ss << ", " << txExtraInfoSegment->extraInfo;
+        ss << ", " << txExtraInfoSegment->getExtraInfo();
     if (txCSISegment)
         ss << ", Tx" << *txCSISegment;
 

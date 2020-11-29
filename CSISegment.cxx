@@ -247,10 +247,22 @@ std::string CSISegment::toString() const {
     return temp;
 }
 
-std::vector<uint8_t> CSISegment::toBuffer() {
+std::vector<uint8_t> CSISegment::toBuffer() const {
+    return AbstractPicoScenesFrameSegment::toBuffer(true);
+}
+
+const CSI &CSISegment::getCSI() const {
+    return csi;
+}
+
+CSI &CSISegment::getCSI() {
+    return csi;
+}
+
+void CSISegment::setCSI(const CSI &csiV) {
+    csi = csiV;
     clearFieldCache();
     addField("core", csi.toBuffer());
-    return AbstractPicoScenesFrameSegment::toBuffer(true);
 }
 
 std::ostream &operator<<(std::ostream &os, const CSISegment &csiSegment) {

@@ -44,7 +44,7 @@ public:
 
     uint32_t totalLength() const;
 
-    virtual std::vector<uint8_t> toBuffer() = 0;
+    virtual std::vector<uint8_t> toBuffer() const = 0;
 
     virtual std::vector<uint8_t> toBuffer(bool totalLengthIncluded) const;
 

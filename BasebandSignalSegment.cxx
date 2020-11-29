@@ -10,6 +10,6 @@ void BasebandSignalSegment::fromBuffer(const uint8_t *buffer, uint32_t bufferLen
 
 }
 
-std::vector<uint8_t> BasebandSignalSegment::toBuffer() {
+std::vector<uint8_t> BasebandSignalSegment::toBuffer() const {
     return std::vector<uint8_t>();
 }

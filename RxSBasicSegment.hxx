@@ -46,14 +46,18 @@ public:
 
     void fromBuffer(const uint8_t *buffer, uint32_t bufferLength) override;
 
-    std::vector<uint8_t> toBuffer() override;
+    std::vector<uint8_t> toBuffer() const override;
 
-    RxSBasic basic;
+    const RxSBasic &getBasic() const;
+
+    void setBasic(const RxSBasic &basic);
 
 private:
     static std::map<uint16_t, std::function<RxSBasic(const uint8_t *, uint32_t)>> versionedSolutionMap;
 
     static std::map<uint16_t, std::function<RxSBasic(const uint8_t *, uint32_t)>> initializeSolutionMap() noexcept;
+
+    RxSBasic basic;
 };
 
 #endif //PICOSCENES_PLATFORM_RXSBASICSEGMENT_HXX

@@ -124,7 +124,7 @@ std::map<uint16_t, std::function<RxSBasic(const uint8_t *, uint32_t)>> RxSBasicS
 std::string RxSBasic::toString() const {
     std::stringstream ss;
     ss << "RxS:[device=" + DeviceType2String((PicoScenesDeviceType(deviceType))) + ", freq=" + std::to_string(channelFreq) + ", CBW=" + std::to_string(cbw) + ", MCS=" + std::to_string(mcs) + ", numSTS=" + std::to_string(numSTS) + ", GI=" + GuardInterval2String(GuardIntervalEnum(guardInterval))
-          + ", UsrIdx/NUsr=(" + std::to_string(userIndex) +"/" + std::to_string(numUser) + ")" + ", timestamp=" + std::to_string(tstamp) + ", NF=" +
+          + ", UsrIdx/NUsr=(" + std::to_string(userIndex) + "/" + std::to_string(numUser) + ")" + ", timestamp=" + std::to_string(tstamp) + ", NF=" +
           std::to_string(noiseFloor) + ", RSS=" + std::to_string(rssi) + "]";
     return ss.str();
 }
@@ -158,10 +158,18 @@ RxSBasicSegment RxSBasicSegment::createByBuffer(const uint8_t *buffer, uint32_t 
     return rxSBasicSegment;
 }
 
-std::vector<uint8_t> RxSBasicSegment::toBuffer() {
+std::vector<uint8_t> RxSBasicSegment::toBuffer() const {
+    return AbstractPicoScenesFrameSegment::toBuffer(true);
+}
+
+const RxSBasic &RxSBasicSegment::getBasic() const {
+    return basic;
+}
+
+void RxSBasicSegment::setBasic(const RxSBasic &basicV) {
+    basic = basicV;
     clearFieldCache();
     addField("core", basic.toBuffer());
-    return AbstractPicoScenesFrameSegment::toBuffer(true);
 }
 
 std::ostream &operator<<(std::ostream &os, const RxSBasic &rxSBasic) {

@@ -21,13 +21,18 @@ public:
 
     void fromBuffer(const uint8_t *buffer, uint32_t bufferLength) override;
 
-    std::vector<uint8_t> toBuffer() override;
+    std::vector<uint8_t> toBuffer() const override;
 
-    ExtraInfo extraInfo;
+    const ExtraInfo &getExtraInfo() const;
+
+    void setExtraInfo(const ExtraInfo &extraInfo);
+
 private:
     static std::map<uint16_t, std::function<ExtraInfo(const uint8_t *, uint32_t)>> versionedSolutionMap;
 
     static std::map<uint16_t, std::function<ExtraInfo(const uint8_t *, uint32_t)>> initializeSolutionMap() noexcept;
+
+    ExtraInfo extraInfo;
 };
 
 

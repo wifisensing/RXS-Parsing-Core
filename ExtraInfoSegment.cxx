@@ -51,8 +51,16 @@ ExtraInfoSegment ExtraInfoSegment::createByBuffer(const uint8_t *buffer, uint32_
     return extraInfoSegment;
 }
 
-std::vector<uint8_t> ExtraInfoSegment::toBuffer() {
+std::vector<uint8_t> ExtraInfoSegment::toBuffer() const {
+    return AbstractPicoScenesFrameSegment::toBuffer(true);
+}
+
+const ExtraInfo &ExtraInfoSegment::getExtraInfo() const {
+    return extraInfo;
+}
+
+void ExtraInfoSegment::setExtraInfo(const ExtraInfo &extraInfo) {
+    ExtraInfoSegment::extraInfo = extraInfo;
     clearFieldCache();
     addField("core", extraInfo.toBuffer());
-    return AbstractPicoScenesFrameSegment::toBuffer(true);
 }
