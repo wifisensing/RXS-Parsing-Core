@@ -155,7 +155,7 @@ bool ModularPicoScenesRxFrame::operator==(const ModularPicoScenesRxFrame &rhs) c
     return false;
 }
 
-Uint8Vector ModularPicoScenesRxFrame::toBuffer() {
+Uint8Vector ModularPicoScenesRxFrame::toBuffer() const {
     if (!rawBuffer.empty())
         return rawBuffer;
 

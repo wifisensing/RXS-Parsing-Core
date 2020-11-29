@@ -109,7 +109,7 @@ public:
 
     [[nodiscard]] std::string toString() const;
 
-    Uint8Vector toBuffer();
+    Uint8Vector toBuffer() const;
 
 private:
     Uint8Vector rawBuffer;
