@@ -182,6 +182,7 @@ Uint8Vector ModularPicoScenesRxFrame::toBuffer() const {
 
     // Assembly the full buffer
     Uint8Vector frameBuffer;
+    modularFrameHeader.frameLength = sizeof(modularFrameHeader) + rxSegmentBuffer.size() + mpdu.size() - 4;
     std::copy((uint8_t *) &modularFrameHeader, (uint8_t *) &modularFrameHeader + sizeof(ModularPicoScenesRxFrameHeader), std::back_inserter(frameBuffer));
     std::copy(rxSegmentBuffer.cbegin(), rxSegmentBuffer.cend(), std::back_inserter(frameBuffer));
     std::copy(mpdu.cbegin(), mpdu.cend(), std::back_inserter(frameBuffer));

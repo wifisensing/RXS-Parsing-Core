@@ -167,9 +167,9 @@ public:
     void setCSI(const CSI &csi);
 
 private:
-    static std::map<uint16_t, std::function<std::vector<CSI>(const uint8_t *, uint32_t)>> versionedSolutionMap;
+    static std::map<uint16_t, std::function<CSI(const uint8_t *, uint32_t)>> versionedSolutionMap;
 
-    static std::map<uint16_t, std::function<std::vector<CSI>(const uint8_t *, uint32_t)>> initializeSolutionMap() noexcept;
+    static std::map<uint16_t, std::function<CSI(const uint8_t *, uint32_t)>> initializeSolutionMap() noexcept;
 
     CSI csi;
 };

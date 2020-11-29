@@ -118,6 +118,7 @@ std::map<uint16_t, std::function<RxSBasic(const uint8_t *, uint32_t)>> RxSBasicS
 std::map<uint16_t, std::function<RxSBasic(const uint8_t *, uint32_t)>> RxSBasicSegment::initializeSolutionMap() noexcept {
     std::map<uint16_t, std::function<RxSBasic(const uint8_t *, uint32_t)>> map;
     map.emplace(0x1U, v1Parser);
+    map.emplace(0x2U, v2Parser);
     return map;
 }
 

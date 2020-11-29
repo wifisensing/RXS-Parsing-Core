@@ -71,7 +71,7 @@ uint32_t AbstractPicoScenesFrameSegment::totalLength() const {
 }
 
 std::vector<uint8_t> AbstractPicoScenesFrameSegment::toBuffer(bool totalLengthIncluded) const {
-    auto result = std::vector<uint8_t>(totalLength());
+    auto result = std::vector<uint8_t>(totalLength() + (totalLengthIncluded ? 4 : 0));
     toBuffer(totalLengthIncluded, &result[0], result.size());
     return result;
 }
@@ -94,9 +94,9 @@ uint32_t AbstractPicoScenesFrameSegment::toBuffer(bool totalLengthIncluded, uint
     }
 
     // length of the segment name
-    *(buffer + pos++) = segmentName.size() + 1;
+    *(buffer + pos++) = segmentName.size();
     // copy the segment name
-    std::memcpy(buffer + pos, segmentName.data(), segmentName.size() + 1);
+    std::memcpy(buffer + pos, segmentName.data(), segmentName.size());
     pos += segmentName.size() + 1;
     // version Id
     std::memcpy(buffer + pos, &segmentVersionId, sizeof(segmentVersionId));
