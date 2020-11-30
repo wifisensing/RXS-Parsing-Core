@@ -83,8 +83,7 @@ CSI CSI::fromQCA9300(const uint8_t *buffer, uint32_t bufferLength, uint8_t numTx
             .antSel = 0,
             .CSIArray = parseQCA9300CSIData(buffer, numTones, numRx, numTones),
     };
-    csi.rawCSIData.resize(bufferLength);
-    std::copy(buffer, buffer + bufferLength, csi.rawCSIData.begin());
+    std::copy(buffer, buffer + bufferLength, std::back_inserter(csi.rawCSIData));
     if (csi.cbw == ChannelBandwidthEnum::CBW_20) {
         csi.subcarrierIndices = CSI::QCA9300SubcarrierIndices_CBW20;
     } else if (csi.cbw == ChannelBandwidthEnum::CBW_40) {
@@ -102,8 +101,7 @@ CSI CSI::fromIWL5300(const uint8_t *buffer, uint32_t bufferLength, uint8_t numTx
             .antSel = ant_sel,
             .CSIArray = parseIWL5300CSIData(buffer, numTones, numRx, ant_sel),
     };
-    csi.rawCSIData.resize(bufferLength);
-    std::copy(buffer, buffer + bufferLength, csi.rawCSIData.begin());
+    std::copy(buffer, buffer + bufferLength, std::back_inserter(csi.rawCSIData));
     if (csi.cbw == ChannelBandwidthEnum::CBW_20) {
         csi.subcarrierIndices = CSI::IWL5300SubcarrierIndices_CBW20;
     } else if (csi.cbw == ChannelBandwidthEnum::CBW_40)
@@ -134,16 +132,18 @@ void CSI::interpolateCSI() {
     CSIPreprocessor(CSI, subcarrierIndex_int16, newCSI, interpedIndex_int16);
 
     CSIArray.array.clear();
-    CSIArray.array.resize(newCSI.numel());
-    std::copy((std::complex<double> *) newCSI.data(), (std::complex<double> *) newCSI.data() + newCSI.numel(), CSIArray.array.begin());
+    std::copy((std::complex<double> *) newCSI.data(), (std::complex<double> *) newCSI.data() + newCSI.numel(), std::back_inserter(CSIArray.array));
 
     subcarrierIndices.clear();
-    subcarrierIndices.resize(interpedIndex_int16.numel());
-    std::copy((int16_t *) interpedIndex_int16.data(), (int16_t *) interpedIndex_int16.data() + interpedIndex_int16.numel(), subcarrierIndices.begin());
+    std::copy((int16_t *) interpedIndex_int16.data(), (int16_t *) interpedIndex_int16.data() + interpedIndex_int16.numel(), std::back_inserter(subcarrierIndices));
     dimensions.numTones = subcarrierIndices.size();
 }
 
 std::vector<uint8_t> CSI::toBuffer() {
+    if (!rawCSIData.empty()) {
+        return rawCSIData;
+    }
+
     auto buffer = std::vector<uint8_t>();
     std::copy((uint8_t *) &deviceType, (uint8_t *) &deviceType + sizeof(deviceType), std::back_inserter(buffer));
     std::copy((uint8_t *) &packetFormat, (uint8_t *) &packetFormat + sizeof(packetFormat), std::back_inserter(buffer));
@@ -174,7 +174,7 @@ std::vector<uint8_t> CSI::toBuffer() {
 static auto v1Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> CSI {
     uint32_t pos = 0;
 
-    PicoScenesDeviceType deviceType = (PicoScenesDeviceType) *(uint16_t *) (buffer + pos);
+    auto deviceType = (PicoScenesDeviceType) *(uint16_t *) (buffer + pos);
     pos += sizeof(PicoScenesDeviceType);
     PacketFormatEnum packetFormat = *(PacketFormatEnum *) (buffer + pos);
     pos += sizeof(PacketFormatEnum);
@@ -194,6 +194,7 @@ static auto v1Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> CSI {
     } else if (deviceType == PicoScenesDeviceType::IWL5300) {
         return CSI::fromIWL5300(buffer + pos, CSIBufferLength, numSTS, numRx, numSTS + numESS, numTone, cbw, antSelByte);
     } else if (deviceType == PicoScenesDeviceType::USRP) {
+        auto csiBufferStart = pos;
         std::vector<int16_t> subcarrierIndices;
         for (auto i = 0; i < numTone; i++) {
             subcarrierIndices.emplace_back(*(uint16_t *) (buffer + pos));
@@ -208,10 +209,11 @@ static auto v1Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> CSI {
                 .subcarrierIndices = subcarrierIndices,
                 .CSIArray = SignalMatrix<std::complex<double>>::fromBuffer(buffer + pos, buffer + pos + csiArrayLength, SignalMatrixStorageMajority::RowMajor)
         };
-
+        auto csiBufferEnd = pos + csiArrayLength;
+        std::copy(buffer + csiBufferStart, buffer + csiBufferEnd, std::back_inserter(csi.rawCSIData));
         return csi;
     }
-    
+
     throw std::runtime_error("ExtraInfoSegment cannot decode the given buffer.");
 };
 
@@ -236,8 +238,7 @@ void CSISegment::fromBuffer(const uint8_t *buffer, uint32_t bufferLength) {
     }
 
     csi = versionedSolutionMap.at(versionId)(buffer + offset, bufferLength - offset);
-    rawBuffer.resize(bufferLength);
-    std::copy(buffer, buffer + bufferLength, rawBuffer.begin());
+    std::copy(buffer, buffer + bufferLength, std::back_inserter(rawBuffer));
     this->segmentLength = bufferLength - 4;
     isSuccessfullyDecoded = true;
 }
