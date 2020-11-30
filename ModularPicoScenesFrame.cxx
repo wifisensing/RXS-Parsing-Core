@@ -65,6 +65,11 @@ std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::fromBuffer(con
             if (interpolateCSI) {
                 frame.csiSegment.getCSI().interpolateCSI();
             }
+        } else if (boost::iequals(segmentName, "LegacyCSI")) {
+            frame.legacyCSISegment = CSISegment::createByBuffer(buffer + pos, segmentLength + 4);
+            if (interpolateCSI) {
+                frame.legacyCSISegment->getCSI().interpolateCSI();
+            }
         } else {
             frame.rxUnknownSegmentMap.emplace(segmentName, Uint8Vector(buffer + pos, buffer + pos + segmentLength + 4));
         }

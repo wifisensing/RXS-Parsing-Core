@@ -60,7 +60,7 @@ uint32_t AbstractPicoScenesFrameSegment::totalLength() const {
         return rawBuffer.size() - 4;
 
     uint32_t length = 0;
-    length += segmentName.size() + 1;
+    length += segmentName.size();
     length += 1;
     length += sizeof(segmentVersionId);
     for (const auto &field: fieldMap) {

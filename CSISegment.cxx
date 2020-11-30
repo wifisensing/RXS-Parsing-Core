@@ -227,7 +227,7 @@ CSISegment::CSISegment() : AbstractPicoScenesFrameSegment("CSI", 0x1u) {
 
 void CSISegment::fromBuffer(const uint8_t *buffer, uint32_t bufferLength) {
     auto[segmentName, segmentLength, versionId, offset] = extractSegmentMetaData(buffer, bufferLength);
-    if (segmentName != "CSI")
+    if (segmentName != "CSI" && segmentName != "LegacyCSI")
         throw std::runtime_error("CSISegment cannot parse the segment named " + segmentName + ".");
     if (segmentLength + 4 > bufferLength)
         throw std::underflow_error("CSISegment cannot parse the segment with less than " + std::to_string(segmentLength + 4) + "B.");
