@@ -214,7 +214,7 @@ static auto v1Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> CSI {
         return csi;
     }
 
-    throw std::runtime_error("ExtraInfoSegment cannot decode the given buffer.");
+    throw std::runtime_error("CSISegment cannot decode the given buffer.");
 };
 
 std::map<uint16_t, std::function<CSI(const uint8_t *, uint32_t)>> CSISegment::versionedSolutionMap = initializeSolutionMap();
@@ -239,7 +239,7 @@ void CSISegment::fromBuffer(const uint8_t *buffer, uint32_t bufferLength) {
 
     csi = versionedSolutionMap.at(versionId)(buffer + offset, bufferLength - offset);
     std::copy(buffer, buffer + bufferLength, std::back_inserter(rawBuffer));
-    this->segmentLength = bufferLength - 4;
+    this->segmentLength = segmentLength;
     isSuccessfullyDecoded = true;
 }
 

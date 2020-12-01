@@ -39,9 +39,8 @@ void ExtraInfoSegment::fromBuffer(const uint8_t *buffer, uint32_t bufferLength) 
     }
 
     extraInfo = versionedSolutionMap.at(versionId)(buffer + offset, bufferLength - offset);
-    rawBuffer.resize(bufferLength);
-    std::copy(buffer, buffer + bufferLength, rawBuffer.begin());
-    this->segmentLength = bufferLength - 4;
+    std::copy(buffer, buffer + bufferLength, std::back_inserter(rawBuffer));
+    this->segmentLength = segmentLength;
     isSuccessfullyDecoded = true;
 }
 

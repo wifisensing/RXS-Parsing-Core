@@ -147,9 +147,8 @@ void RxSBasicSegment::fromBuffer(const uint8_t *buffer, uint32_t bufferLength) {
     }
 
     basic = versionedSolutionMap.at(versionId)(buffer + offset, bufferLength - offset);
-    rawBuffer.resize(bufferLength);
-    std::copy(buffer, buffer + bufferLength, rawBuffer.begin());
-    this->segmentLength = bufferLength - 4;
+    std::copy(buffer, buffer + bufferLength, std::back_inserter(rawBuffer));
+    this->segmentLength = segmentLength;
     isSuccessfullyDecoded = true;
 }
 
