@@ -167,12 +167,27 @@ public:
         } else {
             for (auto i = 0; i < numel; i++) {
                 auto newPos = computePositionUnderInversedMajority(i, signal.dimensions);
-                signal.array[newPos] = *(SignalType *) (&(*begin));;
+                signal.array[newPos] = *(SignalType *) (&(*begin));
                 begin += sizeof(SignalType);
             }
         }
 
         return signal;
+    }
+
+    double normalize(double normBaseValue = std::is_floating_point_v<SignalElementType> ? 1.0 : std::numeric_limits<SignalElementType>::max()) {
+        const auto &maxValue = std::max_element(array.cbegin(), array.cend(), [](const SignalType &left, const SignalType &right) {
+            return std::abs(left) < std::abs(right);
+        });
+        auto scaleFactor = normBaseValue / std::abs(*maxValue);
+
+
+        std::transform(array.cbegin(), array.cend(), array.begin(), [scaleFactor](const SignalType &signalVlaue) {
+            auto newValue = signalVlaue * scaleFactor;
+            return newValue;
+        });
+
+        return scaleFactor;
     }
 
     static SignalMatrix<SignalType> fromFile(const std::string &filePath) {

@@ -12,6 +12,7 @@ namespace PicoScenesFrameTest {
         for (auto i = 0; i < 24; i++)
             a.emplace_back(i);
         SignalMatrix sm(a, std::vector<int16_t>{4, 3, 2}, SignalMatrixStorageMajority::ColumnMajor);
+        sm.normalize();
         for (auto i = 0; i < a.size(); i++) {
             auto coordinates = sm.getCoordinate4Index(i);
             auto newPos = sm.getIndex4Coordinates(coordinates);
