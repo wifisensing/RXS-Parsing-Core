@@ -70,6 +70,8 @@ std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::fromBuffer(con
             if (interpolateCSI) {
                 frame.legacyCSISegment->getCSI().interpolateCSI();
             }
+        } else if (boost::iequals(segmentName, "BasebandSignal")) {
+            frame.basebandSignalSegment = BasebandSignalSegment::createByBuffer(buffer + pos, segmentLength + 4);
         } else {
             frame.rxUnknownSegmentMap.emplace(segmentName, Uint8Vector(buffer + pos, buffer + pos + segmentLength + 4));
         }
