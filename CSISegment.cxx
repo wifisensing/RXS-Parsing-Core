@@ -251,11 +251,11 @@ CSISegment CSISegment::createByBuffer(const uint8_t *buffer, uint32_t bufferLeng
 
 std::string CSISegment::toString() const {
     std::stringstream ss;
-    ss << "CSISegments={";
-    ss << "(device=" << csi.deviceType << ", format=" << csi.packetFormat << ", CBW=" << csi.cbw << ", dim(nTones,nSTS,nESS,nRx)=(" + std::to_string(csi.dimensions.numTones) + "," + std::to_string(csi.dimensions.numTx) + "," + std::to_string(csi.dimensions.numESS) + "," + std::to_string(csi.dimensions.numRx) + "), raw=" + std::to_string(csi.rawCSIData.size()) + "B)}";
+    ss << segmentName+":[";
+    ss << "(device=" << csi.deviceType << ", format=" << csi.packetFormat << ", CBW=" << csi.cbw << ", dim(nTones,nSTS,nESS,nRx)=(" + std::to_string(csi.dimensions.numTones) + "," + std::to_string(csi.dimensions.numTx) + "," + std::to_string(csi.dimensions.numESS) + "," + std::to_string(csi.dimensions.numRx) + "), raw=" + std::to_string(csi.rawCSIData.size()) + "B)]";
     auto temp = ss.str();
     temp.erase(temp.end() - 2, temp.end());
-    temp.append("}");
+    temp.append("]");
     return temp;
 }
 

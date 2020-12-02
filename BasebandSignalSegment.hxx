@@ -24,6 +24,8 @@ public:
 
     std::vector<uint8_t> toBuffer() const override;
 
+    std::string toString() const override;
+
 private:
     static std::map<uint16_t, std::function<SignalMatrix<std::complex<double>>(const uint8_t *, uint32_t)>> versionedSolutionMap;
 

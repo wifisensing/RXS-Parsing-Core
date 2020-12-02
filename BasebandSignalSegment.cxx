@@ -54,6 +54,14 @@ void BasebandSignalSegment::setSignalMatrix(const SignalMatrix<std::complex<doub
     addField("core", bbsignals.toBuffer());
 }
 
-std::ostream &operator<<(std::ostream &os, const BasebandSignalSegment &csiSegment) {
+std::string BasebandSignalSegment::toString() const {
+    std::stringstream ss;
+    ss << segmentName+":[" + std::to_string(bbsignals.dimensions[0]) + "x" + std::to_string(bbsignals.dimensions[1])  + "]";
+    auto temp = ss.str();
+    return temp;
+}
+
+std::ostream &operator<<(std::ostream &os, const BasebandSignalSegment &basebandSignalSegment) {
+    os << basebandSignalSegment.toString();
     return os;
 }
