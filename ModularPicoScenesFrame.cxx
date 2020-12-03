@@ -387,6 +387,10 @@ std::string ModularPicoScenesTxFrame::toString() const {
     return ss.str();
 }
 
+void ModularPicoScenesTxFrame::appendAMPDUFrames(const ModularPicoScenesTxFrame &frame) {
+    AMPDUFrames.emplace_back(frame);
+}
+
 std::ostream &operator<<(std::ostream &os, const ModularPicoScenesTxFrame &txframe) {
     os << txframe.toString();
     return os;

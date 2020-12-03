@@ -123,6 +123,9 @@ public:
     PicoScenesFrameHeader frameHeader;
     PicoScenesFrameTxParameters txParameters;
     std::vector<std::shared_ptr<AbstractPicoScenesFrameSegment>> segments;
+    std::vector<ModularPicoScenesTxFrame> AMPDUFrames;
+
+    void appendAMPDUFrames(const ModularPicoScenesTxFrame &frame);
 
     void addSegments(const std::shared_ptr<AbstractPicoScenesFrameSegment> &segment);
 
