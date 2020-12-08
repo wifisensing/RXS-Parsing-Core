@@ -16,7 +16,6 @@ public:
     ChannelBandwidthEnum cbw;
     GuardIntervalEnum guardInterval;
     std::vector<ChannelCodingEnum> coding;
-    bool useAMPDU4HTRate;
     double numExtraSounding;
     bool forceSounding;
     double idleTime;
@@ -36,7 +35,6 @@ public:
         cbw = ChannelBandwidthEnum::CBW_20;
         guardInterval = GuardIntervalEnum::GI_800;
         coding = std::vector<ChannelCodingEnum>(1, ChannelCodingEnum::BCC);
-        useAMPDU4HTRate = false;
         numExtraSounding = 0;
         forceSounding = true;
         idleTime = 20e-6;
