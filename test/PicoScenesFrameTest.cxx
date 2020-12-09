@@ -1,13 +1,15 @@
 //
 // Created by 蒋志平 on 2019/12/18.
 //
+#define BOOST_TEST_MODULE Suite_example
 
-#include "gtest/gtest.h"
+#include <boost/test/unit_test.hpp>
 #include "../SignalMatrix.hxx"
 
 
-namespace PicoScenesFrameTest {
-    TEST(SignalMatrix, T1) {
+BOOST_AUTO_TEST_SUITE(PicoScenesFrameTest)
+
+    BOOST_AUTO_TEST_CASE(T1) {
         std::vector<int8_t> a;
         for (auto i = 0; i < 24; i++)
             a.emplace_back(i);
@@ -16,7 +18,7 @@ namespace PicoScenesFrameTest {
         for (auto i = 0; i < a.size(); i++) {
             auto coordinates = sm.getCoordinate4Index(i);
             auto newPos = sm.getIndex4Coordinates(coordinates);
-            EXPECT_EQ(i, newPos);
+            BOOST_TEST(i == newPos);
         }
         auto index = sm.getCoordinate4Index(20);
         auto element50 = sm.valueAt({4, 2});
@@ -27,10 +29,10 @@ namespace PicoScenesFrameTest {
 
     }
 
-    TEST(SignalMatrix, T2) {
+    BOOST_AUTO_TEST_CASE(T2) {
         std::vector<std::complex<int16_t>> a;
         for (auto i = 0; i < 24; i++)
-            a.emplace_back(std::complex<int16_t>(i, i*10));
+            a.emplace_back(std::complex<int16_t>(i, i * 10));
         SignalMatrix sm(a, std::vector<int16_t>{4, 3, 2}, SignalMatrixStorageMajority::ColumnMajor);
         auto smOut = sm.toBuffer();
         auto resignal = SignalMatrix<std::complex<int16_t>>::fromBuffer(smOut);
@@ -44,4 +46,5 @@ namespace PicoScenesFrameTest {
         SignalMatrix<std::complex<int8_t>> sm3;
 //        sm3 << "test.bbsignals";
     }
-}
+
+BOOST_AUTO_TEST_SUITE_END()
