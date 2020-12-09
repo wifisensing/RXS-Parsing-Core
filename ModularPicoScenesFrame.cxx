@@ -208,20 +208,10 @@ std::ostream &operator<<(std::ostream &os, const ModularPicoScenesRxFrame &rxfra
 
 void ModularPicoScenesTxFrame::addSegments(const std::shared_ptr<AbstractPicoScenesFrameSegment> &segment) {
     auto currentSegmentName = segment->segmentName;
-    auto sameNamePosition = -1;
-    auto temp = sizeof(AbstractPicoScenesFrameSegment) - 16;
-    for(auto i = 0 ; i < segments.size() ; i++){
-        if(currentSegmentName == segments[i]->segmentName){
-            sameNamePosition = i;
-        }
-    }
-    if(-1 == sameNamePosition){
-        frameHeader.numSegments++;
-        segments.emplace_back(segment);
-    }else{
-        segments.erase(segments.begin() + sameNamePosition);
-        segments.insert(segments.begin() + sameNamePosition, segment);
-    }
+    std::remove_if(segments.begin(), segments.end(), [currentSegmentName](const auto &segment) {
+        return segment->segmentName == currentSegmentName;
+    });
+    segments.emplace_back(segment);
 }
 
 uint32_t ModularPicoScenesTxFrame::totalLength() const {
