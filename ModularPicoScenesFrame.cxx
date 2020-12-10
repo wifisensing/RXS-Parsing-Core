@@ -212,6 +212,7 @@ void ModularPicoScenesTxFrame::addSegments(const std::shared_ptr<AbstractPicoSce
         return segment->segmentName == currentSegmentName;
     });
     segments.emplace_back(segment);
+    frameHeader.numSegments = segments.size();
 }
 
 uint32_t ModularPicoScenesTxFrame::totalLength() const {
