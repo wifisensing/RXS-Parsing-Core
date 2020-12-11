@@ -88,17 +88,18 @@ void parseIWL5300CSIData(Iterator csi_matrix, const uint8_t *payload, int ntx, i
     uint32_t index = 0;
     uint8_t remainder;
 
+    auto position = 0;
     for (auto subcarrierIdx = 0; subcarrierIdx < 30; subcarrierIdx++) {
         index += 3;
         remainder = index % 8;
 
         for (auto nrxIdx = 0; nrxIdx < nrx; nrxIdx++) {
             for (auto ntxIdx = 0; ntxIdx < ntx; ntxIdx++) {
-                auto position = positionComputationWRTPermutation(nrx, 30, ntxIdx, nrxIdx, subcarrierIdx, antSelVector);
+//                auto position = positionComputationWRTPermutation(nrx, 30, ntxIdx, nrxIdx, subcarrierIdx, antSelVector);
                 char tmp1 = (payload[index / 8] >> remainder) | (payload[index / 8 + 1] << (8 - remainder));
                 char tmp2 = (payload[index / 8 + 1] >> remainder) | (payload[index / 8 + 2] << (8 - remainder));
                 csi_matrix[position].real((double) tmp1);
-                csi_matrix[position].imag((double) tmp2);
+                csi_matrix[position++].imag((double) tmp2);
                 index += 16;
             }
         }
@@ -160,7 +161,7 @@ public:
 
     [[nodiscard]] std::string toString() const override;
 
-    CSI & getCSI();
+    CSI &getCSI();
 
     const CSI &getCSI() const;
 
