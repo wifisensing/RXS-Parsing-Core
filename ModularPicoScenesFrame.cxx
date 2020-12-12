@@ -3,7 +3,6 @@
 //
 
 #include "ModularPicoScenesFrame.hxx"
-#include <boost/algorithm/string.hpp>
 #include <random>
 #include <iomanip>
 
@@ -56,21 +55,21 @@ std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::fromBuffer(con
     frame.rxFrameHeader = rxFrameHeader;
     for (auto i = 0; i < frame.rxFrameHeader.numRxSegments; i++) {
         auto[segmentName, segmentLength, versionId, offset] = AbstractPicoScenesFrameSegment::extractSegmentMetaData(buffer + pos, bufferLength - pos);
-        if (boost::iequals(segmentName, "RxSBasic")) {
+        if (segmentName == "RxSBasic") {
             frame.rxSBasicSegment.fromBuffer(buffer + pos, segmentLength + 4);
-        } else if (boost::iequals(segmentName, "ExtraInfo")) {
+        } else if (segmentName == "ExtraInfo") {
             frame.rxExtraInfoSegment.fromBuffer(buffer + pos, segmentLength + 4);
-        } else if (boost::iequals(segmentName, "CSI")) {
+        } else if (segmentName == "CSI") {
             frame.csiSegment.fromBuffer(buffer + pos, segmentLength + 4);
             if (interpolateCSI) {
                 frame.csiSegment.getCSI().interpolateCSI();
             }
-        } else if (boost::iequals(segmentName, "LegacyCSI")) {
+        } else if (segmentName == "LegacyCSI") {
             frame.legacyCSISegment = CSISegment::createByBuffer(buffer + pos, segmentLength + 4);
             if (interpolateCSI) {
                 frame.legacyCSISegment->getCSI().interpolateCSI();
             }
-        } else if (boost::iequals(segmentName, "BasebandSignal")) {
+        } else if (segmentName == "BasebandSignal") {
             frame.basebandSignalSegment = BasebandSignalSegment::createByBuffer(buffer + pos, segmentLength + 4);
         } else {
             frame.rxUnknownSegmentMap.emplace(segmentName, Uint8Vector(buffer + pos, buffer + pos + segmentLength + 4));
@@ -88,9 +87,9 @@ std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::fromBuffer(con
 
         for (auto i = 0; i < frame.PicoScenesHeader->numSegments; i++) {
             auto[segmentName, segmentLength, versionId, offset] = AbstractPicoScenesFrameSegment::extractSegmentMetaData(buffer + pos, bufferLength);
-            if (boost::iequals(segmentName, "ExtraInfo")) {
+            if (segmentName == "ExtraInfo") {
                 frame.txExtraInfoSegment = ExtraInfoSegment::createByBuffer(buffer + pos, segmentLength + 4);
-            } else if (boost::iequals(segmentName, "CSI")) {
+            } else if (segmentName == "CSI") {
                 frame.txCSISegment = CSISegment::createByBuffer(buffer + pos, segmentLength + 4);
                 if (interpolateCSI) {
                     frame.txCSISegment->getCSI().interpolateCSI();

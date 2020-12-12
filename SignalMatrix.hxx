@@ -121,7 +121,6 @@ public:
 
     template<typename Iterator, typename = std::enable_if_t<std::is_same_v<typename std::iterator_traits<Iterator>::value_type, uint8_t>>>
     static SignalMatrix<SignalType> fromBuffer(Iterator begin, Iterator end, SignalMatrixStorageMajority storageMajority) {
-        using value_type = typename std::iterator_traits<Iterator>::value_type;
         if (!verifyCompatibility(begin)) {
             throw std::runtime_error("Incompatible SignalMatrix format");
         }
