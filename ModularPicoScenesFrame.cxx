@@ -208,10 +208,6 @@ std::ostream &operator<<(std::ostream &os, const ModularPicoScenesRxFrame &rxfra
 }
 
 void ModularPicoScenesTxFrame::addSegments(const std::shared_ptr<AbstractPicoScenesFrameSegment> &segment) {
-    auto currentSegmentName = segment->segmentName;
-    std::erase_if(segments, [currentSegmentName](const auto &segment) {
-        return segment->segmentName == currentSegmentName;
-    });
     segments.emplace_back(segment);
     frameHeader.numSegments = segments.size();
 }
