@@ -11,6 +11,7 @@
 #include "RxSBasicSegment.hxx"
 #include "ExtraInfoSegment.hxx"
 #include "BasebandSignalSegment.hxx"
+#include "PayloadSegment.hxx"
 #include "PicoScenesFrameTxParameters.hxx"
 
 struct ieee80211_mac_frame_header_frame_control_field {

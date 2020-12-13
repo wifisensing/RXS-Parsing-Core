@@ -5,6 +5,7 @@
 
 #include <boost/test/unit_test.hpp>
 #include "../SignalMatrix.hxx"
+#
 
 
 BOOST_AUTO_TEST_SUITE(PicoScenesFrameTest)
@@ -45,6 +46,10 @@ BOOST_AUTO_TEST_SUITE(PicoScenesFrameTest)
 //
         SignalMatrix<std::complex<int8_t>> sm3;
 //        sm3 << "test.bbsignals";
+    }
+
+    BOOST_AUTO_TEST_CASE(PayloadSegment) {
+
     }
 
 BOOST_AUTO_TEST_SUITE_END()
