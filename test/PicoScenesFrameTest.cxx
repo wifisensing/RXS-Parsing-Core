@@ -57,6 +57,7 @@ BOOST_AUTO_TEST_SUITE(PicoScenesFrameTest)
         std::cout << segment << std::endl;
 
         PayloadSegment recovered = PayloadSegment::createByBuffer(buffer.data(), buffer.size());
+        std::cout << recovered << std::endl;
     }
 
 BOOST_AUTO_TEST_SUITE_END()

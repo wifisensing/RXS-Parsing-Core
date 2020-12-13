@@ -56,7 +56,8 @@ PayloadData PayloadData::fromBuffer(const uint8_t *buffer, uint32_t bufferLength
     auto descriptionLength = *(uint8_t *) (buffer + pos++);
     payload.payloadDescription = std::string((char *) (buffer + pos), (char *) (buffer + pos + descriptionLength));
     pos += descriptionLength;
-    auto payloadLength = *(uint32_t *) (buffer + pos++);
+    auto payloadLength = *(uint32_t *) (buffer + pos);
+    pos += 4;
     std::copy(buffer + pos, buffer + pos + payloadLength, std::back_inserter(payload.payloadData));
     return payload;
 }
