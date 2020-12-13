@@ -94,6 +94,8 @@ std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::fromBuffer(con
                 if (interpolateCSI) {
                     frame.txCSISegment->getCSI().interpolateCSI();
                 }
+            } else if (segmentName == "Payload") {
+                frame.payloadSegments.emplace_back(PayloadSegment::createByBuffer(buffer + pos, segmentLength + 4));
             } else {
                 frame.txUnknownSegmentMap.emplace(segmentName, Uint8Vector(buffer + pos, buffer + pos + segmentLength + 4));
             }

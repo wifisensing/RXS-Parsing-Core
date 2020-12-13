@@ -96,6 +96,7 @@ public:
     std::optional<PicoScenesFrameHeader> PicoScenesHeader;
     std::optional<ExtraInfoSegment> txExtraInfoSegment;
     std::optional<CSISegment> txCSISegment;
+    std::vector<PayloadSegment> payloadSegments;
 
     std::map<std::string, std::vector<uint8_t>> rxUnknownSegmentMap;
     std::map<std::string, std::vector<uint8_t>> txUnknownSegmentMap;

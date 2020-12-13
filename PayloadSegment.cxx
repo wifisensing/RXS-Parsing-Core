@@ -13,6 +13,9 @@ std::ostream &operator<<(std::ostream &os, const PayloadDataType &payloadDataTyp
         case PayloadDataType::SignalMatrix:
             os << "Signal";
             break;
+        case PayloadDataType::CSIData:
+            os << "CSI";
+            break;
         case PayloadDataType::SegmentData:
             os << "Segment";
             break;

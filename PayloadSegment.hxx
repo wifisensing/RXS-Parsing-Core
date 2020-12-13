@@ -13,6 +13,7 @@ enum class PayloadDataType : uint8_t {
     RawData = 0,
     SegmentData,
     SignalMatrix,
+    CSIData,
     FullMSDUPacket,
     FullPicoScenesPacket,
 };
