@@ -37,6 +37,8 @@ class PayloadSegment : public AbstractPicoScenesFrameSegment {
 public:
     PayloadSegment();
 
+    PayloadSegment(const std::string &description, const std::vector<uint8_t> &payload, std::optional<PayloadDataType> payloadType = std::nullopt);
+
     std::vector<uint8_t> toBuffer() const override;
 
     static PayloadSegment createByBuffer(const uint8_t *buffer, uint32_t bufferLength);

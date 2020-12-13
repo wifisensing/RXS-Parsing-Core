@@ -74,6 +74,13 @@ std::map<uint16_t, std::function<PayloadData(const uint8_t *, uint32_t)>> Payloa
 
 PayloadSegment::PayloadSegment() : AbstractPicoScenesFrameSegment("Payload", 0x1U) {}
 
+PayloadSegment::PayloadSegment(const std::string &description, const std::vector<uint8_t> &payload, std::optional<PayloadDataType> payloadType) : PayloadSegment() {
+    PayloadData payloadData{.dataType = payloadType.value_or(PayloadDataType::RawData),
+            .payloadDescription = description,
+            .payloadData = payload};
+    setPayload(payloadData);
+}
+
 std::vector<uint8_t> PayloadSegment::toBuffer() const {
     return AbstractPicoScenesFrameSegment::toBuffer(true);
 }
