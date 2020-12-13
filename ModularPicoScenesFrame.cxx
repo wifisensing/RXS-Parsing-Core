@@ -143,7 +143,17 @@ std::string ModularPicoScenesRxFrame::toString() const {
         ss << ", " << txExtraInfoSegment->getExtraInfo();
     if (txCSISegment)
         ss << ", Tx" << *txCSISegment;
-
+    if (!payloadSegments.empty()) {
+        std::stringstream segss;
+        segss << "Payloads:(";
+        for (const auto &segment: payloadSegments) {
+            segss << segment << ", ";
+        }
+        auto temp = segss.str();
+        temp.erase(temp.end() - 2, temp.end());
+        temp.append(")");
+        ss << ", " << temp;
+    }
     if (!txUnknownSegmentMap.empty()) {
         std::stringstream segss;
         segss << "TxSegments:(";
