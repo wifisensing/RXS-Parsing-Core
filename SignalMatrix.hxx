@@ -49,7 +49,7 @@ public:
             dimensions.emplace_back(*it);
         }
 
-        auto sum = std::accumulate(dimensions.cbegin(), dimensions.cend(), 1, std::multiplies<>());
+        uint64_t sum = std::accumulate(dimensions.cbegin(), dimensions.cend(), 1, std::multiplies<>());
         if (sum != array.size())
             throw std::invalid_argument("SignalMatrix creation failed due to the inconsistent dimensions.");
     }
@@ -105,7 +105,7 @@ public:
                 std::copy((uint8_t *) &value, (uint8_t *) &value + sizeof(SignalType), std::back_inserter(vout));
             }
         } else {
-            for (auto i = 0; i < array.size(); i++) {
+            for (uint64_t i = 0; i < array.size(); i++) {
                 auto pos = computePositionUnderInversedMajority(i, dimensions);
                 std::copy((uint8_t *) &array[pos], ((uint8_t *) &array[pos]) + sizeof(SignalType), std::back_inserter(vout));
             }
@@ -153,7 +153,7 @@ public:
         signal.majority = (storageMajority == SignalMatrixStorageMajority::UndefinedMajority ? inputMajority : storageMajority);
 
         auto numel = std::accumulate(signal.dimensions.cbegin(), signal.dimensions.cend(), 1, std::multiplies<>());
-        auto distanceIterator = std::distance(begin, end);
+        auto distanceIterator = (uint64_t)std::distance(begin, end);
         if (distanceIterator != numel * sizeof(SignalType))
             throw std::runtime_error("Inconsistent SignalMatrix data buffer");
         signal.array.resize(numel);
@@ -279,7 +279,7 @@ private:
         std::reverse(revD.begin(), revD.end());
         std::vector<uint32_t> coordinates(revD.size(), 0);
         auto inputPos = newPos;
-        for (auto i = 1; i <= revD.size(); i++) {
+        for (uint64_t i = 1; i <= revD.size(); i++) {
             auto numElementsPerDimension = std::accumulate(revD.cbegin(), revD.cend() - i, 1, std::multiplies<>());
             coordinates[originalDimensions.size() - i] = inputPos / numElementsPerDimension;
             inputPos %= numElementsPerDimension;
@@ -288,7 +288,7 @@ private:
         std::reverse(oldCoordinates.begin(), oldCoordinates.end());
 
         auto oldPos = 0;
-        for (auto i = 0; i < coordinates.size(); i++) {
+        for (uint64_t i = 0; i < coordinates.size(); i++) {
             auto numElementsPerDimension = std::accumulate(originalDimensions.cbegin(), originalDimensions.cbegin() + i, 1, std::multiplies<>());
             oldPos += numElementsPerDimension * oldCoordinates[i];
         }
