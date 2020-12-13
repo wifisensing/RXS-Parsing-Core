@@ -5,7 +5,7 @@
 
 #include <boost/test/unit_test.hpp>
 #include "../SignalMatrix.hxx"
-#
+#include "../PayloadSegment.hxx"
 
 
 BOOST_AUTO_TEST_SUITE(PicoScenesFrameTest)
@@ -48,8 +48,15 @@ BOOST_AUTO_TEST_SUITE(PicoScenesFrameTest)
 //        sm3 << "test.bbsignals";
     }
 
-    BOOST_AUTO_TEST_CASE(PayloadSegment) {
+    BOOST_AUTO_TEST_CASE(PayloadSegmentTest) {
+        PayloadData data{.dataType = PayloadDataType::RawData, .payloadDescription = "description", .payloadData = std::vector<uint8_t>(50, 10)};
 
+        PayloadSegment segment;
+        segment.setPayload(data);
+        auto buffer = segment.toBuffer();
+        std::cout << segment << std::endl;
+
+        PayloadSegment recovered = PayloadSegment::createByBuffer(buffer.data(), buffer.size());
     }
 
 BOOST_AUTO_TEST_SUITE_END()

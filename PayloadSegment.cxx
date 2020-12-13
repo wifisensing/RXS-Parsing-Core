@@ -9,16 +9,22 @@ std::ostream &operator<<(std::ostream &os, const PayloadDataType &payloadDataTyp
     switch (payloadDataType) {
         case PayloadDataType::RawData:
             os << "RawData";
+            break;
+        case PayloadDataType::SignalMatrix:
+            os << "Signal";
+            break;
         case PayloadDataType::SegmentData:
             os << "Segment";
+            break;
         case PayloadDataType::FullMSDUPacket:
             os << "MSDU";
+            break;
         case PayloadDataType::FullPicoScenesPacket:
             os << "FullPicoScenes";
+            break;
     }
     return os;
 }
-
 
 std::vector<uint8_t> PayloadData::toBuffer() {
     auto buffer = std::vector<uint8_t>();
@@ -56,6 +62,8 @@ static auto v1Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> Paylo
     return PayloadData::fromBuffer(buffer, bufferLength);
 };
 
+std::map<uint16_t, std::function<PayloadData(const uint8_t *, uint32_t)>> PayloadSegment::versionedSolutionMap = initializeSolutionMap();
+
 std::map<uint16_t, std::function<PayloadData(const uint8_t *, uint32_t)>> PayloadSegment::initializeSolutionMap() noexcept {
     return std::map<uint16_t, std::function<PayloadData(const uint8_t *, uint32_t)>>{{0x1U, v1Parser}};
 }
@@ -63,7 +71,7 @@ std::map<uint16_t, std::function<PayloadData(const uint8_t *, uint32_t)>> Payloa
 PayloadSegment::PayloadSegment() : AbstractPicoScenesFrameSegment("Payload", 0x1U) {}
 
 std::vector<uint8_t> PayloadSegment::toBuffer() const {
-    return std::vector<uint8_t>();
+    return AbstractPicoScenesFrameSegment::toBuffer(true);
 }
 
 void PayloadSegment::fromBuffer(const uint8_t *buffer, uint32_t bufferLength) {
@@ -101,9 +109,15 @@ void PayloadSegment::setPayload(const PayloadData &payloadV) {
 std::string PayloadSegment::toString() const {
     std::stringstream ss;
     ss << segmentName + ":[";
-    ss << "(Type=" << payload.dataType << ", Description=" << payload.payloadDescription << ", length=" << std::to_string(payload.payloadData.size()) + "B)]";
+    ss << "Type=" << payload.dataType << ", Description=" << payload.payloadDescription << ", length=" << std::to_string(payload.payloadData.size()) + "B]";
     auto temp = ss.str();
     temp.erase(temp.end() - 2, temp.end());
     temp.append("]");
     return temp;
 }
+
+std::ostream &operator<<(std::ostream &os, const PayloadSegment &payloadSegment) {
+    os << payloadSegment.toString();
+    return os;
+}
+

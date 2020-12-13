@@ -12,6 +12,7 @@
 enum class PayloadDataType : uint8_t {
     RawData = 0,
     SegmentData,
+    SignalMatrix,
     FullMSDUPacket,
     FullPicoScenesPacket,
 };
@@ -55,6 +56,8 @@ private:
 
     PayloadData payload;
 };
+
+std::ostream &operator<<(std::ostream &os, const PayloadSegment &payloadSegment);
 
 
 #endif //PICOSCENES_PLATFORM_PAYLOADSEGMENT_HXX
