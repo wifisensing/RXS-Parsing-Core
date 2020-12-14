@@ -30,6 +30,8 @@ public:
     std::vector<uint8_t> toBuffer();
 
     static PayloadData fromBuffer(const uint8_t *buffer, uint32_t bufferLength);
+
+    static PayloadData fromBuffer(const std::vector<uint8_t> &buffer);
 };
 
 class PayloadSegment : public AbstractPicoScenesFrameSegment {

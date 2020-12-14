@@ -62,6 +62,10 @@ PayloadData PayloadData::fromBuffer(const uint8_t *buffer, uint32_t bufferLength
     return payload;
 }
 
+PayloadData PayloadData::fromBuffer(const std::vector<uint8_t> &buffer) {
+    return fromBuffer(buffer.data(), buffer.size());
+}
+
 static auto v1Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> PayloadData {
     return PayloadData::fromBuffer(buffer, bufferLength);
 };

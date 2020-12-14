@@ -89,11 +89,6 @@ std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::fromBuffer(con
             auto[segmentName, segmentLength, versionId, offset] = AbstractPicoScenesFrameSegment::extractSegmentMetaData(buffer + pos, bufferLength);
             if (segmentName == "ExtraInfo") {
                 frame.txExtraInfoSegment = ExtraInfoSegment::createByBuffer(buffer + pos, segmentLength + 4);
-            } else if (segmentName == "CSI") {
-                frame.txCSISegment = CSISegment::createByBuffer(buffer + pos, segmentLength + 4);
-                if (interpolateCSI) {
-                    frame.txCSISegment->getCSI().interpolateCSI();
-                }
             } else if (segmentName == "Payload") {
                 frame.payloadSegments.emplace_back(PayloadSegment::createByBuffer(buffer + pos, segmentLength + 4));
             } else {
@@ -141,8 +136,6 @@ std::string ModularPicoScenesRxFrame::toString() const {
         ss << ", " << *PicoScenesHeader;
     if (txExtraInfoSegment)
         ss << ", " << txExtraInfoSegment->getExtraInfo();
-    if (txCSISegment)
-        ss << ", Tx" << *txCSISegment;
     if (!payloadSegments.empty()) {
         std::stringstream segss;
         segss << "Payloads:(";
