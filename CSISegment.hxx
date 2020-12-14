@@ -123,6 +123,9 @@ public:
     uint8_t antSel;
     std::vector<int16_t> subcarrierIndices;
     SignalMatrix<std::complex<double>> CSIArray;
+    SignalMatrix<double> magnitudeArray;
+    SignalMatrix<double> phaseArray;
+
     Uint8Vector rawCSIData;
 
     void interpolateCSI();

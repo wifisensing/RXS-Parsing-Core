@@ -113,6 +113,8 @@ CSI CSI::fromIWL5300(const uint8_t *buffer, uint32_t bufferLength, uint8_t numTx
 void CSI::interpolateCSI() {
     coder::array<creal_T, 2U> CSI;
     coder::array<creal_T, 2U> newCSI;
+    coder::array<double, 2U> newMag;
+    coder::array<double, 2U> newPhase;
     coder::array<short, 1U> interpedIndex_int16;
     coder::array<short, 1U> subcarrierIndex_int16;
 
@@ -129,10 +131,16 @@ void CSI::interpolateCSI() {
         subcarrierIndex_int16[scIndex] = subcarrierIndices[scIndex];
     }
 
-    CSIPreprocessor(CSI, subcarrierIndex_int16, newCSI, interpedIndex_int16);
+    CSIPreprocessor(CSI, subcarrierIndex_int16, newCSI, newMag, newPhase, interpedIndex_int16);
 
     CSIArray.array.clear();
     std::copy((std::complex<double> *) newCSI.data(), (std::complex<double> *) newCSI.data() + newCSI.numel(), std::back_inserter(CSIArray.array));
+
+    magnitudeArray.array.clear();
+    std::copy((double *) newMag.data(), (double *) newMag.data() + newMag.numel(), std::back_inserter(magnitudeArray.array));
+
+    phaseArray.array.clear();
+    std::copy((double *) newPhase.data(), (double *) newPhase.data() + newPhase.numel(), std::back_inserter(phaseArray.array));
 
     subcarrierIndices.clear();
     std::copy((int16_t *) interpedIndex_int16.data(), (int16_t *) interpedIndex_int16.data() + interpedIndex_int16.numel(), std::back_inserter(subcarrierIndices));

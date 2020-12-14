@@ -1,12 +1,3 @@
-//
-// Academic License - for use in teaching, academic research, and meeting
-// course requirements at degree granting institutions only.  Not for
-// government, commercial, or other organizational use.
-// File: rt_nonfinite.h
-//
-// MATLAB Coder version            : 5.1
-// C/C++ source code generated on  : 18-Nov-2020 19:05:56
-//
 #ifndef RT_NONFINITE_H
 #define RT_NONFINITE_H
 
@@ -18,12 +9,12 @@ extern "C" {
 
 #endif
 
-  extern real_T rtInf;
-  extern real_T rtMinusInf;
-  extern real_T rtNaN;
-  extern real32_T rtInfF;
-  extern real32_T rtMinusInfF;
-  extern real32_T rtNaNF;
+    extern real_T rtInf;
+    extern real_T rtMinusInf;
+    extern real_T rtNaN;
+    extern real32_T rtInfF;
+    extern real32_T rtMinusInfF;
+    extern real32_T rtNaNF;
 
 #ifdef __cplusplus
 

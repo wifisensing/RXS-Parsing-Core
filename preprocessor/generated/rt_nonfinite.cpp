@@ -1,14 +1,4 @@
 //
-// Academic License - for use in teaching, academic research, and meeting
-// course requirements at degree granting institutions only.  Not for
-// government, commercial, or other organizational use.
-// File: rt_nonfinite.cpp
-//
-// MATLAB Coder version            : 5.1
-// C/C++ source code generated on  : 18-Nov-2020 19:05:56
-//
-
-//
 //  Abstract:
 //       MATLAB for code generation function to initialize non-finites,
 //       (Inf, NaN and -Inf).
