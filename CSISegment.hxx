@@ -150,8 +150,13 @@ public:
 
 private:
     static std::vector<int16_t> QCA9300SubcarrierIndices_CBW20;
+    static std::vector<int16_t> QCA9300SubcarrierIndices_CBW20_HT40MINUS;
+    static std::vector<int16_t> QCA9300SubcarrierIndices_CBW20_HT40PLUS;
     static std::vector<int16_t> QCA9300SubcarrierIndices_CBW40;
+
     static std::vector<int16_t> IWL5300SubcarrierIndices_CBW20;
+    static std::vector<int16_t> IWL5300SubcarrierIndices_CBW20_HT40MINUS;
+    static std::vector<int16_t> IWL5300SubcarrierIndices_CBW20_HT40PLUS;
     static std::vector<int16_t> IWL5300SubcarrierIndices_CBW40;
 };
 
