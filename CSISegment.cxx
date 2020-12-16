@@ -213,9 +213,17 @@ static auto v1Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> CSI {
     pos += 4;
 
     if (deviceType == PicoScenesDeviceType::QCA9300) {
-        return CSI::fromQCA9300(buffer + pos, CSIBufferLength, numSTS, numRx, numSTS + numESS, numTone, cbw);
+        auto csi =  CSI::fromQCA9300(buffer + pos, CSIBufferLength, numSTS, numRx, numSTS + numESS, numTone, cbw);
+        csi.carrierFreq = carrierFreq;
+        csi.samplingRate = samplingRate;
+        csi.subcarrierBandwidth = subcarrierBandwidth;
+        return csi;
     } else if (deviceType == PicoScenesDeviceType::IWL5300) {
-        return CSI::fromIWL5300(buffer + pos, CSIBufferLength, numSTS, numRx, numSTS + numESS, numTone, cbw, antSelByte);
+        auto csi =  CSI::fromIWL5300(buffer + pos, CSIBufferLength, numSTS, numRx, numSTS + numESS, numTone, cbw, antSelByte);
+        csi.carrierFreq = carrierFreq;
+        csi.samplingRate = samplingRate;
+        csi.subcarrierBandwidth = subcarrierBandwidth;
+        return csi;
     } else if (deviceType == PicoScenesDeviceType::USRP) {
         auto csiBufferStart = pos;
         std::vector<int16_t> subcarrierIndices;
