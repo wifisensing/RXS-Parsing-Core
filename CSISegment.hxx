@@ -119,6 +119,9 @@ public:
     PicoScenesDeviceType deviceType;
     PacketFormatEnum packetFormat;
     ChannelBandwidthEnum cbw;
+    uint64_t carrierFreq;
+    uint64_t samplingRate;
+    uint32_t subcarrierBandwidth;
     CSIDimension dimensions;
     uint8_t antSel;
     std::vector<int16_t> subcarrierIndices;
@@ -158,7 +161,7 @@ public:
 
     static CSISegment createByBuffer(const uint8_t *buffer, uint32_t bufferLength);
 
-    std::vector<uint8_t> toBuffer() const override;
+    [[nodiscard]] std::vector<uint8_t> toBuffer() const override;
 
     void fromBuffer(const uint8_t *buffer, uint32_t bufferLength) override;
 
@@ -166,7 +169,7 @@ public:
 
     CSI &getCSI();
 
-    const CSI &getCSI() const;
+    [[nodiscard]] const CSI &getCSI() const;
 
     void setCSI(const CSI &csi);
 

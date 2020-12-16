@@ -13,7 +13,9 @@
 //    uint16_t deviceType;
 //    uint8_t packetFormat;
 //    uint16_t cbw;
-//    uint8_t numCSIGroup;
+//uint64_t carrierFreq;
+//uint64_t samplingRate;
+//uint32_t subcarrierBandwidth;
 //    uint16_t numTone;
 //    uint8_t numSTS;        /* number of Spatial-time Stream */
 //    uint8_t numESS;        /* number of Extra Spatial-time Stream */
@@ -26,7 +28,9 @@
 //    uint16_t deviceType;
 //    uint8_t packetFormat;
 //    uint16_t cbw;
-//    uint8_t numCSIGroup;
+//uint64_t carrierFreq;
+//uint64_t samplingRate;
+//uint32_t subcarrierBandwidth;
 //    uint16_t numTone;
 //    uint8_t numSTS;        /* number of Spatial-time Stream */
 //    uint8_t numESS;        /* number of Extra Spatial-time Stream */
@@ -57,6 +61,8 @@ std::vector<int16_t> CSI::QCA9300SubcarrierIndices_CBW20 = []() noexcept -> std:
 
     return indices;
 }();
+
+//TODO HT20 subcarrierIndices in 40+/- modes
 
 std::vector<int16_t> CSI::QCA9300SubcarrierIndices_CBW40 = []() noexcept -> std::vector<int16_t> {
     auto indices = std::vector<int16_t>();
@@ -156,6 +162,9 @@ std::vector<uint8_t> CSI::toBuffer() {
     std::copy((uint8_t *) &deviceType, (uint8_t *) &deviceType + sizeof(deviceType), std::back_inserter(buffer));
     std::copy((uint8_t *) &packetFormat, (uint8_t *) &packetFormat + sizeof(packetFormat), std::back_inserter(buffer));
     std::copy((uint8_t *) &cbw, (uint8_t *) &cbw + sizeof(cbw), std::back_inserter(buffer));
+    std::copy((uint8_t *) &carrierFreq, (uint8_t *) &carrierFreq + sizeof(carrierFreq), std::back_inserter(buffer));
+    std::copy((uint8_t *) &samplingRate, (uint8_t *) &samplingRate + sizeof(samplingRate), std::back_inserter(buffer));
+    std::copy((uint8_t *) &subcarrierBandwidth, (uint8_t *) &subcarrierBandwidth + sizeof(subcarrierBandwidth), std::back_inserter(buffer));
     std::copy((uint8_t *) &dimensions.numTones, (uint8_t *) &dimensions.numTones + sizeof(dimensions.numTones), std::back_inserter(buffer));
     std::copy((uint8_t *) &dimensions.numTx, (uint8_t *) &dimensions.numTx + sizeof(dimensions.numTx), std::back_inserter(buffer));
     std::copy((uint8_t *) &dimensions.numRx, (uint8_t *) &dimensions.numRx + sizeof(dimensions.numRx), std::back_inserter(buffer));
@@ -188,6 +197,12 @@ static auto v1Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> CSI {
     pos += sizeof(PacketFormatEnum);
     ChannelBandwidthEnum cbw = *(ChannelBandwidthEnum *) (buffer + pos);
     pos += sizeof(ChannelBandwidthEnum);
+    auto carrierFreq = *(uint64_t *) (buffer + pos);
+    pos += sizeof(uint64_t);
+    auto samplingRate = *(uint64_t *) (buffer + pos);
+    pos += sizeof(uint64_t);
+    auto subcarrierBandwidth = *(uint32_t *) (buffer + pos);
+    pos += sizeof(uint32_t);
     uint16_t numTone = *(uint16_t *) (buffer + pos);
     pos += 2;
     uint8_t numSTS = *(uint8_t *) (buffer + pos++);
@@ -212,6 +227,9 @@ static auto v1Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> CSI {
         CSI csi{.deviceType = PicoScenesDeviceType::USRP,
                 .packetFormat = packetFormat,
                 .cbw = cbw,
+                .carrierFreq = carrierFreq,
+                .samplingRate = samplingRate,
+                .subcarrierBandwidth = subcarrierBandwidth,
                 .dimensions = CSIDimension{.numTones = numTone, .numTx = numSTS, .numRx = numRx, .numESS = numESS},
                 .antSel = 0,
                 .subcarrierIndices = subcarrierIndices,
