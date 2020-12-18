@@ -44,6 +44,7 @@ public:
         maxPowerScaleTo1 = true;
         vhtGroupId = 0;
         heAllocationIndex = std::vector<uint8_t>(1, 0);
+        heLTFType = 4;
     }
 
     std::string toString() const;
