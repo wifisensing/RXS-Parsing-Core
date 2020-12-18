@@ -45,7 +45,7 @@ std::vector<uint8_t> BasebandSignalSegment::toBuffer() const {
     return AbstractPicoScenesFrameSegment::toBuffer(true);
 }
 
-const SignalMatrix<std::complex<double>> &BasebandSignalSegment::getSignalMatrix() const {
+[[maybe_unused]] const SignalMatrix<std::complex<double>> &BasebandSignalSegment::getSignalMatrix() const {
     return bbsignals;
 }
 
