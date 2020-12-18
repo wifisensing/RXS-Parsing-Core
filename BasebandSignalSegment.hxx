@@ -14,7 +14,7 @@ class BasebandSignalSegment : AbstractPicoScenesFrameSegment {
 public:
     BasebandSignalSegment();
 
-    const SignalMatrix<std::complex<double>> &getSignalMatrix() const;
+    [[maybe_unused]] [[nodiscard]] const SignalMatrix<std::complex<double>> &getSignalMatrix() const;
 
     void setSignalMatrix(const SignalMatrix<std::complex<double>> &bbsignalsV);
 
@@ -22,9 +22,9 @@ public:
 
     void fromBuffer(const uint8_t *buffer, uint32_t bufferLength) override;
 
-    std::vector<uint8_t> toBuffer() const override;
+    [[nodiscard]] std::vector<uint8_t> toBuffer() const override;
 
-    std::string toString() const override;
+    [[nodiscard]] std::string toString() const override;
 
 private:
     static std::map<uint16_t, std::function<SignalMatrix<std::complex<double>>(const uint8_t *, uint32_t)>> versionedSolutionMap;
