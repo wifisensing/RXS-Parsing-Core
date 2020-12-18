@@ -12,6 +12,7 @@
 #include "ExtraInfoSegment.hxx"
 #include "BasebandSignalSegment.hxx"
 #include "PayloadSegment.hxx"
+#include "PreEQSymbolsSegment.hxx"
 #include "PicoScenesFrameTxParameters.hxx"
 
 struct ieee80211_mac_frame_header_frame_control_field {
@@ -50,7 +51,7 @@ struct ieee80211_mac_frame_header {
 std::ostream &operator<<(std::ostream &os, const ieee80211_mac_frame_header &header);
 
 struct PicoScenesFrameHeader {
-    uint32_t magicValue = 0x20150315;
+    [[maybe_unused]] uint32_t magicValue = 0x20150315;
     uint32_t version = 0x20201110;
     PicoScenesDeviceType deviceType = PicoScenesDeviceType::QCA9300;
     uint8_t numSegments = 0;
@@ -90,6 +91,7 @@ public:
     CSISegment csiSegment;
     std::optional<CSISegment> legacyCSISegment;
     std::optional<BasebandSignalSegment> basebandSignalSegment;
+    std::optional<PreEQSymbolsSegment> preEQSymbolsSegment;
 
     // Tx side header and segments
     ieee80211_mac_frame_header standardHeader;
@@ -110,7 +112,7 @@ public:
 
     [[nodiscard]] std::string toString() const;
 
-    Uint8Vector toBuffer() const;
+    [[nodiscard]] Uint8Vector toBuffer() const;
 
 private:
     Uint8Vector rawBuffer;

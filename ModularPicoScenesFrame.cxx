@@ -71,6 +71,8 @@ std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::fromBuffer(con
             }
         } else if (segmentName == "BasebandSignal") {
             frame.basebandSignalSegment = BasebandSignalSegment::createByBuffer(buffer + pos, segmentLength + 4);
+        } else if (segmentName == "PreEQSymbols") {
+            frame.preEQSymbolsSegment = PreEQSymbolsSegment::createByBuffer(buffer + pos, segmentLength + 4);
         } else {
             frame.rxUnknownSegmentMap.emplace(segmentName, Uint8Vector(buffer + pos, buffer + pos + segmentLength + 4));
         }
@@ -119,6 +121,8 @@ std::string ModularPicoScenesRxFrame::toString() const {
         ss << ", " << *legacyCSISegment;
     if (basebandSignalSegment)
         ss << ", " << *basebandSignalSegment;
+    if (preEQSymbolsSegment)
+        ss << ", " << *preEQSymbolsSegment;
     if (!rxUnknownSegmentMap.empty()) {
         std::stringstream segss;
         segss << "RxSegments:(";
