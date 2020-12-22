@@ -23,6 +23,9 @@ public:
     double txIQAmplitudeImbalance_dB;
     double txIQPhaseImbalance_rad;
     bool maxPowerScaleTo1;
+    double actualSamplingRate;
+    double samplingRateOffset;
+    double carrierFrequencyOffset;
     double vhtGroupId;
     std::vector<uint8_t> heAllocationIndex;
     double heLTFType;
@@ -42,6 +45,9 @@ public:
         txIQAmplitudeImbalance_dB = 0;
         txIQPhaseImbalance_rad = 0;
         maxPowerScaleTo1 = true;
+        actualSamplingRate = 20e6;
+        samplingRateOffset = 0;
+        carrierFrequencyOffset = 0;
         vhtGroupId = 0;
         heAllocationIndex = std::vector<uint8_t>(1, 0);
         heLTFType = 4;
