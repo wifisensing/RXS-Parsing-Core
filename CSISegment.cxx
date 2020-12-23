@@ -12,7 +12,7 @@
 //struct QCA9300CSISegmentContentDescriptorV1 {
 //    uint16_t deviceType;
 //    uint8_t packetFormat;
-//    uint16_t cbw;
+//    uint16_t rxCBW;
 //uint64_t carrierFreq;
 //uint64_t samplingRate;
 //uint32_t subcarrierBandwidth;
@@ -27,7 +27,7 @@
 //struct IWL5300CSISegmentContentDescriptorV1 {
 //    uint16_t deviceType;
 //    uint8_t packetFormat;
-//    uint16_t cbw;
+//    uint16_t rxCBW;
 //uint64_t carrierFreq;
 //uint64_t samplingRate;
 //uint32_t subcarrierBandwidth;
