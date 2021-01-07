@@ -38,7 +38,7 @@ class SignalMatrix {
 public:
 
     std::vector<SignalType> array;
-    std::vector<int32_t> dimensions;
+    std::vector<int64_t> dimensions;
     SignalMatrixStorageMajority majority = SignalMatrixStorageMajority::UndefinedMajority;
 
     SignalMatrix() = default;
@@ -54,30 +54,30 @@ public:
             throw std::invalid_argument("SignalMatrix creation failed due to the inconsistent dimensions.");
     }
 
-    SignalType valueAt(std::initializer_list<int32_t> coordinates) {
+    SignalType valueAt(std::initializer_list<int64_t> coordinates) {
         return array.at(computeIndex4Coordinates(dimensions, majority, coordinates));
     }
 
-    SignalType valueAt(uint32_t index) {
+    SignalType valueAt(uint64_t index) {
         return array.at(index);
     }
 
-    uint32_t getIndex4Coordinates(std::vector<int32_t> coordinates) {
+    uint64_t getIndex4Coordinates(std::vector<int64_t> coordinates) {
         return computeIndex4Coordinates(dimensions, majority, coordinates);
     }
 
-    uint32_t getIndex4Coordinates(std::initializer_list<int32_t> coordinates) {
+    uint64_t getIndex4Coordinates(std::initializer_list<int64_t> coordinates) {
         return computeIndex4Coordinates(dimensions, majority, coordinates);
     }
 
-    std::vector<int32_t> getCoordinate4Index(uint32_t pos) {
+    std::vector<int64_t> getCoordinate4Index(uint64_t pos) {
         return computeCoordinate4Index(dimensions, majority, pos);
     }
 
     std::vector<uint8_t> toBuffer(SignalMatrixStorageMajority outputMajority = SignalMatrixStorageMajority::UndefinedMajority) const {
         std::vector<uint8_t> vout;
         vout.reserve(array.size() * sizeof(SignalType) + 50);
-        std::string header_version("BBv1");
+        std::string header_version("BBv2");
         std::copy(header_version.cbegin(), header_version.cend(), std::back_inserter(vout));
         vout.emplace_back(dimensions.size());
         for (const auto &dimension: dimensions) {
@@ -128,9 +128,9 @@ public:
         SignalMatrix<SignalType> signal;
         uint8_t numDimensions = *begin++;
         for (auto i = 0; i < numDimensions; i++) {
-            auto v = *(uint32_t *) (&(*begin));
+            auto v = *(uint64_t *) (&(*begin));
             signal.dimensions.emplace_back(v);
-            begin += 4;
+            begin += 8;
         }
         auto complexChar = (char) *begin++;
         auto inputComplexityChar = (is_std_complex<SignalType>::value ? 'C' : 'R');
@@ -236,7 +236,7 @@ private:
         throw std::runtime_error("BBSignalsFileWriter: unsupported element type.");
     };
 
-    static uint32_t computeIndex4Coordinates(const std::vector<int32_t> &originalDimensions, SignalMatrixStorageMajority majorityV, const std::vector<int32_t> &coordinates) {
+    static uint64_t computeIndex4Coordinates(const std::vector<int64_t> &originalDimensions, SignalMatrixStorageMajority majorityV, const std::vector<int64_t> &coordinates) {
         auto dimensions = originalDimensions;
         auto coord = coordinates;
         if (majorityV == SignalMatrixStorageMajority::ColumnMajor) {
@@ -244,7 +244,7 @@ private:
             std::reverse(dimensions.begin(), dimensions.end());
         }
 
-        uint32_t pos = 0;
+        uint64_t pos = 0;
         for (auto i = 0; i < coord.size(); i++) {
             auto numElementsPerDimension = std::accumulate(dimensions.cbegin(), dimensions.cbegin() + i, 1, std::multiplies<>());
             pos += numElementsPerDimension * coord[i];
@@ -252,8 +252,8 @@ private:
         return pos;
     }
 
-    static std::vector<int32_t> computeCoordinate4Index(const std::vector<int32_t> &originalDimensions, SignalMatrixStorageMajority majorityV, uint32_t pos) {
-        std::vector<int32_t> coordinates(originalDimensions.size());
+    static std::vector<int64_t> computeCoordinate4Index(const std::vector<int64_t> &originalDimensions, SignalMatrixStorageMajority majorityV, uint64_t pos) {
+        std::vector<int64_t> coordinates(originalDimensions.size());
         auto dimensions = originalDimensions;
         auto inputPos = pos;
 
@@ -261,7 +261,7 @@ private:
             std::reverse(dimensions.begin(), dimensions.end());
         }
 
-        for (int32_t i = dimensions.size() - 1; i >= 0; i--) {
+        for (int64_t i = dimensions.size() - 1; i >= 0; i--) {
             auto numElementsPerDimension = std::accumulate(dimensions.cbegin(), dimensions.cbegin() + i, 1, std::multiplies<>());
             coordinates[i] = inputPos / numElementsPerDimension;
             inputPos %= numElementsPerDimension;
@@ -274,10 +274,10 @@ private:
         return coordinates;
     }
 
-    static uint32_t computePositionUnderInversedMajority(uint32_t newPos, const std::vector<int32_t> &originalDimensions) {
+    static uint64_t computePositionUnderInversedMajority(uint64_t newPos, const std::vector<int64_t> &originalDimensions) {
         auto revD = originalDimensions;
         std::reverse(revD.begin(), revD.end());
-        std::vector<uint32_t> coordinates(revD.size(), 0);
+        std::vector<uint64_t> coordinates(revD.size(), 0);
         auto inputPos = newPos;
         for (uint64_t i = 1; i <= revD.size(); i++) {
             auto numElementsPerDimension = std::accumulate(revD.cbegin(), revD.cend() - i, 1, std::multiplies<>());
