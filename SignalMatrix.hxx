@@ -37,6 +37,7 @@ class SignalMatrix {
     using SignalElementType = typename std::conditional<std::is_arithmetic_v<SignalType>, SignalType, typename std::remove_reference<decltype(std::declval<typename std::conditional<std::is_arithmetic_v<SignalType>, std::complex<SignalType>, SignalType>::type>().real())>::type>::type;
 public:
 
+    uint8_t matrixFormatId;
     std::vector<SignalType> array;
     std::vector<int64_t> dimensions;
     SignalMatrixStorageMajority majority = SignalMatrixStorageMajority::UndefinedMajority;
@@ -125,12 +126,20 @@ public:
             throw std::runtime_error("Incompatible SignalMatrix format");
         }
 
+        auto matrixVersion = getMatrixVersionId(begin);
+        begin += 4;
         SignalMatrix<SignalType> signal;
         uint8_t numDimensions = *begin++;
         for (auto i = 0; i < numDimensions; i++) {
-            auto v = *(uint64_t *) (&(*begin));
-            signal.dimensions.emplace_back(v);
-            begin += 8;
+            if (matrixVersion == 1) {
+                auto v = *(uint32_t *) (&(*begin));
+                signal.dimensions.emplace_back(v);
+                begin += 4;
+            } else if (matrixVersion == 2) {
+                auto v = *(uint64_t *) (&(*begin));
+                signal.dimensions.emplace_back(v);
+                begin += 8;
+            }
         }
         auto complexChar = (char) *begin++;
         auto inputComplexityChar = (is_std_complex<SignalType>::value ? 'C' : 'R');
@@ -153,7 +162,7 @@ public:
         signal.majority = (storageMajority == SignalMatrixStorageMajority::UndefinedMajority ? inputMajority : storageMajority);
 
         auto numel = std::accumulate(signal.dimensions.cbegin(), signal.dimensions.cend(), 1, std::multiplies<>());
-        auto distanceIterator = (uint64_t)std::distance(begin, end);
+        auto distanceIterator = (uint64_t) std::distance(begin, end);
         if (distanceIterator != numel * sizeof(SignalType))
             throw std::runtime_error("Inconsistent SignalMatrix data buffer");
         signal.array.resize(numel);
@@ -207,16 +216,23 @@ public:
 
 private:
     template<typename Iterator>
-    static bool verifyCompatibility(Iterator &begin) {
+    static bool verifyCompatibility(const Iterator &inputBegin) {
         char fileHeader[3];
         char fileVersion[3];
         memset(fileHeader, 0, sizeof(fileHeader));
         memset(fileVersion, 0, sizeof(fileVersion));
+        auto begin = inputBegin;
         std::copy(begin, begin + 2, std::begin(fileHeader));
         begin += 2;
         std::copy(begin, begin + 2, std::begin(fileVersion));
         begin += 2;
-        return std::strcmp(fileHeader, "BB") == 0 && std::strcmp(fileVersion, "v1") == 0;
+        return std::strcmp(fileHeader, "BB") == 0 && (std::strcmp(fileVersion, "v1") == 0 || std::strcmp(fileVersion, "v2") == 0);
+    }
+
+    template<typename Iterator>
+    static uint8_t getMatrixVersionId(const Iterator &begin) {
+        uint8_t fileVersionId = *(uint8_t *) (begin + 3) - 48;
+        return fileVersionId;
     }
 
     template<typename TypeForChecking>
