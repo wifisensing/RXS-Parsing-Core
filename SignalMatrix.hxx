@@ -231,8 +231,9 @@ private:
 
     template<typename Iterator>
     static uint8_t getMatrixVersionId(const Iterator &begin) {
-        uint8_t fileVersionId = *(uint8_t *) (begin + 3) - 48;
-        return fileVersionId;
+        uint8_t fileVersionId;
+        std::copy(begin + 3, begin + 4, &fileVersionId);
+        return fileVersionId - 48;
     }
 
     template<typename TypeForChecking>
