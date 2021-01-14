@@ -28,6 +28,7 @@ void featureCodeInterpretation(uint32_t featureCode, struct ExtraInfo *extraInfo
     extraInfo->hasAGC = extraInfoHasAGC(featureCode);
     extraInfo->hasAntennaSelection = extraInfoHasAntennaSelection(featureCode);
     extraInfo->hasSamplingRate = extraInfoHasSamplingRate(featureCode);
+    extraInfo->hasCFO = extraInfoHasCFO(featureCode);
 }
 
 
@@ -65,6 +66,7 @@ void inplaceAddRxExtraInfo(uint8_t *inBytes, uint32_t featureCode, uint8_t *valu
     pos += extraInfoHasAGC(*rxFeatureCode) ? 1 : 0;
     pos += extraInfoHasAntennaSelection(*rxFeatureCode) ? 1 : 0;
     pos += extraInfoHasSamplingRate(*rxFeatureCode) ? 8 : 0;
+    pos += extraInfoHasCFO(*rxFeatureCode) ? 4 : 0;
 
     *rxFeatureCode |= featureCode;
     if (insertPos == 0) {
@@ -127,6 +129,7 @@ int ExtraInfo::fromBinary(const uint8_t *extraInfoPtr, struct ExtraInfo *extraIn
         extraInfo->ant_sel[2] = (((unsigned) ant_sel_raw >> 0x4U) & 0x3U) + 1;
     }
     GETVALUE(hasSamplingRate, samplingRate)
+    GETVALUE(hasCFO, cfo)
 
     return pos;
 #undef GETVALUE
@@ -170,6 +173,7 @@ uint16_t ExtraInfo::calculateBufferLength() const {
     ADDLENGTH(hasAGC, agc)
     pos += this->hasAntennaSelection ? 1 : 0;
     ADDLENGTH(hasSamplingRate, samplingRate)
+    ADDLENGTH(hasCFO, cfo)
 
     return pos;
 #undef ADDLENGTH
@@ -216,6 +220,7 @@ int ExtraInfo::toBuffer(uint8_t *buffer) const {
         *antV = (ant_sel[0] - 1) + ((unsigned) (ant_sel[1] - 1) << 2U) + ((unsigned) (ant_sel[2] - 1) << 4U);
     }
     SETBUFF(hasSamplingRate, samplingRate)
+    SETBUFF(hasCFO, cfo)
 
     return pos;
 #undef SETBUFF
@@ -367,6 +372,13 @@ void ExtraInfo::setSamplingRate(double sf) {
     updateLength();
 }
 
+void ExtraInfo::setCFO(int32_t cfov) {
+    hasCFO = true;
+    featureCode |= PICOSCENES_EXTRAINFO_HASCFO;
+    cfo = cfov;
+    updateLength();
+}
+
 void ExtraInfo::updateLength() {
     setLength(calculateBufferLength() - 2);
 }
@@ -422,6 +434,8 @@ std::string ExtraInfo::toString() const {
         ss << "agc=" << std::to_string(agc) << ", ";
     if (hasAntennaSelection)
         ss << "ant_sel=[" << std::to_string(ant_sel[0]) << " " << std::to_string(ant_sel[1]) << " " << std::to_string(ant_sel[2]) << "], ";
+    if (hasCFO)
+        ss << "cfo=[" << std::to_string(cfo / 1e3) << "KHz, ";
     auto temp = ss.str();
     temp.erase(temp.end() - 2, temp.end());
     temp.append("]");
