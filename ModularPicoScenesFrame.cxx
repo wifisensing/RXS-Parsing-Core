@@ -201,6 +201,12 @@ Uint8Vector ModularPicoScenesRxFrame::toBuffer() const {
     std::copy(rxSegmentBuffer.cbegin(), rxSegmentBuffer.cend(), std::back_inserter(frameBuffer));
     std::copy(mpdu.cbegin(), mpdu.cend(), std::back_inserter(frameBuffer));
 
+// for in-situ validation
+//    {
+//        auto recovered = ModularPicoScenesRxFrame::fromBuffer(frameBuffer.data(), frameBuffer.size());
+//        std::cout<< *recovered <<std::endl;
+//    }
+
     return frameBuffer;
 }
 
