@@ -435,7 +435,7 @@ std::string ExtraInfo::toString() const {
     if (hasAntennaSelection)
         ss << "ant_sel=[" << std::to_string(ant_sel[0]) << " " << std::to_string(ant_sel[1]) << " " << std::to_string(ant_sel[2]) << "], ";
     if (hasCFO)
-        ss << "cfo=[" << std::to_string(cfo / 1e3) << "KHz, ";
+        ss << "cfo=" << std::to_string(cfo / 1e3) << "KHz, ";
     auto temp = ss.str();
     temp.erase(temp.end() - 2, temp.end());
     temp.append("]");
