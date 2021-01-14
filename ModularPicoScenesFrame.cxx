@@ -193,6 +193,11 @@ Uint8Vector ModularPicoScenesRxFrame::toBuffer() const {
         std::copy(segmentBuffer.cbegin(), segmentBuffer.cend(), std::back_inserter(rxSegmentBuffer));
         modularFrameHeader.numRxSegments++;
     }
+    if (preEQSymbolsSegment) {
+        auto segmentBuffer = preEQSymbolsSegment->toBuffer();
+        std::copy(segmentBuffer.cbegin(), segmentBuffer.cend(), std::back_inserter(rxSegmentBuffer));
+        modularFrameHeader.numRxSegments++;
+    }
 
     // Assembly the full buffer
     Uint8Vector frameBuffer;
