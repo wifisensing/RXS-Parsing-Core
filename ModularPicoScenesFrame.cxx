@@ -100,8 +100,8 @@ std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::fromBuffer(con
         }
     }
 
-    std::copy(buffer, buffer + pos, std::back_inserter(frame.rawBuffer));
-    std::copy(buffer + mpduPos, buffer + pos, std::back_inserter(frame.mpdu));
+    std::copy(buffer, buffer + bufferLength, std::back_inserter(frame.rawBuffer));
+    std::copy(buffer + mpduPos, buffer + bufferLength, std::back_inserter(frame.mpdu));
 
     return frame;
 }
@@ -200,8 +200,7 @@ Uint8Vector ModularPicoScenesRxFrame::toBuffer() const {
     std::copy((uint8_t *) &modularFrameHeader, (uint8_t *) &modularFrameHeader + sizeof(ModularPicoScenesRxFrameHeader), std::back_inserter(frameBuffer));
     std::copy(rxSegmentBuffer.cbegin(), rxSegmentBuffer.cend(), std::back_inserter(frameBuffer));
     std::copy(mpdu.cbegin(), mpdu.cend(), std::back_inserter(frameBuffer));
-
-// for in-situ validation
+    //// for in-situ validation
 //    {
 //        auto recovered = ModularPicoScenesRxFrame::fromBuffer(frameBuffer.data(), frameBuffer.size());
 //        std::cout<< *recovered <<std::endl;
