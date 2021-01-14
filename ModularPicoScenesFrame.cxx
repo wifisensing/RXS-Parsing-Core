@@ -98,11 +98,6 @@ std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::fromBuffer(con
             }
             pos += segmentLength + 4;
         }
-    } else {
-        uint32_t msduLength = bufferLength - pos;
-        auto msduBuffer = std::shared_ptr<uint8_t>(new uint8_t[msduLength], std::default_delete<uint8_t[]>());
-        frame.nonPicoScenesMSDUContent.resize(1);
-        std::copy(buffer + pos, buffer + bufferLength, std::back_inserter(frame.nonPicoScenesMSDUContent[0]));
     }
 
     std::copy(buffer, buffer + pos, std::back_inserter(frame.rawBuffer));
