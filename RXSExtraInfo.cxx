@@ -181,7 +181,7 @@ uint16_t ExtraInfo::calculateBufferLength() const {
 
 
 std::vector<uint8_t> ExtraInfo::toBuffer() const {
-    static uint8_t array[500];
+    uint8_t array[500];
     auto length = toBuffer(array);
     return std::vector<uint8_t>(array, array + length);
 }
