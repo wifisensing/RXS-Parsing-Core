@@ -221,11 +221,13 @@ std::ostream &operator<<(std::ostream &os, const ModularPicoScenesRxFrame &rxfra
 
 void ModularPicoScenesTxFrame::addSegments(const std::shared_ptr<AbstractPicoScenesFrameSegment> &segment) {
     segments.emplace_back(segment);
-    frameHeader.numSegments = segments.size();
+    if (!frameHeader)
+        frameHeader = PicoScenesFrameHeader();
+    frameHeader->numSegments = segments.size();
 }
 
 uint32_t ModularPicoScenesTxFrame::totalLength() const {
-    uint32_t length = sizeof(decltype(standardHeader)) + sizeof(decltype(frameHeader));
+    uint32_t length = sizeof(decltype(standardHeader)) + (frameHeader ? sizeof(decltype(frameHeader)) : 0);
     for (const auto &segment : segments) {
         length += segment->totalLength() + 4;
     }
@@ -243,16 +245,18 @@ int ModularPicoScenesTxFrame::toBuffer(uint8_t *buffer, uint32_t bufferLength) c
     if (bufferLength < totalLength())
         throw std::overflow_error("Buffer not long enough for TX frame dumping...");
 
-    if (frameHeader.numSegments != segments.size())
-        throw std::overflow_error("ModularPicoScenesTxFrame toBuffer method segment number in-consistent!");
-
     memcpy(buffer, &standardHeader, sizeof(ieee80211_mac_frame_header));
-    memcpy(buffer + sizeof(ieee80211_mac_frame_header), &frameHeader, sizeof(PicoScenesFrameHeader));
-    uint32_t pos = sizeof(ieee80211_mac_frame_header) + sizeof(PicoScenesFrameHeader);
+    uint32_t pos = sizeof(ieee80211_mac_frame_header);
+    if (frameHeader) {
+        if (frameHeader->numSegments != segments.size())
+            throw std::overflow_error("ModularPicoScenesTxFrame toBuffer method segment number in-consistent!");
 
-    for (const auto &segment : segments) {
-        segment->toBuffer(true, buffer + pos);
-        pos += segment->totalLength() + 4;
+        memcpy(buffer + sizeof(ieee80211_mac_frame_header), &frameHeader, sizeof(PicoScenesFrameHeader));
+        pos += sizeof(PicoScenesFrameHeader);
+        for (const auto &segment : segments) {
+            segment->toBuffer(true, buffer + pos);
+            pos += segment->totalLength() + 4;
+        }
     }
 
     return pos;
@@ -281,13 +285,24 @@ ModularPicoScenesTxFrame &ModularPicoScenesTxFrame::setRetry() {
     return *this;
 }
 
+ModularPicoScenesTxFrame &ModularPicoScenesTxFrame::setDeviceType(PicoScenesDeviceType deviceType) {
+    if (!frameHeader)
+        frameHeader = PicoScenesFrameHeader();
+    frameHeader->deviceType = deviceType;
+    return *this;
+}
+
 ModularPicoScenesTxFrame &ModularPicoScenesTxFrame::setTaskId(uint16_t taskId) {
-    frameHeader.taskId = taskId;
+    if (!frameHeader)
+        frameHeader = PicoScenesFrameHeader();
+    frameHeader->taskId = taskId;
     return *this;
 }
 
 ModularPicoScenesTxFrame &ModularPicoScenesTxFrame::setTxId(uint16_t txId) {
-    frameHeader.txId = txId;
+    if (!frameHeader)
+        frameHeader = PicoScenesFrameHeader();
+    frameHeader->txId = txId;
     return *this;
 }
 
@@ -301,7 +316,9 @@ ModularPicoScenesTxFrame &ModularPicoScenesTxFrame::setRandomTaskId() {
 }
 
 ModularPicoScenesTxFrame &ModularPicoScenesTxFrame::setPicoScenesFrameType(uint8_t frameType) {
-    frameHeader.frameType = frameType;
+    if (!frameHeader)
+        frameHeader = PicoScenesFrameHeader();
+    frameHeader->frameType = frameType;
     return *this;
 }
 
@@ -382,7 +399,8 @@ ModularPicoScenesTxFrame &ModularPicoScenesTxFrame::setChannelCoding(const std::
 std::string ModularPicoScenesTxFrame::toString() const {
     std::stringstream ss;
     ss << "TxFrame:{" << standardHeader;
-    ss << ", " << frameHeader;
+    if (frameHeader)
+        ss << ", " << *frameHeader;
     ss << ", " << txParameters;
 
     if (!segments.empty()) {

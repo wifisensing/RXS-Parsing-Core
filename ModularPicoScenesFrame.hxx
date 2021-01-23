@@ -122,8 +122,8 @@ std::ostream &operator<<(std::ostream &os, const ModularPicoScenesRxFrame &param
 class ModularPicoScenesTxFrame {
 public:
     ieee80211_mac_frame_header standardHeader;
-    PicoScenesFrameHeader frameHeader;
     PicoScenesFrameTxParameters txParameters;
+    std::optional<PicoScenesFrameHeader> frameHeader;
     std::vector<std::shared_ptr<AbstractPicoScenesFrameSegment>> segments;
     std::vector<ModularPicoScenesTxFrame> AMPDUFrames;
 
@@ -144,6 +144,8 @@ public:
     ModularPicoScenesTxFrame &setFragNumber(uint8_t fragNumber);
 
     ModularPicoScenesTxFrame &setRetry();
+
+    ModularPicoScenesTxFrame &setDeviceType(PicoScenesDeviceType deviceType);
 
     ModularPicoScenesTxFrame &setTaskId(uint16_t taskId);
 
