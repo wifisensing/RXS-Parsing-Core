@@ -227,7 +227,7 @@ void ModularPicoScenesTxFrame::addSegments(const std::shared_ptr<AbstractPicoSce
 }
 
 uint32_t ModularPicoScenesTxFrame::totalLength() const {
-    uint32_t length = sizeof(decltype(standardHeader)) + (frameHeader ? sizeof(decltype(frameHeader)) : 0);
+    uint32_t length = sizeof(decltype(standardHeader)) + (frameHeader ? sizeof(decltype(frameHeader)) : 4); // plus 4 is to avoid NDP skip on QCA9300
     for (const auto &segment : segments) {
         length += segment->totalLength() + 4;
     }
@@ -245,6 +245,7 @@ int ModularPicoScenesTxFrame::toBuffer(uint8_t *buffer, uint32_t bufferLength) c
     if (bufferLength < totalLength())
         throw std::overflow_error("Buffer not long enough for TX frame dumping...");
 
+    memset(buffer, 0, bufferLength);
     memcpy(buffer, &standardHeader, sizeof(ieee80211_mac_frame_header));
     uint32_t pos = sizeof(ieee80211_mac_frame_header);
     if (frameHeader) {
