@@ -33,6 +33,9 @@ struct ieee80211_mac_frame_header_frame_control_field {
 
 } __attribute__ ((__packed__));
 
+/**
+ * @brief MPDU header. This structure is verified in Wireshark.
+ */
 struct ieee80211_mac_frame_header {
     ieee80211_mac_frame_header_frame_control_field fc;
     uint16_t dur = 0;
