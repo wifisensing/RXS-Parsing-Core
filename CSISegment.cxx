@@ -113,7 +113,7 @@ std::vector<int16_t> CSI::IWL5300SubcarrierIndices_CBW40 = []() noexcept -> std:
     return std::vector<int16_t>{-58, -54, -50, -46, -42, -38, -34, -30, -26, -22, -18, -14, -10, -6, -2, 2, 6, 10, 14, 18, 22, 26, 30, 34, 38, 42, 46, 50, 54, 58};
 }();
 
-CSI CSI::fromQCA9300(const uint8_t *buffer, uint32_t bufferLength, uint8_t numTx, uint8_t numRx, uint8_t numESS, uint8_t numTones, ChannelBandwidthEnum cbw) {
+CSI CSI::fromQCA9300(const uint8_t *buffer, uint32_t bufferLength, uint8_t numTx, uint8_t numRx, uint8_t numTones, ChannelBandwidthEnum cbw) {
     uint32_t actualNumSTSPerChain = bufferLength / 140 / numRx;
     auto csi = CSI{.deviceType = PicoScenesDeviceType::QCA9300,
             .packetFormat = PacketFormatEnum::PacketFormat_HT,
@@ -246,7 +246,7 @@ static auto v1Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> CSI {
     pos += 4;
 
     if (deviceType == PicoScenesDeviceType::QCA9300) {
-        auto csi = CSI::fromQCA9300(buffer + pos, CSIBufferLength, numSTS, numRx, numESS, numTone, cbw);
+        auto csi = CSI::fromQCA9300(buffer + pos, CSIBufferLength, numSTS, numRx, numTone, cbw);
         csi.carrierFreq = carrierFreq;
         csi.samplingRate = samplingRate;
         csi.subcarrierBandwidth = subcarrierBandwidth;
