@@ -105,14 +105,15 @@ CSI CSI::fromQCA9300(const uint8_t *buffer, uint32_t bufferLength, uint8_t numTx
     return csi;
 }
 
-CSI CSI::fromIWL5300(const uint8_t *buffer, uint32_t bufferLength, uint8_t numTx, uint8_t numRx, uint8_t numESS, uint8_t numTones, ChannelBandwidthEnum cbw,  int16_t subcarrierIndexOffset, uint8_t ant_sel) {
+CSI CSI::fromIWL5300(const uint8_t *buffer, uint32_t bufferLength, uint8_t numTx, uint8_t numRx, uint8_t numTones, ChannelBandwidthEnum cbw, int16_t subcarrierIndexOffset, uint8_t ant_sel) {
+    uint32_t actualNumSTSPerChain = (bufferLength - 12) / 60 / numRx;
     auto csi = CSI{.deviceType = PicoScenesDeviceType::IWL5300,
             .packetFormat=PacketFormatEnum::PacketFormat_HT,
             .cbw = cbw,
-            .dimensions = CSIDimension{.numTones = numTones, .numTx = numTx, .numRx = numRx, .numESS = numESS},
+            .dimensions = CSIDimension{.numTones = numTones, .numTx = numTx, .numRx = numRx, .numESS = uint8_t(actualNumSTSPerChain - numTx)},
             .antSel = ant_sel,
             .subcarrierOffset = subcarrierIndexOffset,
-            .CSIArray = parseIWL5300CSIData(buffer, numTx, numRx, ant_sel),
+            .CSIArray = parseIWL5300CSIData(buffer, actualNumSTSPerChain, numRx, ant_sel),
     };
     std::copy(buffer, buffer + bufferLength, std::back_inserter(csi.rawCSIData));
     if (csi.cbw == ChannelBandwidthEnum::CBW_20) {
@@ -232,7 +233,7 @@ static auto v1Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> CSI {
         csi.subcarrierBandwidth = subcarrierBandwidth;
         return csi;
     } else if (deviceType == PicoScenesDeviceType::IWL5300) {
-        auto csi = CSI::fromIWL5300(buffer + pos, CSIBufferLength, numSTS, numRx, numESS, numTone, cbw, 0, antSelByte);
+        auto csi = CSI::fromIWL5300(buffer + pos, CSIBufferLength, numSTS, numRx, numTone, cbw, 0, antSelByte);
         csi.carrierFreq = carrierFreq;
         csi.samplingRate = samplingRate;
         csi.subcarrierBandwidth = subcarrierBandwidth;
@@ -297,7 +298,7 @@ static auto v2Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> CSI {
         csi.subcarrierBandwidth = subcarrierBandwidth;
         return csi;
     } else if (deviceType == PicoScenesDeviceType::IWL5300) {
-        auto csi = CSI::fromIWL5300(buffer + pos, CSIBufferLength, numSTS, numRx, numESS, numTone, cbw, subcarrierIndexOffset, antSelByte);
+        auto csi = CSI::fromIWL5300(buffer + pos, CSIBufferLength, numSTS, numRx, numTone, cbw, subcarrierIndexOffset, antSelByte);
         csi.carrierFreq = carrierFreq;
         csi.samplingRate = samplingRate;
         csi.subcarrierBandwidth = subcarrierBandwidth;
