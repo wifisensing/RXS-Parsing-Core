@@ -336,7 +336,7 @@ std::map<uint16_t, std::function<CSI(const uint8_t *, uint32_t)>> CSISegment::in
     return std::map<uint16_t, std::function<CSI(const uint8_t *, uint32_t)>>{{0x1U, v1Parser}, {0x2U, v2Parser}};
 }
 
-CSISegment::CSISegment() : AbstractPicoScenesFrameSegment("CSI", 0x1u) {
+CSISegment::CSISegment() : AbstractPicoScenesFrameSegment("CSI", 0x2U) {
 
 }
 
