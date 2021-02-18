@@ -40,10 +40,10 @@
 //} __attribute__ ((__packed__));
 
 
-SignalMatrix<std::complex<double>> parseQCA9300CSIData(const uint8_t *csiData, int ntx, int nrx, int num_tones) {
-    std::vector<std::complex<double>> CSIArray(ntx * nrx * num_tones);
-    parseQCA9300CSIData(CSIArray.begin(), csiData, ntx, nrx, num_tones);
-    return SignalMatrix(CSIArray, std::vector<int32_t>{num_tones, ntx, nrx}, SignalMatrixStorageMajority::ColumnMajor);
+SignalMatrix<std::complex<double>> parseQCA9300CSIData(const uint8_t *csiData, int nSTS, int nRx, int nTones) {
+    std::vector<std::complex<double>> CSIArray(nSTS * nRx * nTones);
+    parseQCA9300CSIData(CSIArray.begin(), csiData, nSTS, nRx, nTones);
+    return SignalMatrix(CSIArray, std::vector<int32_t>{nTones, nSTS, nRx}, SignalMatrixStorageMajority::ColumnMajor);
 }
 
 SignalMatrix<std::complex<double>> parseIWL5300CSIData(const uint8_t *payload, int ntx, int nrx, uint8_t ant_sel) {
@@ -113,13 +113,13 @@ std::vector<int16_t> CSI::IWL5300SubcarrierIndices_CBW40 = []() noexcept -> std:
     return std::vector<int16_t>{-58, -54, -50, -46, -42, -38, -34, -30, -26, -22, -18, -14, -10, -6, -2, 2, 6, 10, 14, 18, 22, 26, 30, 34, 38, 42, 46, 50, 54, 58};
 }();
 
-CSI CSI::fromQCA9300(const uint8_t *buffer, uint32_t bufferLength, uint8_t numTx, uint8_t numRx, uint8_t numLTF, uint8_t numTones, ChannelBandwidthEnum cbw) {
+CSI CSI::fromQCA9300(const uint8_t *buffer, uint32_t bufferLength, uint8_t numTx, uint8_t numRx, uint8_t numESS, uint8_t numTones, ChannelBandwidthEnum cbw) {
     auto csi = CSI{.deviceType = PicoScenesDeviceType::QCA9300,
             .packetFormat = PacketFormatEnum::PacketFormat_HT,
             .cbw = cbw,
-            .dimensions = CSIDimension{.numTones = numTones, .numTx = numTx, .numRx = numRx},
+            .dimensions = CSIDimension{.numTones = numTones, .numTx = numTx, .numRx = numRx, .numESS = numESS},
             .antSel = 0,
-            .CSIArray = parseQCA9300CSIData(buffer, numTx, numRx, numTones),
+            .CSIArray = parseQCA9300CSIData(buffer, numTx + numESS, numRx, numTones),
     };
     std::copy(buffer, buffer + bufferLength, std::back_inserter(csi.rawCSIData));
     if (csi.cbw == ChannelBandwidthEnum::CBW_20) {
@@ -131,11 +131,11 @@ CSI CSI::fromQCA9300(const uint8_t *buffer, uint32_t bufferLength, uint8_t numTx
     return csi;
 }
 
-CSI CSI::fromIWL5300(const uint8_t *buffer, uint32_t bufferLength, uint8_t numTx, uint8_t numRx, uint8_t numLTF, uint8_t numTones, ChannelBandwidthEnum cbw, uint8_t ant_sel) {
+CSI CSI::fromIWL5300(const uint8_t *buffer, uint32_t bufferLength, uint8_t numTx, uint8_t numRx, uint8_t numESS, uint8_t numTones, ChannelBandwidthEnum cbw, uint8_t ant_sel) {
     auto csi = CSI{.deviceType = PicoScenesDeviceType::IWL5300,
             .packetFormat=PacketFormatEnum::PacketFormat_HT,
             .cbw = cbw,
-            .dimensions = CSIDimension{.numTones = numTones, .numTx = numTx, .numRx = numRx, .numESS = numLTF},
+            .dimensions = CSIDimension{.numTones = numTones, .numTx = numTx, .numRx = numRx, .numESS = numESS},
             .antSel = ant_sel,
             .CSIArray = parseIWL5300CSIData(buffer, numTx, numRx, ant_sel),
     };
@@ -245,13 +245,13 @@ static auto v1Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> CSI {
     pos += 4;
 
     if (deviceType == PicoScenesDeviceType::QCA9300) {
-        auto csi = CSI::fromQCA9300(buffer + pos, CSIBufferLength, numSTS, numRx, numSTS + numESS, numTone, cbw);
+        auto csi = CSI::fromQCA9300(buffer + pos, CSIBufferLength, numSTS, numRx, numESS, numTone, cbw);
         csi.carrierFreq = carrierFreq;
         csi.samplingRate = samplingRate;
         csi.subcarrierBandwidth = subcarrierBandwidth;
         return csi;
     } else if (deviceType == PicoScenesDeviceType::IWL5300) {
-        auto csi = CSI::fromIWL5300(buffer + pos, CSIBufferLength, numSTS, numRx, numSTS + numESS, numTone, cbw, antSelByte);
+        auto csi = CSI::fromIWL5300(buffer + pos, CSIBufferLength, numSTS, numRx, numESS, numTone, cbw, antSelByte);
         csi.carrierFreq = carrierFreq;
         csi.samplingRate = samplingRate;
         csi.subcarrierBandwidth = subcarrierBandwidth;

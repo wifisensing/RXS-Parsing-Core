@@ -11,7 +11,7 @@
 
 
 template<typename Iterator>
-void parseQCA9300CSIData(Iterator outputArray, const uint8_t *csiData, int ntx, int nrx, int num_tones) {
+void parseQCA9300CSIData(Iterator outputArray, const uint8_t *csiData, int nSTS, int nRx, int nTones) {
 
     auto parse10bitsValues = [](const uint8_t rawByte[5], int outputArray[4]) {
         static uint16_t negativeSignBit = (1 << (10 - 1));
@@ -26,24 +26,24 @@ void parseQCA9300CSIData(Iterator outputArray, const uint8_t *csiData, int ntx, 
         }
     };
 
-    int valuePos, pos, rxIndex, txIndex, toneIndex, totalTones = nrx * ntx * num_tones;
+    int valuePos, pos, rxIndex, txIndex, toneIndex, totalTones = nRx * nSTS * nTones;
     int tempArray[4];
     for (auto i = 0; i < totalTones / 2; i++) {
         parse10bitsValues(csiData + i * 5, tempArray);
 
         valuePos = i * 2;
-        rxIndex = valuePos % nrx;
-        txIndex = (valuePos / nrx) % ntx;
-        toneIndex = valuePos / (nrx * ntx);
-        pos = rxIndex * (ntx * num_tones) + txIndex * num_tones + toneIndex;
+        rxIndex = valuePos % nRx;
+        txIndex = (valuePos / nRx) % nSTS;
+        toneIndex = valuePos / (nRx * nSTS);
+        pos = rxIndex * (nSTS * nTones) + txIndex * nTones + toneIndex;
         outputArray[pos].real(tempArray[1]);
         outputArray[pos].imag(tempArray[0]);
 
         valuePos = i * 2 + 1;
-        rxIndex = valuePos % nrx;
-        txIndex = (valuePos / nrx) % ntx;
-        toneIndex = valuePos / (nrx * ntx);
-        pos = rxIndex * (ntx * num_tones) + txIndex * num_tones + toneIndex;
+        rxIndex = valuePos % nRx;
+        txIndex = (valuePos / nRx) % nSTS;
+        toneIndex = valuePos / (nRx * nSTS);
+        pos = rxIndex * (nSTS * nTones) + txIndex * nTones + toneIndex;
         outputArray[pos].real(tempArray[3]);
         outputArray[pos].imag(tempArray[2]);
     }
@@ -135,9 +135,9 @@ public:
 
     std::vector<uint8_t> toBuffer();
 
-    static CSI fromQCA9300(const uint8_t *buffer, uint32_t bufferLength, uint8_t numTx, uint8_t numRx, uint8_t numLTF, uint8_t numTones, ChannelBandwidthEnum cbw);
+    static CSI fromQCA9300(const uint8_t *buffer, uint32_t bufferLength, uint8_t numTx, uint8_t numRx, uint8_t numESS, uint8_t numTones, ChannelBandwidthEnum cbw);
 
-    static CSI fromIWL5300(const uint8_t *buffer, uint32_t bufferLength, uint8_t numTx, uint8_t numRx, uint8_t numLTF, uint8_t numTones, ChannelBandwidthEnum cbw, uint8_t ant_sel);
+    static CSI fromIWL5300(const uint8_t *buffer, uint32_t bufferLength, uint8_t numTx, uint8_t numRx, uint8_t numESS, uint8_t numTones, ChannelBandwidthEnum cbw, uint8_t ant_sel);
 
     template<typename OutputValueType, typename InputValueType>
     static std::vector<std::complex<OutputValueType>> convertCSIArrayType(const std::vector<std::complex<InputValueType>> &inputArray) {
