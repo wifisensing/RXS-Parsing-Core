@@ -124,6 +124,7 @@ public:
     uint32_t subcarrierBandwidth;
     CSIDimension dimensions;
     uint8_t antSel;
+    int16_t subcarrierOffset;
     std::vector<int16_t> subcarrierIndices;
     SignalMatrix<std::complex<double>> CSIArray;
     SignalMatrix<double> magnitudeArray;
@@ -135,9 +136,9 @@ public:
 
     std::vector<uint8_t> toBuffer();
 
-    static CSI fromQCA9300(const uint8_t *buffer, uint32_t bufferLength, uint8_t numTx, uint8_t numRx, uint8_t numTones, ChannelBandwidthEnum cbw);
+    static CSI fromQCA9300(const uint8_t *buffer, uint32_t bufferLength, uint8_t numTx, uint8_t numRx, uint8_t numTones, ChannelBandwidthEnum cbw, int16_t subcarrierIndexOffset);
 
-    static CSI fromIWL5300(const uint8_t *buffer, uint32_t bufferLength, uint8_t numTx, uint8_t numRx, uint8_t numESS, uint8_t numTones, ChannelBandwidthEnum cbw, uint8_t ant_sel);
+    static CSI fromIWL5300(const uint8_t *buffer, uint32_t bufferLength, uint8_t numTx, uint8_t numRx, uint8_t numESS, uint8_t numTones, ChannelBandwidthEnum cbw, int16_t subcarrierIndexOffset, uint8_t ant_sel);
 
     template<typename OutputValueType, typename InputValueType>
     static std::vector<std::complex<OutputValueType>> convertCSIArrayType(const std::vector<std::complex<InputValueType>> &inputArray) {
@@ -150,13 +151,9 @@ public:
 
 private:
     static std::vector<int16_t> QCA9300SubcarrierIndices_CBW20;
-    static std::vector<int16_t> QCA9300SubcarrierIndices_CBW20_HT40MINUS;
-    static std::vector<int16_t> QCA9300SubcarrierIndices_CBW20_HT40PLUS;
     static std::vector<int16_t> QCA9300SubcarrierIndices_CBW40;
 
     static std::vector<int16_t> IWL5300SubcarrierIndices_CBW20;
-    static std::vector<int16_t> IWL5300SubcarrierIndices_CBW20_HT40MINUS;
-    static std::vector<int16_t> IWL5300SubcarrierIndices_CBW20_HT40PLUS;
     static std::vector<int16_t> IWL5300SubcarrierIndices_CBW40;
 };
 
