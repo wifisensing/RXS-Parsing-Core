@@ -58,6 +58,18 @@ std::string ChannelBandwidth2String(ChannelBandwidthEnum cbw) {
     }
 }
 
+std::string channelModel2String(ChannelModeEnum mode) {
+    switch (mode) {
+        case ChannelModeEnum::HT40_PLUS:
+            return "HT40_PLUS";
+        case ChannelModeEnum::HT40_MINUS:
+            return "HT40_MINUS";
+        case ChannelModeEnum::HT20:
+            return "HT20";
+    }
+    return "channel mode error.";
+}
+
 std::string GuardInterval2String(GuardIntervalEnum gi) {
     switch (gi) {
         case GuardIntervalEnum::GI_400:
@@ -96,6 +108,11 @@ std::ostream &operator<<(std::ostream &os, const PacketFormatEnum &format) {
 
 std::ostream &operator<<(std::ostream &os, const ChannelBandwidthEnum &cbw) {
     os << ChannelBandwidth2String(cbw);
+    return os;
+}
+
+std::ostream &operator<<(std::ostream &os, const ChannelModeEnum &channelMode) {
+    os << channelModel2String(channelMode);
     return os;
 }
 

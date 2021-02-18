@@ -14,8 +14,8 @@
 #include "SignalMatrix.hxx"
 
 #ifdef BUILD_WITH_MEX
-    #include "mex.h"
-    #define printf mexPrintf
+#include "mex.h"
+#define printf mexPrintf
 #endif
 
 using ComplexData = std::complex<double>;
@@ -49,7 +49,6 @@ std::string PacketFormat2String(PacketFormatEnum format);
 
 std::ostream &operator<<(std::ostream &os, const PacketFormatEnum &format);
 
-
 enum class ChannelBandwidthEnum : uint16_t {
     CBW_5 = 5,
     CBW_10 = 10,
@@ -63,6 +62,15 @@ std::string ChannelBandwidth2String(ChannelBandwidthEnum cbw);
 
 std::ostream &operator<<(std::ostream &os, const ChannelBandwidthEnum &cbw);
 
+enum class ChannelModeEnum : uint8_t {
+    HT20 = 8,
+    HT40_MINUS = 24,
+    HT40_PLUS = 40,
+};
+
+std::string channelModel2String(ChannelModeEnum mode);
+
+std::ostream &operator<<(std::ostream &os, const ChannelModeEnum &channelMode);
 
 enum class GuardIntervalEnum : uint16_t {
     GI_400 = 400,

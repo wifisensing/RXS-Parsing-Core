@@ -5,6 +5,7 @@
 #ifndef PICOSCENES_PLATFROM_RXSEXTRAINFO_H
 #define PICOSCENES_PLATFROM_RXSEXTRAINFO_H
 
+#include "PicoScenesCommons.hxx"
 #include <cstdlib>
 #include <cstdio>
 #include <vector>
@@ -349,50 +350,27 @@ enum class RXSParsingLevel : uint8_t {
     EXTRA_CSI_UNWRAP
 };
 
-enum class ChannelMode : uint8_t {
-    HT20 = 8,
-    HT40_MINUS = 24,
-    HT40_PLUS = 40,
-};
-
-inline std::string channelModel2String(ChannelMode mode) {
-    switch (mode) {
-        case ChannelMode::HT40_PLUS:
-            return "HT40_PLUS";
-        case ChannelMode::HT40_MINUS:
-            return "HT40_MINUS";
-        case ChannelMode::HT20:
-            return "HT20";
-    }
-    return "channel mode error.";
-}
-
-inline std::ostream &operator<<(std::ostream &os, const ChannelMode &channelMode) {
-    os << channelModel2String(channelMode);
-    return os;
-}
-
 inline std::ostream &operator<<(std::ostream &os, const AtherosCFTuningPolicy &cfTuningPolicy) {
     os << TuningPolicy2String(cfTuningPolicy);
     return os;
 }
 
-inline ChannelMode channelFlags2ChannelMode(uint16_t channelFlags) {
+inline ChannelModeEnum channelFlags2ChannelMode(uint16_t channelFlags) {
     std::bitset<16> channelFlagSet(channelFlags);
 
     if (channelFlagSet.test(3) && channelFlagSet.test(4)) {
-        return ChannelMode::HT40_PLUS;
+        return ChannelModeEnum::HT40_PLUS;
     }
 
     if (channelFlagSet.test(3) && channelFlagSet.test(5)) {
-        return ChannelMode::HT40_MINUS;
+        return ChannelModeEnum::HT40_MINUS;
     }
 
     if (channelFlagSet.test(3)) {
-        return ChannelMode::HT20;
+        return ChannelModeEnum::HT20;
     }
 
-    return ChannelMode::HT20;
+    return ChannelModeEnum::HT20;
 }
 
 /**
