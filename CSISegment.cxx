@@ -114,7 +114,7 @@ std::vector<int16_t> CSI::IWL5300SubcarrierIndices_CBW40 = []() noexcept -> std:
 }();
 
 CSI CSI::fromQCA9300(const uint8_t *buffer, uint32_t bufferLength, uint8_t numTx, uint8_t numRx, uint8_t numTones, ChannelBandwidthEnum cbw) {
-    uint32_t actualNumSTSPerChain = bufferLength / 140 / numRx;
+    uint32_t actualNumSTSPerChain = bufferLength / (cbw == ChannelBandwidthEnum::CBW_20 ? 140 : 285) / numRx; // 56 * 2 * 10 / 8 = 140B , 114 * 2 * 10 / 8 = 285;
     auto csi = CSI{.deviceType = PicoScenesDeviceType::QCA9300,
             .packetFormat = PacketFormatEnum::PacketFormat_HT,
             .cbw = cbw,
