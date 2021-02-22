@@ -68,21 +68,24 @@ void parseIWL5300CSIData(Iterator csi_matrix, const uint8_t *payload, int ntx, i
 
     auto positionComputationWRTPermutation = [](int ntx, int num_tones, int ntxIdx, int nrxIdx, int subcarrierIdx, std::optional<Uint8Vector> ant_sel) -> int {
         auto new_nrxIdx = nrxIdx;
-        if (ant_sel && ant_sel->size() > 1) {
-            auto ant_sel_copy = *ant_sel;
-            auto sorted_indexes = sort_indexes(ant_sel_copy);
-            sorted_indexes = sort_indexes(sorted_indexes); // double sort, shit but works !
-            new_nrxIdx = sorted_indexes[nrxIdx];
+        if (ant_sel && !ant_sel->empty()) {
+            auto sorted_indexes = sort_indexes(*ant_sel);
+            auto sorted_indexes2 = sort_indexes(sorted_indexes); // double sort, shit but works !
+            new_nrxIdx = sorted_indexes2[nrxIdx];
         }
 
         return new_nrxIdx * (ntx * num_tones) + ntxIdx * num_tones + subcarrierIdx;
     };
 
-    std::vector<uint8_t> antSelVector = [](uint8_t ant_sel) {
-        return std::vector<uint8_t>{static_cast<unsigned char>(((unsigned) ant_sel & 0x1U) + 1),
-                                    static_cast<unsigned char>((((unsigned) ant_sel >> 0x2U) & 0x3U) + 1),
-                                    static_cast<unsigned char>((((unsigned) ant_sel >> 0x4U) & 0x3U) + 1)
+    std::vector<uint8_t> antSelVector = [&](uint8_t ant_sel) {
+        auto v = std::vector<uint8_t>();
+        if (nrx > 1) {
+            v.emplace_back(static_cast<unsigned char>(((unsigned) ant_sel & 0x1U) + 1));
+            v.emplace_back(static_cast<unsigned char>((((unsigned) ant_sel >> 0x2U) & 0x3U) + 1));
         };
+        if (nrx > 2)
+            v.emplace_back(static_cast<unsigned char>((((unsigned) ant_sel >> 0x4U) & 0x3U) + 1));
+        return v;
     }(ant_sel);
 
     uint32_t index = 0;
