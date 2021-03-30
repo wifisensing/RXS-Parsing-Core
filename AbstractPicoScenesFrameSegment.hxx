@@ -5,6 +5,7 @@
 #ifndef PICOSCENES_PLATFORM_ABSTRACTPICOSCENESFRAMESEGMENT_HXX
 #define PICOSCENES_PLATFORM_ABSTRACTPICOSCENESFRAMESEGMENT_HXX
 
+#include <algorithm>
 #include <iostream>
 #include <vector>
 #include <map>

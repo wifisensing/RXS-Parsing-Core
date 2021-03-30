@@ -42,7 +42,7 @@ void PreEQSymbolsSegment::fromBuffer(const uint8_t *buffer, uint32_t bufferLengt
         throw std::runtime_error("PreEQSymbolsSegment cannot parse the segment named " + segmentName + ".");
     if (segmentLength + 4 > bufferLength)
         throw std::underflow_error("PreEQSymbolsSegment cannot parse the segment with less than " + std::to_string(segmentLength + 4) + "B.");
-    if (!versionedSolutionMap.contains(versionId)) {
+    if (!versionedSolutionMap.count(versionId)) {
         throw std::runtime_error("PreEQSymbolsSegment cannot parse the segment with version v" + std::to_string(versionId) + ".");
     }
 

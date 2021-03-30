@@ -14,9 +14,9 @@
 #include <string>
 #include <cstring>
 #include <numeric>
-#include <filesystem>
 #include <iostream>
 #include <fstream>
+#include <algorithm>
 
 enum class SignalMatrixStorageMajority : char {
     RowMajor = 'R',
