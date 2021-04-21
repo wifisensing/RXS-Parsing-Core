@@ -92,6 +92,7 @@ public:
     RxSBasicSegment rxSBasicSegment;
     ExtraInfoSegment rxExtraInfoSegment;
     CSISegment csiSegment;
+    std::optional<CSISegment> pilotCSISegment;
     std::optional<CSISegment> legacyCSISegment;
     std::optional<BasebandSignalSegment> basebandSignalSegment;
     std::optional<PreEQSymbolsSegment> preEQSymbolsSegment;
