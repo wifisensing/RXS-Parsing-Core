@@ -115,6 +115,7 @@ public:
     uint8_t numTx = 1;
     uint8_t numRx = 1;
     uint8_t numESS = 0;
+    uint8_t numCSI = 1;
 };
 
 class CSI {

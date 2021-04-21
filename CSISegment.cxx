@@ -84,7 +84,7 @@ CSI CSI::fromQCA9300(const uint8_t *buffer, uint32_t bufferLength, uint8_t numTx
     auto csi = CSI{.deviceType = PicoScenesDeviceType::QCA9300,
             .packetFormat = PacketFormatEnum::PacketFormat_HT,
             .cbw = cbw,
-            .dimensions = CSIDimension{.numTones = numTones, .numTx = numTx, .numRx = numRx, .numESS = uint8_t(actualNumSTSPerChain - numTx)},
+            .dimensions = CSIDimension{.numTones = numTones, .numTx = numTx, .numRx = numRx, .numESS = uint8_t(actualNumSTSPerChain - numTx), .numCSI = 1},
             .antSel = 0,
             .subcarrierOffset = subcarrierIndexOffset,
             .CSIArray = parseQCA9300CSIData(buffer, actualNumSTSPerChain, numRx, numTones),
@@ -110,7 +110,7 @@ CSI CSI::fromIWL5300(const uint8_t *buffer, uint32_t bufferLength, uint8_t numTx
     auto csi = CSI{.deviceType = PicoScenesDeviceType::IWL5300,
             .packetFormat=PacketFormatEnum::PacketFormat_HT,
             .cbw = cbw,
-            .dimensions = CSIDimension{.numTones = numTones, .numTx = numTx, .numRx = numRx, .numESS = uint8_t(actualNumSTSPerChain - numTx)},
+            .dimensions = CSIDimension{.numTones = numTones, .numTx = numTx, .numRx = numRx, .numESS = uint8_t(actualNumSTSPerChain - numTx), .numCSI = 1},
             .antSel = ant_sel,
             .subcarrierOffset = subcarrierIndexOffset,
             .CSIArray = parseIWL5300CSIData(buffer, actualNumSTSPerChain, numRx, ant_sel),
@@ -183,6 +183,7 @@ std::vector<uint8_t> CSI::toBuffer() {
     std::copy((uint8_t *) &dimensions.numTx, (uint8_t *) &dimensions.numTx + sizeof(dimensions.numTx), std::back_inserter(buffer));
     std::copy((uint8_t *) &dimensions.numRx, (uint8_t *) &dimensions.numRx + sizeof(dimensions.numRx), std::back_inserter(buffer));
     std::copy((uint8_t *) &dimensions.numESS, (uint8_t *) &dimensions.numESS + sizeof(dimensions.numESS), std::back_inserter(buffer));
+    std::copy((uint8_t *) &dimensions.numCSI, (uint8_t *) &dimensions.numCSI + sizeof(dimensions.numCSI), std::back_inserter(buffer));
     std::copy((uint8_t *) &antSel, (uint8_t *) &antSel + sizeof(antSel), std::back_inserter(buffer));
     std::copy((uint8_t *) &subcarrierOffset, (uint8_t *) &subcarrierOffset + sizeof(subcarrierOffset), std::back_inserter(buffer));
     if (deviceType == PicoScenesDeviceType::IWL5300 || deviceType == PicoScenesDeviceType::QCA9300) {
@@ -253,7 +254,7 @@ static auto v1Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> CSI {
                 .carrierFreq = carrierFreq,
                 .samplingRate = samplingRate,
                 .subcarrierBandwidth = subcarrierBandwidth,
-                .dimensions = CSIDimension{.numTones = numTone, .numTx = numSTS, .numRx = numRx, .numESS = numESS},
+                .dimensions = CSIDimension{.numTones = numTone, .numTx = numSTS, .numRx = numRx, .numESS = numESS, .numCSI = 1},
                 .antSel = 0,
                 .subcarrierIndices = subcarrierIndices,
                 .CSIArray = SignalMatrix<std::complex<double>>::fromBuffer(buffer + pos, buffer + pos + csiArrayLength, SignalMatrixStorageMajority::RowMajor)
@@ -263,7 +264,7 @@ static auto v1Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> CSI {
         return csi;
     }
 
-    throw std::runtime_error("CSISegment cannot decode the given buffer.");
+    throw std::runtime_error("CSISegment cannot decode the given buffer by v1Parser.");
 };
 
 static auto v2Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> CSI { // add subcarrierOffset
@@ -318,7 +319,7 @@ static auto v2Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> CSI {
                 .carrierFreq = carrierFreq,
                 .samplingRate = samplingRate,
                 .subcarrierBandwidth = subcarrierBandwidth,
-                .dimensions = CSIDimension{.numTones = numTone, .numTx = numSTS, .numRx = numRx, .numESS = numESS},
+                .dimensions = CSIDimension{.numTones = numTone, .numTx = numSTS, .numRx = numRx, .numESS = numESS, .numCSI = 1},
                 .antSel = 0,
                 .subcarrierIndices = subcarrierIndices,
                 .CSIArray = SignalMatrix<std::complex<double>>::fromBuffer(buffer + pos, buffer + pos + csiArrayLength, SignalMatrixStorageMajority::RowMajor)
@@ -328,16 +329,84 @@ static auto v2Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> CSI {
         return csi;
     }
 
-    throw std::runtime_error("CSISegment cannot decode the given buffer.");
+    throw std::runtime_error("CSISegment cannot decode the given buffer by v2Parser.");
+};
+
+static auto v3Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> CSI { // add numCSI
+    uint32_t pos = 0;
+
+    auto deviceType = (PicoScenesDeviceType) *(uint16_t *) (buffer + pos);
+    pos += sizeof(PicoScenesDeviceType);
+    PacketFormatEnum packetFormat = *(PacketFormatEnum *) (buffer + pos);
+    pos += sizeof(PacketFormatEnum);
+    ChannelBandwidthEnum cbw = *(ChannelBandwidthEnum *) (buffer + pos);
+    pos += sizeof(ChannelBandwidthEnum);
+    auto carrierFreq = *(uint64_t *) (buffer + pos);
+    pos += sizeof(uint64_t);
+    auto samplingRate = *(uint64_t *) (buffer + pos);
+    pos += sizeof(uint64_t);
+    auto subcarrierBandwidth = *(uint32_t *) (buffer + pos);
+    pos += sizeof(uint32_t);
+    uint16_t numTone = *(uint16_t *) (buffer + pos);
+    pos += 2;
+    uint8_t numSTS = *(uint8_t *) (buffer + pos++);
+    uint8_t numRx = *(uint8_t *) (buffer + pos++);
+    uint8_t numESS = *(uint8_t *) (buffer + pos++);
+    uint8_t numCSI = *(uint8_t *) (buffer + pos++);
+    uint8_t antSelByte = *(uint8_t *) (buffer + pos++);
+    uint16_t subcarrierIndexOffset = *(uint16_t *) (buffer + pos);
+    pos += 2;
+    uint32_t CSIBufferLength = *(uint32_t *) (buffer + pos);
+    pos += 4;
+
+    if (deviceType == PicoScenesDeviceType::QCA9300) {
+        auto csi = CSI::fromQCA9300(buffer + pos, CSIBufferLength, numSTS, numRx, numTone, cbw, subcarrierIndexOffset);
+        csi.carrierFreq = carrierFreq;
+        csi.samplingRate = samplingRate;
+        csi.subcarrierBandwidth = subcarrierBandwidth;
+        return csi;
+    } else if (deviceType == PicoScenesDeviceType::IWL5300) {
+        auto csi = CSI::fromIWL5300(buffer + pos, CSIBufferLength, numSTS, numRx, numTone, cbw, subcarrierIndexOffset, antSelByte);
+        csi.carrierFreq = carrierFreq;
+        csi.samplingRate = samplingRate;
+        csi.subcarrierBandwidth = subcarrierBandwidth;
+        return csi;
+    } else if (deviceType == PicoScenesDeviceType::USRP) {
+        auto csiBufferStart = pos;
+        std::vector<int16_t> subcarrierIndices;
+        for (auto i = 0; i < numTone; i++) {
+            subcarrierIndices.emplace_back(*(uint16_t *) (buffer + pos));
+            pos += 2;
+        }
+        uint32_t csiArrayLength = CSIBufferLength - 2 * numTone;
+        CSI csi{.deviceType = PicoScenesDeviceType::USRP,
+                .packetFormat = packetFormat,
+                .cbw = cbw,
+                .carrierFreq = carrierFreq,
+                .samplingRate = samplingRate,
+                .subcarrierBandwidth = subcarrierBandwidth,
+                .dimensions = CSIDimension{.numTones = numTone, .numTx = numSTS, .numRx = numRx, .numESS = numESS, .numCSI = numCSI},
+                .antSel = 0,
+                .subcarrierIndices = subcarrierIndices,
+                .CSIArray = SignalMatrix<std::complex<double>>::fromBuffer(buffer + pos, buffer + pos + csiArrayLength, SignalMatrixStorageMajority::RowMajor)
+        };
+        auto csiBufferEnd = pos + csiArrayLength;
+        std::copy(buffer + csiBufferStart, buffer + csiBufferEnd, std::back_inserter(csi.rawCSIData));
+        return csi;
+    }
+
+    throw std::runtime_error("CSISegment cannot decode the given buffer by v3Parser.");
 };
 
 std::map<uint16_t, std::function<CSI(const uint8_t *, uint32_t)>> CSISegment::versionedSolutionMap = initializeSolutionMap();
 
 std::map<uint16_t, std::function<CSI(const uint8_t *, uint32_t)>> CSISegment::initializeSolutionMap() noexcept {
-    return std::map<uint16_t, std::function<CSI(const uint8_t *, uint32_t)>>{{0x1U, v1Parser}, {0x2U, v2Parser}};
+    return std::map<uint16_t, std::function<CSI(const uint8_t *, uint32_t)>>{{0x1U, v1Parser},
+                                                                             {0x2U, v2Parser},
+                                                                             {0x3U, v3Parser}};
 }
 
-CSISegment::CSISegment() : AbstractPicoScenesFrameSegment("CSI", 0x2U) {
+CSISegment::CSISegment() : AbstractPicoScenesFrameSegment("CSI", 0x3U) {
 
 }
 
@@ -366,7 +435,8 @@ CSISegment CSISegment::createByBuffer(const uint8_t *buffer, uint32_t bufferLeng
 std::string CSISegment::toString() const {
     std::stringstream ss;
     ss << segmentName + ":[";
-    ss << "(device=" << csi.deviceType << ", format=" << csi.packetFormat << ", CBW=" << csi.cbw << ", cf=" << std::to_string((double)csi.carrierFreq / 1e6) << "MHz" << ", sf=" << std::to_string((double)csi.samplingRate / 1e6) << "MHz" ", subcarrierBW=" << std::to_string((double)csi.subcarrierBandwidth / 1e3) << "KHz" << ", dim(nTones,nSTS,nESS,nRx)=(" + std::to_string(csi.dimensions.numTones) + "," + std::to_string(csi.dimensions.numTx) + "," + std::to_string(csi.dimensions.numESS) + "," + std::to_string(csi.dimensions.numRx) + "), raw=" + std::to_string(csi.rawCSIData.size()) + "B)]";
+    ss << "(device=" << csi.deviceType << ", format=" << csi.packetFormat << ", CBW=" << csi.cbw << ", cf=" << std::to_string((double) csi.carrierFreq / 1e6) << "MHz" << ", sf=" << std::to_string((double) csi.samplingRate / 1e6) << "MHz" ", subcarrierBW=" << std::to_string((double) csi.subcarrierBandwidth / 1e3) << "KHz"
+       << ", dim(nTones,nSTS,nESS,nRx,nCSI)=(" + std::to_string(csi.dimensions.numTones) + "," + std::to_string(csi.dimensions.numTx) + "," + std::to_string(csi.dimensions.numESS) + "," + std::to_string(csi.dimensions.numRx) + "," + std::to_string(csi.dimensions.numCSI) + "), raw=" + std::to_string(csi.rawCSIData.size()) + "B)]";
     auto temp = ss.str();
     temp.erase(temp.end() - 2, temp.end());
     temp.append("]");
