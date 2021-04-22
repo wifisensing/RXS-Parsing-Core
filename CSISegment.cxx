@@ -138,7 +138,7 @@ void CSI::interpolateCSI() {
     coder::array<short, 1U> interpedIndex_int16;
     coder::array<short, 1U> subcarrierIndex_int16;
 
-    CSI.set_size(dimensions.numTones, (dimensions.numTx + dimensions.numESS) * dimensions.numRx);
+    CSI.set_size(dimensions.numTones, (dimensions.numTx + dimensions.numESS) * dimensions.numRx * dimensions.numCSI);
     for (auto toneIndex = 0; toneIndex < CSI.size(0); toneIndex++) {
         for (auto txTrIndex = 0; txTrIndex < CSI.size(1); txTrIndex++) {
             auto pos = toneIndex + txTrIndex * CSI.size(0);
