@@ -161,6 +161,7 @@ std::string ModularPicoScenesRxFrame::toString() const {
         temp.append(")");
         ss << ", " << temp;
     }
+    ss << ", MPDU=" << mpdu.size() << "B";
     ss << "}";
     return ss.str();
 }
