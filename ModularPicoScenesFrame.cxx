@@ -64,6 +64,8 @@ std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::fromBuffer(con
             if (interpolateCSI) {
                 frame.csiSegment.getCSI().interpolateCSI();
             }
+        } else if (segmentName == "PilotCSI") {
+            frame.pilotCSISegment = CSISegment::createByBuffer(buffer + pos, segmentLength + 4);
         } else if (segmentName == "LegacyCSI") {
             frame.legacyCSISegment = CSISegment::createByBuffer(buffer + pos, segmentLength + 4);
             if (interpolateCSI) {
@@ -113,9 +115,9 @@ std::string ModularPicoScenesRxFrame::toString() const {
     ss << ", " << rxExtraInfoSegment.getExtraInfo();
     ss << ", Rx" << csiSegment;
     if (pilotCSISegment)
-        ss << ", " << *pilotCSISegment;
+        ss << ", Pilot" << *pilotCSISegment;
     if (legacyCSISegment)
-        ss << ", " << *legacyCSISegment;
+        ss << ", Legacy" << *legacyCSISegment;
     if (basebandSignalSegment)
         ss << ", " << *basebandSignalSegment;
     if (preEQSymbolsSegment)
@@ -185,6 +187,11 @@ Uint8Vector ModularPicoScenesRxFrame::toBuffer() const {
     std::copy(rxsBasicBuffer.cbegin(), rxsBasicBuffer.cend(), std::back_inserter(rxSegmentBuffer));
     std::copy(rxsExtraInfoBuffer.cbegin(), rxsExtraInfoBuffer.cend(), std::back_inserter(rxSegmentBuffer));
     std::copy(csiBuffer.cbegin(), csiBuffer.cend(), std::back_inserter(rxSegmentBuffer));
+    if (pilotCSISegment) {
+        auto pilotCSIBuffer = pilotCSISegment->toBuffer();
+        std::copy(pilotCSIBuffer.cbegin(), pilotCSIBuffer.cend(), std::back_inserter(rxSegmentBuffer));
+        modularFrameHeader.numRxSegments++;
+    }
     if (legacyCSISegment) {
         auto legacyCSIBuffer = legacyCSISegment->toBuffer();
         std::copy(legacyCSIBuffer.cbegin(), legacyCSIBuffer.cend(), std::back_inserter(rxSegmentBuffer));
