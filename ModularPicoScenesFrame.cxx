@@ -115,9 +115,9 @@ std::string ModularPicoScenesRxFrame::toString() const {
     ss << ", " << rxExtraInfoSegment.getExtraInfo();
     ss << ", Rx" << csiSegment;
     if (pilotCSISegment)
-        ss << ", Pilot" << *pilotCSISegment;
+        ss << ", " << *pilotCSISegment;
     if (legacyCSISegment)
-        ss << ", Legacy" << *legacyCSISegment;
+        ss << ", " << *legacyCSISegment;
     if (basebandSignalSegment)
         ss << ", " << *basebandSignalSegment;
     if (preEQSymbolsSegment)

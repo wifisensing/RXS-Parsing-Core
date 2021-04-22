@@ -413,7 +413,7 @@ CSISegment::CSISegment() : AbstractPicoScenesFrameSegment("CSI", 0x3U) {
 
 void CSISegment::fromBuffer(const uint8_t *buffer, uint32_t bufferLength) {
     auto[segmentName, segmentLength, versionId, offset] = extractSegmentMetaData(buffer, bufferLength);
-    if (segmentName != "CSI" && segmentName != "LegacyCSI")
+    if (segmentName != "CSI" && segmentName != "LegacyCSI" && segmentName != "PilotCSI")
         throw std::runtime_error("CSISegment cannot parse the segment named " + segmentName + ".");
     if (segmentLength + 4 > bufferLength)
         throw std::underflow_error("CSISegment cannot parse the segment with less than " + std::to_string(segmentLength + 4) + "B.");
@@ -424,6 +424,7 @@ void CSISegment::fromBuffer(const uint8_t *buffer, uint32_t bufferLength) {
     csi = versionedSolutionMap.at(versionId)(buffer + offset, bufferLength - offset);
     std::copy(buffer, buffer + bufferLength, std::back_inserter(rawBuffer));
     this->segmentLength = segmentLength;
+    this->segmentName = segmentName;
     isSuccessfullyDecoded = true;
 }
 
