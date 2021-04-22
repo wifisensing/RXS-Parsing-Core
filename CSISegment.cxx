@@ -155,12 +155,15 @@ void CSI::interpolateCSI() {
 
     CSIArray.array.clear();
     std::copy((std::complex<double> *) newCSI.data(), (std::complex<double> *) newCSI.data() + newCSI.numel(), std::back_inserter(CSIArray.array));
+    CSIArray.dimensions[0] = newCSI.size(0);
 
     magnitudeArray.array.clear();
     std::copy((double *) newMag.data(), (double *) newMag.data() + newMag.numel(), std::back_inserter(magnitudeArray.array));
+    magnitudeArray.dimensions = CSIArray.dimensions;
 
     phaseArray.array.clear();
     std::copy((double *) newPhase.data(), (double *) newPhase.data() + newPhase.numel(), std::back_inserter(phaseArray.array));
+    phaseArray.dimensions = CSIArray.dimensions;
 
     subcarrierIndices.clear();
     std::copy((int16_t *) interpedIndex_int16.data(), (int16_t *) interpedIndex_int16.data() + interpedIndex_int16.numel(), std::back_inserter(subcarrierIndices));
