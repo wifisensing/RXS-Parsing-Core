@@ -29,6 +29,7 @@ void featureCodeInterpretation(uint32_t featureCode, struct ExtraInfo *extraInfo
     extraInfo->hasAntennaSelection = extraInfoHasAntennaSelection(featureCode);
     extraInfo->hasSamplingRate = extraInfoHasSamplingRate(featureCode);
     extraInfo->hasCFO = extraInfoHasCFO(featureCode);
+    extraInfo->hasSFO = extraInfoHasSFO(featureCode);
 }
 
 
@@ -67,6 +68,7 @@ void inplaceAddRxExtraInfo(uint8_t *inBytes, uint32_t featureCode, uint8_t *valu
     pos += extraInfoHasAntennaSelection(*rxFeatureCode) ? 1 : 0;
     pos += extraInfoHasSamplingRate(*rxFeatureCode) ? 8 : 0;
     pos += extraInfoHasCFO(*rxFeatureCode) ? 4 : 0;
+    pos += extraInfoHasSFO(*rxFeatureCode) ? 4 : 0;
 
     *rxFeatureCode |= featureCode;
     if (insertPos == 0) {
@@ -130,6 +132,7 @@ int ExtraInfo::fromBinary(const uint8_t *extraInfoPtr, struct ExtraInfo *extraIn
     }
     GETVALUE(hasSamplingRate, samplingRate)
     GETVALUE(hasCFO, cfo)
+    GETVALUE(hasSFO, sfo)
 
     return pos;
 #undef GETVALUE
@@ -174,6 +177,7 @@ uint16_t ExtraInfo::calculateBufferLength() const {
     pos += this->hasAntennaSelection ? 1 : 0;
     ADDLENGTH(hasSamplingRate, samplingRate)
     ADDLENGTH(hasCFO, cfo)
+    ADDLENGTH(hasSFO, sfo)
 
     return pos;
 #undef ADDLENGTH
@@ -221,6 +225,7 @@ int ExtraInfo::toBuffer(uint8_t *buffer) const {
     }
     SETBUFF(hasSamplingRate, samplingRate)
     SETBUFF(hasCFO, cfo)
+    SETBUFF(hasSFO, sfo)
 
     return pos;
 #undef SETBUFF
@@ -379,6 +384,13 @@ void ExtraInfo::setCFO(int32_t cfov) {
     updateLength();
 }
 
+void ExtraInfo::setSFO(int32_t sfov) {
+    hasSFO = true;
+    featureCode |= PICOSCENES_EXTRAINFO_HASSFO;
+    sfo = sfov;
+    updateLength();
+}
+
 void ExtraInfo::updateLength() {
     setLength(calculateBufferLength() - 2);
 }
@@ -407,9 +419,9 @@ std::string ExtraInfo::toString() const {
     if (hasTxpower)
         ss << "txpower=" << std::to_string(txpower) << ", ";
     if (hasCF)
-        ss << "cf=" << std::to_string(cf / 1e6) << "MHz, ";
+        ss << "cf=" << std::to_string(cf / 1e6) << " MHz, ";
     if (hasSamplingRate)
-        ss << "sf=" << std::to_string(samplingRate / 1e6) << "MHz, ";
+        ss << "sf=" << std::to_string(samplingRate / 1e6) << " MHz, ";
     if (hasTxTSF)
         ss << "tx-tsf=" << std::to_string(txTSF) << ", ";
     if (hasLastHWTxTSF)
@@ -435,7 +447,9 @@ std::string ExtraInfo::toString() const {
     if (hasAntennaSelection)
         ss << "ant_sel=[" << std::to_string(ant_sel[0]) << " " << std::to_string(ant_sel[1]) << " " << std::to_string(ant_sel[2]) << "], ";
     if (hasCFO)
-        ss << "cfo=" << std::to_string(cfo / 1e3) << "KHz, ";
+        ss << "cfo=" << std::to_string(cfo / 1e3) << " kHz, ";
+    if (hasSFO)
+        ss << "sfo=" << std::to_string(sfo) << " Hz, ";
     auto temp = ss.str();
     temp.erase(temp.end() - 2, temp.end());
     temp.append("]");
