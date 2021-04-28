@@ -9,6 +9,7 @@
 
 class PicoScenesFrameTxParameters {
 public:
+    std::optional<double> preciseTxTime = std::nullopt;
     PacketFormatEnum frameType;
     std::vector<uint8_t> mcs;
     std::vector<uint8_t> numSTS;
