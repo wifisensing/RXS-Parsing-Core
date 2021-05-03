@@ -29,6 +29,7 @@ enum class PicoScenesDeviceType : uint16_t {
     IWL5300 = 0x5300,
     MAC80211Compatible = 0x802,
     USRP = 0x1234,
+    VirtualSDR = 0x1000,
     Unknown = 0x404
 };
 

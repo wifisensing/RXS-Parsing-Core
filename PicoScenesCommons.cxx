@@ -14,6 +14,8 @@ std::string DeviceType2String(PicoScenesDeviceType type) {
             return "MAC80211 Compatible NIC";
         case PicoScenesDeviceType::USRP:
             return "USRP(SDR)";
+        case PicoScenesDeviceType::VirtualSDR:
+            return "Virtual(SDR)";
         case PicoScenesDeviceType::Unknown:
             return "Unknown";
         default:
