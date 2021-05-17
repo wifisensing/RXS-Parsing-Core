@@ -30,6 +30,7 @@ void featureCodeInterpretation(uint32_t featureCode, struct ExtraInfo *extraInfo
     extraInfo->hasSamplingRate = extraInfoHasSamplingRate(featureCode);
     extraInfo->hasCFO = extraInfoHasCFO(featureCode);
     extraInfo->hasSFO = extraInfoHasSFO(featureCode);
+    extraInfo->hasPreciseTxTiming = extraInfoHasPreciseTxTiming(featureCode);
 }
 
 
@@ -69,6 +70,7 @@ void inplaceAddRxExtraInfo(uint8_t *inBytes, uint32_t featureCode, uint8_t *valu
     pos += extraInfoHasSamplingRate(*rxFeatureCode) ? 8 : 0;
     pos += extraInfoHasCFO(*rxFeatureCode) ? 4 : 0;
     pos += extraInfoHasSFO(*rxFeatureCode) ? 4 : 0;
+    pos += extraInfoHasPreciseTxTiming(*rxFeatureCode) ? 8 : 0;
 
     *rxFeatureCode |= featureCode;
     if (insertPos == 0) {
@@ -87,6 +89,7 @@ void inplaceAddRxExtraInfo(uint8_t *inBytes, uint32_t featureCode, uint8_t *valu
 ExtraInfo::ExtraInfo() {
     memset(this, 0, sizeof(ExtraInfo));
     setLength(2);
+    setVersion(0x20210517);
 }
 
 int ExtraInfo::fromBinary(const uint8_t *extraInfoPtr, struct ExtraInfo *extraInfo, uint32_t suppliedFeatureCode) {
@@ -133,6 +136,7 @@ int ExtraInfo::fromBinary(const uint8_t *extraInfoPtr, struct ExtraInfo *extraIn
     GETVALUE(hasSamplingRate, samplingRate)
     GETVALUE(hasCFO, cfo)
     GETVALUE(hasSFO, sfo)
+    GETVALUE(hasPreciseTxTiming, preciseTxTiming)
 
     return pos;
 #undef GETVALUE
@@ -178,6 +182,7 @@ uint16_t ExtraInfo::calculateBufferLength() const {
     ADDLENGTH(hasSamplingRate, samplingRate)
     ADDLENGTH(hasCFO, cfo)
     ADDLENGTH(hasSFO, sfo)
+    ADDLENGTH(hasPreciseTxTiming, preciseTxTiming)
 
     return pos;
 #undef ADDLENGTH
@@ -226,6 +231,7 @@ int ExtraInfo::toBuffer(uint8_t *buffer) const {
     SETBUFF(hasSamplingRate, samplingRate)
     SETBUFF(hasCFO, cfo)
     SETBUFF(hasSFO, sfo)
+    SETBUFF(hasPreciseTxTiming, preciseTxTiming)
 
     return pos;
 #undef SETBUFF
@@ -391,6 +397,13 @@ void ExtraInfo::setSFO(int32_t sfov) {
     updateLength();
 }
 
+void ExtraInfo::setPreciseTxTiming(double nanosecTxTiming) {
+    hasPreciseTxTiming = true;
+    featureCode |= PICOSCENES_EXTRAINFO_HASPRECISETXTIMING;
+    preciseTxTiming = nanosecTxTiming;
+    updateLength();
+}
+
 void ExtraInfo::updateLength() {
     setLength(calculateBufferLength() - 2);
 }
@@ -422,6 +435,8 @@ std::string ExtraInfo::toString() const {
         ss << "cf=" << std::to_string(cf / 1e6) << " MHz, ";
     if (hasSamplingRate)
         ss << "sf=" << std::to_string(samplingRate / 1e6) << " MHz, ";
+    if (hasPreciseTxTiming)
+        ss << "tx-time(nanosec)=" << std::to_string(preciseTxTiming) << "s, ";
     if (hasTxTSF)
         ss << "tx-tsf=" << std::to_string(txTSF) << ", ";
     if (hasLastHWTxTSF)
