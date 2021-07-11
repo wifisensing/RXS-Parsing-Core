@@ -116,6 +116,22 @@ public:
     uint8_t numRx = 1;
     uint8_t numESS = 0;
     uint16_t numCSI = 1;
+
+    inline uint16_t numStreamsPerCSI() {
+        return (numTx + numESS) * numRx;
+    }
+
+    inline uint16_t numTotalSubcarriersPerCSI() {
+        return numStreamsPerCSI() * numTones;
+    }
+
+    inline uint16_t numStreamsAll() {
+        return (numTx + numESS) * numRx * numCSI;
+    }
+
+    inline uint16_t numTotalSubcarriersAll() {
+        return numStreamsAll() * numTones;
+    }
 };
 
 class CSI {
