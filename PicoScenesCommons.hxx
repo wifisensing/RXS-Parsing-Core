@@ -27,6 +27,7 @@ using Uint8Vector = std::vector<uint8_t>;
 enum class PicoScenesDeviceType : uint16_t {
     QCA9300 = 0x9300,
     IWL5300 = 0x5300,
+    IWLMVM = 0x2000,
     MAC80211Compatible = 0x802,
     USRP = 0x1234,
     VirtualSDR = 0x1000,
