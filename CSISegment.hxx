@@ -173,6 +173,8 @@ public:
 
     static CSI fromIWL5300(const uint8_t *buffer, uint32_t bufferLength, uint8_t numTx, uint8_t numRx, uint8_t numTones, ChannelBandwidthEnum cbw, int16_t subcarrierIndexOffset, uint8_t ant_sel);
 
+    static CSI fromIWLMVM(const uint8_t *buffer, uint32_t bufferLength, uint8_t numTx, uint8_t numRx, uint8_t numTones, PacketFormatEnum format, ChannelBandwidthEnum cbw, int16_t subcarrierIndexOffset);
+
     template<typename OutputValueType, typename InputValueType>
     static std::vector<std::complex<OutputValueType>> convertCSIArrayType(const std::vector<std::complex<InputValueType>> &inputArray) {
         std::vector<std::complex<OutputValueType>> outputArray(inputArray.size());
@@ -183,8 +185,15 @@ public:
     }
 
 private:
-    static std::vector<int16_t> QCA9300SubcarrierIndices_CBW20;
-    static std::vector<int16_t> QCA9300SubcarrierIndices_CBW40;
+    static std::vector<int16_t> NonHT20_52Subcarriers_Indices;
+    static std::vector<int16_t> HTVHT20_56Subcarriers_Indices;
+    static std::vector<int16_t> HTVHT40_114Subcarriers_Indices;
+    static std::vector<int16_t> VHT80_242Subcarriers_Indices;
+    static std::vector<int16_t> VHT160_484Subcarriers_Indices;
+    static std::vector<int16_t> HE20_242Subcarriers_Indices;
+    static std::vector<int16_t> HE40_484Subcarriers_Indices;
+    static std::vector<int16_t> HE80_996Subcarriers_Indices;
+    static std::vector<int16_t> HE160_1992Subcarriers_Indices;
 
     static std::vector<int16_t> IWL5300SubcarrierIndices_CBW20;
     static std::vector<int16_t> IWL5300SubcarrierIndices_CBW40;
