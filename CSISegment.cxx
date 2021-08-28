@@ -52,6 +52,12 @@ SignalMatrix<std::complex<double>> parseIWL5300CSIData(const uint8_t *payload, i
     return SignalMatrix(CSIArray, std::vector<int32_t>{30, ntx, nrx}, SignalMatrixStorageMajority::ColumnMajor);
 }
 
+SignalMatrix<std::complex<double>> parseIWLMVMCSIData(const uint8_t *payload, int nSTS, int nRx, int nTones) {
+    std::vector<std::complex<double>> CSIArray(nSTS * nRx * nTones);
+    parseIWLMVMCSIDataCore(CSIArray, payload, nSTS, nRx, nTones);
+    return SignalMatrix(CSIArray, std::vector<int32_t>{nTones, nSTS, nRx}, SignalMatrixStorageMajority::ColumnMajor);
+}
+
 std::vector<int16_t> CSI::QCA9300SubcarrierIndices_CBW20 = []() noexcept -> std::vector<int16_t> {
     auto indices = std::vector<int16_t>();
     for (auto i = -28; i <= -1; i++)
