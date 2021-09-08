@@ -208,7 +208,6 @@ CSI CSI::fromIWL5300(const uint8_t *buffer, uint32_t bufferLength, uint8_t numTx
 }
 
 CSI CSI::fromIWLMVM(const uint8_t *buffer, uint32_t bufferLength, uint8_t numTx, uint8_t numRx, uint8_t numTones, PacketFormatEnum format, ChannelBandwidthEnum cbw, int16_t subcarrierIndexOffset) {
-    uint32_t actualNumSTSPerChain = (bufferLength - 12) / 60 / numRx;
     auto csi = CSI{.deviceType = PicoScenesDeviceType::IWLMVM,
             .packetFormat = format,
             .cbw = cbw,
@@ -415,6 +414,7 @@ static auto v2Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> CSI {
     pos += 4;
 //    uint8_t csiPortion[1000];
 //    std::memcpy(csiPortion, buffer + pos, CSIBufferLength);
+//    IntelMVMCSIHeader header = *(IntelMVMCSIHeader *)csiPortion;
 
     if (deviceType == PicoScenesDeviceType::QCA9300) {
         auto csi = CSI::fromQCA9300(buffer + pos, CSIBufferLength, numSTS, numRx, numTone, cbw, subcarrierIndexOffset);

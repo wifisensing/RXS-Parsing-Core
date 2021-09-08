@@ -122,6 +122,25 @@ void parseIWLMVMCSIDataCore(Iterator csi_matrix, const uint8_t *payload, int nST
     }
 }
 
+//class IntelMVMCSIHeader {
+//public:
+//    uint32_t iqDataSize{};
+//    uint8_t reserved4[4];
+//    uint32_t samplingTick;
+//    uint32_t samplingTick2;
+//    uint8_t reserved16_52[36];
+//    uint32_t numTones;
+//    uint8_t reserved60[4];
+//    uint32_t rssi1;
+//    uint32_t rssi2;
+//    uint8_t sourceAddress[6];
+//    uint8_t reserved74[2];
+//    uint8_t csiSequence;
+//    uint8_t reserved77[11];
+//    uint32_t macTime; // 88
+//    uint32_t rate_n_flags; // 92
+//} __attribute__ ((__packed__));
+
 class CSIDimension {
 public:
     uint16_t numTones = 1;
