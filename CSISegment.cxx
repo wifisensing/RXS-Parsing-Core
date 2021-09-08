@@ -413,6 +413,8 @@ static auto v2Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> CSI {
     pos += 2;
     uint32_t CSIBufferLength = *(uint32_t *) (buffer + pos);
     pos += 4;
+//    uint8_t csiPortion[1000];
+//    std::memcpy(csiPortion, buffer + pos, CSIBufferLength);
 
     if (deviceType == PicoScenesDeviceType::QCA9300) {
         auto csi = CSI::fromQCA9300(buffer + pos, CSIBufferLength, numSTS, numRx, numTone, cbw, subcarrierIndexOffset);
@@ -425,6 +427,9 @@ static auto v2Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> CSI {
         csi.carrierFreq = carrierFreq;
         csi.samplingRate = samplingRate;
         csi.subcarrierBandwidth = subcarrierBandwidth;
+        return csi;
+    } else if (deviceType == PicoScenesDeviceType::IWLMVM) {
+        auto csi = CSI();
         return csi;
     } else if (deviceType == PicoScenesDeviceType::USRP) {
         auto csiBufferStart = pos;
