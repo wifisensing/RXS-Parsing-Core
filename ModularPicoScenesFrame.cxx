@@ -59,6 +59,8 @@ std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::fromBuffer(con
             frame.rxSBasicSegment.fromBuffer(buffer + pos, segmentLength + 4);
         } else if (segmentName == "ExtraInfo") {
             frame.rxExtraInfoSegment.fromBuffer(buffer + pos, segmentLength + 4);
+        } else if (segmentName == "MVMExtra") {
+            frame.mvmExtraSegment = MVMExtraSegment::createByBuffer(buffer + pos, segmentLength + 4);
         } else if (segmentName == "CSI") {
             frame.csiSegment.fromBuffer(buffer + pos, segmentLength + 4);
             if (interpolateCSI) {
