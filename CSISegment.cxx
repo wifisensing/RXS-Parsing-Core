@@ -153,10 +153,10 @@ SignalMatrix<std::complex<double>> parseIWL5300CSIData(const uint8_t *payload, i
 SignalMatrix<std::complex<double>> parseIWLMVMCSIData(const uint8_t *payload, int nSTS, int nRx, int nTones) {
     std::vector<std::complex<double>> CSIArray(nSTS * nRx * nTones);
     parseIWLMVMCSIDataCore(CSIArray.begin(), payload, nSTS, nRx, nTones);
-    for (const auto &c: CSIArray) {
-        std::cout << c.real() << " " << c.imag() << " ";
-    }
-    std::cout << std::endl;
+//    for (const auto &c: CSIArray) {
+//        std::cout << c.real() << " " << c.imag() << " ";
+//    }
+//    std::cout << std::endl;
     return SignalMatrix(CSIArray, std::vector<int32_t>{nTones, nSTS, nRx}, SignalMatrixStorageMajority::ColumnMajor);
 }
 
