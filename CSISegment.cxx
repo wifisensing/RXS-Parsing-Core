@@ -152,7 +152,11 @@ SignalMatrix<std::complex<double>> parseIWL5300CSIData(const uint8_t *payload, i
 
 SignalMatrix<std::complex<double>> parseIWLMVMCSIData(const uint8_t *payload, int nSTS, int nRx, int nTones) {
     std::vector<std::complex<double>> CSIArray(nSTS * nRx * nTones);
-    parseIWLMVMCSIDataCore(CSIArray, payload, nSTS, nRx, nTones);
+    parseIWLMVMCSIDataCore(CSIArray.begin(), payload, nSTS, nRx, nTones);
+    for (const auto &c: CSIArray) {
+        std::cout << c.real() << " " << c.imag() << " ";
+    }
+    std::cout << std::endl;
     return SignalMatrix(CSIArray, std::vector<int32_t>{nTones, nSTS, nRx}, SignalMatrixStorageMajority::ColumnMajor);
 }
 
@@ -208,6 +212,9 @@ CSI CSI::fromIWL5300(const uint8_t *buffer, uint32_t bufferLength, uint8_t numTx
 }
 
 CSI CSI::fromIWLMVM(const uint8_t *buffer, uint32_t bufferLength, uint8_t numTx, uint8_t numRx, uint8_t numTones, PacketFormatEnum format, ChannelBandwidthEnum cbw, int16_t subcarrierIndexOffset) {
+    if (numTx * numRx * numTones * 4 != bufferLength)
+        throw std::runtime_error("Incorrect Intel MVM-based CSI data format.");
+
     auto csi = CSI{.deviceType = PicoScenesDeviceType::IWLMVM,
             .packetFormat = format,
             .cbw = cbw,
