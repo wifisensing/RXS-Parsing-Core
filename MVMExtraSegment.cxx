@@ -16,6 +16,7 @@ static auto v1Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> Intel
     std::copy(buffer + pos, buffer + pos + extra.CSIHeaderLength, std::back_inserter(extra.CSIHeader));
     pos += extra.CSIHeaderLength;
     extra.parsedHeader = *(IntelMVMParsedCSIHeader *) extra.CSIHeader.data();
+//    std::cout << "CSIHeader content_len:" << extra.parsedHeader.iqDataSize << " numTone:" << extra.parsedHeader.numTones << std::endl;
     return extra;
 };
 
