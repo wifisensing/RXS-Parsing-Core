@@ -54,3 +54,16 @@ MVMExtraSegment MVMExtraSegment::createByBuffer(const uint8_t *buffer, uint32_t 
 std::vector<uint8_t> MVMExtraSegment::toBuffer() const {
     return AbstractPicoScenesFrameSegment::toBuffer(true);
 }
+
+std::string MVMExtraSegment::toString() const {
+    std::stringstream ss;
+    ss << segmentName + ":[";
+    ss << "(hdr_len=" << mvmExtra.CSIHeaderLength << ", csi_len=" << mvmExtra.parsedHeader.iqDataSize << "B, num_tone=" << mvmExtra.parsedHeader.numTones << "]";
+    auto temp = ss.str();
+    return temp;
+}
+
+std::ostream &operator<<(std::ostream &os, const MVMExtraSegment &mvmSegment) {
+    os << mvmSegment.toString();
+    return os;
+}
