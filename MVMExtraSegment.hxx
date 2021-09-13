@@ -45,6 +45,7 @@ public:
 
     std::vector<uint8_t> toBuffer() const override;
 
+    const IntelMVMExtrta &getMvmExtra() const;
 
 private:
     static std::map<uint16_t, std::function<IntelMVMExtrta(const uint8_t *, uint32_t)>> versionedSolutionMap;

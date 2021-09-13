@@ -54,3 +54,7 @@ MVMExtraSegment MVMExtraSegment::createByBuffer(const uint8_t *buffer, uint32_t 
 std::vector<uint8_t> MVMExtraSegment::toBuffer() const {
     return AbstractPicoScenesFrameSegment::toBuffer(true);
 }
+
+const IntelMVMExtrta &MVMExtraSegment::getMvmExtra() const {
+    return mvmExtra;
+}
