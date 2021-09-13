@@ -207,7 +207,7 @@ CSI CSI::fromIWL5300(const uint8_t *buffer, uint32_t bufferLength, uint8_t numTx
     return csi;
 }
 
-CSI CSI::fromIWLMVM(const uint8_t *buffer, uint32_t bufferLength, uint8_t numTx, uint8_t numRx, uint8_t numTones, PacketFormatEnum format, ChannelBandwidthEnum cbw, int16_t subcarrierIndexOffset) {
+CSI CSI::fromIWLMVM(const uint8_t *buffer, uint32_t bufferLength, uint8_t numTx, uint8_t numRx, uint16_t numTones, PacketFormatEnum format, ChannelBandwidthEnum cbw, int16_t subcarrierIndexOffset) {
     if (numTx * numRx * numTones * 4 != bufferLength)
         throw std::runtime_error("Incorrect Intel MVM-based CSI data format.");
 
