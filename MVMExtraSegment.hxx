@@ -45,6 +45,9 @@ public:
 
     std::vector<uint8_t> toBuffer() const override;
 
+    [[nodiscard]] std::string toString() const override;
+    
+    const IntelMVMExtrta &getMvmExtra() const;
 
 private:
     static std::map<uint16_t, std::function<IntelMVMExtrta(const uint8_t *, uint32_t)>> versionedSolutionMap;
@@ -53,6 +56,8 @@ private:
 
     IntelMVMExtrta mvmExtra;
 };
+
+std::ostream &operator<<(std::ostream &os, const MVMExtraSegment &mvmSegment);
 
 
 #endif //PICOSCENES_PLATFORM_MVMEXTRASEGMENT_HXX
