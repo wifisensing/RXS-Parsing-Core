@@ -43,14 +43,15 @@ struct QCA9300RxsBasicContentV2 {
     uint8_t rssi_ctl2;   /* rx frame RSSI [ctl, chain 2] */
 } __attribute__((packed));
 
-// compared to V2, add controlFreq and rename channelFreq to centerFreq
+// compared to V2, add controlFreq, add pkt_cbw, and rename channelFreq to centerFreq
 struct QCA9300RxsBasicContentV3 {
     uint16_t deviceType;    /* device type code */
     uint64_t tstamp;        /* h/w assigned timestamp */
     int16_t centerFreq;     /* receiving channel frequency */
     int16_t controlFreq;    /* control channel frequency */
-    int8_t packetFormat;    /* 0 for NonHT, 1 for HT, 2 for VHT, 3 for HE-SU, 4 for HE-MU */
-    uint16_t cbw;           /* channel bandwidth [20, 40, 80, 160] */
+    int16_t cbw;            /* channel bandwidth [20, 40, 80, 160] */
+    uint8_t packetFormat;   /* 0 for NonHT, 1 for HT, 2 for VHT, 3 for HE-SU, 4 for HE-MU */
+    uint16_t pkt_cbw;       /* packet CBW [20, 40, 80, 160] */
     uint16_t guardInterval; /* 400/800/1600/3200ns */
     uint8_t mcs;
     uint8_t numSTS;
@@ -80,6 +81,7 @@ static auto v1Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> RxSBa
     r.controlFreq = r.centerFreq;
     r.packetFormat = *(uint8_t *) (buffer + pos++);
     r.cbw = *(uint16_t *) (buffer + pos);
+    r.cbw = r.pkt_cbw;
     pos += 2;
     r.guardInterval = *(uint16_t *) (buffer + pos);
     pos += 2;
@@ -115,7 +117,8 @@ static auto v2Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> RxSBa
     pos += 2;
     r.controlFreq = r.centerFreq;
     r.packetFormat = *(uint8_t *) (buffer + pos++);
-    r.cbw = *(uint16_t *) (buffer + pos);
+    r.pkt_cbw = *(uint16_t *) (buffer + pos);
+    r.cbw = r.pkt_cbw;
     pos += 2;
     r.guardInterval = *(uint16_t *) (buffer + pos);
     pos += 2;
@@ -151,8 +154,10 @@ static auto v3Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> RxSBa
     pos += 2;
     r.controlFreq = *(int16_t *) (buffer + pos);
     pos += 2;
+    r.cbw = *(int16_t *) (buffer + pos);
+    pos += 2;
     r.packetFormat = *(uint8_t *) (buffer + pos++);
-    r.cbw = *(uint16_t *) (buffer + pos);
+    r.pkt_cbw = *(uint16_t *) (buffer + pos);
     pos += 2;
     r.guardInterval = *(uint16_t *) (buffer + pos);
     pos += 2;
@@ -186,7 +191,7 @@ std::map<uint16_t, std::function<RxSBasic(const uint8_t *, uint32_t)>> RxSBasicS
 
 std::string RxSBasic::toString() const {
     std::stringstream ss;
-    ss << "RxS:[device=" + DeviceType2String((PicoScenesDeviceType(deviceType))) + ", center=" + std::to_string(centerFreq) + ", control=" + std::to_string(controlFreq) + ", CBW=" + std::to_string(cbw) + ", MCS=" + std::to_string(mcs) + ", numSTS=" + std::to_string(numSTS) + ", GI=" + GuardInterval2String(GuardIntervalEnum(guardInterval))
+    ss << "RxS:[device=" + DeviceType2String((PicoScenesDeviceType(deviceType))) + ", center=" + std::to_string(centerFreq) + ", control=" + std::to_string(controlFreq) + ", CBW=" + std::to_string(cbw) + ", Pkt_CBW=" + std::to_string(pkt_cbw) + ", MCS=" + std::to_string(mcs) + ", numSTS=" + std::to_string(numSTS) + ", GI=" + GuardInterval2String(GuardIntervalEnum(guardInterval))
           + ", UsrIdx/NUsr=(" + std::to_string(userIndex) + "/" + std::to_string(numUser) + ")" + ", timestamp=" + std::to_string(tstamp) + ", NF=" +
           std::to_string(noiseFloor) + ", RSS=" + std::to_string(rssi) + "]";
     return ss.str();
