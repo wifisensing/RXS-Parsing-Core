@@ -14,7 +14,7 @@ struct RxSBasic {
     uint64_t tstamp;        /* h/w assigned timestamp */
     int16_t centerFreq;     /* receiving channel frequency */
     int16_t controlFreq;    /* control channel frequency */
-    int16_t cbw;            /* channel bandwidth [20, 40, 80, 160] */
+    uint16_t cbw;           /* channel bandwidth [20, 40, 80, 160] */
     uint8_t packetFormat;   /* 0 for NonHT, 1 for HT, 2 for VHT, 3 for HE-SU, 4 for HE-MU */
     uint16_t pkt_cbw;       /* packet CBW [20, 40, 80, 160] */
     uint16_t guardInterval; /* 400/800/1600/3200ns */
