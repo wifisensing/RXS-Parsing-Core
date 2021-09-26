@@ -59,7 +59,7 @@ std::vector<uint8_t> MVMExtraSegment::toBuffer() const {
 std::string MVMExtraSegment::toString() const {
     std::stringstream ss;
     ss << segmentName + ":[";
-    ss << "(hdr_len=" << mvmExtra.CSIHeaderLength << ", csi_len=" << mvmExtra.parsedHeader.iqDataSize << "B, num_tone=" << mvmExtra.parsedHeader.numTones << "]";
+    ss << "(hdr_len=" << mvmExtra.CSIHeaderLength << ", csi_len=" << mvmExtra.parsedHeader.iqDataSize << "B, num_tone=" << mvmExtra.parsedHeader.numTones << ", rate_n_flags=0x" << std::hex << mvmExtra.parsedHeader.rate_n_flags << ", ftm_clock=" << std::dec << mvmExtra.parsedHeader.ftmClock << ", mu_clock=" << mvmExtra.parsedHeader.muClock << "]";
     auto temp = ss.str();
     return temp;
 }
