@@ -25,10 +25,10 @@ struct RxSBasic {
     uint8_t numUser;
     uint8_t userIndex;
     int8_t noiseFloor;   /* noise floor */
-    uint8_t rssi;        /* rx frame RSSI */
-    uint8_t rssi_ctl0;   /* rx frame RSSI [ctl, chain 0] */
-    uint8_t rssi_ctl1;   /* rx frame RSSI [ctl, chain 1] */
-    uint8_t rssi_ctl2;   /* rx frame RSSI [ctl, chain 2] */
+    int8_t rssi;        /* rx frame RSSI */
+    int8_t rssi_ctl0;   /* rx frame RSSI [ctl, chain 0] */
+    int8_t rssi_ctl1;   /* rx frame RSSI [ctl, chain 1] */
+    int8_t rssi_ctl2;   /* rx frame RSSI [ctl, chain 2] */
     [[nodiscard]] std::string toString() const;
 
     std::vector<uint8_t> toBuffer();

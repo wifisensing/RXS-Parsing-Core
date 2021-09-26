@@ -60,10 +60,10 @@ struct QCA9300RxsBasicContentV3 {
     uint8_t numUser;
     uint8_t userIndex;
     int8_t noiseFloor;   /* noise floor */
-    uint8_t rssi;        /* rx frame RSSI */
-    uint8_t rssi_ctl0;   /* rx frame RSSI [ctl, chain 0] */
-    uint8_t rssi_ctl1;   /* rx frame RSSI [ctl, chain 1] */
-    uint8_t rssi_ctl2;   /* rx frame RSSI [ctl, chain 2] */
+    int8_t rssi;        /* rx frame RSSI */
+    int8_t rssi_ctl0;   /* rx frame RSSI [ctl, chain 0] */
+    int8_t rssi_ctl1;   /* rx frame RSSI [ctl, chain 1] */
+    int8_t rssi_ctl2;   /* rx frame RSSI [ctl, chain 2] */
 } __attribute__((packed));
 
 static auto v1Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> RxSBasic {
@@ -92,10 +92,10 @@ static auto v1Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> RxSBa
     r.numUser = 1;
     r.userIndex = 0;
     r.noiseFloor = *(int8_t *) (buffer + pos++);
-    r.rssi = *(uint8_t *) (buffer + pos++);
-    r.rssi_ctl0 = *(uint8_t *) (buffer + pos++);
-    r.rssi_ctl1 = *(uint8_t *) (buffer + pos++);
-    r.rssi_ctl2 = *(uint8_t *) (buffer + pos++);
+    r.rssi = *(int8_t *) (buffer + pos++);
+    r.rssi_ctl0 = *(int8_t *) (buffer + pos++);
+    r.rssi_ctl1 = *(int8_t *) (buffer + pos++);
+    r.rssi_ctl2 = *(int8_t *) (buffer + pos++);
 
     if (pos != bufferLength)
         throw std::runtime_error("RxSBasicSegment v1Parser cannot parse the segment with mismatched buffer length.");
@@ -129,10 +129,10 @@ static auto v2Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> RxSBa
     r.numUser = *(uint8_t *) (buffer + pos++);
     r.userIndex = *(uint8_t *) (buffer + pos++);
     r.noiseFloor = *(int8_t *) (buffer + pos++);
-    r.rssi = *(uint8_t *) (buffer + pos++);
-    r.rssi_ctl0 = *(uint8_t *) (buffer + pos++);
-    r.rssi_ctl1 = *(uint8_t *) (buffer + pos++);
-    r.rssi_ctl2 = *(uint8_t *) (buffer + pos++);
+    r.rssi = *(int8_t *) (buffer + pos++);
+    r.rssi_ctl0 = *(int8_t *) (buffer + pos++);
+    r.rssi_ctl1 = *(int8_t *) (buffer + pos++);
+    r.rssi_ctl2 = *(int8_t *) (buffer + pos++);
 
     if (pos != bufferLength)
         throw std::runtime_error("RxSBasicSegment v2Parser cannot parse the segment with mismatched buffer length.");
@@ -168,10 +168,10 @@ static auto v3Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> RxSBa
     r.numUser = *(uint8_t *) (buffer + pos++);
     r.userIndex = *(uint8_t *) (buffer + pos++);
     r.noiseFloor = *(int8_t *) (buffer + pos++);
-    r.rssi = *(uint8_t *) (buffer + pos++);
-    r.rssi_ctl0 = *(uint8_t *) (buffer + pos++);
-    r.rssi_ctl1 = *(uint8_t *) (buffer + pos++);
-    r.rssi_ctl2 = *(uint8_t *) (buffer + pos++);
+    r.rssi = *(int8_t *) (buffer + pos++);
+    r.rssi_ctl0 = *(int8_t *) (buffer + pos++);
+    r.rssi_ctl1 = *(int8_t *) (buffer + pos++);
+    r.rssi_ctl2 = *(int8_t *) (buffer + pos++);
 
     if (pos != bufferLength)
         throw std::runtime_error("RxSBasicSegment v2Parser cannot parse the segment with mismatched buffer length.");
