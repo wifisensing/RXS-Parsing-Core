@@ -58,7 +58,7 @@ private:
 
     static std::map<uint16_t, std::function<RxSBasic(const uint8_t *, uint32_t)>> initializeSolutionMap() noexcept;
 
-    RxSBasic basic;
+    RxSBasic basic{};
 };
 
 #endif //PICOSCENES_PLATFORM_RXSBASICSEGMENT_HXX

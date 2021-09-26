@@ -76,7 +76,7 @@ static auto v1Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> RxSBa
     pos += 2;
     r.tstamp = *(uint64_t *) (buffer + pos);
     pos += 8;
-    r.centerFreq = *(uint16_t *) (buffer + pos);
+    r.centerFreq = *(int16_t *) (buffer + pos);
     pos += 2;
     r.controlFreq = r.centerFreq;
     r.packetFormat = *(uint8_t *) (buffer + pos++);
@@ -92,10 +92,10 @@ static auto v1Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> RxSBa
     r.numUser = 1;
     r.userIndex = 0;
     r.noiseFloor = *(int8_t *) (buffer + pos++);
-    r.rssi = *(int8_t *) (buffer + pos++);
-    r.rssi_ctl0 = *(int8_t *) (buffer + pos++);
-    r.rssi_ctl1 = *(int8_t *) (buffer + pos++);
-    r.rssi_ctl2 = *(int8_t *) (buffer + pos++);
+    r.rssi = r.noiseFloor + *(int8_t *) (buffer + pos++);
+    r.rssi_ctl0 = r.noiseFloor + *(int8_t *) (buffer + pos++);
+    r.rssi_ctl1 = r.noiseFloor + *(int8_t *) (buffer + pos++);
+    r.rssi_ctl2 = r.noiseFloor + *(int8_t *) (buffer + pos++);
 
     if (pos != bufferLength)
         throw std::runtime_error("RxSBasicSegment v1Parser cannot parse the segment with mismatched buffer length.");
@@ -117,7 +117,7 @@ static auto v2Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> RxSBa
     pos += 2;
     r.controlFreq = r.centerFreq;
     r.packetFormat = *(uint8_t *) (buffer + pos++);
-    r.pkt_cbw = *(uint16_t *) (buffer + pos);
+    r.cbw = *(uint16_t *) (buffer + pos);
     r.pkt_cbw = r.cbw;
     pos += 2;
     r.guardInterval = *(uint16_t *) (buffer + pos);
@@ -129,10 +129,10 @@ static auto v2Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> RxSBa
     r.numUser = *(uint8_t *) (buffer + pos++);
     r.userIndex = *(uint8_t *) (buffer + pos++);
     r.noiseFloor = *(int8_t *) (buffer + pos++);
-    r.rssi = *(int8_t *) (buffer + pos++);
-    r.rssi_ctl0 = *(int8_t *) (buffer + pos++);
-    r.rssi_ctl1 = *(int8_t *) (buffer + pos++);
-    r.rssi_ctl2 = *(int8_t *) (buffer + pos++);
+    r.rssi = r.noiseFloor + *(int8_t *) (buffer + pos++);
+    r.rssi_ctl0 = r.noiseFloor + *(int8_t *) (buffer + pos++);
+    r.rssi_ctl1 = r.noiseFloor + *(int8_t *) (buffer + pos++);
+    r.rssi_ctl2 = r.noiseFloor + *(int8_t *) (buffer + pos++);
 
     if (pos != bufferLength)
         throw std::runtime_error("RxSBasicSegment v2Parser cannot parse the segment with mismatched buffer length.");
@@ -198,10 +198,10 @@ std::string RxSBasic::toString() const {
 }
 
 std::vector<uint8_t> RxSBasic::toBuffer() {
-    return std::vector<uint8_t>((uint8_t *) this, (uint8_t *) this + sizeof(RxSBasic));
+    return std::vector<uint8_t>{(uint8_t *) this, (uint8_t *) this + sizeof(RxSBasic)};
 }
 
-RxSBasicSegment::RxSBasicSegment() : AbstractPicoScenesFrameSegment("RxSBasic", 0x2U) {}
+RxSBasicSegment::RxSBasicSegment() : AbstractPicoScenesFrameSegment("RxSBasic", 0x3U) {}
 
 void RxSBasicSegment::fromBuffer(const uint8_t *buffer, uint32_t bufferLength) {
     auto[segmentName, segmentLength, versionId, offset] = extractSegmentMetaData(buffer, bufferLength);
