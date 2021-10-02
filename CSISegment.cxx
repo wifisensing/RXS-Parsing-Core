@@ -210,23 +210,23 @@ CSI CSI::fromIWLMVM(const uint8_t *buffer, uint32_t bufferLength, uint8_t numTx,
     std::copy(buffer, buffer + bufferLength, std::back_inserter(csi.rawCSIData));
 
     if (csi.cbw == ChannelBandwidthEnum::CBW_20 && format == PacketFormatEnum::PacketFormat_NonHT)
-        csi.subcarrierIndices = CSI::NonHT20_52Subcarriers_Indices;
+        csi.subcarrierIndices = CSI::NonHT20_52Subcarriers_DataIndices;
     else if (csi.cbw == ChannelBandwidthEnum::CBW_20 && (format == PacketFormatEnum::PacketFormat_HT || format == PacketFormatEnum::PacketFormat_VHT))
-        csi.subcarrierIndices = CSI::HTVHT20_56Subcarriers_Indices;
+        csi.subcarrierIndices = CSI::HTVHT20_56Subcarriers_DataIndices;
     else if (csi.cbw == ChannelBandwidthEnum::CBW_40 && (format == PacketFormatEnum::PacketFormat_HT || format == PacketFormatEnum::PacketFormat_VHT))
-        csi.subcarrierIndices = CSI::HTVHT40_114Subcarriers_Indices;
+        csi.subcarrierIndices = CSI::HTVHT40_114Subcarriers_DataIndices;
     else if (csi.cbw == ChannelBandwidthEnum::CBW_80 && format == PacketFormatEnum::PacketFormat_VHT)
-        csi.subcarrierIndices = CSI::VHT80_242Subcarriers_Indices;
+        csi.subcarrierIndices = CSI::VHT80_242Subcarriers_DataIndices;
     else if (csi.cbw == ChannelBandwidthEnum::CBW_160 && format == PacketFormatEnum::PacketFormat_VHT)
-        csi.subcarrierIndices = CSI::VHT160_484Subcarriers_Indices;
+        csi.subcarrierIndices = CSI::VHT160_484Subcarriers_DataIndices;
     else if (csi.cbw == ChannelBandwidthEnum::CBW_20 && format == PacketFormatEnum::PacketFormat_HESU)
-        csi.subcarrierIndices = CSI::HE20_242Subcarriers_Indices;
+        csi.subcarrierIndices = CSI::HE20_242Subcarriers_DataIndices;
     else if (csi.cbw == ChannelBandwidthEnum::CBW_40 && format == PacketFormatEnum::PacketFormat_HESU)
-        csi.subcarrierIndices = CSI::HE40_484Subcarriers_Indices;
+        csi.subcarrierIndices = CSI::HE40_484Subcarriers_DataIndices;
     else if (csi.cbw == ChannelBandwidthEnum::CBW_80 && format == PacketFormatEnum::PacketFormat_HESU)
-        csi.subcarrierIndices = CSI::HE80_996Subcarriers_Indices;
+        csi.subcarrierIndices = CSI::HE80_996Subcarriers_DataIndices;
     else if (csi.cbw == ChannelBandwidthEnum::CBW_160 && format == PacketFormatEnum::PacketFormat_HESU)
-        csi.subcarrierIndices = CSI::HE160_1992Subcarriers_Indices;
+        csi.subcarrierIndices = CSI::HE160_1992Subcarriers_DataIndices;
 
 
     if (subcarrierIndexOffset != 0) {
