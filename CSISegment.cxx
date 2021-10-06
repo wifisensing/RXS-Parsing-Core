@@ -28,14 +28,10 @@ CSI CSI::fromQCA9300(const uint8_t *buffer, uint32_t bufferLength, uint8_t numTx
             .dimensions = CSIDimension{.numTones = numTones, .numTx = numTx, .numRx = numRx, .numESS = uint8_t(actualNumSTSPerChain - numTx), .numCSI = 1},
             .antSel = 0,
             .subcarrierOffset = subcarrierIndexOffset,
+            .subcarrierIndices = getAllSubcarrierIndices(PacketFormatEnum::PacketFormat_HT, cbw),
             .CSIArray = parseQCA9300CSIData(buffer, actualNumSTSPerChain, numRx, numTones),
     };
     std::copy(buffer, buffer + bufferLength, std::back_inserter(csi.rawCSIData));
-    if (csi.cbw == ChannelBandwidthEnum::CBW_20) {
-        csi.subcarrierIndices = CSI::HTVHT20_56Subcarriers_Indices;
-    } else if (csi.cbw == ChannelBandwidthEnum::CBW_40) {
-        csi.subcarrierIndices = CSI::HTVHT40_114Subcarriers_Indices;
-    }
 
     if (subcarrierIndexOffset != 0) {
         std::transform(csi.subcarrierIndices.begin(), csi.subcarrierIndices.end(), csi.subcarrierIndices.begin(), [=](int16_t index) {
@@ -71,64 +67,48 @@ CSI CSI::fromIWL5300(const uint8_t *buffer, uint32_t bufferLength, uint8_t numTx
     return csi;
 }
 
-CSI CSI::fromIWLMVM(const uint8_t *buffer, uint32_t bufferLength, uint8_t numTx, uint8_t numRx, uint16_t numTones, PacketFormatEnum format, ChannelBandwidthEnum cbw, int16_t subcarrierIndexOffset) {
+CSI CSI::fromIWLMVM(const uint8_t *buffer, uint32_t bufferLength, uint8_t numTx, uint8_t numRx, uint16_t numTones, PacketFormatEnum format, ChannelBandwidthEnum cbw, int16_t subcarrierIndexOffset, bool skipPilotSubcarriers) {
     if (numTx * numRx * numTones * 4 != bufferLength)
         throw std::runtime_error("Incorrect Intel MVM-based CSI data format.");
 
     auto totalTones = numRx * numTx * numTones, pos = 0;
-    const auto &pilotArray = getPilotIndices(format, cbw);
-    const auto &dataArray = getDataIndices(format, cbw);
+    const auto &pilotArray = getPilotSubcarrierIndices(format, cbw);
+    const auto &subcarrierIndices = skipPilotSubcarriers ? getDataSubcarrierIndices(format, cbw) : getAllSubcarrierIndices(format, cbw);
     std::vector<std::complex<double>> CSIArray;
     CSIArray.reserve(numTx * numRx * numTones);
     for (auto i = 0, ssI = 0, lastPilotIndex = 0; i < totalTones; i++) {
         auto real = *(int16_t *) (buffer + pos);
         auto imag = *(int16_t *) (buffer + pos + 2);
         pos += 4;
-        ssI = i % numTones;
 
-        if (ssI == 0)
-            lastPilotIndex = 0;
-
-        if (ssI == pilotArray[lastPilotIndex])
-            lastPilotIndex++;
-        else {
-            CSIArray.emplace_back(std::complex<double>(real, imag));
+        if (skipPilotSubcarriers) {
+            ssI = i % numTones;
+            if (ssI == 0)
+                lastPilotIndex = 0;
+            if (ssI == pilotArray[lastPilotIndex]) {
+                lastPilotIndex++;
+                continue;
+            }
         }
+
+        CSIArray.emplace_back(std::complex<double>(real, imag));
     }
-    if (CSIArray.size() != dataArray.size() * numTx * numRx)
+
+    if (CSIArray.size() != subcarrierIndices.size() * numTx * numRx)
         throw std::runtime_error("Fatal failure in MVM CSI data parsing...");
 
-    auto CSIMatrix = SignalMatrix(CSIArray, std::vector<int32_t>{static_cast<int>(dataArray.size()), numTx, numRx}, SignalMatrixStorageMajority::ColumnMajor);
+    auto CSIMatrix = SignalMatrix(CSIArray, std::vector<int32_t>{static_cast<int>(subcarrierIndices.size()), numTx, numRx}, SignalMatrixStorageMajority::ColumnMajor);
 
     auto csi = CSI{.deviceType = PicoScenesDeviceType::IWLMVM,
             .packetFormat = format,
             .cbw = cbw,
-            .dimensions = CSIDimension{.numTones = static_cast<uint16_t>(dataArray.size()), .numTx = numTx, .numRx = numRx, .numESS = 0, .numCSI = 1},
+            .dimensions = CSIDimension{.numTones = static_cast<uint16_t>(subcarrierIndices.size()), .numTx = numTx, .numRx = numRx, .numESS = 0, .numCSI = 1},
             .antSel = 0,
             .subcarrierOffset = subcarrierIndexOffset,
+            .subcarrierIndices = subcarrierIndices,
             .CSIArray = CSIMatrix
     };
     std::copy(buffer, buffer + bufferLength, std::back_inserter(csi.rawCSIData));
-
-    if (csi.cbw == ChannelBandwidthEnum::CBW_20 && format == PacketFormatEnum::PacketFormat_NonHT)
-        csi.subcarrierIndices = CSI::NonHT20_52Subcarriers_DataIndices;
-    else if (csi.cbw == ChannelBandwidthEnum::CBW_20 && (format == PacketFormatEnum::PacketFormat_HT || format == PacketFormatEnum::PacketFormat_VHT))
-        csi.subcarrierIndices = CSI::HTVHT20_56Subcarriers_DataIndices;
-    else if (csi.cbw == ChannelBandwidthEnum::CBW_40 && (format == PacketFormatEnum::PacketFormat_HT || format == PacketFormatEnum::PacketFormat_VHT))
-        csi.subcarrierIndices = CSI::HTVHT40_114Subcarriers_DataIndices;
-    else if (csi.cbw == ChannelBandwidthEnum::CBW_80 && format == PacketFormatEnum::PacketFormat_VHT)
-        csi.subcarrierIndices = CSI::VHT80_242Subcarriers_DataIndices;
-    else if (csi.cbw == ChannelBandwidthEnum::CBW_160 && format == PacketFormatEnum::PacketFormat_VHT)
-        csi.subcarrierIndices = CSI::VHT160_484Subcarriers_DataIndices;
-    else if (csi.cbw == ChannelBandwidthEnum::CBW_20 && format == PacketFormatEnum::PacketFormat_HESU)
-        csi.subcarrierIndices = CSI::HE20_242Subcarriers_DataIndices;
-    else if (csi.cbw == ChannelBandwidthEnum::CBW_40 && format == PacketFormatEnum::PacketFormat_HESU)
-        csi.subcarrierIndices = CSI::HE40_484Subcarriers_DataIndices;
-    else if (csi.cbw == ChannelBandwidthEnum::CBW_80 && format == PacketFormatEnum::PacketFormat_HESU)
-        csi.subcarrierIndices = CSI::HE80_996Subcarriers_DataIndices;
-    else if (csi.cbw == ChannelBandwidthEnum::CBW_160 && format == PacketFormatEnum::PacketFormat_HESU)
-        csi.subcarrierIndices = CSI::HE160_1992Subcarriers_DataIndices;
-
 
     if (subcarrierIndexOffset != 0) {
         std::transform(csi.subcarrierIndices.begin(), csi.subcarrierIndices.end(), csi.subcarrierIndices.begin(), [=](int16_t index) {
@@ -139,7 +119,56 @@ CSI CSI::fromIWLMVM(const uint8_t *buffer, uint32_t bufferLength, uint8_t numTx,
     return csi;
 }
 
-const std::vector<int16_t> &CSI::getPilotIndices(PacketFormatEnum format, ChannelBandwidthEnum cbw) {
+const std::vector<int16_t> &CSI::getAllSubcarrierIndices(PacketFormatEnum format, ChannelBandwidthEnum cbw) {
+    if (format == PacketFormatEnum::PacketFormat_HESU) {
+        switch (cbw) {
+            case ChannelBandwidthEnum::CBW_20:
+                return HE20_242Subcarriers_Indices;
+            case ChannelBandwidthEnum::CBW_40:
+                return HE40_484Subcarriers_Indices;
+            case ChannelBandwidthEnum::CBW_80:
+                return HE80_996Subcarriers_Indices;
+            case ChannelBandwidthEnum::CBW_160:
+                return HE160_1992Subcarriers_Indices;
+            default:
+                throw std::runtime_error("Unsupported CBW for pilot index computation.");
+        }
+    }
+
+    if (format == PacketFormatEnum::PacketFormat_VHT) {
+        switch (cbw) {
+            case ChannelBandwidthEnum::CBW_20:
+                return HTVHT20_56Subcarriers_Indices;
+            case ChannelBandwidthEnum::CBW_40:
+                return HTVHT40_114Subcarriers_Indices;
+            case ChannelBandwidthEnum::CBW_80:
+                return VHT80_242Subcarriers_Indices;
+            case ChannelBandwidthEnum::CBW_160:
+                return VHT160_484Subcarriers_Indices;
+            default:
+                throw std::runtime_error("Unsupported CBW for pilot index computation.");
+        }
+    }
+
+    if (format == PacketFormatEnum::PacketFormat_HT) {
+        switch (cbw) {
+            case ChannelBandwidthEnum::CBW_20:
+                return HTVHT20_56Subcarriers_Indices;
+            case ChannelBandwidthEnum::CBW_40:
+                return HTVHT40_114Subcarriers_Indices;
+            default:
+                throw std::runtime_error("Unsupported CBW for pilot index computation.");
+        }
+    }
+
+    if (format == PacketFormatEnum::PacketFormat_NonHT) {
+        return NonHT20_52Subcarriers_Indices;
+    }
+
+    throw std::runtime_error("Unsupported CBW for index computation.");
+}
+
+const std::vector<int16_t> &CSI::getPilotSubcarrierIndices(PacketFormatEnum format, ChannelBandwidthEnum cbw) {
     if (format == PacketFormatEnum::PacketFormat_HESU) {
         switch (cbw) {
             case ChannelBandwidthEnum::CBW_20:
@@ -188,7 +217,7 @@ const std::vector<int16_t> &CSI::getPilotIndices(PacketFormatEnum format, Channe
     throw std::runtime_error("Unsupported CBW for pilot index computation.");
 }
 
-const std::vector<int16_t> &CSI::getDataIndices(PacketFormatEnum format, ChannelBandwidthEnum cbw) {
+const std::vector<int16_t> &CSI::getDataSubcarrierIndices(PacketFormatEnum format, ChannelBandwidthEnum cbw) {
     if (format == PacketFormatEnum::PacketFormat_HESU) {
         switch (cbw) {
             case ChannelBandwidthEnum::CBW_20:
@@ -483,7 +512,7 @@ static auto v3Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> CSI {
         csi.subcarrierBandwidth = subcarrierBandwidth;
         return csi;
     } else if (deviceType == PicoScenesDeviceType::IWLMVM) {
-        auto csi = CSI::fromIWLMVM(buffer + pos, CSIBufferLength, numSTS, numRx, numTone, packetFormat, cbw, subcarrierIndexOffset);
+        auto csi = CSI::fromIWLMVM(buffer + pos, CSIBufferLength, numSTS, numRx, numTone, packetFormat, cbw, subcarrierIndexOffset, false);
         csi.carrierFreq = carrierFreq;
         csi.samplingRate = samplingRate;
         csi.subcarrierBandwidth = subcarrierBandwidth;
@@ -813,3 +842,4 @@ std::vector<int16_t> CSI::IWL5300SubcarrierIndices_CBW20 = []() noexcept -> std:
 std::vector<int16_t> CSI::IWL5300SubcarrierIndices_CBW40 = []() noexcept -> std::vector<int16_t> {
     return std::vector<int16_t>{-58, -54, -50, -46, -42, -38, -34, -30, -26, -22, -18, -14, -10, -6, -2, 2, 6, 10, 14, 18, 22, 26, 30, 34, 38, 42, 46, 50, 54, 58};
 }();
+
