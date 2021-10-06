@@ -512,7 +512,7 @@ static auto v3Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> CSI {
         csi.subcarrierBandwidth = subcarrierBandwidth;
         return csi;
     } else if (deviceType == PicoScenesDeviceType::IWLMVM) {
-        auto csi = CSI::fromIWLMVM(buffer + pos, CSIBufferLength, numSTS, numRx, numTone, packetFormat, cbw, subcarrierIndexOffset, false);
+        auto csi = CSI::fromIWLMVM(buffer + pos, CSIBufferLength, numSTS, numRx, numTone, packetFormat, cbw, subcarrierIndexOffset, true);
         csi.carrierFreq = carrierFreq;
         csi.samplingRate = samplingRate;
         csi.subcarrierBandwidth = subcarrierBandwidth;
