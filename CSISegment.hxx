@@ -109,19 +109,6 @@ void parseIWL5300CSIData(Iterator csi_matrix, const uint8_t *payload, int ntx, i
     }
 }
 
-template<typename Iterator>
-void parseIWLMVMCSIDataCore(Iterator csi_matrix, const uint8_t *payload, int nSTS, int nRx, int nTones) {
-
-    auto totalTones = nRx * nSTS * nTones, pos = 0;
-    for (auto i = 0; i < totalTones; i++) {
-        auto real = *(int16_t *) (payload + pos);
-        auto imag = *(int16_t *) (payload + pos + 2);
-        pos += 4;
-
-        csi_matrix[i] = std::complex<double>(real, imag);
-    }
-}
-
 //class IntelMVMCSIHeader {
 //public:
 //    uint32_t iqDataSize{};
