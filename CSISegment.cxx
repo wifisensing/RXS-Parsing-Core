@@ -76,22 +76,39 @@ CSI CSI::fromIWLMVM(const uint8_t *buffer, uint32_t bufferLength, uint8_t numTx,
     const auto &subcarrierIndices = skipPilotSubcarriers ? getDataSubcarrierIndices(format, cbw) : getAllSubcarrierIndices(format, cbw);
     std::vector<std::complex<double>> CSIArray;
     CSIArray.reserve(numTx * numRx * numTones);
-    for (auto i = 0, ssI = 0, lastPilotIndex = 0; i < totalTones; i++) {
+    for (auto i = 0, ssI = 0, bugFixSSI = 0, lastPilotIndex = 0; i < totalTones; i++) {
         auto real = *(int16_t *) (buffer + pos);
         auto imag = *(int16_t *) (buffer + pos + 2);
         pos += 4;
+        ssI = i % numTones;
+        bugFixSSI = ssI; // Fix the firmware bug
+
+#define CSI_FIX_INTEL_FIRMWARE_BUG_67 1
+#ifdef CSI_FIX_INTEL_FIRMWARE_BUG_67
+        if (ssI > 995 && ssI < 1024) // Fix the firmware bug 
+            continue;
+
+        if (ssI >= 1024) // Fix the firmware bug 
+            bugFixSSI -=28;
+#endif /*CSI_FIX_INTEL_FIRMWARE_BUG_67*/
 
         if (skipPilotSubcarriers) {
-            ssI = i % numTones;
-            if (ssI == 0)
+            if (bugFixSSI == 0)
                 lastPilotIndex = 0;
-            if (ssI == pilotArray[lastPilotIndex]) {
+            if (bugFixSSI == pilotArray[lastPilotIndex]) {
                 lastPilotIndex++;
                 continue;
             }
         }
 
         CSIArray.emplace_back(std::complex<double>(real, imag));
+
+#ifdef CSI_FIX_INTEL_FIRMWARE_BUG_67
+        if (ssI == 1991) { // Fix the firmware bug 
+            for(auto i = 0 ; i < 28; i ++)
+                CSIArray.emplace_back(std::complex<double>(0, 0));
+        }
+#endif /*CSI_FIX_INTEL_FIRMWARE_BUG_67*/
     }
 
     if (CSIArray.size() != subcarrierIndices.size() * numTx * numRx)
