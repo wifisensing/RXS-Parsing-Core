@@ -6,10 +6,117 @@
 #include <random>
 #include <iomanip>
 
+std::string ieee80211_mac_frame_header_frame_control_field::getTypeString() const {
+    if (type == 0) {
+        switch (subtype) {
+            case 0:
+                return "[MF]Assoc. Req.";
+            case 1:
+                return "[MF]Assoc. Resp.";
+            case 2:
+                return "[MF]Re-assoc. Req.";
+            case 3:
+                return "[MF]Re-assoc. Resp.";
+            case 4:
+                return "[MF]Probe Req.";
+            case 5:
+                return "[MF]Probe Resp.";
+            case 8:
+                return "[MF]Beacon";
+            case 9:
+                return "[MF]ATIM";
+            case 10:
+                return "[MF]Disassoc.";
+            case 11:
+                return "[MF]Authen.";
+            case 12:
+                return "[MF]Deauthen.";
+            case 13:
+                return "[MF]Action";
+            default:
+                return "[MF]Reserved_" + std::to_string(subtype);
+        }
+    }
+
+    if (type == 1) {
+        switch (subtype) {
+            case 2:
+                return "Trigger";
+            case 5:
+                return "VHT/HE NDP Ann.";
+            case 8:
+                return "[CF]BA Req.";
+            case 9:
+                return "[CF]BA";
+            case 10:
+                return "[CF]PS-Poll";
+            case 11:
+                return "[CF]RTS";
+            case 12:
+                return "[CF]CTS";
+            case 13:
+                return "[CF]ACK";
+            case 14:
+                return "[CF]CF-End";
+            case 15:
+                return "[CF]CF-End+CF-ACK";
+            default:
+                return "[CF]Reserved_" + std::to_string(subtype);
+        }
+    }
+
+    if (type == 2) {
+        switch (subtype) {
+            case 0:
+                return "[DF]Data";
+            case 1:
+                return "[DF]Data+CF-ACK";
+            case 2:
+                return "[DF]Data+CF-Poll";
+            case 3:
+                return "[DF]Data-CF-ACK+CF-Poll";
+            case 4:
+                return "[DF]Null";
+            case 5:
+                return "[DF]CF-ACK";
+            case 6:
+                return "[DF]CF-Poll";
+            case 7:
+                return "[DF]CF-ACK+CF-Poll";
+            case 8:
+                return "[DF]QoS Data";
+            case 9:
+                return "[DF]QoS Data+CF-ACK";
+            case 10:
+                return "[DF]QoS Data+CF-Poll";
+            case 11:
+                return "[DF]QoS Data+CF-ACK+CF-Poll";
+            case 12:
+                return "[DF]QoS Null";
+            case 13:
+                return "[DF]Reserved13";
+            case 14:
+                return "[DF]QoS+CF-Poll(Null)";
+            case 15:
+                return "[DF]QoS+CF-ACK(Null)";
+            default:
+                return "[DF]Reserved_" + std::to_string(subtype);
+        }
+    }
+
+    return "[" + std::to_string(type) + "]Reserved_" + std::to_string(subtype);
+}
+
+
+std::ostream &operator<<(std::ostream &os, const ieee80211_mac_frame_header_frame_control_field &fc) {
+    os << fc.getTypeString();
+    return os;
+}
 
 std::string ieee80211_mac_frame_header::toString() const {
     std::stringstream ss;
-    ss << "MACHeader:[dest[4-6]=" << std::nouppercase << std::setfill('0') << std::setw(2) << std::right << std::hex << int(addr1[3]) << ":" << int(addr1[4]) << ":" << int(addr1[5]) << ", ";
+    ss << "MACHeader:[type=" << fc << ", ";
+    ss << "dest[4-6]=" << std::nouppercase << std::setfill('0') << std::setw(2) << std::right << std::hex << int(addr1[3]) << ":" << int(addr1[4]) << ":" << int(addr1[5]) << ", ";
     ss << "src[4-6]=" << std::nouppercase << std::setfill('0') << std::setw(2) << std::right << std::hex << int(addr2[3]) << ":" << int(addr2[4]) << ":" << int(addr2[5]) << ", ";
     ss << "seq=" << std::dec << seq << ", frag=" << frag << ", ";
     ss << "mfrags=" << std::to_string(fc.moreFrags) << "]";
@@ -242,7 +349,7 @@ void ModularPicoScenesTxFrame::addSegments(const std::shared_ptr<AbstractPicoSce
 
 uint32_t ModularPicoScenesTxFrame::totalLength() const {
     uint32_t length = sizeof(decltype(standardHeader)) + (frameHeader ? sizeof(decltype(frameHeader)) : 4); // plus 4 is to avoid NDP skip on QCA9300
-    for (const auto &segment : segments) {
+    for (const auto &segment: segments) {
         length += segment->totalLength() + 4;
     }
     return length;
@@ -268,7 +375,7 @@ int ModularPicoScenesTxFrame::toBuffer(uint8_t *buffer, uint32_t bufferLength) c
 
         memcpy(buffer + sizeof(ieee80211_mac_frame_header), &frameHeader, sizeof(PicoScenesFrameHeader));
         pos += sizeof(PicoScenesFrameHeader);
-        for (const auto &segment : segments) {
+        for (const auto &segment: segments) {
             segment->toBuffer(true, buffer + pos);
             pos += segment->totalLength() + 4;
         }
