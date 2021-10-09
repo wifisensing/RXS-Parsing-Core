@@ -52,6 +52,8 @@ struct ieee80211_mac_frame_header {
 
     ieee80211_mac_frame_header() : frag(0), seq(0) {};
 
+    static ieee80211_mac_frame_header createFromBuffer(const uint8_t *buffer, std::optional<uint32_t> bufferLength);
+
     [[nodiscard]] std::string toString() const;
 
 } __attribute__ ((__packed__));

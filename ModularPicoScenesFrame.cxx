@@ -36,9 +36,7 @@ std::string ieee80211_mac_frame_header_frame_control_field::getTypeString() cons
             default:
                 return "[MF]Reserved_" + std::to_string(subtype);
         }
-    }
-
-    if (type == 1) {
+    } else if (type == 1) {
         switch (subtype) {
             case 2:
                 return "Trigger";
@@ -63,9 +61,7 @@ std::string ieee80211_mac_frame_header_frame_control_field::getTypeString() cons
             default:
                 return "[CF]Reserved_" + std::to_string(subtype);
         }
-    }
-
-    if (type == 2) {
+    } else if (type == 2) {
         switch (subtype) {
             case 0:
                 return "[DF]Data";
@@ -111,6 +107,21 @@ std::string ieee80211_mac_frame_header_frame_control_field::getTypeString() cons
 std::ostream &operator<<(std::ostream &os, const ieee80211_mac_frame_header_frame_control_field &fc) {
     os << fc.getTypeString();
     return os;
+}
+
+ieee80211_mac_frame_header ieee80211_mac_frame_header::createFromBuffer(const uint8_t *buffer, std::optional<uint32_t> bufferLength) {
+    ieee80211_mac_frame_header result{};
+    uint32_t pos = 0;
+    result.fc = *((ieee80211_mac_frame_header_frame_control_field *) (buffer + pos));
+    pos += sizeof(ieee80211_mac_frame_header_frame_control_field);
+    result.dur = *((uint16_t *) (buffer + pos));
+    pos += 2;
+    std::copy(buffer + pos, buffer + pos + 6, *result.addr1);
+    pos += 6;
+
+    return result;
+
+//    if (bufferLength && *bufferLength < 10)
 }
 
 std::string ieee80211_mac_frame_header::toString() const {
