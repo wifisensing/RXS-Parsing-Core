@@ -39,9 +39,11 @@ std::string ieee80211_mac_frame_header_frame_control_field::getTypeString() cons
     } else if (type == 1) {
         switch (subtype) {
             case 2:
-                return "Trigger";
+                return "[CF]Trigger";
             case 5:
-                return "VHT/HE NDP Ann.";
+                return "[CF]VHT/HE NDP Ann.";
+            case 7:
+                return "[CF]Wrapper";
             case 8:
                 return "[CF]BA Req.";
             case 9:
@@ -113,15 +115,33 @@ ieee80211_mac_frame_header ieee80211_mac_frame_header::createFromBuffer(const ui
     ieee80211_mac_frame_header result{};
     uint32_t pos = 0;
     result.fc = *((ieee80211_mac_frame_header_frame_control_field *) (buffer + pos));
+
+    if (result.fc.type == 0 || result.fc.type == 2 || result.fc.type == 3) { // Management Frames, Data Frames and all type=3 reserved
+        result = *((ieee80211_mac_frame_header *) buffer);
+        return result;
+    }
+
     pos += sizeof(ieee80211_mac_frame_header_frame_control_field);
     result.dur = *((uint16_t *) (buffer + pos));
     pos += 2;
-    std::copy(buffer + pos, buffer + pos + 6, *result.addr1);
+    std::copy(buffer + pos, buffer + pos + 6, result.addr1);
     pos += 6;
 
-    return result;
+    switch (result.fc.subtype) {
+        case 2:
+        case 8:
+        case 9:
+        case 10:
+        case 11:
+        case 15:
+            std::copy(buffer + pos, buffer + pos + 6, result.addr2);
+            pos += 6;
+            break;
+        default:
+            break;
+    }
 
-//    if (bufferLength && *bufferLength < 10)
+    return result;
 }
 
 std::string ieee80211_mac_frame_header::toString() const {
@@ -202,8 +222,8 @@ std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::fromBuffer(con
     }
 
     auto mpduPos = pos;
-    frame.standardHeader = *((ieee80211_mac_frame_header *) (buffer + pos));
-    pos += sizeof(ieee80211_mac_frame_header);
+    frame.standardHeader = ieee80211_mac_frame_header::createFromBuffer(buffer + pos, bufferLength - pos);
+    pos += sizeof(ieee80211_mac_frame_header); // TODO this is somewhat dangerous.
 
     if (auto PSHeader = PicoScenesFrameHeader::fromBuffer(buffer + pos)) {
         frame.PicoScenesHeader = PSHeader;
