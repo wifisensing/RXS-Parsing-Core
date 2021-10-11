@@ -5,6 +5,10 @@
 #include "MVMExtraSegment.hxx"
 
 
+IntelMVMParsedCSIHeader::IntelMVMParsedCSIHeader() {
+    memset(this, 0, sizeof(IntelMVMParsedCSIHeader));
+}
+
 static auto v1Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> IntelMVMExtrta {
     uint32_t pos = 0;
     auto extra = IntelMVMExtrta();

@@ -25,6 +25,8 @@ public:
     uint8_t reserved77[11];
     uint32_t muClock; // 88
     uint32_t rate_n_flags; // 92
+
+    IntelMVMParsedCSIHeader();
 } __attribute__ ((__packed__));
 
 class IntelMVMExtrta {
