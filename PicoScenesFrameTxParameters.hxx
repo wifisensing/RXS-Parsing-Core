@@ -14,6 +14,7 @@ public:
     std::vector<uint8_t> mcs;
     std::vector<uint8_t> numSTS;
     double numAntenna;
+    uint16_t txcm;
     ChannelBandwidthEnum cbw;
     GuardIntervalEnum guardInterval;
     std::vector<ChannelCodingEnum> coding;
@@ -37,6 +38,7 @@ public:
         mcs = std::vector<uint8_t>(1, 0);
         numSTS = std::vector<uint8_t>(1, 1);
         numAntenna = 1;
+        txcm = 1;
         cbw = ChannelBandwidthEnum::CBW_20;
         guardInterval = GuardIntervalEnum::GI_800;
         coding = std::vector<ChannelCodingEnum>(1, ChannelCodingEnum::BCC);
