@@ -309,7 +309,7 @@ std::string ModularPicoScenesRxFrame::toString() const {
 }
 
 std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::concatenateFragmentedPicoScenesRxFrames(const std::vector<ModularPicoScenesRxFrame> &frameQueue) {
-    return std::optional<ModularPicoScenesRxFrame>();
+    return {};
 }
 
 bool ModularPicoScenesRxFrame::operator==(const ModularPicoScenesRxFrame &rhs) const {
