@@ -55,6 +55,8 @@ public:
 
     void clearFieldCache();
 
+    bool isSuccessfullyDecoded() const;
+
     static std::tuple<std::string, uint32_t, uint16_t, uint32_t> extractSegmentMetaData(const uint8_t *buffer, uint32_t bufferLength);
 
     virtual std::string toString() const;
@@ -65,7 +67,7 @@ protected:
     std::vector<std::string> fieldNames; // fieldMap is not ordered by the insertion, so we need another list to hold the input order.
     std::map<std::string, std::vector<uint8_t>> fieldMap;
     std::map<std::string, std::pair<uint32_t, uint32_t>> fieldIndices;
-    bool isSuccessfullyDecoded = false;
+    bool successfullyDecoded = false;
 };
 
 

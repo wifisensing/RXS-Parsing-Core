@@ -67,7 +67,7 @@ CSI CSI::fromIWL5300(const uint8_t *buffer, uint32_t bufferLength, uint8_t numTx
     return csi;
 }
 
-CSI CSI::fromIWLMVM(const uint8_t *buffer, uint32_t bufferLength, uint8_t numTx, uint8_t numRx, uint16_t numTones, PacketFormatEnum format, ChannelBandwidthEnum cbw, int16_t subcarrierIndexOffset, bool skipPilotSubcarriers) {
+std::optional<CSI> CSI::fromIWLMVM(const uint8_t *buffer, uint32_t bufferLength, uint8_t numTx, uint8_t numRx, uint16_t numTones, PacketFormatEnum format, ChannelBandwidthEnum cbw, int16_t subcarrierIndexOffset, bool skipPilotSubcarriers) {
     if (numTx * numRx * numTones * 4 != bufferLength)
         throw std::runtime_error("Incorrect Intel MVM-based CSI data format.");
 
@@ -89,7 +89,7 @@ CSI CSI::fromIWLMVM(const uint8_t *buffer, uint32_t bufferLength, uint8_t numTx,
             continue;
 
         if (ssI >= 1024) // Fix the firmware bug 
-            bugFixSSI -=28;
+            bugFixSSI -= 28;
 #endif /*CSI_FIX_INTEL_FIRMWARE_BUG_67*/
 
         if (skipPilotSubcarriers) {
@@ -105,14 +105,15 @@ CSI CSI::fromIWLMVM(const uint8_t *buffer, uint32_t bufferLength, uint8_t numTx,
 
 #ifdef CSI_FIX_INTEL_FIRMWARE_BUG_67
         if (ssI == 1991) { // Fix the firmware bug 
-            for(auto i = 0 ; i < 28; i ++)
+            for (auto i = 0; i < 28; i++)
                 CSIArray.emplace_back(std::complex<double>(0, 0));
         }
 #endif /*CSI_FIX_INTEL_FIRMWARE_BUG_67*/
     }
 
-    if (CSIArray.size() != subcarrierIndices.size() * numTx * numRx)
-        throw std::runtime_error("Fatal failure in MVM CSI data parsing...");
+    if (CSIArray.size() != subcarrierIndices.size() * numTx * numRx) {
+        return {};
+    }
 
     auto CSIMatrix = SignalMatrix(CSIArray, std::vector<int32_t>{static_cast<int>(subcarrierIndices.size()), numTx, numRx}, SignalMatrixStorageMajority::ColumnMajor);
 
@@ -360,7 +361,7 @@ std::vector<uint8_t> CSI::toBuffer() {
     return buffer;
 }
 
-static auto v1Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> CSI {
+static auto v1Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> std::optional<CSI> {
     uint32_t pos = 0;
 
     auto deviceType = (PicoScenesDeviceType) *(uint16_t *) (buffer + pos);
@@ -423,7 +424,7 @@ static auto v1Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> CSI {
     throw std::runtime_error("CSISegment cannot decode the given buffer by v1Parser.");
 };
 
-static auto v2Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> CSI { // add subcarrierOffset
+static auto v2Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> std::optional<CSI> { // add subcarrierOffset
     uint32_t pos = 0;
 
     auto deviceType = (PicoScenesDeviceType) *(uint16_t *) (buffer + pos);
@@ -488,7 +489,7 @@ static auto v2Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> CSI {
     throw std::runtime_error("CSISegment cannot decode the given buffer by v2Parser.");
 };
 
-static auto v3Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> CSI { // add numCSI
+static auto v3Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> std::optional<CSI> { // add numCSI
     uint32_t pos = 0;
 
     auto deviceType = (PicoScenesDeviceType) *(uint16_t *) (buffer + pos);
@@ -529,11 +530,13 @@ static auto v3Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> CSI {
         csi.subcarrierBandwidth = subcarrierBandwidth;
         return csi;
     } else if (deviceType == PicoScenesDeviceType::IWLMVM) {
-        auto csi = CSI::fromIWLMVM(buffer + pos, CSIBufferLength, numSTS, numRx, numTone, packetFormat, cbw, subcarrierIndexOffset, true);
-        csi.carrierFreq = carrierFreq;
-        csi.samplingRate = samplingRate;
-        csi.subcarrierBandwidth = subcarrierBandwidth;
-        return csi;
+        if (auto csi = CSI::fromIWLMVM(buffer + pos, CSIBufferLength, numSTS, numRx, numTone, packetFormat, cbw, subcarrierIndexOffset, true)) {
+            csi->carrierFreq = carrierFreq;
+            csi->samplingRate = samplingRate;
+            csi->subcarrierBandwidth = subcarrierBandwidth;
+            return csi;
+        }
+        return {};
     } else if (deviceType == PicoScenesDeviceType::USRP) {
         auto csiBufferStart = pos;
         std::vector<int16_t> subcarrierIndices;
@@ -561,12 +564,12 @@ static auto v3Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> CSI {
     throw std::runtime_error("CSISegment cannot decode the given buffer by v3Parser.");
 };
 
-std::map<uint16_t, std::function<CSI(const uint8_t *, uint32_t)>> CSISegment::versionedSolutionMap = initializeSolutionMap();
+std::map<uint16_t, std::function<std::optional<CSI>(const uint8_t *, uint32_t)>> CSISegment::versionedSolutionMap = initializeSolutionMap();
 
-std::map<uint16_t, std::function<CSI(const uint8_t *, uint32_t)>> CSISegment::initializeSolutionMap() noexcept {
-    return std::map<uint16_t, std::function<CSI(const uint8_t *, uint32_t)>>{{0x1U, v1Parser},
-                                                                             {0x2U, v2Parser},
-                                                                             {0x3U, v3Parser}};
+std::map<uint16_t, std::function<std::optional<CSI>(const uint8_t *, uint32_t)>> CSISegment::initializeSolutionMap() noexcept {
+    return std::map<uint16_t, std::function<std::optional<CSI>(const uint8_t *, uint32_t)>>{{0x1U, v1Parser},
+                                                                                            {0x2U, v2Parser},
+                                                                                            {0x3U, v3Parser}};
 }
 
 CSISegment::CSISegment() : AbstractPicoScenesFrameSegment("CSI", 0x3U) {
@@ -583,11 +586,13 @@ void CSISegment::fromBuffer(const uint8_t *buffer, uint32_t bufferLength) {
         throw std::runtime_error("CSISegment cannot parse the segment with version v" + std::to_string(versionId) + ".");
     }
 
-    csi = versionedSolutionMap.at(versionId)(buffer + offset, bufferLength - offset);
-    std::copy(buffer, buffer + bufferLength, std::back_inserter(rawBuffer));
-    this->segmentLength = segmentLength;
-    this->segmentName = segmentName;
-    isSuccessfullyDecoded = true;
+    if (auto parsedCSI = versionedSolutionMap.at(versionId)(buffer + offset, bufferLength - offset)) {
+        csi = parsedCSI.value();
+        std::copy(buffer, buffer + bufferLength, std::back_inserter(rawBuffer));
+        this->segmentLength = segmentLength;
+        this->segmentName = segmentName;
+        successfullyDecoded = true;
+    }
 }
 
 CSISegment CSISegment::createByBuffer(const uint8_t *buffer, uint32_t bufferLength) {

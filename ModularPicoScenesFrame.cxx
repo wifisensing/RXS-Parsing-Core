@@ -204,13 +204,19 @@ std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::fromBuffer(con
             if (interpolateCSI) {
                 frame.csiSegment.getCSI().interpolateCSI();
             }
+            if (!frame.csiSegment.isSuccessfullyDecoded())
+                return {};
         } else if (segmentName == "PilotCSI") {
             frame.pilotCSISegment = CSISegment::createByBuffer(buffer + pos, segmentLength + 4);
+            if (!frame.pilotCSISegment->isSuccessfullyDecoded())
+                return {};
         } else if (segmentName == "LegacyCSI") {
             frame.legacyCSISegment = CSISegment::createByBuffer(buffer + pos, segmentLength + 4);
             if (interpolateCSI) {
                 frame.legacyCSISegment->getCSI().interpolateCSI();
             }
+            if (!frame.legacyCSISegment->isSuccessfullyDecoded())
+                return {};
         } else if (segmentName == "BasebandSignal") {
             frame.basebandSignalSegment = BasebandSignalSegment::createByBuffer(buffer + pos, segmentLength + 4);
         } else if (segmentName == "PreEQSymbols") {

@@ -56,7 +56,7 @@ void AbstractPicoScenesFrameSegment::removeField(const std::string &fieldName) {
 }
 
 uint32_t AbstractPicoScenesFrameSegment::totalLength() const {
-    if (isSuccessfullyDecoded && !rawBuffer.empty())
+    if (successfullyDecoded && !rawBuffer.empty())
         return rawBuffer.size() - 4;
 
     uint32_t length = 0;
@@ -77,7 +77,7 @@ std::vector<uint8_t> AbstractPicoScenesFrameSegment::toBuffer(bool totalLengthIn
 }
 
 uint32_t AbstractPicoScenesFrameSegment::toBuffer(bool totalLengthIncluded, uint8_t *buffer, std::optional<uint32_t> capacity) const {
-    if (isSuccessfullyDecoded && !rawBuffer.empty() && rawBuffer.size() == segmentLength + 4) {
+    if (successfullyDecoded && !rawBuffer.empty() && rawBuffer.size() == segmentLength + 4) {
         std::copy(rawBuffer.cbegin(), rawBuffer.cend(), buffer);
         return rawBuffer.size();
     }
@@ -134,4 +134,8 @@ void AbstractPicoScenesFrameSegment::clearFieldCache() {
     fieldNames.clear();
     fieldMap.clear();
     fieldIndices.clear();
+}
+
+bool AbstractPicoScenesFrameSegment::isSuccessfullyDecoded() const {
+    return successfullyDecoded;
 }

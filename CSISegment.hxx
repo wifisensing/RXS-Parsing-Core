@@ -179,7 +179,7 @@ public:
 
     static CSI fromIWL5300(const uint8_t *buffer, uint32_t bufferLength, uint8_t numTx, uint8_t numRx, uint8_t numTones, ChannelBandwidthEnum cbw, int16_t subcarrierIndexOffset, uint8_t ant_sel);
 
-    static CSI fromIWLMVM(const uint8_t *buffer, uint32_t bufferLength, uint8_t numTx, uint8_t numRx, uint16_t numTones, PacketFormatEnum format, ChannelBandwidthEnum cbw, int16_t subcarrierIndexOffset, bool skipPilotSubcarriers = true);
+    static std::optional<CSI> fromIWLMVM(const uint8_t *buffer, uint32_t bufferLength, uint8_t numTx, uint8_t numRx, uint16_t numTones, PacketFormatEnum format, ChannelBandwidthEnum cbw, int16_t subcarrierIndexOffset, bool skipPilotSubcarriers = true);
 
     template<typename OutputValueType, typename InputValueType>
     static std::vector<std::complex<OutputValueType>> convertCSIArrayType(const std::vector<std::complex<InputValueType>> &inputArray) {
@@ -251,9 +251,9 @@ public:
     void setCSI(const CSI &csi);
 
 private:
-    static std::map<uint16_t, std::function<CSI(const uint8_t *, uint32_t)>> versionedSolutionMap;
+    static std::map<uint16_t, std::function<std::optional<CSI>(const uint8_t *, uint32_t)>> versionedSolutionMap;
 
-    static std::map<uint16_t, std::function<CSI(const uint8_t *, uint32_t)>> initializeSolutionMap() noexcept;
+    static std::map<uint16_t, std::function<std::optional<CSI>(const uint8_t *, uint32_t)>> initializeSolutionMap() noexcept;
 
     CSI csi;
 };

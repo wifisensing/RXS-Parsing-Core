@@ -49,7 +49,7 @@ void PreEQSymbolsSegment::fromBuffer(const uint8_t *buffer, uint32_t bufferLengt
     preEQSymbols = versionedSolutionMap.at(versionId)(buffer + offset, bufferLength - offset);
     std::copy(buffer, buffer + bufferLength, std::back_inserter(rawBuffer));
     this->segmentLength = segmentLength;
-    isSuccessfullyDecoded = true;
+    successfullyDecoded = true;
 }
 
 std::string PreEQSymbolsSegment::toString() const {

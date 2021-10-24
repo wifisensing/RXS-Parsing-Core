@@ -38,7 +38,7 @@ void BasebandSignalSegment::fromBuffer(const uint8_t *buffer, uint32_t bufferLen
     bbsignals = versionedSolutionMap.at(versionId)(buffer + offset, bufferLength - offset);
     std::copy(buffer, buffer + bufferLength, std::back_inserter(rawBuffer));
     this->segmentLength = segmentLength;
-    isSuccessfullyDecoded = true;
+    successfullyDecoded = true;
 }
 
 std::vector<uint8_t> BasebandSignalSegment::toBuffer() const {
