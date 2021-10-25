@@ -9,6 +9,23 @@ IntelMVMParsedCSIHeader::IntelMVMParsedCSIHeader() {
     memset(this, 0, sizeof(IntelMVMParsedCSIHeader));
 }
 
+bool IntelMVMParsedCSIHeader::operator==(const IntelMVMParsedCSIHeader &rhs) const {
+    return iqDataSize == rhs.iqDataSize &&
+           ftmClock == rhs.ftmClock &&
+           samplingTick2 == rhs.samplingTick2 &&
+           numTones == rhs.numTones &&
+           rssi1 == rhs.rssi1 &&
+           rssi2 == rhs.rssi2 &&
+           std::memcmp(sourceAddress, rhs.sourceAddress, 6) == 0 &&
+           csiSequence == rhs.csiSequence &&
+           muClock == rhs.muClock &&
+           rate_n_flags == rhs.rate_n_flags;
+}
+
+bool IntelMVMParsedCSIHeader::operator!=(const IntelMVMParsedCSIHeader &rhs) const {
+    return !(rhs == *this);
+}
+
 static auto v1Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> IntelMVMExtrta {
     uint32_t pos = 0;
     auto extra = IntelMVMExtrta();
@@ -17,10 +34,19 @@ static auto v1Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> Intel
     if (bufferLength - pos < extra.CSIHeaderLength)
         throw std::runtime_error("MVMExtraSegment v1Parser cannot parse the segment with insufficient buffer length.");
 
-    std::copy(buffer + pos, buffer + pos + extra.CSIHeaderLength, std::back_inserter(extra.CSIHeader));
-    pos += extra.CSIHeaderLength;
-    extra.parsedHeader = *(IntelMVMParsedCSIHeader *) extra.CSIHeader.data();
-//    std::cout << "CSIHeader content_len:" << extra.parsedHeader.iqDataSize << " numTone:" << extra.parsedHeader.numTones << std::endl;
+    extra.parsedHeader = *(IntelMVMParsedCSIHeader *) (buffer + pos);
+    pos += sizeof(IntelMVMParsedCSIHeader);
+    if (MVMExtraSegment::isBlockFtmClock()) {
+        extra.parsedHeader.ftmClock = 0;
+    }
+    std::copy((uint8_t *) &extra.parsedHeader, (uint8_t *) (&extra.parsedHeader) + sizeof(IntelMVMParsedCSIHeader), std::back_inserter(extra.CSIHeader));
+    std::copy(buffer + pos, buffer + bufferLength, std::back_inserter(extra.CSIHeader));
+    if (false) {
+        IntelMVMParsedCSIHeader regeneratedInstance = *(IntelMVMParsedCSIHeader *) extra.CSIHeader.data();
+        if (extra.parsedHeader != regeneratedInstance)
+            throw std::runtime_error("failed to validate IntelMVMParsedCSIHeader parser.");
+    }
+
     return extra;
 };
 
@@ -31,6 +57,8 @@ std::map<uint16_t, std::function<IntelMVMExtrta(const uint8_t *, uint32_t)>> MVM
     map.emplace(0x1U, v1Parser);
     return map;
 }
+
+bool MVMExtraSegment::blockFTMClock = false;
 
 MVMExtraSegment::MVMExtraSegment() : AbstractPicoScenesFrameSegment("MVMExtra", 0x1U) {}
 
@@ -45,7 +73,10 @@ void MVMExtraSegment::fromBuffer(const uint8_t *buffer, uint32_t bufferLength) {
     }
 
     mvmExtra = versionedSolutionMap.at(versionId)(buffer + offset, bufferLength - offset);
-    std::copy(buffer, buffer + bufferLength, std::back_inserter(rawBuffer));
+    rawBuffer.reserve(bufferLength);
+    std::copy(buffer, buffer + offset, std::back_inserter(rawBuffer));
+    std::copy(&mvmExtra.CSIHeaderLength, &mvmExtra.CSIHeaderLength + sizeof(mvmExtra.CSIHeaderLength), std::back_inserter(rawBuffer));
+    std::copy(mvmExtra.CSIHeader.cbegin(), mvmExtra.CSIHeader.cend(), std::back_inserter(rawBuffer));
     this->segmentLength = segmentLength;
     successfullyDecoded = true;
 }
@@ -75,4 +106,12 @@ std::ostream &operator<<(std::ostream &os, const MVMExtraSegment &mvmSegment) {
 
 const IntelMVMExtrta &MVMExtraSegment::getMvmExtra() const {
     return mvmExtra;
+}
+
+void MVMExtraSegment::setBlockFtmClock(bool blockFtmClock) {
+    blockFTMClock = blockFtmClock;
+}
+
+bool MVMExtraSegment::isBlockFtmClock() {
+    return blockFTMClock;
 }
