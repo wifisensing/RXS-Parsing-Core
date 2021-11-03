@@ -124,7 +124,7 @@ ieee80211_mac_frame_header ieee80211_mac_frame_header::createFromBuffer(const ui
     pos += sizeof(ieee80211_mac_frame_header_frame_control_field);
     result.dur = *((uint16_t *) (buffer + pos));
     pos += 2;
-    std::copy(buffer + pos, buffer + pos + 6, result.addr1);
+    std::copy(buffer + pos, buffer + pos + 6, result.addr1.begin());
     pos += 6;
 
     switch (result.fc.subtype) {
@@ -134,7 +134,7 @@ ieee80211_mac_frame_header ieee80211_mac_frame_header::createFromBuffer(const ui
         case 10:
         case 11:
         case 15:
-            std::copy(buffer + pos, buffer + pos + 6, result.addr2);
+            std::copy(buffer + pos, buffer + pos + 6, result.addr2.begin());
             pos += 6;
             break;
         default:
@@ -520,17 +520,17 @@ ModularPicoScenesTxFrame &ModularPicoScenesTxFrame::setNumSTS(const std::vector<
 }
 
 ModularPicoScenesTxFrame &ModularPicoScenesTxFrame::setDestinationAddress(const uint8_t macAddr[6]) {
-    memcpy(standardHeader.addr1, macAddr, 6);
+    std::copy(macAddr, macAddr + 6, standardHeader.addr1.begin());
     return *this;
 }
 
 ModularPicoScenesTxFrame &ModularPicoScenesTxFrame::setSourceAddress(const uint8_t macAddr[6]) {
-    memcpy(standardHeader.addr2, macAddr, 6);
+    std::copy(macAddr, macAddr + 6, standardHeader.addr2.begin());
     return *this;
 }
 
 ModularPicoScenesTxFrame &ModularPicoScenesTxFrame::set3rdAddress(const uint8_t macAddr[6]) {
-    memcpy(standardHeader.addr3, macAddr, 6);
+    std::copy(macAddr, macAddr + 6, standardHeader.addr3.begin());
     return *this;
 }
 
