@@ -358,7 +358,7 @@ std::vector<uint8_t> CSI::toBuffer() {
     std::copy((uint8_t *) &dimensions.numCSI, (uint8_t *) &dimensions.numCSI + sizeof(dimensions.numCSI), std::back_inserter(buffer));
     std::copy((uint8_t *) &antSel, (uint8_t *) &antSel + sizeof(antSel), std::back_inserter(buffer));
     std::copy((uint8_t *) &subcarrierOffset, (uint8_t *) &subcarrierOffset + sizeof(subcarrierOffset), std::back_inserter(buffer));
-    if (deviceType == PicoScenesDeviceType::IWL5300 || deviceType == PicoScenesDeviceType::QCA9300) {
+    if (deviceType == PicoScenesDeviceType::IWL5300 || deviceType == PicoScenesDeviceType::QCA9300 || deviceType == PicoScenesDeviceType::IWLMVM) {
         std::copy(rawCSIData.cbegin(), rawCSIData.cend(), std::back_inserter(buffer));
     } else if (deviceType == PicoScenesDeviceType::USRP) {
         std::vector<uint8_t> subcarrierIndicesBuffer;
