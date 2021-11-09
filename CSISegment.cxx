@@ -85,11 +85,21 @@ std::optional<CSI> CSI::fromIWLMVM(const uint8_t *buffer, uint32_t bufferLength,
 
 #define CSI_FIX_INTEL_FIRMWARE_BUG_67 1
 #ifdef CSI_FIX_INTEL_FIRMWARE_BUG_67
-        if (ssI > 995 && ssI < 1024) // Fix the firmware bug 
-            continue;
+        if (format == PacketFormatEnum::PacketFormat_HESU && cbw == ChannelBandwidthEnum::CBW_160) {
+            if (ssI > 995 && ssI < 1024) // Fix the firmware bug
+                continue;
 
-        if (ssI >= 1024) // Fix the firmware bug 
-            bugFixSSI -= 28;
+            if (ssI >= 1024) // Fix the firmware bug
+                bugFixSSI -= 28;
+        }
+
+        if (format == PacketFormatEnum::PacketFormat_VHT && cbw == ChannelBandwidthEnum::CBW_160) {
+            if (ssI > 241 && ssI < 256) // Fix the firmware bug
+                continue;
+
+            if (ssI >= 256) // Fix the firmware bug
+                bugFixSSI -= 14;
+        }
 #endif /*CSI_FIX_INTEL_FIRMWARE_BUG_67*/
 
         if (skipPilotSubcarriers) {
@@ -104,8 +114,13 @@ std::optional<CSI> CSI::fromIWLMVM(const uint8_t *buffer, uint32_t bufferLength,
         CSIArray.emplace_back(std::complex<double>(real, imag));
 
 #ifdef CSI_FIX_INTEL_FIRMWARE_BUG_67
-        if (ssI == 1991) { // Fix the firmware bug 
+        if (format == PacketFormatEnum::PacketFormat_HESU && ssI == 1991) { // Fix the firmware bug
             for (auto i = 0; i < 28; i++)
+                CSIArray.emplace_back(std::complex<double>(0, 0));
+        }
+
+        if (format == PacketFormatEnum::PacketFormat_VHT && ssI == 483) { // Fix the firmware bug
+            for (auto i = 0; i < 14; i++)
                 CSIArray.emplace_back(std::complex<double>(0, 0));
         }
 #endif /*CSI_FIX_INTEL_FIRMWARE_BUG_67*/
