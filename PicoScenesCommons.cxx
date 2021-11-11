@@ -4,14 +4,20 @@
 
 #include "PicoScenesCommons.hxx"
 
+bool isIntelMVMTypeNIC(PicoScenesDeviceType psdt) {
+    return psdt == PicoScenesDeviceType::IWLMVM_AX200 || psdt == PicoScenesDeviceType::IWLMVM_AX210;
+}
+
 std::string DeviceType2String(PicoScenesDeviceType type) {
     switch (type) {
         case PicoScenesDeviceType::QCA9300:
             return "QCA9300";
         case PicoScenesDeviceType::IWL5300:
             return "IWL5300";
-        case PicoScenesDeviceType::IWLMVM:
-            return "IWLMVM";
+        case PicoScenesDeviceType::IWLMVM_AX200:
+            return "AX200";
+        case PicoScenesDeviceType::IWLMVM_AX210:
+            return "AX210";
         case PicoScenesDeviceType::MAC80211Compatible:
             return "MAC80211 Compatible NIC";
         case PicoScenesDeviceType::USRP:
