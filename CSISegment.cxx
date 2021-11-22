@@ -347,6 +347,7 @@ std::vector<uint8_t> CSI::toBuffer() {
 
     auto buffer = std::vector<uint8_t>();
     std::copy((uint8_t *) &deviceType, (uint8_t *) &deviceType + sizeof(deviceType), std::back_inserter(buffer));
+    std::copy((uint8_t *) &firmwareVersion, (uint8_t *) &firmwareVersion + sizeof(firmwareVersion), std::back_inserter(buffer));
     std::copy((uint8_t *) &packetFormat, (uint8_t *) &packetFormat + sizeof(packetFormat), std::back_inserter(buffer));
     std::copy((uint8_t *) &cbw, (uint8_t *) &cbw + sizeof(cbw), std::back_inserter(buffer));
     std::copy((uint8_t *) &carrierFreq, (uint8_t *) &carrierFreq + sizeof(carrierFreq), std::back_inserter(buffer));
