@@ -68,7 +68,7 @@ inline std::string TuningPolicy2String(uint8_t policy) {
 #define PICOSCENES_EXTRAINFO_HASSAMPLINGRATE           0x00200000U
 #define PICOSCENES_EXTRAINFO_HASCFO                    0x00400000U
 #define PICOSCENES_EXTRAINFO_HASSFO                    0x00800000U
-#define PICOSCENES_EXTRAINFO_HASPRECISETXTIMING        0x01000000U // nanosecond-level Tx time specification
+#define PICOSCENES_EXTRAINFO_HASTEMPERATURE            0x01000000U
 
 struct ExtraInfo {
     uint32_t featureCode;
@@ -96,7 +96,7 @@ struct ExtraInfo {
     bool hasSamplingRate;
     bool hasCFO;
     bool hasSFO;
-    bool hasPreciseTxTiming;
+    bool hasTemperature;
     uint16_t length;
     uint64_t version;
     uint8_t macaddr_rom[6];
@@ -121,7 +121,7 @@ struct ExtraInfo {
     uint64_t samplingRate;
     int32_t cfo;
     int32_t sfo;
-    double preciseTxTiming;
+    int8_t temperature;
 
     ExtraInfo();
 
@@ -183,7 +183,7 @@ struct ExtraInfo {
 
     void setSFO(int32_t sfo);
 
-    void setPreciseTxTiming(double nanosecTxTiming);
+    void setTemperature(int8_t temperature);
 
     [[nodiscard]] std::string toString() const;
 };
@@ -357,10 +357,9 @@ inline bool extraInfoHasSFO(uint32_t featureCode) {
     return static_cast<bool>(featureCode >> 23U & 0x1U);
 }
 
-inline bool extraInfoHasPreciseTxTiming(uint32_t featureCode) {
-    return static_cast<bool>(featureCode >> 24U & 0x1U);
+inline int8_t extraInfoHasTemperature(uint32_t featureCode) {
+    return static_cast<int8_t>(featureCode >> 24U & 0x1U);
 }
-
 enum class RXSParsingLevel : uint8_t {
     BASIC_NOEXTRA_NOCSI = 10,
     EXTRA_NOCSI,
