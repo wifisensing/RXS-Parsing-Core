@@ -464,7 +464,7 @@ std::string ExtraInfo::toString() const {
     if (hasSFO)
         ss << "sfo=" << std::to_string(sfo) << " Hz, ";
     if (hasTemperature)
-        ss << "temp=" << std::to_string(sfo) << " deg, ";
+        ss << "temp=" << std::to_string(temperature) << " deg, ";
     auto temp = ss.str();
     temp.erase(temp.end() - 2, temp.end());
     temp.append("]");
