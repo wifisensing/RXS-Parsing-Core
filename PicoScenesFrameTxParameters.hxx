@@ -57,6 +57,8 @@ public:
         heLTFType = 4;
     }
 
+    void validate() const;
+
     std::string toString() const;
 };
 
