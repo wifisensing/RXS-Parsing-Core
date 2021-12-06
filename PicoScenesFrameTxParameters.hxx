@@ -31,6 +31,9 @@ public:
     double resampleRatio;
     double vhtGroupId;
     std::vector<uint8_t> heAllocationIndex;
+    bool txHEExtendedRange;
+    bool heHighDoppler;
+    double heMidamblePeriodicity;
     double heLTFType;
 
     PicoScenesFrameTxParameters() {
@@ -54,6 +57,9 @@ public:
         carrierFrequencyOffset = 0;
         vhtGroupId = 0;
         heAllocationIndex = std::vector<uint8_t>(1, 0);
+        txHEExtendedRange = false;
+        heHighDoppler = false;
+        heMidamblePeriodicity = 10;
         heLTFType = 4;
     }
 

@@ -63,6 +63,14 @@ void PicoScenesFrameTxParameters::validate() const {
         if (numSTS[0] > 8)
             throw std::invalid_argument("Invalid Tx numSTS: " + std::to_string(numSTS[0]) + " for HE-SU frame.");
 
+        if (txHEExtendedRange && numSTS[0] > 2)
+            throw std::invalid_argument("Invalid Tx numSTS: " + std::to_string(numSTS[0]) + " for HE-EXT-SU frame. Must be smaller than 3.");
+
+        if (txHEExtendedRange && mcs[0] > 2)
+            throw std::invalid_argument("Invalid Tx MCS: " + std::to_string(mcs[0]) + " for HE-EXT-SU frame. Must be smaller than 3.");
+
+        if (heHighDoppler && numSTS[0] > 4)
+            throw std::invalid_argument("Invalid Tx numSTS: " + std::to_string(numSTS[0]) + " for HE-SU High-Doppler frame. Must be smaller than 4.");
     } else if (frameType == PacketFormatEnum::PacketFormat_HEMU) {
         // TODO add this section
     }
