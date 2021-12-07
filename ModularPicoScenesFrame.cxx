@@ -147,8 +147,8 @@ ieee80211_mac_frame_header ieee80211_mac_frame_header::createFromBuffer(const ui
 std::string ieee80211_mac_frame_header::toString() const {
     std::stringstream ss;
     ss << "MACHeader:[type=" << fc << ", ";
-    ss << "dest[4-6]=" << std::nouppercase << std::setfill('0') << std::setw(2) << std::right << std::hex << int(addr1[3]) << ":" << int(addr1[4]) << ":" << int(addr1[5]) << ", ";
-    ss << "src[4-6]=" << std::nouppercase << std::setfill('0') << std::setw(2) << std::right << std::hex << int(addr2[3]) << ":" << int(addr2[4]) << ":" << int(addr2[5]) << ", ";
+    ss << "dest=" << std::nouppercase << std::setfill('0') << std::setw(2) << std::right << std::hex << int(addr1[0]) << ":" << int(addr1[1]) << ":" << int(addr1[2]) << int(addr1[3]) << ":" << int(addr1[4]) << ":" << int(addr1[5]) << ", ";
+    ss << "src=" << std::nouppercase << std::setfill('0') << std::setw(2) << std::right << std::hex << int(addr2[0]) << ":" << int(addr2[1]) << ":" << int(addr2[2]) << int(addr2[3]) << ":" << int(addr2[4]) << ":" << int(addr2[5]) << ", ";
     ss << "seq=" << std::dec << seq << ", frag=" << frag << ", ";
     ss << "mfrags=" << std::to_string(fc.moreFrags) << "]";
     return ss.str();
