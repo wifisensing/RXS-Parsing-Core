@@ -199,6 +199,8 @@ std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::fromBuffer(con
             frame.rxExtraInfoSegment.fromBuffer(buffer + pos, segmentLength + 4);
         } else if (segmentName == "MVMExtra") {
             frame.mvmExtraSegment = MVMExtraSegment::createByBuffer(buffer + pos, segmentLength + 4);
+        } else if (segmentName == "DPASRequest") {
+            frame.dpasRequestSegment = DPASRequestSegment::createByBuffer(buffer + pos, segmentLength + 4);
         } else if (segmentName == "CSI") {
             frame.csiSegment.fromBuffer(buffer + pos, segmentLength + 4);
             if (interpolateCSI) {
@@ -261,6 +263,8 @@ std::string ModularPicoScenesRxFrame::toString() const {
     ss << ", " << rxExtraInfoSegment.getExtraInfo();
     if (mvmExtraSegment)
         ss << ", " << *mvmExtraSegment;
+    if (dpasRequestSegment)
+        ss << ", " << *dpasRequestSegment;
     ss << ", Rx" << csiSegment;
     if (pilotCSISegment)
         ss << ", " << *pilotCSISegment;

@@ -11,6 +11,7 @@
 #include "RxSBasicSegment.hxx"
 #include "ExtraInfoSegment.hxx"
 #include "MVMExtraSegment.hxx"
+#include "DPASRequestSegment.hxx"
 #include "BasebandSignalSegment.hxx"
 #include "PayloadSegment.hxx"
 #include "PreEQSymbolsSegment.hxx"
@@ -100,6 +101,7 @@ public:
     ExtraInfoSegment rxExtraInfoSegment;
     CSISegment csiSegment;
     std::optional<MVMExtraSegment> mvmExtraSegment;
+    std::optional<DPASRequestSegment> dpasRequestSegment;
     std::optional<CSISegment> pilotCSISegment;
     std::optional<CSISegment> legacyCSISegment;
     std::optional<BasebandSignalSegment> basebandSignalSegment;
