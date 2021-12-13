@@ -564,6 +564,16 @@ ModularPicoScenesTxFrame &ModularPicoScenesTxFrame::setTxHEExtendedRange(bool tx
     return *this;
 }
 
+ModularPicoScenesTxFrame &ModularPicoScenesTxFrame::setHEHighDoppler(bool heHighDoppler) {
+    txParameters.heHighDoppler = heHighDoppler;
+    return *this;
+}
+
+ModularPicoScenesTxFrame &ModularPicoScenesTxFrame::setHEMidamblePeriodicity(uint32_t heMidamblePeriodicity){
+    txParameters.heMidamblePeriodicity = heMidamblePeriodicity;
+    return *this;
+}
+
 std::string ModularPicoScenesTxFrame::toString() const {
     std::stringstream ss;
     ss << "TxFrame:{" << standardHeader;
