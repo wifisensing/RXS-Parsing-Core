@@ -197,6 +197,8 @@ public:
 
     [[maybe_unused]] ModularPicoScenesTxFrame &setChannelCoding(const std::vector<ChannelCodingEnum> &codings);
 
+    ModularPicoScenesTxFrame &setTxHEExtendedRange(bool txHEExtendedRange);
+
     [[nodiscard]] std::string toString() const;
 };
 

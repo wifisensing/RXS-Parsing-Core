@@ -559,6 +559,11 @@ ModularPicoScenesTxFrame &ModularPicoScenesTxFrame::setChannelCoding(const std::
     return *this;
 }
 
+ModularPicoScenesTxFrame &ModularPicoScenesTxFrame::setTxHEExtendedRange(bool txHEExtendedRange) {
+    txParameters.txHEExtendedRange = txHEExtendedRange;
+    return *this;
+}
+
 std::string ModularPicoScenesTxFrame::toString() const {
     std::stringstream ss;
     ss << "TxFrame:{" << standardHeader;
