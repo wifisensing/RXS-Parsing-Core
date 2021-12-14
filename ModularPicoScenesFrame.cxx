@@ -569,7 +569,7 @@ ModularPicoScenesTxFrame &ModularPicoScenesTxFrame::setHEHighDoppler(bool heHigh
     return *this;
 }
 
-ModularPicoScenesTxFrame &ModularPicoScenesTxFrame::setHEMidamblePeriodicity(uint32_t heMidamblePeriodicity){
+ModularPicoScenesTxFrame &ModularPicoScenesTxFrame::setHEMidamblePeriodicity(double heMidamblePeriodicity) {
     txParameters.heMidamblePeriodicity = heMidamblePeriodicity;
     return *this;
 }
