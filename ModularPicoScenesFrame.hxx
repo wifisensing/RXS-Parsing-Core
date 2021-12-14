@@ -197,6 +197,12 @@ public:
 
     [[maybe_unused]] ModularPicoScenesTxFrame &setChannelCoding(const std::vector<ChannelCodingEnum> &codings);
 
+    ModularPicoScenesTxFrame &setTxHEExtendedRange(bool txHEExtendedRange);
+
+    ModularPicoScenesTxFrame &setHEHighDoppler(bool heHighDoppler);
+
+    ModularPicoScenesTxFrame &setHEMidamblePeriodicity(uint32_t heMidamblePeriodicity);
+
     [[nodiscard]] std::string toString() const;
 };
 
