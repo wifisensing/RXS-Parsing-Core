@@ -71,6 +71,9 @@ void PicoScenesFrameTxParameters::validate() const {
 
         if (heHighDoppler && numSTS[0] > 4)
             throw std::invalid_argument("Invalid Tx numSTS: " + std::to_string(numSTS[0]) + " for HE-SU High-Doppler frame. Must be smaller than 4.");
+
+        if (heHighDoppler && heMidamblePeriodicity != 10 && heMidamblePeriodicity != 20)
+            throw std::invalid_argument("Invalid TX mid amble periodicity: " + std::to_string(heMidamblePeriodicity) + " for HE-SU frame. Must be 10 or 20.");
     } else if (frameType == PacketFormatEnum::PacketFormat_HEMU) {
         // TODO add this section
     }

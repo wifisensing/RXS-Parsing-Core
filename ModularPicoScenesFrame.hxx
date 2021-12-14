@@ -201,7 +201,7 @@ public:
 
     ModularPicoScenesTxFrame &setHEHighDoppler(bool heHighDoppler);
 
-    ModularPicoScenesTxFrame &setHEMidamblePeriodicity(uint32_t heMidamblePeriodicity);
+    ModularPicoScenesTxFrame &setHEMidamblePeriodicity(double heMidamblePeriodicity);
 
     [[nodiscard]] std::string toString() const;
 };
