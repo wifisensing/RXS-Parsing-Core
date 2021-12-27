@@ -15,6 +15,7 @@ struct DPASRequest {
     uint16_t sequenceId;
     uint16_t intervalTime;
     uint16_t intervalStep;
+    PicoScenesDeviceType deviceType;
     uint64_t carrierFrequency;
     uint32_t samplingFrequency;
 
@@ -49,7 +50,6 @@ private:
 };
 
 std::ostream &operator<<(std::ostream &os, const DPASRequestSegment &dpasRequestSegment);
-
 
 
 #endif //PICOSCENES_PLATFORM_DPASREQUESTSEGMENT_HXX

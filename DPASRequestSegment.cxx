@@ -27,6 +27,7 @@ struct DPASRequestV3 {
     uint16_t sequenceId;
     uint16_t intervalTime;
     uint16_t intervalStep;
+    PicoScenesDeviceType deviceType;
     uint64_t carrierFrequency;
     uint32_t samplingFrequency;
 
@@ -93,6 +94,8 @@ static auto v3Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> DPASR
     pos += 2;
     r.intervalStep = *(uint16_t *) (buffer + pos);
     pos += 2;
+    r.deviceType = *(PicoScenesDeviceType *) (buffer + pos);
+    pos += sizeof(PicoScenesDeviceType);
     r.carrierFrequency = *(uint64_t *) (buffer + pos);
     pos += 8;
     r.samplingFrequency = *(uint32_t *) (buffer + pos);
@@ -164,7 +167,7 @@ DPASRequestSegment DPASRequestSegment::createByBuffer(const uint8_t *buffer, uin
 std::string DPASRequestSegment::toString() const {
     std::stringstream ss;
     ss << segmentName + ":[";
-    ss << "batch_id=" << dpasRequest.batchId << ", batch_len=" << dpasRequest.batchLength << ", seq=" << dpasRequest.sequenceId << ", interval=" << dpasRequest.intervalTime << ", step=" << dpasRequest.intervalStep << ", f_c=" << double(dpasRequest.carrierFrequency) / 1e6 << " MHz, f_s=" << double(dpasRequest.samplingFrequency) / 1e6  << " MHz]";
+    ss << "batch_id=" << dpasRequest.batchId << ", batch_len=" << dpasRequest.batchLength << ", seq=" << dpasRequest.sequenceId << ", interval=" << dpasRequest.intervalTime << ", step=" << dpasRequest.intervalStep << ", device=" << DeviceType2String(dpasRequest.deviceType) << ", f_c=" << double(dpasRequest.carrierFrequency) / 1e6 << " MHz, f_s=" << double(dpasRequest.samplingFrequency) / 1e6 << " MHz]";
     auto temp = ss.str();
     return temp;
 }
