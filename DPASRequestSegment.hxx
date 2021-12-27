@@ -15,6 +15,8 @@ struct DPASRequest {
     uint16_t sequenceId;
     uint16_t intervalTime;
     uint16_t intervalStep;
+    uint64_t carrierFrequency;
+    uint32_t samplingFrequency;
 
     std::vector<uint8_t> toBuffer();
 } __attribute__ ((__packed__));
