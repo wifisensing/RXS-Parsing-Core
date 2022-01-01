@@ -10,12 +10,14 @@
 #include "PicoScenesCommons.hxx"
 
 struct DPASRequest {
+    uint8_t  requestMode;
     uint16_t batchId;
     uint16_t batchLength;
     uint16_t sequenceId;
     uint16_t intervalTime;
     uint16_t intervalStep;
     PicoScenesDeviceType deviceType;
+    uint16_t deviceSubtype;
     uint64_t carrierFrequency;
     uint32_t samplingFrequency;
 

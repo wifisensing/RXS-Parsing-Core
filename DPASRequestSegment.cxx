@@ -33,6 +33,20 @@ struct DPASRequestV3 {
 
 } __attribute__ ((__packed__));
 
+struct DPASRequestV4 {
+    uint8_t requestMode;
+    uint16_t batchId;
+    uint16_t batchLength;
+    uint16_t sequenceId;
+    uint16_t intervalTime;
+    uint16_t intervalStep;
+    PicoScenesDeviceType deviceType;
+    uint16_t deviceSubtype;
+    uint64_t carrierFrequency;
+    uint32_t samplingFrequency;
+
+} __attribute__ ((__packed__));
+
 static auto v1Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> DPASRequest {
     uint32_t pos = 0;
     if (bufferLength < sizeof(DPASRequestV1))
@@ -84,6 +98,7 @@ static auto v3Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> DPASR
         throw std::runtime_error("DPASRequest v3Parser cannot parse the segment with insufficient buffer length.");
 
     auto r = DPASRequest();
+    std::memset(&r, 0, sizeof(r));
     r.batchId = *(uint16_t *) (buffer + pos);
     pos += 2;
     r.batchLength = *(uint16_t *) (buffer + pos);
@@ -106,6 +121,38 @@ static auto v3Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> DPASR
     return r;
 };
 
+static auto v4Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> DPASRequest {
+    uint32_t pos = 0;
+    if (bufferLength < sizeof(DPASRequestV4))
+        throw std::runtime_error("DPASRequest v4Parser cannot parse the segment with insufficient buffer length.");
+
+    auto r = DPASRequest();
+    std::memset(&r, 0, sizeof(r));
+    r.requestMode = *(uint8_t *) (buffer + pos++);
+    r.batchId = *(uint16_t *) (buffer + pos);
+    pos += 2;
+    r.batchLength = *(uint16_t *) (buffer + pos);
+    pos += 2;
+    r.sequenceId = *(uint16_t *) (buffer + pos);
+    pos += 2;
+    r.intervalTime = *(uint16_t *) (buffer + pos);
+    pos += 2;
+    r.intervalStep = *(uint16_t *) (buffer + pos);
+    pos += 2;
+    r.deviceType = *(PicoScenesDeviceType *) (buffer + pos);
+    pos += sizeof(PicoScenesDeviceType);
+    r.deviceSubtype = *(uint16_t *) (buffer + pos);
+    pos += 2;
+    r.carrierFrequency = *(uint64_t *) (buffer + pos);
+    pos += 8;
+    r.samplingFrequency = *(uint32_t *) (buffer + pos);
+    pos += 4;
+    if (pos != bufferLength)
+        throw std::runtime_error("DPASRequest v4Parser cannot parse the segment with mismatched buffer length.");
+
+    return r;
+};
+
 std::vector<uint8_t> DPASRequest::toBuffer() {
     return std::vector<uint8_t>((uint8_t *) this, (uint8_t *) this + sizeof(DPASRequest));
 }
@@ -117,10 +164,11 @@ std::map<uint16_t, std::function<DPASRequest(const uint8_t *, uint32_t)>> DPASRe
     map.emplace(0x1U, v1Parser);
     map.emplace(0x2U, v2Parser);
     map.emplace(0x3U, v3Parser);
+    map.emplace(0x4U, v4Parser);
     return map;
 }
 
-DPASRequestSegment::DPASRequestSegment() : AbstractPicoScenesFrameSegment("DPASRequest", 0x3U) {
+DPASRequestSegment::DPASRequestSegment() : AbstractPicoScenesFrameSegment("DPASRequest", 0x4U) {
 }
 
 DPASRequestSegment::DPASRequestSegment(const DPASRequest &request) : DPASRequestSegment() {
