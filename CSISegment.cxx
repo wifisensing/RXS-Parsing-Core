@@ -85,7 +85,7 @@ std::optional<CSI> CSI::fromIWLMVM(const uint8_t *buffer, uint32_t bufferLength,
         ssI = i % numTones;
         bugFixSSI = ssI; // Fix the firmware bug
 
-        if (firmwareVersion == 67) {
+        if (firmwareVersion == 67 || (firmwareVersion == 68)) {
             if (format == PacketFormatEnum::PacketFormat_HESU && cbw == ChannelBandwidthEnum::CBW_160) {
                 if (ssI > 995 && ssI < 1024) // Fix the firmware bug
                     continue;
