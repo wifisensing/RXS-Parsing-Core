@@ -114,7 +114,7 @@ std::optional<CSI> CSI::fromIWLMVM(const uint8_t *buffer, uint32_t bufferLength,
 
         CSIArray.emplace_back(std::complex<double>(real, imag));
 
-        if (firmwareVersion == 67) {
+        if (firmwareVersion == 67 || (firmwareVersion == 68)) {
             if (format == PacketFormatEnum::PacketFormat_HESU && ssI == 1991) { // Fix the firmware bug
                 for (auto i = 0; i < 28; i++)
                     CSIArray.emplace_back(std::complex<double>(0, 0));
