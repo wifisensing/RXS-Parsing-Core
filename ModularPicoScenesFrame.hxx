@@ -147,7 +147,7 @@ public:
 
     std::shared_ptr<AbstractPicoScenesFrameSegment> getSegment(const std::string &querySegmentName);
 
-    template<typename SegmentT>
+    template<typename SegmentT, class = typename std::enable_if<std::is_base_of<AbstractPicoScenesFrameSegment, SegmentT>::value>::type>
     std::shared_ptr<SegmentT> getTypedSegment(const std::string &querySegmentName) {
         auto basePointer = getSegment(querySegmentName);
         return basePointer ? std::dynamic_pointer_cast<SegmentT>(basePointer) : nullptr;
