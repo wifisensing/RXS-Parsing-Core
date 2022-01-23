@@ -388,6 +388,14 @@ void ModularPicoScenesTxFrame::addSegments(const std::shared_ptr<AbstractPicoSce
     frameHeader->numSegments = segments.size();
 }
 
+std::shared_ptr<AbstractPicoScenesFrameSegment> ModularPicoScenesTxFrame::getSegment(const std::string &querySegmentName) {
+    auto resultIt = std::find_if(segments.begin(), segments.end(), [=](const auto &eachSegment) {
+        return eachSegment->segmentName == querySegmentName;
+    });
+
+    return resultIt == segments.end() ? nullptr : *resultIt;
+}
+
 uint32_t ModularPicoScenesTxFrame::totalLength() const {
     uint32_t length = sizeof(decltype(standardHeader)) + (frameHeader ? sizeof(decltype(frameHeader)) : 4); // plus 4 is to avoid NDP skip on QCA9300
     for (const auto &segment: segments) {

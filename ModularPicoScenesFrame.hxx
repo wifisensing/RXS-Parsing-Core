@@ -145,6 +145,14 @@ public:
 
     void addSegments(const std::shared_ptr<AbstractPicoScenesFrameSegment> &segment);
 
+    std::shared_ptr<AbstractPicoScenesFrameSegment> getSegment(const std::string &querySegmentName);
+
+    template<typename SegmentT>
+    std::shared_ptr<SegmentT> getTypedSegment(const std::string &querySegmentName) {
+        auto basePointer = getSegment(querySegmentName);
+        return basePointer ? std::dynamic_pointer_cast<SegmentT>(basePointer) : nullptr;
+    }
+
     void reset();
 
     [[nodiscard]] uint32_t totalLength() const;
