@@ -6,7 +6,7 @@
 #include <utility>
 #include <deque>
 #include "CSISegment.hxx"
-#include "preprocessor/generated/CSIPreprocessor.h"
+#include "interpolationAndCSDRemoval/generated/CSIPreprocessor2.h"
 
 SignalMatrix<std::complex<double>> parseQCA9300CSIData(const uint8_t *csiData, int nSTS, int nRx, int nTones) {
     std::vector<std::complex<double>> CSIArray(nSTS * nRx * nTones);
@@ -300,31 +300,30 @@ const std::vector<int16_t> &CSI::getDataSubcarrierIndices(PacketFormatEnum forma
     throw std::runtime_error("Unsupported CBW for pilot index computation.");
 }
 
-void CSI::interpolateCSI() {
-    coder::array<creal_T, 2U> CSI;
-    coder::array<creal_T, 2U> newCSI;
-    coder::array<double, 2U> newMag;
-    coder::array<double, 2U> newPhase;
-    coder::array<short, 1U> interpedIndex_int16;
+void CSI::removeCSDAndInterpolateCSI() {
+
+    thread_local static auto preprocessorInstance = std::make_shared<CSIPreprocessor2>();
+
+    coder::array<creal_T, 4U> CSIWrapper;
     coder::array<short, 1U> subcarrierIndex_int16;
 
-    CSI.set_size(dimensions.numTones, (dimensions.numTx + dimensions.numESS) * dimensions.numRx * dimensions.numCSI);
-    for (auto toneIndex = 0; toneIndex < CSI.size(0); toneIndex++) {
-        for (auto txTrIndex = 0; txTrIndex < CSI.size(1); txTrIndex++) {
-            auto pos = toneIndex + txTrIndex * CSI.size(0);
-            CSI[pos] = *(creal_T *) (&CSIArray.array[pos]);
-        }
-    }
+    coder::array<creal_T, 4U> newCSI;
+    coder::array<double, 4U> newMag;
+    coder::array<double, 4U> newPhase;
+    coder::array<short, 1U> interpedIndex_int16;
+
+    CSIWrapper.set_size(dimensions.numTones, (dimensions.numTx + dimensions.numESS), dimensions.numRx, dimensions.numCSI);
+    assert(CSIWrapper.numel() == CSIArray.array.size());
+    std::copy((creal_T *) CSIArray.array.data(), (creal_T *) CSIArray.array.data() + CSIArray.array.size(), CSIWrapper.data());
 
     subcarrierIndex_int16.set_size(subcarrierIndices.size());
-    for (auto scIndex = 0; scIndex < subcarrierIndex_int16.size(0); scIndex++) {
-        subcarrierIndex_int16[scIndex] = subcarrierIndices[scIndex];
-    }
+    std::copy(subcarrierIndices.cbegin(), subcarrierIndices.cend(), subcarrierIndex_int16.data());
 
-    CSIPreprocessor(CSI, subcarrierIndex_int16, newCSI, newMag, newPhase, interpedIndex_int16);
+    preprocessorInstance->InterpolateCSIAndRemoveCSD(CSIWrapper, subcarrierIndex_int16, dimensions.numTx, dimensions.numESS, dimensions.numRx, dimensions.numCSI, static_cast<real_T>(packetFormat), static_cast<real_T>(cbw), true, newCSI, newMag, newPhase, interpedIndex_int16);
 
     CSIArray.array.clear();
     std::copy((std::complex<double> *) newCSI.data(), (std::complex<double> *) newCSI.data() + newCSI.numel(), std::back_inserter(CSIArray.array));
+    // TODO check consistency
     CSIArray.dimensions[0] = newCSI.size(0);
 
     magnitudeArray.array.clear();

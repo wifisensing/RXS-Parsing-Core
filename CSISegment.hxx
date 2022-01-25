@@ -172,7 +172,7 @@ public:
 
     Uint8Vector rawCSIData;
 
-    void interpolateCSI();
+    void removeCSDAndInterpolateCSI();
 
     std::vector<uint8_t> toBuffer();
 

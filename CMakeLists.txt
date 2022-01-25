@@ -3,7 +3,7 @@ project(PicoScenes_RxS_Parsing_Core)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/..)
 
-file(GLOB modular_ps_core_source *.cxx preprocessor/generated/*.cpp)
+file(GLOB modular_ps_core_source *.cxx interpolationAndCSDRemoval/generated/*.cpp)
 ADD_LIBRARY(modular_parsing_core SHARED ${modular_ps_core_source})
 target_include_directories(modular_parsing_core PRIVATE preprocessor)
 install(TARGETS modular_parsing_core DESTINATION ${INSTALL_LIBRARY_DIR})

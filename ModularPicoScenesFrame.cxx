@@ -202,7 +202,7 @@ std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::fromBuffer(con
         } else if (segmentName == "CSI") {
             frame.csiSegment.fromBuffer(buffer + pos, segmentLength + 4);
             if (interpolateCSI) {
-                frame.csiSegment.getCSI().interpolateCSI();
+                frame.csiSegment.getCSI().removeCSDAndInterpolateCSI();
             }
             if (!frame.csiSegment.isSuccessfullyDecoded())
                 return {};
@@ -213,7 +213,7 @@ std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::fromBuffer(con
         } else if (segmentName == "LegacyCSI") {
             frame.legacyCSISegment = CSISegment::createByBuffer(buffer + pos, segmentLength + 4);
             if (interpolateCSI) {
-                frame.legacyCSISegment->getCSI().interpolateCSI();
+                frame.legacyCSISegment->getCSI().removeCSDAndInterpolateCSI();
             }
             if (!frame.legacyCSISegment->isSuccessfullyDecoded())
                 return {};
