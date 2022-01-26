@@ -7,17 +7,14 @@
 #include <cmath>
 
 // Function Declarations
-static void binary_expand_op(coder::array<real_T, 4U> &resultPhase, const coder::array<real_T, 4U> &r,
-                             const coder::array<real_T, 4U> &rawPhase, const int32_T pivotIndex_data[]);
-
 namespace coder {
 static void angle(const ::coder::array<creal_T, 4U> &x, ::coder::array<real_T, 4U> &y);
 
-static void b_abs(const ::coder::array<real_T, 1U> &x, ::coder::array<real_T, 1U> &y);
+static void b_abs(const ::coder::array<creal_T, 4U> &x, ::coder::array<real_T, 4U> &y);
 
 static real_T b_abs(real_T x);
 
-static void b_abs(const ::coder::array<creal_T, 4U> &x, ::coder::array<real_T, 4U> &y);
+static void b_abs(const ::coder::array<real_T, 1U> &x, ::coder::array<real_T, 1U> &y);
 
 static void b_exp(::coder::array<creal_T, 4U> &x);
 
@@ -61,9 +58,9 @@ static real_T b_angle(const creal_T x);
 
 static real_T b_atan2(real_T y, real_T x);
 
-static real_T c_abs(real_T x);
-
 static real_T c_abs(const creal_T x);
+
+static real_T c_abs(real_T x);
 
 static void c_exp(creal_T *x);
 
@@ -93,8 +90,19 @@ static void interp1_work(::coder::array<real_T, 1U> &y, const ::coder::array<rea
 
 static real_T maxabs(real_T a, real_T b);
 
+static void repmat(const ::coder::array<real_T, 4U> &a, real_T varargin_1, ::coder::array<real_T, 4U> &b);
+
 static void repmat(const ::coder::array<creal_T, 2U> &a, real_T varargin_3, real_T varargin_4,
                    ::coder::array<creal_T, 4U> &b);
+
+static void sameSizeBinaryOp(const ::coder::array<creal_T, 4U> &x, const ::coder::array<creal_T, 4U> &y,
+                             ::coder::array<creal_T, 4U> &output);
+
+static void sameSizeBinaryOp(const ::coder::array<real_T, 4U> &x, const ::coder::array<real_T, 4U> &y,
+                             ::coder::array<real_T, 4U> &output);
+
+static void sameSizeBinaryOp(const ::coder::array<real_T, 4U> &x, const ::coder::array<creal_T, 4U> &y,
+                             ::coder::array<creal_T, 4U> &output);
 
 static void unwrap(::coder::array<real_T, 4U> &p);
 
@@ -114,209 +122,7 @@ static real_T rt_hypotd_snf(real_T u0, real_T u1);
 
 static real_T rt_remd_snf(real_T u0, real_T u1);
 
-static void times(coder::array<creal_T, 4U> &CSI, const coder::array<creal_T, 4U> &phaseShiftAll);
-
-static void times(coder::array<creal_T, 4U> &csi, const coder::array<real_T, 4U> &mag);
-
 // Function Definitions
-//
-// Arguments    : coder::array<real_T, 4U> &resultPhase
-//                const coder::array<real_T, 4U> &r
-//                const coder::array<real_T, 4U> &rawPhase
-//                const int32_T pivotIndex_data[]
-// Return Type  : void
-//
-static void binary_expand_op(coder::array<real_T, 4U> &resultPhase, const coder::array<real_T, 4U> &r,
-                             const coder::array<real_T, 4U> &rawPhase, const int32_T pivotIndex_data[])
-{
-    coder::array<real_T, 4U> b_resultPhase;
-    int32_T aux_0_3;
-    int32_T aux_1_3;
-    int32_T aux_2_3;
-    int32_T b_loop_ub;
-    int32_T c_loop_ub;
-    int32_T d_loop_ub;
-    int32_T i;
-    int32_T i1;
-    int32_T i2;
-    int32_T i3;
-    int32_T i4;
-    int32_T i5;
-    int32_T loop_ub;
-    int32_T pivotIndex;
-    int32_T stride_0_0;
-    int32_T stride_0_1;
-    int32_T stride_0_2;
-    int32_T stride_0_3;
-    int32_T stride_1_0;
-    int32_T stride_1_1;
-    int32_T stride_1_2;
-    int32_T stride_1_3;
-    int32_T stride_2_1;
-    int32_T stride_2_2;
-    int32_T stride_2_3;
-    pivotIndex = pivotIndex_data[0];
-    i = rawPhase.size(1);
-    i1 = rawPhase.size(2);
-    i2 = rawPhase.size(3);
-    if (r.size(0) == 1) {
-        i3 = resultPhase.size(0);
-    } else {
-        i3 = r.size(0);
-    }
-    if (i == 1) {
-        i4 = r.size(1);
-    } else {
-        i4 = i;
-    }
-    if (i4 == 1) {
-        i4 = resultPhase.size(1);
-    } else if (i == 1) {
-        i4 = r.size(1);
-    } else {
-        i4 = i;
-    }
-    if (i1 == 1) {
-        i5 = r.size(2);
-    } else {
-        i5 = i1;
-    }
-    if (i5 == 1) {
-        i5 = resultPhase.size(2);
-    } else if (i1 == 1) {
-        i5 = r.size(2);
-    } else {
-        i5 = i1;
-    }
-    if (i2 == 1) {
-        stride_0_0 = r.size(3);
-    } else {
-        stride_0_0 = i2;
-    }
-    if (stride_0_0 == 1) {
-        stride_0_0 = resultPhase.size(3);
-    } else if (i2 == 1) {
-        stride_0_0 = r.size(3);
-    } else {
-        stride_0_0 = i2;
-    }
-    b_resultPhase.set_size(i3, i4, i5, stride_0_0);
-    stride_0_0 = (resultPhase.size(0) != 1);
-    stride_0_1 = (resultPhase.size(1) != 1);
-    stride_0_2 = (resultPhase.size(2) != 1);
-    stride_0_3 = (resultPhase.size(3) != 1);
-    stride_1_0 = (r.size(0) != 1);
-    stride_1_1 = (r.size(1) != 1);
-    stride_1_2 = (r.size(2) != 1);
-    stride_1_3 = (r.size(3) != 1);
-    stride_2_1 = (i != 1);
-    stride_2_2 = (i1 != 1);
-    stride_2_3 = (i2 != 1);
-    aux_0_3 = 0;
-    aux_1_3 = 0;
-    aux_2_3 = 0;
-    if (i2 == 1) {
-        i3 = r.size(3);
-    } else {
-        i3 = i2;
-    }
-    if (i3 == 1) {
-        loop_ub = resultPhase.size(3);
-    } else if (i2 == 1) {
-        loop_ub = r.size(3);
-    } else {
-        loop_ub = i2;
-    }
-    for (i2 = 0; i2 < loop_ub; i2++) {
-        int32_T aux_0_2;
-        int32_T aux_1_2;
-        int32_T aux_2_2;
-        aux_0_2 = 0;
-        aux_1_2 = 0;
-        aux_2_2 = 0;
-        if (i1 == 1) {
-            i3 = r.size(2);
-        } else {
-            i3 = i1;
-        }
-        if (i3 == 1) {
-            b_loop_ub = resultPhase.size(2);
-        } else if (i1 == 1) {
-            b_loop_ub = r.size(2);
-        } else {
-            b_loop_ub = i1;
-        }
-        for (i3 = 0; i3 < b_loop_ub; i3++) {
-            int32_T aux_0_1;
-            int32_T aux_1_1;
-            int32_T aux_2_1;
-            aux_0_1 = 0;
-            aux_1_1 = 0;
-            aux_2_1 = 0;
-            if (i == 1) {
-                i4 = r.size(1);
-            } else {
-                i4 = i;
-            }
-            if (i4 == 1) {
-                c_loop_ub = resultPhase.size(1);
-            } else if (i == 1) {
-                c_loop_ub = r.size(1);
-            } else {
-                c_loop_ub = i;
-            }
-            for (i4 = 0; i4 < c_loop_ub; i4++) {
-                if (r.size(0) == 1) {
-                    d_loop_ub = resultPhase.size(0);
-                } else {
-                    d_loop_ub = r.size(0);
-                }
-                for (i5 = 0; i5 < d_loop_ub; i5++) {
-                    b_resultPhase[((i5 + b_resultPhase.size(0) * i4) +
-                                   b_resultPhase.size(0) * b_resultPhase.size(1) * i3) +
-                                  b_resultPhase.size(0) * b_resultPhase.size(1) * b_resultPhase.size(2) * i2] =
-                        resultPhase[((i5 * stride_0_0 + resultPhase.size(0) * aux_0_1) +
-                                     resultPhase.size(0) * resultPhase.size(1) * aux_0_2) +
-                                    resultPhase.size(0) * resultPhase.size(1) * resultPhase.size(2) * aux_0_3] -
-                        (r[((i5 * stride_1_0 + r.size(0) * aux_1_1) + r.size(0) * r.size(1) * aux_1_2) +
-                           r.size(0) * r.size(1) * r.size(2) * aux_1_3] -
-                         rawPhase[(((pivotIndex + rawPhase.size(0) * aux_2_1) +
-                                    rawPhase.size(0) * rawPhase.size(1) * aux_2_2) +
-                                   rawPhase.size(0) * rawPhase.size(1) * rawPhase.size(2) * aux_2_3) -
-                                  1]);
-                }
-                aux_2_1 += stride_2_1;
-                aux_1_1 += stride_1_1;
-                aux_0_1 += stride_0_1;
-            }
-            aux_2_2 += stride_2_2;
-            aux_1_2 += stride_1_2;
-            aux_0_2 += stride_0_2;
-        }
-        aux_2_3 += stride_2_3;
-        aux_1_3 += stride_1_3;
-        aux_0_3 += stride_0_3;
-    }
-    resultPhase.set_size(b_resultPhase.size(0), b_resultPhase.size(1), b_resultPhase.size(2), b_resultPhase.size(3));
-    loop_ub = b_resultPhase.size(3);
-    for (i = 0; i < loop_ub; i++) {
-        b_loop_ub = b_resultPhase.size(2);
-        for (i1 = 0; i1 < b_loop_ub; i1++) {
-            c_loop_ub = b_resultPhase.size(1);
-            for (i2 = 0; i2 < c_loop_ub; i2++) {
-                d_loop_ub = b_resultPhase.size(0);
-                for (i3 = 0; i3 < d_loop_ub; i3++) {
-                    resultPhase[((i3 + resultPhase.size(0) * i2) + resultPhase.size(0) * resultPhase.size(1) * i1) +
-                                resultPhase.size(0) * resultPhase.size(1) * resultPhase.size(2) * i] =
-                        b_resultPhase[((i3 + b_resultPhase.size(0) * i2) +
-                                       b_resultPhase.size(0) * b_resultPhase.size(1) * i1) +
-                                      b_resultPhase.size(0) * b_resultPhase.size(1) * b_resultPhase.size(2) * i];
-                }
-            }
-        }
-    }
-}
-
 //
 // Arguments    : const ::coder::array<creal_T, 4U> &x
 //                ::coder::array<real_T, 4U> &y
@@ -331,6 +137,15 @@ static void angle(const ::coder::array<creal_T, 4U> &x, ::coder::array<real_T, 4
     for (int32_T k{0}; k < nx; k++) {
         y[k] = internal::scalar::b_angle(x[k]);
     }
+}
+
+//
+// Arguments    : real_T x
+// Return Type  : real_T
+//
+static real_T b_abs(real_T x)
+{
+    return internal::scalar::c_abs(x);
 }
 
 //
@@ -349,15 +164,6 @@ static void b_abs(const ::coder::array<creal_T, 4U> &x, ::coder::array<real_T, 4
 }
 
 //
-// Arguments    : real_T x
-// Return Type  : real_T
-//
-static real_T b_abs(real_T x)
-{
-    return internal::scalar::c_abs(x);
-}
-
-//
 // Arguments    : const ::coder::array<real_T, 1U> &x
 //                ::coder::array<real_T, 1U> &y
 // Return Type  : void
@@ -373,19 +179,6 @@ static void b_abs(const ::coder::array<real_T, 1U> &x, ::coder::array<real_T, 1U
 }
 
 //
-// Arguments    : ::coder::array<creal_T, 4U> &x
-// Return Type  : void
-//
-static void b_exp(::coder::array<creal_T, 4U> &x)
-{
-    int32_T nx;
-    nx = x.size(0) * x.size(1) * x.size(2) * x.size(3);
-    for (int32_T k{0}; k < nx; k++) {
-        internal::scalar::c_exp(&x[k]);
-    }
-}
-
-//
 // Arguments    : ::coder::array<creal_T, 2U> &x
 // Return Type  : void
 //
@@ -393,6 +186,19 @@ static void b_exp(::coder::array<creal_T, 2U> &x)
 {
     int32_T nx;
     nx = x.size(0) * x.size(1);
+    for (int32_T k{0}; k < nx; k++) {
+        internal::scalar::c_exp(&x[k]);
+    }
+}
+
+//
+// Arguments    : ::coder::array<creal_T, 4U> &x
+// Return Type  : void
+//
+static void b_exp(::coder::array<creal_T, 4U> &x)
+{
+    int32_T nx;
+    nx = x.size(0) * x.size(1) * x.size(2) * x.size(3);
     for (int32_T k{0}; k < nx; k++) {
         internal::scalar::c_exp(&x[k]);
     }
@@ -543,6 +349,26 @@ static int32_T eml_ndims_varsized(const int32_T sz[4])
 }
 
 //
+// Arguments    : ::coder::array<real_T, 1U> &x
+// Return Type  : void
+//
+static void flip(::coder::array<real_T, 1U> &x)
+{
+    if ((x.size(0) != 0) && (x.size(0) > 1)) {
+        int32_T n;
+        int32_T nd2;
+        n = x.size(0) - 1;
+        nd2 = x.size(0) >> 1;
+        for (int32_T k{0}; k < nd2; k++) {
+            real_T tmp;
+            tmp = x[k];
+            x[k] = x[n - k];
+            x[n - k] = tmp;
+        }
+    }
+}
+
+//
 // Arguments    : ::coder::array<real_T, 4U> &x
 // Return Type  : void
 //
@@ -581,26 +407,6 @@ static void flip(::coder::array<real_T, 4U> &x)
                 x[tmp_tmp] = x[i1];
                 x[i1] = tmp;
             }
-        }
-    }
-}
-
-//
-// Arguments    : ::coder::array<real_T, 1U> &x
-// Return Type  : void
-//
-static void flip(::coder::array<real_T, 1U> &x)
-{
-    if ((x.size(0) != 0) && (x.size(0) > 1)) {
-        int32_T n;
-        int32_T nd2;
-        n = x.size(0) - 1;
-        nd2 = x.size(0) >> 1;
-        for (int32_T k{0}; k < nd2; k++) {
-            real_T tmp;
-            tmp = x[k];
-            x[k] = x[n - k];
-            x[n - k] = tmp;
         }
     }
 }
@@ -763,21 +569,21 @@ static real_T b_atan2(real_T y, real_T x)
 }
 
 //
-// Arguments    : real_T x
-// Return Type  : real_T
-//
-static real_T c_abs(real_T x)
-{
-    return std::abs(x);
-}
-
-//
 // Arguments    : const creal_T x
 // Return Type  : real_T
 //
 static real_T c_abs(const creal_T x)
 {
     return xdlapy2(x.re, x.im);
+}
+
+//
+// Arguments    : real_T x
+// Return Type  : real_T
+//
+static real_T c_abs(real_T x)
+{
+    return std::abs(x);
 }
 
 //
@@ -851,12 +657,39 @@ static real_T xdlapy2(real_T x1, real_T x2)
 
 //
 // Arguments    : const ::coder::array<real_T, 1U> &varargin_1
+//                const ::coder::array<real_T, 1U> &varargin_2
+//                const ::coder::array<real_T, 2U> &varargin_3
+//                ::coder::array<real_T, 2U> &Vq
+// Return Type  : void
+//
+} // namespace internal
+static void interp1(const ::coder::array<real_T, 1U> &varargin_1, const ::coder::array<real_T, 1U> &varargin_2,
+                    const ::coder::array<real_T, 2U> &varargin_3, ::coder::array<real_T, 2U> &Vq)
+{
+    array<real_T, 1U> b_varargin_1;
+    array<real_T, 1U> b_varargin_2;
+    int32_T i;
+    int32_T loop_ub;
+    b_varargin_2.set_size(varargin_2.size(0));
+    loop_ub = varargin_2.size(0) - 1;
+    for (i = 0; i <= loop_ub; i++) {
+        b_varargin_2[i] = varargin_2[i];
+    }
+    b_varargin_1.set_size(varargin_1.size(0));
+    loop_ub = varargin_1.size(0) - 1;
+    for (i = 0; i <= loop_ub; i++) {
+        b_varargin_1[i] = varargin_1[i];
+    }
+    interp1_work(b_varargin_2, varargin_3, b_varargin_1, Vq);
+}
+
+//
+// Arguments    : const ::coder::array<real_T, 1U> &varargin_1
 //                const ::coder::array<real_T, 4U> &varargin_2
 //                const ::coder::array<real_T, 1U> &varargin_3
 //                ::coder::array<real_T, 4U> &Vq
 // Return Type  : void
 //
-} // namespace internal
 static void interp1(const ::coder::array<real_T, 1U> &varargin_1, const ::coder::array<real_T, 4U> &varargin_2,
                     const ::coder::array<real_T, 1U> &varargin_3, ::coder::array<real_T, 4U> &Vq)
 {
@@ -878,30 +711,71 @@ static void interp1(const ::coder::array<real_T, 1U> &varargin_1, const ::coder:
 }
 
 //
-// Arguments    : const ::coder::array<real_T, 1U> &varargin_1
-//                const ::coder::array<real_T, 1U> &varargin_2
-//                const ::coder::array<real_T, 2U> &varargin_3
-//                ::coder::array<real_T, 2U> &Vq
+// Arguments    : ::coder::array<real_T, 1U> &y
+//                const ::coder::array<real_T, 2U> &xi
+//                ::coder::array<real_T, 1U> &x
+//                ::coder::array<real_T, 2U> &yi
 // Return Type  : void
 //
-static void interp1(const ::coder::array<real_T, 1U> &varargin_1, const ::coder::array<real_T, 1U> &varargin_2,
-                    const ::coder::array<real_T, 2U> &varargin_3, ::coder::array<real_T, 2U> &Vq)
+static void interp1_work(::coder::array<real_T, 1U> &y, const ::coder::array<real_T, 2U> &xi,
+                         ::coder::array<real_T, 1U> &x, ::coder::array<real_T, 2U> &yi)
 {
-    array<real_T, 1U> b_varargin_1;
-    array<real_T, 1U> b_varargin_2;
-    int32_T i;
-    int32_T loop_ub;
-    b_varargin_2.set_size(varargin_2.size(0));
-    loop_ub = varargin_2.size(0) - 1;
-    for (i = 0; i <= loop_ub; i++) {
-        b_varargin_2[i] = varargin_2[i];
+    int32_T k;
+    int32_T nx;
+    int32_T outsize_idx_1;
+    boolean_T b;
+    nx = x.size(0) - 1;
+    outsize_idx_1 = xi.size(1);
+    yi.set_size(1, xi.size(1));
+    for (k = 0; k < outsize_idx_1; k++) {
+        yi[k] = rtNaN;
     }
-    b_varargin_1.set_size(varargin_1.size(0));
-    loop_ub = varargin_1.size(0) - 1;
-    for (i = 0; i <= loop_ub; i++) {
-        b_varargin_1[i] = varargin_1[i];
+    b = (xi.size(1) == 0);
+    if (!b) {
+        k = 0;
+        int32_T exitg1;
+        do {
+            exitg1 = 0;
+            if (k <= nx) {
+                if (b_isnan(x[k])) {
+                    exitg1 = 1;
+                } else {
+                    k++;
+                }
+            } else {
+                real_T xtmp;
+                if (x[1] < x[0]) {
+                    k = (nx + 1) >> 1;
+                    for (outsize_idx_1 = 0; outsize_idx_1 < k; outsize_idx_1++) {
+                        xtmp = x[outsize_idx_1];
+                        x[outsize_idx_1] = x[nx - outsize_idx_1];
+                        x[nx - outsize_idx_1] = xtmp;
+                    }
+                    flip(y);
+                }
+                outsize_idx_1 = xi.size(1);
+                for (k = 0; k < outsize_idx_1; k++) {
+                    xtmp = xi[k];
+                    if (b_isnan(xtmp)) {
+                        yi[k] = rtNaN;
+                    } else if ((!(xtmp > x[x.size(0) - 1])) && (!(xtmp < x[0]))) {
+                        nx = internal::b_bsearch(x, xtmp) - 1;
+                        xtmp = (xtmp - x[nx]) / (x[nx + 1] - x[nx]);
+                        if (xtmp == 0.0) {
+                            yi[k] = y[nx];
+                        } else if (xtmp == 1.0) {
+                            yi[k] = y[nx + 1];
+                        } else if (y[nx] == y[nx + 1]) {
+                            yi[k] = y[nx];
+                        } else {
+                            yi[k] = (1.0 - xtmp) * y[nx] + xtmp * y[nx + 1];
+                        }
+                    }
+                }
+                exitg1 = 1;
+            }
+        } while (exitg1 == 0);
     }
-    interp1_work(b_varargin_2, varargin_3, b_varargin_1, Vq);
 }
 
 //
@@ -1001,74 +875,6 @@ static void interp1_work(::coder::array<real_T, 4U> &y, const ::coder::array<rea
 }
 
 //
-// Arguments    : ::coder::array<real_T, 1U> &y
-//                const ::coder::array<real_T, 2U> &xi
-//                ::coder::array<real_T, 1U> &x
-//                ::coder::array<real_T, 2U> &yi
-// Return Type  : void
-//
-static void interp1_work(::coder::array<real_T, 1U> &y, const ::coder::array<real_T, 2U> &xi,
-                         ::coder::array<real_T, 1U> &x, ::coder::array<real_T, 2U> &yi)
-{
-    int32_T k;
-    int32_T nx;
-    int32_T outsize_idx_1;
-    boolean_T b;
-    nx = x.size(0) - 1;
-    outsize_idx_1 = xi.size(1);
-    yi.set_size(1, xi.size(1));
-    for (k = 0; k < outsize_idx_1; k++) {
-        yi[k] = rtNaN;
-    }
-    b = (xi.size(1) == 0);
-    if (!b) {
-        k = 0;
-        int32_T exitg1;
-        do {
-            exitg1 = 0;
-            if (k <= nx) {
-                if (b_isnan(x[k])) {
-                    exitg1 = 1;
-                } else {
-                    k++;
-                }
-            } else {
-                real_T xtmp;
-                if (x[1] < x[0]) {
-                    k = (nx + 1) >> 1;
-                    for (outsize_idx_1 = 0; outsize_idx_1 < k; outsize_idx_1++) {
-                        xtmp = x[outsize_idx_1];
-                        x[outsize_idx_1] = x[nx - outsize_idx_1];
-                        x[nx - outsize_idx_1] = xtmp;
-                    }
-                    flip(y);
-                }
-                outsize_idx_1 = xi.size(1);
-                for (k = 0; k < outsize_idx_1; k++) {
-                    xtmp = xi[k];
-                    if (b_isnan(xtmp)) {
-                        yi[k] = rtNaN;
-                    } else if ((!(xtmp > x[x.size(0) - 1])) && (!(xtmp < x[0]))) {
-                        nx = internal::b_bsearch(x, xtmp) - 1;
-                        xtmp = (xtmp - x[nx]) / (x[nx + 1] - x[nx]);
-                        if (xtmp == 0.0) {
-                            yi[k] = y[nx];
-                        } else if (xtmp == 1.0) {
-                            yi[k] = y[nx + 1];
-                        } else if (y[nx] == y[nx + 1]) {
-                            yi[k] = y[nx];
-                        } else {
-                            yi[k] = (1.0 - xtmp) * y[nx] + xtmp * y[nx + 1];
-                        }
-                    }
-                }
-                exitg1 = 1;
-            }
-        } while (exitg1 == 0);
-    }
-}
-
-//
 // Arguments    : real_T a
 //                real_T b
 // Return Type  : real_T
@@ -1119,6 +925,91 @@ static void repmat(const ::coder::array<creal_T, 2U> &a, real_T varargin_3, real
                 b[(ibmat + k) + 1] = a[tile_size_tmp + k];
             }
         }
+    }
+}
+
+//
+// Arguments    : const ::coder::array<real_T, 4U> &a
+//                real_T varargin_1
+//                ::coder::array<real_T, 4U> &b
+// Return Type  : void
+//
+static void repmat(const ::coder::array<real_T, 4U> &a, real_T varargin_1, ::coder::array<real_T, 4U> &b)
+{
+    b.set_size(static_cast<int32_T>(varargin_1), a.size(1), a.size(2), a.size(3));
+    if ((static_cast<int32_T>(varargin_1) != 0) && (a.size(1) != 0) && (a.size(2) != 0) && (a.size(3) != 0)) {
+        int32_T na;
+        na = a.size(3);
+        for (int32_T k{0}; k < na; k++) {
+            int32_T b_na;
+            b_na = a.size(2);
+            for (int32_T b_k{0}; b_k < b_na; b_k++) {
+                int32_T c_na;
+                c_na = a.size(1);
+                for (int32_T c_k{0}; c_k < c_na; c_k++) {
+                    int32_T i;
+                    i = static_cast<int32_T>(varargin_1) - 1;
+                    for (int32_T t{0}; t <= i; t++) {
+                        b[((t + b.size(0) * c_k) + b.size(0) * b.size(1) * b_k) +
+                          b.size(0) * b.size(1) * b.size(2) * k] =
+                            a[(c_k + a.size(1) * b_k) + a.size(1) * a.size(2) * k];
+                    }
+                }
+            }
+        }
+    }
+}
+
+//
+// Arguments    : const ::coder::array<real_T, 4U> &x
+//                const ::coder::array<creal_T, 4U> &y
+//                ::coder::array<creal_T, 4U> &output
+// Return Type  : void
+//
+static void sameSizeBinaryOp(const ::coder::array<real_T, 4U> &x, const ::coder::array<creal_T, 4U> &y,
+                             ::coder::array<creal_T, 4U> &output)
+{
+    int32_T loop_ub;
+    output.set_size(x.size(0), x.size(1), x.size(2), x.size(3));
+    loop_ub = x.size(0) * x.size(1) * x.size(2) * x.size(3);
+    for (int32_T i{0}; i < loop_ub; i++) {
+        output[i].re = x[i] * y[i].re;
+        output[i].im = x[i] * y[i].im;
+    }
+}
+
+//
+// Arguments    : const ::coder::array<creal_T, 4U> &x
+//                const ::coder::array<creal_T, 4U> &y
+//                ::coder::array<creal_T, 4U> &output
+// Return Type  : void
+//
+static void sameSizeBinaryOp(const ::coder::array<creal_T, 4U> &x, const ::coder::array<creal_T, 4U> &y,
+                             ::coder::array<creal_T, 4U> &output)
+{
+    int32_T loop_ub;
+    output.set_size(x.size(0), x.size(1), x.size(2), x.size(3));
+    loop_ub = x.size(0) * x.size(1) * x.size(2) * x.size(3);
+    for (int32_T i{0}; i < loop_ub; i++) {
+        output[i].re = x[i].re * y[i].re - x[i].im * y[i].im;
+        output[i].im = x[i].re * y[i].im + x[i].im * y[i].re;
+    }
+}
+
+//
+// Arguments    : const ::coder::array<real_T, 4U> &x
+//                const ::coder::array<real_T, 4U> &y
+//                ::coder::array<real_T, 4U> &output
+// Return Type  : void
+//
+static void sameSizeBinaryOp(const ::coder::array<real_T, 4U> &x, const ::coder::array<real_T, 4U> &y,
+                             ::coder::array<real_T, 4U> &output)
+{
+    int32_T loop_ub;
+    output.set_size(x.size(0), x.size(1), x.size(2), x.size(3));
+    loop_ub = x.size(0) * x.size(1) * x.size(2) * x.size(3);
+    for (int32_T i{0}; i < loop_ub; i++) {
+        output[i] = x[i] - y[i];
     }
 }
 
@@ -1347,26 +1238,16 @@ static real_T getNumFFTTones(real_T packetFormat, real_T CBW)
 static void magPhase2CSI(const coder::array<real_T, 4U> &mag, const coder::array<real_T, 4U> &phase,
                          coder::array<creal_T, 4U> &csi)
 {
-    int32_T i;
+    coder::array<creal_T, 4U> r;
     int32_T loop_ub;
-    csi.set_size(phase.size(0), phase.size(1), phase.size(2), phase.size(3));
+    r.set_size(phase.size(0), phase.size(1), phase.size(2), phase.size(3));
     loop_ub = phase.size(0) * phase.size(1) * phase.size(2) * phase.size(3);
-    for (i = 0; i < loop_ub; i++) {
-        csi[i].re = phase[i] * 0.0;
-        csi[i].im = phase[i];
+    for (int32_T i{0}; i < loop_ub; i++) {
+        r[i].re = phase[i] * 0.0;
+        r[i].im = phase[i];
     }
-    coder::b_exp(csi);
-    if ((mag.size(0) == csi.size(0)) && (mag.size(1) == csi.size(1)) && (mag.size(2) == csi.size(2)) &&
-        (mag.size(3) == csi.size(3))) {
-        loop_ub = mag.size(0) * mag.size(1) * mag.size(2) * mag.size(3);
-        csi.set_size(mag.size(0), mag.size(1), mag.size(2), mag.size(3));
-        for (i = 0; i < loop_ub; i++) {
-            csi[i].re = mag[i] * csi[i].re;
-            csi[i].im = mag[i] * csi[i].im;
-        }
-    } else {
-        times(csi, mag);
-    }
+    coder::b_exp(r);
+    coder::sameSizeBinaryOp(mag, r, csi);
 }
 
 //
@@ -1457,290 +1338,6 @@ static real_T rt_remd_snf(real_T u0, real_T u1)
 }
 
 //
-// Arguments    : coder::array<creal_T, 4U> &CSI
-//                const coder::array<creal_T, 4U> &phaseShiftAll
-// Return Type  : void
-//
-static void times(coder::array<creal_T, 4U> &CSI, const coder::array<creal_T, 4U> &phaseShiftAll)
-{
-    coder::array<creal_T, 4U> b_CSI;
-    int32_T aux_0_3;
-    int32_T aux_1_3;
-    int32_T b_loop_ub;
-    int32_T c_loop_ub;
-    int32_T d_loop_ub;
-    int32_T i;
-    int32_T i1;
-    int32_T i2;
-    int32_T i3;
-    int32_T loop_ub;
-    int32_T stride_0_0;
-    int32_T stride_0_1;
-    int32_T stride_0_2;
-    int32_T stride_0_3;
-    int32_T stride_1_0;
-    int32_T stride_1_1;
-    int32_T stride_1_2;
-    int32_T stride_1_3;
-    if (phaseShiftAll.size(0) == 1) {
-        i = CSI.size(0);
-    } else {
-        i = phaseShiftAll.size(0);
-    }
-    if (phaseShiftAll.size(1) == 1) {
-        i1 = CSI.size(1);
-    } else {
-        i1 = phaseShiftAll.size(1);
-    }
-    if (phaseShiftAll.size(2) == 1) {
-        i2 = CSI.size(2);
-    } else {
-        i2 = phaseShiftAll.size(2);
-    }
-    if (phaseShiftAll.size(3) == 1) {
-        i3 = CSI.size(3);
-    } else {
-        i3 = phaseShiftAll.size(3);
-    }
-    b_CSI.set_size(i, i1, i2, i3);
-    stride_0_0 = (CSI.size(0) != 1);
-    stride_0_1 = (CSI.size(1) != 1);
-    stride_0_2 = (CSI.size(2) != 1);
-    stride_0_3 = (CSI.size(3) != 1);
-    stride_1_0 = (phaseShiftAll.size(0) != 1);
-    stride_1_1 = (phaseShiftAll.size(1) != 1);
-    stride_1_2 = (phaseShiftAll.size(2) != 1);
-    stride_1_3 = (phaseShiftAll.size(3) != 1);
-    aux_0_3 = 0;
-    aux_1_3 = 0;
-    if (phaseShiftAll.size(3) == 1) {
-        loop_ub = CSI.size(3);
-    } else {
-        loop_ub = phaseShiftAll.size(3);
-    }
-    for (i = 0; i < loop_ub; i++) {
-        int32_T aux_0_2;
-        int32_T aux_1_2;
-        aux_0_2 = 0;
-        aux_1_2 = 0;
-        if (phaseShiftAll.size(2) == 1) {
-            b_loop_ub = CSI.size(2);
-        } else {
-            b_loop_ub = phaseShiftAll.size(2);
-        }
-        for (i1 = 0; i1 < b_loop_ub; i1++) {
-            int32_T aux_0_1;
-            int32_T aux_1_1;
-            aux_0_1 = 0;
-            aux_1_1 = 0;
-            if (phaseShiftAll.size(1) == 1) {
-                c_loop_ub = CSI.size(1);
-            } else {
-                c_loop_ub = phaseShiftAll.size(1);
-            }
-            for (i2 = 0; i2 < c_loop_ub; i2++) {
-                if (phaseShiftAll.size(0) == 1) {
-                    d_loop_ub = CSI.size(0);
-                } else {
-                    d_loop_ub = phaseShiftAll.size(0);
-                }
-                for (i3 = 0; i3 < d_loop_ub; i3++) {
-                    real_T d;
-                    real_T d1;
-                    int32_T i4;
-                    i4 = i3 * stride_1_0;
-                    d = phaseShiftAll[((i4 + phaseShiftAll.size(0) * aux_1_1) +
-                                       phaseShiftAll.size(0) * phaseShiftAll.size(1) * aux_1_2) +
-                                      phaseShiftAll.size(0) * phaseShiftAll.size(1) * phaseShiftAll.size(2) * aux_1_3]
-                            .im;
-                    d1 = phaseShiftAll[((i4 + phaseShiftAll.size(0) * aux_1_1) +
-                                        phaseShiftAll.size(0) * phaseShiftAll.size(1) * aux_1_2) +
-                                       phaseShiftAll.size(0) * phaseShiftAll.size(1) * phaseShiftAll.size(2) * aux_1_3]
-                             .re;
-                    b_CSI[((i3 + b_CSI.size(0) * i2) + b_CSI.size(0) * b_CSI.size(1) * i1) +
-                          b_CSI.size(0) * b_CSI.size(1) * b_CSI.size(2) * i]
-                        .re = CSI[((i3 * stride_0_0 + CSI.size(0) * aux_0_1) + CSI.size(0) * CSI.size(1) * aux_0_2) +
-                                  CSI.size(0) * CSI.size(1) * CSI.size(2) * aux_0_3]
-                                      .re *
-                                  d1 -
-                              CSI[((i3 * stride_0_0 + CSI.size(0) * aux_0_1) + CSI.size(0) * CSI.size(1) * aux_0_2) +
-                                  CSI.size(0) * CSI.size(1) * CSI.size(2) * aux_0_3]
-                                      .im *
-                                  d;
-                    b_CSI[((i3 + b_CSI.size(0) * i2) + b_CSI.size(0) * b_CSI.size(1) * i1) +
-                          b_CSI.size(0) * b_CSI.size(1) * b_CSI.size(2) * i]
-                        .im = CSI[((i3 * stride_0_0 + CSI.size(0) * aux_0_1) + CSI.size(0) * CSI.size(1) * aux_0_2) +
-                                  CSI.size(0) * CSI.size(1) * CSI.size(2) * aux_0_3]
-                                      .re *
-                                  d +
-                              CSI[((i3 * stride_0_0 + CSI.size(0) * aux_0_1) + CSI.size(0) * CSI.size(1) * aux_0_2) +
-                                  CSI.size(0) * CSI.size(1) * CSI.size(2) * aux_0_3]
-                                      .im *
-                                  d1;
-                }
-                aux_1_1 += stride_1_1;
-                aux_0_1 += stride_0_1;
-            }
-            aux_1_2 += stride_1_2;
-            aux_0_2 += stride_0_2;
-        }
-        aux_1_3 += stride_1_3;
-        aux_0_3 += stride_0_3;
-    }
-    CSI.set_size(b_CSI.size(0), b_CSI.size(1), b_CSI.size(2), b_CSI.size(3));
-    loop_ub = b_CSI.size(3);
-    for (i = 0; i < loop_ub; i++) {
-        b_loop_ub = b_CSI.size(2);
-        for (i1 = 0; i1 < b_loop_ub; i1++) {
-            c_loop_ub = b_CSI.size(1);
-            for (i2 = 0; i2 < c_loop_ub; i2++) {
-                d_loop_ub = b_CSI.size(0);
-                for (i3 = 0; i3 < d_loop_ub; i3++) {
-                    CSI[((i3 + CSI.size(0) * i2) + CSI.size(0) * CSI.size(1) * i1) +
-                        CSI.size(0) * CSI.size(1) * CSI.size(2) * i] =
-                        b_CSI[((i3 + b_CSI.size(0) * i2) + b_CSI.size(0) * b_CSI.size(1) * i1) +
-                              b_CSI.size(0) * b_CSI.size(1) * b_CSI.size(2) * i];
-                }
-            }
-        }
-    }
-}
-
-//
-// Arguments    : coder::array<creal_T, 4U> &csi
-//                const coder::array<real_T, 4U> &mag
-// Return Type  : void
-//
-static void times(coder::array<creal_T, 4U> &csi, const coder::array<real_T, 4U> &mag)
-{
-    coder::array<creal_T, 4U> b_mag;
-    int32_T aux_0_3;
-    int32_T aux_1_3;
-    int32_T b_loop_ub;
-    int32_T c_loop_ub;
-    int32_T d_loop_ub;
-    int32_T i;
-    int32_T i1;
-    int32_T i2;
-    int32_T i3;
-    int32_T loop_ub;
-    int32_T stride_0_0;
-    int32_T stride_0_1;
-    int32_T stride_0_2;
-    int32_T stride_0_3;
-    int32_T stride_1_0;
-    int32_T stride_1_1;
-    int32_T stride_1_2;
-    int32_T stride_1_3;
-    if (csi.size(0) == 1) {
-        i = mag.size(0);
-    } else {
-        i = csi.size(0);
-    }
-    if (csi.size(1) == 1) {
-        i1 = mag.size(1);
-    } else {
-        i1 = csi.size(1);
-    }
-    if (csi.size(2) == 1) {
-        i2 = mag.size(2);
-    } else {
-        i2 = csi.size(2);
-    }
-    if (csi.size(3) == 1) {
-        i3 = mag.size(3);
-    } else {
-        i3 = csi.size(3);
-    }
-    b_mag.set_size(i, i1, i2, i3);
-    stride_0_0 = (mag.size(0) != 1);
-    stride_0_1 = (mag.size(1) != 1);
-    stride_0_2 = (mag.size(2) != 1);
-    stride_0_3 = (mag.size(3) != 1);
-    stride_1_0 = (csi.size(0) != 1);
-    stride_1_1 = (csi.size(1) != 1);
-    stride_1_2 = (csi.size(2) != 1);
-    stride_1_3 = (csi.size(3) != 1);
-    aux_0_3 = 0;
-    aux_1_3 = 0;
-    if (csi.size(3) == 1) {
-        loop_ub = mag.size(3);
-    } else {
-        loop_ub = csi.size(3);
-    }
-    for (i = 0; i < loop_ub; i++) {
-        int32_T aux_0_2;
-        int32_T aux_1_2;
-        aux_0_2 = 0;
-        aux_1_2 = 0;
-        if (csi.size(2) == 1) {
-            b_loop_ub = mag.size(2);
-        } else {
-            b_loop_ub = csi.size(2);
-        }
-        for (i1 = 0; i1 < b_loop_ub; i1++) {
-            int32_T aux_0_1;
-            int32_T aux_1_1;
-            aux_0_1 = 0;
-            aux_1_1 = 0;
-            if (csi.size(1) == 1) {
-                c_loop_ub = mag.size(1);
-            } else {
-                c_loop_ub = csi.size(1);
-            }
-            for (i2 = 0; i2 < c_loop_ub; i2++) {
-                if (csi.size(0) == 1) {
-                    d_loop_ub = mag.size(0);
-                } else {
-                    d_loop_ub = csi.size(0);
-                }
-                for (i3 = 0; i3 < d_loop_ub; i3++) {
-                    int32_T i4;
-                    i4 = i3 * stride_1_0;
-                    b_mag[((i3 + b_mag.size(0) * i2) + b_mag.size(0) * b_mag.size(1) * i1) +
-                          b_mag.size(0) * b_mag.size(1) * b_mag.size(2) * i]
-                        .re = mag[((i3 * stride_0_0 + mag.size(0) * aux_0_1) + mag.size(0) * mag.size(1) * aux_0_2) +
-                                  mag.size(0) * mag.size(1) * mag.size(2) * aux_0_3] *
-                              csi[((i4 + csi.size(0) * aux_1_1) + csi.size(0) * csi.size(1) * aux_1_2) +
-                                  csi.size(0) * csi.size(1) * csi.size(2) * aux_1_3]
-                                  .re;
-                    b_mag[((i3 + b_mag.size(0) * i2) + b_mag.size(0) * b_mag.size(1) * i1) +
-                          b_mag.size(0) * b_mag.size(1) * b_mag.size(2) * i]
-                        .im = mag[((i3 * stride_0_0 + mag.size(0) * aux_0_1) + mag.size(0) * mag.size(1) * aux_0_2) +
-                                  mag.size(0) * mag.size(1) * mag.size(2) * aux_0_3] *
-                              csi[((i4 + csi.size(0) * aux_1_1) + csi.size(0) * csi.size(1) * aux_1_2) +
-                                  csi.size(0) * csi.size(1) * csi.size(2) * aux_1_3]
-                                  .im;
-                }
-                aux_1_1 += stride_1_1;
-                aux_0_1 += stride_0_1;
-            }
-            aux_1_2 += stride_1_2;
-            aux_0_2 += stride_0_2;
-        }
-        aux_1_3 += stride_1_3;
-        aux_0_3 += stride_0_3;
-    }
-    csi.set_size(b_mag.size(0), b_mag.size(1), b_mag.size(2), b_mag.size(3));
-    loop_ub = b_mag.size(3);
-    for (i = 0; i < loop_ub; i++) {
-        b_loop_ub = b_mag.size(2);
-        for (i1 = 0; i1 < b_loop_ub; i1++) {
-            c_loop_ub = b_mag.size(1);
-            for (i2 = 0; i2 < c_loop_ub; i2++) {
-                d_loop_ub = b_mag.size(0);
-                for (i3 = 0; i3 < d_loop_ub; i3++) {
-                    csi[((i3 + csi.size(0) * i2) + csi.size(0) * csi.size(1) * i1) +
-                        csi.size(0) * csi.size(1) * csi.size(2) * i] =
-                        b_mag[((i3 + b_mag.size(0) * i2) + b_mag.size(0) * b_mag.size(1) * i1) +
-                              b_mag.size(0) * b_mag.size(1) * b_mag.size(2) * i];
-                }
-            }
-        }
-    }
-}
-
-//
 // Arguments    : void
 // Return Type  : void
 //
@@ -1783,11 +1380,15 @@ void CSIPreprocessor2::InterpolateCSIAndRemoveCSD(coder::array<creal_T, 4U> &CSI
                                                   coder::array<real_T, 4U> &resultPhase,
                                                   coder::array<int16_T, 1U> &interpedIndex_int16)
 {
-    coder::array<creal_T, 4U> phaseShiftAll;
+    coder::array<creal_T, 4U> r2;
+    coder::array<creal_T, 4U> r3;
     coder::array<creal_T, 2U> r1;
-    coder::array<real_T, 4U> b_resultPhase;
-    coder::array<real_T, 4U> r2;
-    coder::array<real_T, 4U> r3;
+    coder::array<real_T, 4U> all_unwrap_interp;
+    coder::array<real_T, 4U> b_all_unwrap_interp;
+    coder::array<real_T, 4U> b_rawPhase;
+    coder::array<real_T, 4U> r4;
+    coder::array<real_T, 4U> r5;
+    coder::array<real_T, 4U> r6;
     coder::array<real_T, 4U> rawPhase;
     coder::array<real_T, 2U> b_y;
     coder::array<real_T, 2U> r;
@@ -1806,7 +1407,6 @@ void CSIPreprocessor2::InterpolateCSIAndRemoveCSD(coder::array<creal_T, 4U> &CSI
     int32_T i;
     int32_T i1;
     int32_T i2;
-    int32_T i3;
     int32_T loop_ub;
     int32_T pivotIndex_data;
     int32_T tmp_size;
@@ -1824,9 +1424,6 @@ void CSIPreprocessor2::InterpolateCSIAndRemoveCSD(coder::array<creal_T, 4U> &CSI
         subcarrierIndex[i] = subcarrierIndex_int16[i];
     }
     if (performCSDRemoval) {
-        real_T b_re_tmp;
-        real_T re;
-        real_T re_tmp;
         getCSDShift(numSTS, CBW, csdInSamples_data, csdInSamples_size);
         y = getNumFFTTones(packetFormat, CBW);
         csdInSamples_size_idx_1 = csdInSamples_size[1];
@@ -1840,7 +1437,10 @@ void CSIPreprocessor2::InterpolateCSIAndRemoveCSD(coder::array<creal_T, 4U> &CSI
             loop_ub = subcarrierIndex.size(0);
             for (i1 = 0; i1 < loop_ub; i1++) {
                 real_T b_re;
+                real_T b_re_tmp;
                 real_T im;
+                real_T re;
+                real_T re_tmp;
                 re = subcarrierIndex[i1] * -0.0;
                 im = subcarrierIndex[i1] * -6.2831853071795862;
                 re_tmp = b_csdInSamples_data[i].im;
@@ -1860,20 +1460,12 @@ void CSIPreprocessor2::InterpolateCSIAndRemoveCSD(coder::array<creal_T, 4U> &CSI
             }
         }
         coder::b_exp(r1);
-        coder::repmat(r1, numRx, numCSI, phaseShiftAll);
-        if ((CSI.size(0) == phaseShiftAll.size(0)) && (CSI.size(1) == phaseShiftAll.size(1)) &&
-            (CSI.size(2) == phaseShiftAll.size(2)) && (CSI.size(3) == phaseShiftAll.size(3))) {
-            loop_ub = CSI.size(0) * CSI.size(1) * CSI.size(2) * CSI.size(3);
-            for (i = 0; i < loop_ub; i++) {
-                re_tmp = CSI[i].re;
-                b_re_tmp = phaseShiftAll[i].im;
-                y = CSI[i].im;
-                re = phaseShiftAll[i].re;
-                CSI[i].re = re_tmp * re - y * b_re_tmp;
-                CSI[i].im = re_tmp * b_re_tmp + y * re;
-            }
-        } else {
-            times(CSI, phaseShiftAll);
+        coder::repmat(r1, numRx, numCSI, r2);
+        coder::sameSizeBinaryOp(CSI, r2, r3);
+        CSI.set_size(r3.size(0), r3.size(1), r3.size(2), r3.size(3));
+        loop_ub = r3.size(0) * r3.size(1) * r3.size(2) * r3.size(3);
+        for (i = 0; i < loop_ub; i++) {
+            CSI[i] = r3[i];
         }
     }
     if (subcarrierIndex[subcarrierIndex.size(0) - 1] < subcarrierIndex[0]) {
@@ -1916,89 +1508,60 @@ void CSIPreprocessor2::InterpolateCSIAndRemoveCSD(coder::array<creal_T, 4U> &CSI
         pivotIndex_data = csdInSamples_size_idx_1;
     }
     //  the index of pivotIndex in interpedIndex
-    r2.set_size(rawPhase.size(0), rawPhase.size(1), rawPhase.size(2), rawPhase.size(3));
+    r4.set_size(rawPhase.size(0), rawPhase.size(1), rawPhase.size(2), rawPhase.size(3));
     loop_ub = rawPhase.size(0) * rawPhase.size(1) * rawPhase.size(2) * rawPhase.size(3);
     for (i = 0; i < loop_ub; i++) {
-        r2[i] = rawPhase[i];
+        r4[i] = rawPhase[i];
     }
-    coder::unwrap(r2);
-    coder::interp1(subcarrierIndex, r2, interpedIndex, resultPhase);
+    coder::unwrap(r4);
+    coder::interp1(subcarrierIndex, r4, interpedIndex, all_unwrap_interp);
     b_interpedIndex.set_size(interpedIndex.size(0));
     loop_ub = interpedIndex.size(0);
     for (i = 0; i < loop_ub; i++) {
         b_interpedIndex[i] = (interpedIndex[i] == subcarrierIndex[pivotIndex_data - 1]);
     }
     coder::eml_find(b_interpedIndex, (int32_T *)&csdInSamples_size_idx_1, &tmp_size);
-    loop_ub = resultPhase.size(1);
-    b_loop_ub = resultPhase.size(2);
-    c_loop_ub = resultPhase.size(3);
-    r3.set_size(tmp_size, resultPhase.size(1), resultPhase.size(2), resultPhase.size(3));
+    loop_ub = all_unwrap_interp.size(1);
+    b_loop_ub = all_unwrap_interp.size(2);
+    c_loop_ub = all_unwrap_interp.size(3);
+    b_all_unwrap_interp.set_size(tmp_size, all_unwrap_interp.size(1), all_unwrap_interp.size(2),
+                                 all_unwrap_interp.size(3));
     for (i = 0; i < c_loop_ub; i++) {
         for (i1 = 0; i1 < b_loop_ub; i1++) {
             for (i2 = 0; i2 < loop_ub; i2++) {
-                for (i3 = 0; i3 < tmp_size; i3++) {
-                    r3[(r3.size(0) * i2 + r3.size(0) * r3.size(1) * i1) + r3.size(0) * r3.size(1) * r3.size(2) * i] =
-                        resultPhase[(((csdInSamples_size_idx_1 + resultPhase.size(0) * i2) +
-                                      resultPhase.size(0) * resultPhase.size(1) * i1) +
-                                     resultPhase.size(0) * resultPhase.size(1) * resultPhase.size(2) * i) -
-                                    1];
+                for (int32_T i3{0}; i3 < tmp_size; i3++) {
+                    b_all_unwrap_interp[(b_all_unwrap_interp.size(0) * i2 +
+                                         b_all_unwrap_interp.size(0) * b_all_unwrap_interp.size(1) * i1) +
+                                        b_all_unwrap_interp.size(0) * b_all_unwrap_interp.size(1) *
+                                            b_all_unwrap_interp.size(2) * i] =
+                        all_unwrap_interp[(((csdInSamples_size_idx_1 + all_unwrap_interp.size(0) * i2) +
+                                            all_unwrap_interp.size(0) * all_unwrap_interp.size(1) * i1) +
+                                           all_unwrap_interp.size(0) * all_unwrap_interp.size(1) *
+                                               all_unwrap_interp.size(2) * i) -
+                                          1];
                 }
             }
         }
     }
-    if (r3.size(1) == 1) {
-        i = rawPhase.size(1);
-    } else {
-        i = r3.size(1);
-    }
-    if (r3.size(2) == 1) {
-        i1 = rawPhase.size(2);
-    } else {
-        i1 = r3.size(2);
-    }
-    if (r3.size(3) == 1) {
-        i2 = rawPhase.size(3);
-    } else {
-        i2 = r3.size(3);
-    }
-    if ((r3.size(1) == rawPhase.size(1)) && (r3.size(2) == rawPhase.size(2)) && (r3.size(3) == rawPhase.size(3)) &&
-        (resultPhase.size(0) == r3.size(0)) && (resultPhase.size(1) == i) && (resultPhase.size(2) == i1) &&
-        (resultPhase.size(3) == i2)) {
-        b_resultPhase.set_size(resultPhase.size(0), resultPhase.size(1), resultPhase.size(2), resultPhase.size(3));
-        loop_ub = resultPhase.size(3);
-        for (i = 0; i < loop_ub; i++) {
-            b_loop_ub = resultPhase.size(2);
-            for (i1 = 0; i1 < b_loop_ub; i1++) {
-                c_loop_ub = resultPhase.size(1);
-                for (i2 = 0; i2 < c_loop_ub; i2++) {
-                    csdInSamples_size_idx_1 = resultPhase.size(0);
-                    for (i3 = 0; i3 < csdInSamples_size_idx_1; i3++) {
-                        b_resultPhase[(b_resultPhase.size(0) * i2 +
-                                       b_resultPhase.size(0) * b_resultPhase.size(1) * i1) +
-                                      b_resultPhase.size(0) * b_resultPhase.size(1) * b_resultPhase.size(2) * i] =
-                            resultPhase[(resultPhase.size(0) * i2 + resultPhase.size(0) * resultPhase.size(1) * i1) +
-                                        resultPhase.size(0) * resultPhase.size(1) * resultPhase.size(2) * i] -
-                            (r3[(r3.size(0) * i2 + r3.size(0) * r3.size(1) * i1) +
-                                r3.size(0) * r3.size(1) * r3.size(2) * i] -
-                             rawPhase[(((pivotIndex_data + rawPhase.size(0) * i2) +
-                                        rawPhase.size(0) * rawPhase.size(1) * i1) +
-                                       rawPhase.size(0) * rawPhase.size(1) * rawPhase.size(2) * i) -
-                                      1]);
-                    }
-                }
+    loop_ub = rawPhase.size(1);
+    b_loop_ub = rawPhase.size(2);
+    c_loop_ub = rawPhase.size(3);
+    b_rawPhase.set_size(1, rawPhase.size(1), rawPhase.size(2), rawPhase.size(3));
+    for (i = 0; i < c_loop_ub; i++) {
+        for (i1 = 0; i1 < b_loop_ub; i1++) {
+            for (i2 = 0; i2 < loop_ub; i2++) {
+                b_rawPhase[(i2 + b_rawPhase.size(1) * i1) + b_rawPhase.size(1) * b_rawPhase.size(2) * i] =
+                    rawPhase[(((pivotIndex_data + rawPhase.size(0) * i2) + rawPhase.size(0) * rawPhase.size(1) * i1) +
+                              rawPhase.size(0) * rawPhase.size(1) * rawPhase.size(2) * i) -
+                             1];
             }
         }
-        resultPhase.set_size(b_resultPhase.size(0), b_resultPhase.size(1), b_resultPhase.size(2),
-                             b_resultPhase.size(3));
-        loop_ub = b_resultPhase.size(0) * b_resultPhase.size(1) * b_resultPhase.size(2) * b_resultPhase.size(3);
-        for (i = 0; i < loop_ub; i++) {
-            resultPhase[i] = b_resultPhase[i];
-        }
-    } else {
-        binary_expand_op(resultPhase, r3, rawPhase, (int32_T *)&pivotIndex_data);
     }
-    coder::b_abs(CSI, r2);
-    coder::interp1(subcarrierIndex, r2, interpedIndex, resultMag);
+    coder::sameSizeBinaryOp(b_all_unwrap_interp, b_rawPhase, r5);
+    coder::repmat(r5, static_cast<real_T>(interpedIndex.size(0)), r6);
+    coder::sameSizeBinaryOp(all_unwrap_interp, r6, resultPhase);
+    coder::b_abs(CSI, r4);
+    coder::interp1(subcarrierIndex, r4, interpedIndex, resultMag);
     magPhase2CSI(resultMag, resultPhase, resultCSI);
     interpedIndex_int16.set_size(interpedIndex.size(0));
     loop_ub = interpedIndex.size(0);
