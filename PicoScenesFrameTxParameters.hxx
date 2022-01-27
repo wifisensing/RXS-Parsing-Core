@@ -35,6 +35,7 @@ public:
     bool heHighDoppler;
     double heMidamblePeriodicity;
     double heLTFType;
+    SignalMatrix<std::complex<double>> customSpatialMappingMatrix;
 
     PicoScenesFrameTxParameters() {
         frameType = PacketFormatEnum::PacketFormat_HT;

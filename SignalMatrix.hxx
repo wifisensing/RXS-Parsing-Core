@@ -37,7 +37,6 @@ class SignalMatrix {
     using SignalElementType = typename std::conditional<std::is_arithmetic_v<SignalType>, SignalType, typename std::remove_reference<decltype(std::declval<typename std::conditional<std::is_arithmetic_v<SignalType>, std::complex<SignalType>, SignalType>::type>().real())>::type>::type;
 public:
 
-    uint8_t matrixFormatId;
     std::vector<SignalType> array;
     std::vector<int64_t> dimensions;
     SignalMatrixStorageMajority majority = SignalMatrixStorageMajority::UndefinedMajority;
@@ -53,6 +52,10 @@ public:
         uint64_t sum = std::accumulate(dimensions.cbegin(), dimensions.cend(), 1, std::multiplies<>());
         if (sum != array.size())
             throw std::invalid_argument("SignalMatrix creation failed due to the inconsistent dimensions.");
+    }
+
+    bool empty() const {
+        return array.empty() || dimensions.empty();
     }
 
     SignalType valueAt(std::initializer_list<int64_t> coordinates) {
@@ -102,7 +105,7 @@ public:
         }
 
         if (majority == outputMajority) {
-            for (const auto &value : array) {
+            for (const auto &value: array) {
                 std::copy((uint8_t *) &value, (uint8_t *) &value + sizeof(SignalType), std::back_inserter(vout));
             }
         } else {
