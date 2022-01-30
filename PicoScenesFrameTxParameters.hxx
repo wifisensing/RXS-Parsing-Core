@@ -7,6 +7,22 @@
 
 #include "PicoScenesCommons.hxx"
 
+class TxPrecodingParameters {
+public:
+    bool precodingEnabled = false;
+
+    SignalMatrix<std::complex<double>> userSpecifiedSpatialMappingMatrix;
+
+    SignalMatrix<std::complex<double>> rxCSI4TxBeamforming; /// N_{sc}-by-N_{tx_sts}-by-N_{rx}
+    uint8_t txNumSTS4TxBeamforming = 1;
+
+    std::vector<std::array<double, 3>> antennaPositions{};
+    double txSteeringAngles4PhasedArray = 0;
+    double txCarrierFrequency4PhasedArray = 0;
+    double subcarrierBandwidth4PhasedArray = 312.5e3;
+    std::vector<int16_t> subcarrierIndices4PhasedArray{};
+};
+
 class PicoScenesFrameTxParameters {
 public:
     std::optional<double> preciseTxTime = std::nullopt;
@@ -35,7 +51,7 @@ public:
     bool heHighDoppler;
     double heMidamblePeriodicity;
     double heLTFType;
-    SignalMatrix<std::complex<double>> customSpatialMappingMatrix;
+    TxPrecodingParameters precodingParameters;
 
     PicoScenesFrameTxParameters() {
         frameType = PacketFormatEnum::PacketFormat_HT;
