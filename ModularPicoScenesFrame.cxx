@@ -284,7 +284,10 @@ std::string ModularPicoScenesRxFrame::toString() const {
         ss << ", " << temp;
     }
 
-    ss << ", " << standardHeader;
+    if (!mpdu.empty())
+        ss << ", " << standardHeader;
+    else
+        ss << ", NDP frame";
     if (PicoScenesHeader)
         ss << ", " << *PicoScenesHeader;
     if (txExtraInfoSegment)
