@@ -56,8 +56,6 @@ std::string PacketFormat2String(PacketFormatEnum format);
 std::ostream &operator<<(std::ostream &os, const PacketFormatEnum &format);
 
 enum class ChannelBandwidthEnum : uint16_t {
-    CBW_5 = 5,
-    CBW_10 = 10,
     CBW_20 = 20,
     CBW_40 = 40,
     CBW_80 = 80,

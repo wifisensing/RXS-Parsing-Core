@@ -51,10 +51,6 @@ std::string PacketFormat2String(PacketFormatEnum format) {
 
 std::string ChannelBandwidth2String(ChannelBandwidthEnum cbw) {
     switch (cbw) {
-        case ChannelBandwidthEnum::CBW_5:
-            return "5";
-        case ChannelBandwidthEnum::CBW_10:
-            return "10";
         case ChannelBandwidthEnum::CBW_20:
             return "20";
         case ChannelBandwidthEnum::CBW_40:
