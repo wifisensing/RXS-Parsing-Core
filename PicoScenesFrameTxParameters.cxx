@@ -7,12 +7,19 @@
 
 std::string PicoScenesFrameTxParameters::toString() const {
     std::stringstream ss;
-    ss << "tx_param[type=" << PacketFormat2String(frameType) << ", CBW=" << ChannelBandwidth2String(cbw) << ", MCS=" << std::to_string(mcs[0]) << ", numSTS=" << int(numSTS[0]) << ", numESS=" << int(numExtraSounding) << ", coding=" << ChannelCoding2String(coding[0]) << ", GI=" << GuardInterval2String(guardInterval) << ", sounding(11n)=" << forceSounding << (preciseTxTime ? ", TxTime=" + std::to_string(*preciseTxTime) : "") << "]";
+    ss << "tx_param[type=" << PacketFormat2String(frameType) << ", CBW=" << ChannelBandwidth2String(cbw) << ", MCS=" << std::to_string(mcs[0]) << ", numSTS=" << int(numSTS[0]) << ", Coding=" << ChannelCoding2String(coding[0]) << ", GI=" << GuardInterval2String(guardInterval);
+    if (frameType == PacketFormatEnum::PacketFormat_HT)
+        ss << ", numESS=" << int(numExtraSounding) << ", sounding(11n)=" << forceSounding;
+    ss << (preciseTxTime ? ", TxTime=" + std::to_string(*preciseTxTime) : "") << "]";
     return ss.str();
 }
 
 void PicoScenesFrameTxParameters::validate() const {
     if (frameType == PacketFormatEnum::PacketFormat_NonHT) {
+
+        if (NDPFrame)
+            throw std::invalid_argument("NDP frame is only valid for VHT and HE-SU frame.");
+
         if (int(cbw) > int(ChannelBandwidthEnum::CBW_20))
             throw std::invalid_argument("Invalid Tx CBW: " + ChannelBandwidth2String(cbw) + " for NonHT frame.");
 
@@ -29,6 +36,10 @@ void PicoScenesFrameTxParameters::validate() const {
             throw std::invalid_argument("Invalid Tx GI: " + GuardInterval2String(guardInterval) + " for NonHT frame.");
 
     } else if (frameType == PacketFormatEnum::PacketFormat_HT) {
+
+        if (NDPFrame)
+            throw std::invalid_argument("NDP frame is only valid for VHT and HE-SU frame.");
+
         if (int(cbw) > int(ChannelBandwidthEnum::CBW_40))
             throw std::invalid_argument("Invalid Tx CBW: " + ChannelBandwidth2String(cbw) + " for HT frame.");
 

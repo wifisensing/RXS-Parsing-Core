@@ -26,6 +26,7 @@ public:
 class PicoScenesFrameTxParameters {
 public:
     std::optional<double> preciseTxTime = std::nullopt;
+    bool NDPFrame;
     PacketFormatEnum frameType;
     std::vector<uint8_t> mcs;
     std::vector<uint8_t> numSTS;
@@ -54,6 +55,11 @@ public:
     TxPrecodingParameters precodingParameters;
 
     PicoScenesFrameTxParameters() {
+        reset();
+    }
+
+    void reset() {
+        NDPFrame = false;
         frameType = PacketFormatEnum::PacketFormat_HT;
         mcs = std::vector<uint8_t>(1, 0);
         numSTS = std::vector<uint8_t>(1, 1);

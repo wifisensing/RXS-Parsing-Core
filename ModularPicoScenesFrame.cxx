@@ -408,6 +408,9 @@ uint32_t ModularPicoScenesTxFrame::totalLength() const {
 }
 
 Uint8Vector ModularPicoScenesTxFrame::toBuffer() const {
+    if (txParameters.NDPFrame)
+        return Uint8Vector();
+
     auto bufferLength = totalLength();
     Uint8Vector buffer(bufferLength);
     toBuffer(&buffer[0], bufferLength);
@@ -587,9 +590,13 @@ ModularPicoScenesTxFrame &ModularPicoScenesTxFrame::setHEMidamblePeriodicity(dou
 
 std::string ModularPicoScenesTxFrame::toString() const {
     std::stringstream ss;
-    ss << "TxFrame:{" << standardHeader;
-    if (frameHeader)
-        ss << ", " << *frameHeader;
+    if (!txParameters.NDPFrame) {
+        ss << "TxFrame:{" << standardHeader;
+        if (frameHeader)
+            ss << ", " << *frameHeader;
+    } else {
+        ss << "TxFrame:{NDP frame";
+    }
     ss << ", " << txParameters;
 
     if (!segments.empty()) {
