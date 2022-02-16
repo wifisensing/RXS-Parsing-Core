@@ -1429,7 +1429,7 @@ void CSIPreprocessor2::InterpolateCSIAndRemoveCSD(coder::array<creal_T, 4U> &CSI
         csdInSamples_size_idx_1 = csdInSamples_size[1];
         loop_ub = csdInSamples_size[1];
         for (i = 0; i < loop_ub; i++) {
-            b_csdInSamples_data[i].re = csdInSamples_data[i];
+            b_csdInSamples_data[i].re = -csdInSamples_data[i];
             b_csdInSamples_data[i].im = 0.0;
         }
         r1.set_size(subcarrierIndex.size(0), csdInSamples_size[1]);

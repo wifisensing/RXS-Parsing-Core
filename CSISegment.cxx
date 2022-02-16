@@ -319,7 +319,19 @@ void CSI::removeCSDAndInterpolateCSI() {
     subcarrierIndex_int16.set_size(subcarrierIndices.size());
     std::copy(subcarrierIndices.cbegin(), subcarrierIndices.cend(), subcarrierIndex_int16.data());
 
-    preprocessorInstance->InterpolateCSIAndRemoveCSD(CSIWrapper, subcarrierIndex_int16, dimensions.numTx, dimensions.numESS, dimensions.numRx, dimensions.numCSI, static_cast<real_T>(packetFormat), static_cast<real_T>(cbw), true, newCSI, newMag, newPhase, interpedIndex_int16);
+    bool performCSDRemoval{false};
+    switch (deviceType) {
+        case PicoScenesDeviceType::VirtualSDR:
+            [[fallthrough]];
+        case PicoScenesDeviceType::USRP:
+            performCSDRemoval = true;
+            break;
+            
+        default: // TODO verify more for QCA9300/IWL5300/AX200/AX210
+            performCSDRemoval = false;
+    }
+
+    preprocessorInstance->InterpolateCSIAndRemoveCSD(CSIWrapper, subcarrierIndex_int16, dimensions.numTx, dimensions.numESS, dimensions.numRx, dimensions.numCSI, static_cast<real_T>(packetFormat), static_cast<real_T>(cbw), performCSDRemoval, newCSI, newMag, newPhase, interpedIndex_int16);
 
     CSIArray.array.clear();
     std::copy((std::complex<double> *) newCSI.data(), (std::complex<double> *) newCSI.data() + newCSI.numel(), std::back_inserter(CSIArray.array));
