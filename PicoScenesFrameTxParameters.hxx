@@ -53,6 +53,7 @@ public:
     double heMidamblePeriodicity;
     double heLTFType;
     TxPrecodingParameters precodingParameters;
+    uint32_t precursorLength;
 
     PicoScenesFrameTxParameters() {
         reset();
@@ -84,6 +85,7 @@ public:
         heHighDoppler = false;
         heMidamblePeriodicity = 10;
         heLTFType = 4;
+        precursorLength = 100;
     }
 
     void validate() const;
