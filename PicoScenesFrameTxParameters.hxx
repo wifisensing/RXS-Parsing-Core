@@ -37,6 +37,7 @@ public:
     std::vector<ChannelCodingEnum> coding;
     double numExtraSounding;
     bool forceSounding;
+    double prefixPaddingTime;
     double idleTime;
     double scramblerState;
     double txIQAmplitudeImbalance_dB;
@@ -53,7 +54,6 @@ public:
     double heMidamblePeriodicity;
     double heLTFType;
     TxPrecodingParameters precodingParameters;
-    uint32_t precursorLength;
 
     PicoScenesFrameTxParameters() {
         reset();
@@ -71,6 +71,7 @@ public:
         coding = std::vector<ChannelCodingEnum>(1, ChannelCodingEnum::BCC);
         numExtraSounding = 0;
         forceSounding = true;
+        prefixPaddingTime = 8e-6;
         idleTime = 20e-6;
         scramblerState = 39;
         txIQAmplitudeImbalance_dB = 0;
@@ -85,7 +86,6 @@ public:
         heHighDoppler = false;
         heMidamblePeriodicity = 10;
         heLTFType = 4;
-        precursorLength = 100;
     }
 
     void validate() const;
