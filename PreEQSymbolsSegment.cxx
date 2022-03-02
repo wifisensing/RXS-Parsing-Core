@@ -54,7 +54,7 @@ void PreEQSymbolsSegment::fromBuffer(const uint8_t *buffer, uint32_t bufferLengt
 
 std::string PreEQSymbolsSegment::toString() const {
     std::stringstream ss;
-    ss << segmentName + ":[" + std::to_string(preEQSymbols.dimensions[0]) + "x" + std::to_string(preEQSymbols.dimensions[1]) + "]";
+    ss << segmentName + ":[" + std::to_string(preEQSymbols.dimensions[0]) + "x" + std::to_string(preEQSymbols.dimensions[1]) + (preEQSymbols.dimensions.size() >= 3 ? (std::string{"x"} + std::to_string(preEQSymbols.dimensions[2]) + "]") : std::string{"]"});
     auto temp = ss.str();
     return temp;
 }
