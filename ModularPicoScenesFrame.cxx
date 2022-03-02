@@ -260,10 +260,10 @@ std::string ModularPicoScenesRxFrame::toString() const {
     std::stringstream ss;
     ss << "RxFrame:{";
     ss << rxSBasicSegment.getBasic();
-    ss << ", " << rxExtraInfoSegment.getExtraInfo();
+    ss << ", Rx" << rxExtraInfoSegment.getExtraInfo();
     if (mvmExtraSegment)
         ss << ", " << *mvmExtraSegment;
-    ss << ", Rx" << csiSegment;
+    ss << ", " << "(" << PacketFormat2String(csiSegment.getCSI().packetFormat) << ")" << csiSegment;
     if (pilotCSISegment)
         ss << ", " << *pilotCSISegment;
     if (legacyCSISegment)
@@ -291,7 +291,7 @@ std::string ModularPicoScenesRxFrame::toString() const {
     if (PicoScenesHeader)
         ss << ", " << *PicoScenesHeader;
     if (txExtraInfoSegment)
-        ss << ", " << txExtraInfoSegment->getExtraInfo();
+        ss << ", Tx" << txExtraInfoSegment->getExtraInfo();
     if (dpasRequestSegment)
         ss << ", " << *dpasRequestSegment;
     if (!payloadSegments.empty()) {
