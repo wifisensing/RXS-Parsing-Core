@@ -39,6 +39,7 @@ public:
     bool forceSounding;
     double prefixPaddingTime;
     double idleTime;
+    double postfixPaddingTime;
     double scramblerState;
     double txIQAmplitudeImbalance_dB;
     double txIQPhaseImbalance_rad;
@@ -71,8 +72,9 @@ public:
         coding = std::vector<ChannelCodingEnum>(1, ChannelCodingEnum::BCC);
         numExtraSounding = 0;
         forceSounding = true;
-        prefixPaddingTime = 8e-6;
-        idleTime = 20e-6;
+        prefixPaddingTime = 4e-6;
+        idleTime = 4e-6;
+        postfixPaddingTime = 0;
         scramblerState = 39;
         txIQAmplitudeImbalance_dB = 0;
         txIQPhaseImbalance_rad = 0;
