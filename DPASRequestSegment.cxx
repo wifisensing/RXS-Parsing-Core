@@ -47,6 +47,20 @@ struct DPASRequestV4 {
 
 } __attribute__ ((__packed__));
 
+struct DPASRequestV5 {
+    uint8_t requestMode;
+    uint16_t batchId;
+    uint8_t stage;
+    uint32_t batchLength;
+    uint32_t sequenceId;
+    uint32_t intervalTime;
+    uint32_t intervalStep;
+    PicoScenesDeviceType deviceType;
+    uint16_t deviceSubtype;
+    uint64_t carrierFrequency;
+    uint32_t samplingFrequency;
+};
+
 static auto v1Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> DPASRequest {
     uint32_t pos = 0;
     if (bufferLength < sizeof(DPASRequestV1))
@@ -153,6 +167,39 @@ static auto v4Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> DPASR
     return r;
 };
 
+static auto v5Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> DPASRequest {
+    uint32_t pos = 0;
+    if (bufferLength < sizeof(DPASRequestV5))
+        throw std::runtime_error("DPASRequest v5Parser cannot parse the segment with insufficient buffer length.");
+
+    auto r = DPASRequest();
+    std::memset(&r, 0, sizeof(r));
+    r.requestMode = *(uint8_t *) (buffer + pos++);
+    r.batchId = *(uint16_t *) (buffer + pos);
+    pos += 2;
+    r.stage = *(uint8_t *) (buffer + pos++);
+    r.batchLength = *(uint32_t *) (buffer + pos);
+    pos += 4;
+    r.sequenceId = *(uint32_t *) (buffer + pos);
+    pos += 4;
+    r.intervalTime = *(uint32_t *) (buffer + pos);
+    pos += 4;
+    r.intervalStep = *(uint32_t *) (buffer + pos);
+    pos += 4;
+    r.deviceType = *(PicoScenesDeviceType *) (buffer + pos);
+    pos += sizeof(PicoScenesDeviceType);
+    r.deviceSubtype = *(uint16_t *) (buffer + pos);
+    pos += 2;
+    r.carrierFrequency = *(uint64_t *) (buffer + pos);
+    pos += 8;
+    r.samplingFrequency = *(uint32_t *) (buffer + pos);
+    pos += 4;
+    if (pos != bufferLength)
+        throw std::runtime_error("DPASRequest v5Parser cannot parse the segment with mismatched buffer length.");
+
+    return r;
+};
+
 std::vector<uint8_t> DPASRequest::toBuffer() {
     return std::vector<uint8_t>((uint8_t *) this, (uint8_t *) this + sizeof(DPASRequest));
 }
@@ -165,10 +212,11 @@ std::map<uint16_t, std::function<DPASRequest(const uint8_t *, uint32_t)>> DPASRe
     map.emplace(0x2U, v2Parser);
     map.emplace(0x3U, v3Parser);
     map.emplace(0x4U, v4Parser);
+    map.emplace(0x5U, v5Parser);
     return map;
 }
 
-DPASRequestSegment::DPASRequestSegment() : AbstractPicoScenesFrameSegment("DPASRequest", 0x4U) {
+DPASRequestSegment::DPASRequestSegment() : AbstractPicoScenesFrameSegment("DPASRequest", 0x5U) {
 }
 
 DPASRequestSegment::DPASRequestSegment(const DPASRequest &request) : DPASRequestSegment() {

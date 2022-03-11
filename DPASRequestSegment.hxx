@@ -12,10 +12,11 @@
 struct DPASRequest {
     uint8_t  requestMode;
     uint16_t batchId;
-    uint16_t batchLength;
-    uint16_t sequenceId;
-    uint16_t intervalTime;
-    uint16_t intervalStep;
+    uint8_t  stage;
+    uint32_t batchLength;
+    uint32_t sequenceId;
+    uint32_t intervalTime;
+    uint32_t intervalStep;
     PicoScenesDeviceType deviceType;
     uint16_t deviceSubtype;
     uint64_t carrierFrequency;
