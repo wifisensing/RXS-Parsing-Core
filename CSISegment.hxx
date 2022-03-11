@@ -197,11 +197,11 @@ public:
      */
     std::optional<int16_t> get0thSubcarrierIndex() const;
 
-    std::optional<std::complex<double>> getCSI(int16_t subcarrierIndex, uint8_t stsIndexStartingFrom0 = 1, uint8_t rxIndexStartingFrom0 = 1) const;
+    std::optional<std::complex<double>> getCSI(int16_t subcarrierIndex, uint8_t stsIndexStartingFrom0 = 0, uint8_t rxIndexStartingFrom0 = 0, uint16_t csiIndexStartingFrom0 = 0) const;
 
-    std::optional<double> getMagnitude(int subcarrierIndex, int stsIndex = 1, int rxIndex = 1) const;
+    std::optional<double> getMagnitude(int16_t subcarrierIndex, uint8_t stsIndex = 0, uint8_t rxIndex = 0, uint16_t csiIndexStartingFrom0 = 0) const;
 
-    std::optional<double> getPhase(int subcarrierIndex, int stsIndex = 1, int rxIndex = 1) const;
+    std::optional<double> getPhase(int16_t subcarrierIndex, uint8_t stsIndex = 0, uint8_t rxIndex = 0, uint16_t csiIndexStartingFrom0 = 0) const;
 
 private:
     static std::vector<int16_t> NonHT20_52Subcarriers_Indices;

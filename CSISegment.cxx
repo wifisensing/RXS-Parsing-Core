@@ -387,7 +387,7 @@ std::optional<int16_t> CSI::get0thSubcarrierIndex() const {
     return std::nullopt;
 }
 
-std::optional<std::complex<double>> CSI::getCSI(int16_t subcarrierIndex, uint8_t stsIndexStartingFrom0, uint8_t rxIndexStartingFrom0) const {
+std::optional<std::complex<double>> CSI::getCSI(int16_t subcarrierIndex, uint8_t stsIndexStartingFrom0, uint8_t rxIndexStartingFrom0, uint16_t csiIndexStartingFrom0) const {
     if (std::find(subcarrierIndices.cbegin(), subcarrierIndices.cend(), 0) == subcarrierIndices.cend())
         return std::nullopt;
 
@@ -395,19 +395,19 @@ std::optional<std::complex<double>> CSI::getCSI(int16_t subcarrierIndex, uint8_t
         return std::nullopt;
 
     auto dataSubcarrierIndex = std::distance(subcarrierIndices.cbegin(), std::find(subcarrierIndices.cbegin(), subcarrierIndices.cend(), subcarrierIndex));
-    return CSIArray.valueAt({dataSubcarrierIndex, stsIndexStartingFrom0, rxIndexStartingFrom0});
+    return CSIArray.valueAt({dataSubcarrierIndex, stsIndexStartingFrom0, rxIndexStartingFrom0, csiIndexStartingFrom0});
 }
 
-std::optional<double> CSI::getMagnitude(int subcarrierIndex, int stsIndex, int rxIndex) const {
-    if (auto csi = getCSI(subcarrierIndex, stsIndex, rxIndex)) {
+std::optional<double> CSI::getMagnitude(int16_t subcarrierIndex, uint8_t stsIndex, uint8_t rxIndex, uint16_t csiIndexStartingFrom0) const {
+    if (auto csi = getCSI(subcarrierIndex, stsIndex, rxIndex, csiIndexStartingFrom0)) {
         return std::abs(csi.value());
     }
 
     return std::nullopt;
 }
 
-std::optional<double> CSI::getPhase(int subcarrierIndex, int stsIndex, int rxIndex) const {
-    if (auto csi = getCSI(subcarrierIndex, stsIndex, rxIndex)) {
+std::optional<double> CSI::getPhase(int16_t subcarrierIndex, uint8_t stsIndex, uint8_t rxIndex, uint16_t csiIndexStartingFrom0) const {
+    if (auto csi = getCSI(subcarrierIndex, stsIndex, rxIndex, csiIndexStartingFrom0)) {
         return std::arg(csi.value());
     }
 
