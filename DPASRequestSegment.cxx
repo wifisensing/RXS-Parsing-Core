@@ -263,7 +263,7 @@ DPASRequestSegment DPASRequestSegment::createByBuffer(const uint8_t *buffer, uin
 std::string DPASRequestSegment::toString() const {
     std::stringstream ss;
     ss << segmentName + ":[";
-    ss << "batch_id=" << dpasRequest.batchId << ", stage=" << dpasRequest.stage << ", batch_len=" << dpasRequest.batchLength << ", seq=" << dpasRequest.sequenceId << ", interval=" << dpasRequest.intervalTime << ", step=" << dpasRequest.intervalStep << ", device=" << DeviceType2String(dpasRequest.deviceType) << ", f_c=" << double(dpasRequest.carrierFrequency) / 1e6 << " MHz, f_s=" << double(dpasRequest.samplingFrequency) / 1e6 << " MHz]";
+    ss << "mode=" << dpasRequest.requestMode << ", batch_id=" << dpasRequest.batchId << ", stage=" << dpasRequest.stage << ", batch_len=" << dpasRequest.batchLength << ", seq=" << dpasRequest.sequenceId << ", interval=" << dpasRequest.intervalTime << ", step=" << dpasRequest.intervalStep << ", device=" << DeviceType2String(dpasRequest.deviceType) << ", f_c=" << double(dpasRequest.carrierFrequency) / 1e6 << " MHz, f_s=" << double(dpasRequest.samplingFrequency) / 1e6 << " MHz]";
     auto temp = ss.str();
     return temp;
 }
