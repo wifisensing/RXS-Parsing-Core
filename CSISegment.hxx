@@ -191,6 +191,18 @@ public:
         return outputArray;
     }
 
+    /**
+     * @brief get the index of the 0-th subcarrier (DC subcarrier)
+     * @return An int index if the measurement contains 0-th subcarrier, else a std::nullopt value.
+     */
+    std::optional<int16_t> get0thSubcarrierIndex() const;
+
+    std::optional<std::complex<double>> getCSI(int16_t subcarrierIndex, uint8_t stsIndexStartingFrom0 = 1, uint8_t rxIndexStartingFrom0 = 1) const;
+
+    std::optional<double> getMagnitude(int subcarrierIndex, int stsIndex = 1, int rxIndex = 1) const;
+
+    std::optional<double> getPhase(int subcarrierIndex, int stsIndex = 1, int rxIndex = 1) const;
+
 private:
     static std::vector<int16_t> NonHT20_52Subcarriers_Indices;
     static std::vector<int16_t> HTVHT20_56Subcarriers_Indices;

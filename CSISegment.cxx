@@ -378,6 +378,42 @@ std::vector<uint8_t> CSI::toBuffer() {
     return buffer;
 }
 
+std::optional<int16_t> CSI::get0thSubcarrierIndex() const {
+    if (std::find(subcarrierIndices.cbegin(), subcarrierIndices.cend(), 0) != subcarrierIndices.cend()) {
+        auto dcIndex = std::distance(subcarrierIndices.cbegin(), std::find(subcarrierIndices.cbegin(), subcarrierIndices.cend(), 0));
+        return static_cast<int16_t>(dcIndex);
+    }
+
+    return std::nullopt;
+}
+
+std::optional<std::complex<double>> CSI::getCSI(int16_t subcarrierIndex, uint8_t stsIndexStartingFrom0, uint8_t rxIndexStartingFrom0) const {
+    if (std::find(subcarrierIndices.cbegin(), subcarrierIndices.cend(), 0) == subcarrierIndices.cend())
+        return std::nullopt;
+
+    if (stsIndexStartingFrom0 == 0 || stsIndexStartingFrom0 >= dimensions.numTx || rxIndexStartingFrom0 == 0 || rxIndexStartingFrom0 >= dimensions.numRx)
+        return std::nullopt;
+
+    auto dataSubcarrierIndex = std::distance(subcarrierIndices.cbegin(), std::find(subcarrierIndices.cbegin(), subcarrierIndices.cend(), subcarrierIndex));
+    return CSIArray.valueAt({dataSubcarrierIndex, stsIndexStartingFrom0, rxIndexStartingFrom0});
+}
+
+std::optional<double> CSI::getMagnitude(int subcarrierIndex, int stsIndex, int rxIndex) const {
+    if (auto csi = getCSI(subcarrierIndex, stsIndex, rxIndex)) {
+        return std::abs(csi.value());
+    }
+
+    return std::nullopt;
+}
+
+std::optional<double> CSI::getPhase(int subcarrierIndex, int stsIndex, int rxIndex) const {
+    if (auto csi = getCSI(subcarrierIndex, stsIndex, rxIndex)) {
+        return std::arg(csi.value());
+    }
+
+    return std::nullopt;
+}
+
 static auto v1Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> std::optional<CSI> {
     uint32_t pos = 0;
 
@@ -964,4 +1000,3 @@ std::vector<int16_t> CSI::IWL5300SubcarrierIndices_CBW20 = []() noexcept -> std:
 std::vector<int16_t> CSI::IWL5300SubcarrierIndices_CBW40 = []() noexcept -> std::vector<int16_t> {
     return std::vector<int16_t>{-58, -54, -50, -46, -42, -38, -34, -30, -26, -22, -18, -14, -10, -6, -2, 2, 6, 10, 14, 18, 22, 26, 30, 34, 38, 42, 46, 50, 54, 58};
 }();
-

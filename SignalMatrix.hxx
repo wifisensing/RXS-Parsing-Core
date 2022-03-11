@@ -58,23 +58,23 @@ public:
         return array.empty() || dimensions.empty();
     }
 
-    SignalType valueAt(std::initializer_list<int64_t> coordinates) {
+    SignalType valueAt(std::initializer_list<int64_t> coordinates) const {
         return array.at(computeIndex4Coordinates(dimensions, majority, coordinates));
     }
 
-    SignalType valueAt(uint64_t index) {
+    SignalType valueAt(uint64_t index) const {
         return array.at(index);
     }
 
-    uint64_t getIndex4Coordinates(std::vector<int64_t> coordinates) {
+    uint64_t getIndex4Coordinates(std::vector<int64_t> coordinates) const {
         return computeIndex4Coordinates(dimensions, majority, coordinates);
     }
 
-    uint64_t getIndex4Coordinates(std::initializer_list<int64_t> coordinates) {
+    uint64_t getIndex4Coordinates(std::initializer_list<int64_t> coordinates) const {
         return computeIndex4Coordinates(dimensions, majority, coordinates);
     }
 
-    std::vector<int64_t> getCoordinate4Index(uint64_t pos) {
+    std::vector<int64_t> getCoordinate4Index(uint64_t pos) const {
         return computeCoordinate4Index(dimensions, majority, pos);
     }
 
