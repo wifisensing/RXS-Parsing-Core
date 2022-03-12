@@ -11,13 +11,13 @@
 SignalMatrix<std::complex<double>> parseQCA9300CSIData(const uint8_t *csiData, int nSTS, int nRx, int nTones) {
     std::vector<std::complex<double>> CSIArray(nSTS * nRx * nTones);
     parseQCA9300CSIData(CSIArray.begin(), csiData, nSTS, nRx, nTones);
-    return SignalMatrix(CSIArray, std::vector<int32_t>{nTones, nSTS, nRx}, SignalMatrixStorageMajority::ColumnMajor);
+    return SignalMatrix(CSIArray, std::vector<int32_t>{nTones, nSTS, nRx, 1}, SignalMatrixStorageMajority::ColumnMajor);
 }
 
 SignalMatrix<std::complex<double>> parseIWL5300CSIData(const uint8_t *payload, int ntx, int nrx, uint8_t ant_sel) {
     std::vector<std::complex<double>> CSIArray(ntx * nrx * 30);
     parseIWL5300CSIData(CSIArray.begin(), payload, ntx, nrx, ant_sel);
-    return SignalMatrix(CSIArray, std::vector<int32_t>{30, ntx, nrx}, SignalMatrixStorageMajority::ColumnMajor);
+    return SignalMatrix(CSIArray, std::vector<int32_t>{30, ntx, nrx, 1}, SignalMatrixStorageMajority::ColumnMajor);
 }
 
 CSI CSI::fromQCA9300(const uint8_t *buffer, uint32_t bufferLength, uint8_t numTx, uint8_t numRx, uint8_t numTones, ChannelBandwidthEnum cbw, int16_t subcarrierIndexOffset) {
@@ -131,7 +131,7 @@ std::optional<CSI> CSI::fromIWLMVM(const uint8_t *buffer, uint32_t bufferLength,
         return {};
     }
 
-    auto CSIMatrix = SignalMatrix(CSIArray, std::vector<int32_t>{static_cast<int>(subcarrierIndices.size()), numTx, numRx}, SignalMatrixStorageMajority::ColumnMajor);
+    auto CSIMatrix = SignalMatrix(CSIArray, std::vector<int32_t>{static_cast<int>(subcarrierIndices.size()), numTx, numRx, 1}, SignalMatrixStorageMajority::ColumnMajor);
 
     auto csi = CSI{.firmwareVersion = firmwareVersion,
             .packetFormat = format,
@@ -391,7 +391,7 @@ std::optional<std::complex<double>> CSI::getCSI(int16_t subcarrierIndex, uint8_t
     if (std::find(subcarrierIndices.cbegin(), subcarrierIndices.cend(), 0) == subcarrierIndices.cend())
         return std::nullopt;
 
-    if (stsIndexStartingFrom0 == 0 || stsIndexStartingFrom0 >= dimensions.numTx || rxIndexStartingFrom0 == 0 || rxIndexStartingFrom0 >= dimensions.numRx)
+    if (stsIndexStartingFrom0 >= (dimensions.numTx + dimensions.numESS) || rxIndexStartingFrom0 >= dimensions.numRx || csiIndexStartingFrom0 >= dimensions.numCSI)
         return std::nullopt;
 
     auto dataSubcarrierIndex = std::distance(subcarrierIndices.cbegin(), std::find(subcarrierIndices.cbegin(), subcarrierIndices.cend(), subcarrierIndex));
