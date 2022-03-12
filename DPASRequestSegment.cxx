@@ -168,10 +168,10 @@ static auto v4Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> DPASR
 };
 
 static auto v5Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> DPASRequest {
-    uint32_t pos = 0;
-    if (bufferLength < sizeof(DPASRequestV5))
-        throw std::runtime_error("DPASRequest v5Parser cannot parse the segment with insufficient buffer length.");
+    if (bufferLength != sizeof(DPASRequestV5))
+        throw std::runtime_error("DPASRequest v5Parser cannot parse the segment with mismatched buffer length.");
 
+    uint32_t pos = 0;
     auto r = DPASRequest();
     std::memset(&r, 0, sizeof(r));
     r.requestMode = *(uint8_t *) (buffer + pos++);
@@ -194,8 +194,6 @@ static auto v5Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> DPASR
     pos += 8;
     r.samplingFrequency = *(uint32_t *) (buffer + pos);
     pos += 4;
-    if (pos != bufferLength)
-        throw std::runtime_error("DPASRequest v5Parser cannot parse the segment with mismatched buffer length.");
 
     return r;
 };
