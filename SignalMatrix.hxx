@@ -259,7 +259,7 @@ private:
     static uint64_t computeIndex4Coordinates(const std::vector<int64_t> &originalDimensions, SignalMatrixStorageMajority majorityV, const std::vector<int64_t> &coordinates) {
         auto dimensions = originalDimensions;
         auto coord = coordinates;
-        if (majorityV == SignalMatrixStorageMajority::ColumnMajor) {
+        if (majorityV == SignalMatrixStorageMajority::RowMajor) {
             std::reverse(coord.begin(), coord.end());
             std::reverse(dimensions.begin(), dimensions.end());
         }
