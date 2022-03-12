@@ -59,7 +59,7 @@ struct DPASRequestV5 {
     uint16_t deviceSubtype;
     uint64_t carrierFrequency;
     uint32_t samplingFrequency;
-};
+} __attribute__ ((__packed__));
 
 static auto v1Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> DPASRequest {
     uint32_t pos = 0;
