@@ -136,19 +136,19 @@ public:
     uint8_t numESS = 0;
     uint16_t numCSI = 1;
 
-    inline uint16_t numStreamsPerCSI() {
+    inline uint16_t numStreamsPerCSI() const {
         return (numTx + numESS) * numRx;
     }
 
-    inline uint16_t numTotalSubcarriersPerCSI() {
+    inline uint16_t numTotalSubcarriersPerCSI() const {
         return numStreamsPerCSI() * numTones;
     }
 
-    inline uint16_t numStreamsAll() {
+    inline uint16_t numStreamsAll() const {
         return (numTx + numESS) * numRx * numCSI;
     }
 
-    inline uint16_t numTotalSubcarriersAll() {
+    inline uint16_t numTotalSubcarriersAll() const {
         return numStreamsAll() * numTones;
     }
 };
