@@ -136,8 +136,12 @@ public:
     uint8_t numESS = 0;
     uint16_t numCSI = 1;
 
+    inline uint16_t numTxSpatialStream() const {
+        return numTx + numESS;
+    }
+
     inline uint16_t numStreamsPerCSI() const {
-        return (numTx + numESS) * numRx;
+        return numTxSpatialStream() * numRx;
     }
 
     inline uint16_t numTotalSubcarriersPerCSI() const {
