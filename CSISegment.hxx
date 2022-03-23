@@ -206,6 +206,17 @@ public:
     std::optional<double> getMagnitude(int16_t subcarrierIndex, uint8_t stsIndex = 0, uint8_t rxIndex = 0, uint16_t csiIndexStartingFrom0 = 0) const;
 
     std::optional<double> getPhase(int16_t subcarrierIndex, uint8_t stsIndex = 0, uint8_t rxIndex = 0, uint16_t csiIndexStartingFrom0 = 0) const;
+};
+
+class CSISubcarrierIndex {
+public:
+    static const std::vector<int16_t> &getAllSubcarrierIndices(PacketFormatEnum format, ChannelBandwidthEnum cbw);
+
+    static const std::vector<int16_t> &getPilotSubcarrierIndices(PacketFormatEnum format, ChannelBandwidthEnum cbw);
+
+    static const std::vector<int16_t> &getDataSubcarrierIndices(PacketFormatEnum format, ChannelBandwidthEnum cbw);
+
+    static const std::vector<int16_t> &getIWL5300Subcarriers(ChannelBandwidthEnum cbw);
 
 private:
     static std::vector<int16_t> NonHT20_52Subcarriers_Indices;
@@ -240,13 +251,6 @@ private:
 
     static std::vector<int16_t> IWL5300SubcarrierIndices_CBW20;
     static std::vector<int16_t> IWL5300SubcarrierIndices_CBW40;
-
-    static const std::vector<int16_t> &getAllSubcarrierIndices(PacketFormatEnum format, ChannelBandwidthEnum cbw);
-
-    static const std::vector<int16_t> &getPilotSubcarrierIndices(PacketFormatEnum format, ChannelBandwidthEnum cbw);
-
-    static const std::vector<int16_t> &getDataSubcarrierIndices(PacketFormatEnum format, ChannelBandwidthEnum cbw);
-
 };
 
 class CSISegment : public AbstractPicoScenesFrameSegment {
