@@ -10,16 +10,7 @@ IntelMVMParsedCSIHeader::IntelMVMParsedCSIHeader() {
 }
 
 bool IntelMVMParsedCSIHeader::operator==(const IntelMVMParsedCSIHeader &rhs) const {
-    return iqDataSize == rhs.iqDataSize &&
-           ftmClock == rhs.ftmClock &&
-           samplingTick2 == rhs.samplingTick2 &&
-           numTones == rhs.numTones &&
-           rssi1 == rhs.rssi1 &&
-           rssi2 == rhs.rssi2 &&
-           std::memcmp(sourceAddress, rhs.sourceAddress, 6) == 0 &&
-           csiSequence == rhs.csiSequence &&
-           muClock == rhs.muClock &&
-           rate_n_flags == rhs.rate_n_flags;
+    return std::memcmp(this, &rhs, sizeof(IntelMVMParsedCSIHeader));
 }
 
 bool IntelMVMParsedCSIHeader::operator!=(const IntelMVMParsedCSIHeader &rhs) const {
@@ -36,8 +27,13 @@ static auto v1Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> Intel
 
     extra.parsedHeader = *(IntelMVMParsedCSIHeader *) (buffer + pos);
     pos += sizeof(IntelMVMParsedCSIHeader);
-    if (MVMExtraSegment::isBlockFtmClock()) {
+    if (MVMExtraSegment::isAdvancedPropertiesBlocked()) {
         extra.parsedHeader.ftmClock = 0;
+        extra.parsedHeader.reserved4 = 0;
+        extra.parsedHeader.reserved56 = 0;
+        std::memset(extra.parsedHeader.reserved12_52, 0, sizeof(extra.parsedHeader.reserved12_52));
+        std::memset(extra.parsedHeader.reserved77, 0, sizeof(extra.parsedHeader.reserved77));
+        std::memset(extra.parsedHeader.blockedSection, 0, sizeof(extra.parsedHeader.blockedSection));
     }
     std::copy((uint8_t *) &extra.parsedHeader, (uint8_t *) (&extra.parsedHeader) + sizeof(IntelMVMParsedCSIHeader), std::back_inserter(extra.CSIHeader));
     std::copy(buffer + pos, buffer + bufferLength, std::back_inserter(extra.CSIHeader));
@@ -58,7 +54,7 @@ std::map<uint16_t, std::function<IntelMVMExtrta(const uint8_t *, uint32_t)>> MVM
     return map;
 }
 
-bool MVMExtraSegment::blockFTMClock = false;
+bool MVMExtraSegment::blockAdvancedProperties = false;
 
 MVMExtraSegment::MVMExtraSegment() : AbstractPicoScenesFrameSegment("MVMExtra", 0x1U) {}
 
@@ -108,10 +104,10 @@ const IntelMVMExtrta &MVMExtraSegment::getMvmExtra() const {
     return mvmExtra;
 }
 
-void MVMExtraSegment::setBlockFtmClock(bool blockFtmClock) {
-    blockFTMClock = blockFtmClock;
+void MVMExtraSegment::setBlockingAdvancedProperties(bool block) {
+    blockAdvancedProperties = block;
 }
 
-bool MVMExtraSegment::isBlockFtmClock() {
-    return blockFTMClock;
+bool MVMExtraSegment::isAdvancedPropertiesBlocked() {
+    return blockAdvancedProperties;
 }
