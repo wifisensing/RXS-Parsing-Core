@@ -35,8 +35,9 @@ public:
             uint32_t value180;
             uint32_t value184;
             uint8_t reserved188_198[10];
-            uint64_t timeValue198;
-            uint8_t reserved206_240[34];
+            uint16_t value198;
+            uint64_t timeValue200;
+            uint8_t reserved208_240[32];
             uint8_t chainInfo240[4];
             uint8_t chainInfo244[4];
             uint8_t chainInfo248[4];
