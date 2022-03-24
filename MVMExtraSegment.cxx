@@ -3,6 +3,7 @@
 //
 
 #include "MVMExtraSegment.hxx"
+#include <mutex>
 
 
 IntelMVMParsedCSIHeader::IntelMVMParsedCSIHeader() {
@@ -105,7 +106,10 @@ const IntelMVMExtrta &MVMExtraSegment::getMvmExtra() const {
 }
 
 void MVMExtraSegment::setBlockingAdvancedProperties(bool block) {
-    blockAdvancedProperties = block;
+    static std::once_flag flag;
+    std::call_once(flag, [&] {
+        blockAdvancedProperties = block; // this property can only be set once during the start
+    });
 }
 
 bool MVMExtraSegment::isAdvancedPropertiesBlocked() {
