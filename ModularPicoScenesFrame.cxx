@@ -400,6 +400,12 @@ std::shared_ptr<AbstractPicoScenesFrameSegment> ModularPicoScenesTxFrame::getSeg
 }
 
 uint32_t ModularPicoScenesTxFrame::totalLength() const {
+    if (txParameters.NDPFrame)
+        return 0;
+
+    if (!arbitraryMPDUContent.empty())
+        return arbitraryMPDUContent.size();
+
     uint32_t length = sizeof(decltype(standardHeader)) + (frameHeader ? sizeof(decltype(frameHeader)) : 4); // plus 4 is to avoid NDP skip on QCA9300
     for (const auto &segment: segments) {
         length += segment->totalLength() + 4;
@@ -420,6 +426,11 @@ Uint8Vector ModularPicoScenesTxFrame::toBuffer() const {
 int ModularPicoScenesTxFrame::toBuffer(uint8_t *buffer, uint32_t bufferLength) const {
     if (bufferLength < totalLength())
         throw std::overflow_error("Buffer not long enough for TX frame dumping...");
+
+    if (!arbitraryMPDUContent.empty()) {
+        std::copy(arbitraryMPDUContent.cbegin(), arbitraryMPDUContent.cend(), buffer);
+        return 0;
+    }
 
     memset(buffer, 0, bufferLength);
     memcpy(buffer, &standardHeader, sizeof(ieee80211_mac_frame_header));
@@ -444,6 +455,9 @@ void ModularPicoScenesTxFrame::reset() {
     standardHeader = ieee80211_mac_frame_header();
     frameHeader = PicoScenesFrameHeader();
     txParameters = PicoScenesFrameTxParameters();
+    arbitraryMPDUContent.clear();
+    AMPDUFrames.clear();
+    prebuiltSignals.clear();
     segments.clear();
 }
 

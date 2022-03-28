@@ -139,6 +139,7 @@ public:
     PicoScenesFrameTxParameters txParameters;
     std::optional<PicoScenesFrameHeader> frameHeader;
     std::vector<std::shared_ptr<AbstractPicoScenesFrameSegment>> segments;
+    Uint8Vector arbitraryMPDUContent;
     std::vector<ModularPicoScenesTxFrame> AMPDUFrames;
     std::vector<std::vector<std::complex<int16_t>>> prebuiltSignals;
 
