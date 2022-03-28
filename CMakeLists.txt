@@ -5,6 +5,6 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/..)
 
 file(GLOB modular_ps_core_source *.cxx interpolationAndCSDRemoval/generated/*.cpp)
 ADD_LIBRARY(modular_parsing_core SHARED ${modular_ps_core_source})
-target_include_directories(modular_parsing_core PRIVATE preprocessor)
+target_include_directories(modular_parsing_core PRIVATE interpolationAndCSDRemoval)
 install(TARGETS modular_parsing_core DESTINATION ${INSTALL_LIBRARY_DIR})
 add_subdirectory(test)
