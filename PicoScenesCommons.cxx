@@ -24,6 +24,8 @@ std::string DeviceType2String(PicoScenesDeviceType type) {
             return "USRP(SDR)";
         case PicoScenesDeviceType::VirtualSDR:
             return "Virtual(SDR)";
+        case PicoScenesDeviceType::SoapySDR:
+            return "SoapySDR Compatible SDR";
         case PicoScenesDeviceType::Unknown:
             return "Unknown";
         default:
