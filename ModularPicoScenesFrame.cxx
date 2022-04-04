@@ -5,6 +5,7 @@
 #include "ModularPicoScenesFrame.hxx"
 #include <random>
 #include <iomanip>
+#include <cassert>
 
 std::string ieee80211_mac_frame_header_frame_control_field::getTypeString() const {
     if (type == 0) {
@@ -419,7 +420,8 @@ Uint8Vector ModularPicoScenesTxFrame::toBuffer() const {
 
     auto bufferLength = totalLength();
     Uint8Vector buffer(bufferLength);
-    toBuffer(&buffer[0], bufferLength);
+    auto copiedLength = toBuffer(&buffer[0], bufferLength);
+    assert(bufferLength == copiedLength);
     return buffer;
 }
 
@@ -613,6 +615,11 @@ std::string ModularPicoScenesTxFrame::toString() const {
         ss << "TxFrame:{NDP frame";
     }
     ss << ", " << txParameters;
+
+    if (!arbitraryMPDUContent.empty()) {
+        ss << ", ArbitraryMPDU:" << std::to_string(arbitraryMPDUContent.size()) << "B}";
+        return ss.str();
+    }
 
     if (!segments.empty()) {
         std::stringstream segss;
