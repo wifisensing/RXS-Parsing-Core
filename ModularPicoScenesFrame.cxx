@@ -407,7 +407,7 @@ uint32_t ModularPicoScenesTxFrame::totalLength() const {
     if (!arbitraryMPDUContent.empty())
         return arbitraryMPDUContent.size();
 
-    uint32_t length = sizeof(decltype(standardHeader)) + (frameHeader ? sizeof(decltype(frameHeader)) : 4); // plus 4 is to avoid NDP skip on QCA9300
+    uint32_t length = sizeof(ieee80211_mac_frame_header) + (frameHeader ? sizeof(PicoScenesFrameHeader) : 4); // plus 4 is to avoid NDP skip on QCA9300
     for (const auto &segment: segments) {
         length += segment->totalLength() + 4;
     }
