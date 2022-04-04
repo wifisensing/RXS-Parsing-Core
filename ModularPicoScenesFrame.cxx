@@ -429,7 +429,7 @@ int ModularPicoScenesTxFrame::toBuffer(uint8_t *buffer, uint32_t bufferLength) c
 
     if (!arbitraryMPDUContent.empty()) {
         std::copy(arbitraryMPDUContent.cbegin(), arbitraryMPDUContent.cend(), buffer);
-        return 0;
+        return arbitraryMPDUContent.size();
     }
 
     memset(buffer, 0, bufferLength);
