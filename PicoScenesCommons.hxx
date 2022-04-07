@@ -60,6 +60,7 @@ enum class PicoScenesDeviceSubtype : uint16_t { // never alter the order!
     HackRFOne,
     LimeSDR,
     BladeRF,
+    SOAPYSDR_UHD,
 };
 
 std::string DeviceSubtype2String(PicoScenesDeviceSubtype subtype);

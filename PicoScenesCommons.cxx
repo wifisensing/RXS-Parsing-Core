@@ -63,6 +63,8 @@ std::string DeviceSubtype2String(PicoScenesDeviceSubtype subtype) {
             return "LimeSDR";
         case PicoScenesDeviceSubtype::BladeRF:
             return "BladeRF";
+        case PicoScenesDeviceSubtype::SOAPYSDR_UHD:
+            return "SoapySDR_UHD";
         default:
             throw std::runtime_error("unrecognized PicoScenesDeviceSubtype.");
     }
