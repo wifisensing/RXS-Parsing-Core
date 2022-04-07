@@ -43,6 +43,28 @@ std::string DeviceType2String(PicoScenesDeviceType type);
 
 std::ostream &operator<<(std::ostream &os, const PicoScenesDeviceType &deviceType);
 
+enum class PicoScenesDeviceSubtype : uint16_t { // never alter the order!
+    Unknown = 0,
+    QCA9300,
+    IWL5300,
+    AX200,
+    AX210,
+    USRP_N2x0, // usrp2
+    USRP_B100, // b100
+    USRP_B2x0, // b200
+    USRP_E3x0, // e3x0
+    USRP_N3x0, // n3xx
+    USRP_X3x0, // x300
+    USRP_X4x0, // x4xx
+    HackRFOne,
+    LimeSDR,
+    BladeRF,
+};
+
+std::string DeviceSubtype2String(PicoScenesDeviceSubtype subtype);
+
+std::ostream &operator<<(std::ostream &os, const PicoScenesDeviceSubtype &deviceSubtype);
+
 enum class PacketFormatEnum : int8_t {
     PacketFormat_NonHT = 0,
     PacketFormat_HT = 1,

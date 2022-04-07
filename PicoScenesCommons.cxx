@@ -33,6 +33,40 @@ std::string DeviceType2String(PicoScenesDeviceType type) {
     }
 }
 
+std::string DeviceSubtype2String(PicoScenesDeviceSubtype subtype) {
+    switch (subtype) {
+        case PicoScenesDeviceSubtype::Unknown:
+            return "Unknown";
+        case PicoScenesDeviceSubtype::QCA9300:
+            return "QCA9300";
+        case PicoScenesDeviceSubtype::IWL5300:
+            return "IWL5300";
+        case PicoScenesDeviceSubtype::AX200:
+            return "AX200";
+        case PicoScenesDeviceSubtype::AX210:
+            return "AX210";
+        case PicoScenesDeviceSubtype::USRP_N2x0:
+            return "USRP N2x0";
+        case PicoScenesDeviceSubtype::USRP_B2x0:
+            return "USRP B2x0";
+        case PicoScenesDeviceSubtype::USRP_E3x0:
+            return "USRP E3x0";
+        case PicoScenesDeviceSubtype::USRP_N3x0:
+            return "USRP N3x0";
+        case PicoScenesDeviceSubtype::USRP_X3x0:
+            return "USRP X3x0";
+        case PicoScenesDeviceSubtype::USRP_X4x0:
+            return "USRP X4x0";
+        case PicoScenesDeviceSubtype::HackRFOne:
+            return "HackRF One";
+        case PicoScenesDeviceSubtype::LimeSDR:
+            return "LimeSDR";
+        case PicoScenesDeviceSubtype::BladeRF:
+            return "BladeRF";
+        default:
+            throw std::runtime_error("unrecognized PicoScenesDeviceSubtype.");
+    }
+}
 
 std::string PacketFormat2String(PacketFormatEnum format) {
     switch (format) {
@@ -131,5 +165,10 @@ std::ostream &operator<<(std::ostream &os, const GuardIntervalEnum &gi) {
 
 std::ostream &operator<<(std::ostream &os, const ChannelCodingEnum &coding) {
     os << ChannelCoding2String(coding);
+    return os;
+}
+
+std::ostream &operator<<(std::ostream &os, const PicoScenesDeviceSubtype &deviceSubtype) {
+    os << DeviceSubtype2String(deviceSubtype);
     return os;
 }
