@@ -49,6 +49,7 @@ enum class PicoScenesDeviceSubtype : uint16_t { // never alter the order!
     IWL5300,
     AX200,
     AX210,
+    VirtualSDR,
     USRP_N2x0, // usrp2
     USRP_B100, // b100
     USRP_B2x0, // b200
