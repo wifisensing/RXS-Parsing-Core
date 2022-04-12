@@ -25,25 +25,42 @@ using ComplexArray = std::vector<ComplexData>;
 using ComplexFloatArray = std::vector<ComplexData>;
 using Uint8Vector = std::vector<uint8_t>;
 
+/**
+ * @brief PicoScenes supported device type
+ * @see PicoScenesDeviceSubtype
+ */
 enum class PicoScenesDeviceType : uint16_t {
-    QCA9300 = 0x9300,
-    IWL5300 = 0x5300,
-    IWLMVM_AX200 = 0x2000,
-    IWLMVM_AX210 = 0x2100,
-    MAC80211Compatible = 0x802,
-    USRP = 0x1234,
-    VirtualSDR = 0x1000,
-    SoapySDR = 0x24D2,
-    Unknown = 0x404,
+    QCA9300 = 0x9300, ///< QCA9300 NIC
+    IWL5300 = 0x5300, ///< IWL5300 NIC
+    IWLMVM_AX200 = 0x2000, ///< AX200 NIC
+    IWLMVM_AX210 = 0x2100, ///< AX210 NIC
+    MAC80211Compatible = 0x802, ///< All packet-injectable NIC models
+    USRP = 0x1234, ///< USRP
+    VirtualSDR = 0x1000, ///< Virtual SDR
+    SoapySDR = 0x24D2, ///< SoapySDR supported SDR devices
+    Unknown = 0x404, ///< Unknown
 };
 
+/**
+ * Check the specified device type is Intel MVM-based NIC (AX200 or AX210)
+ * @return
+ */
 bool isIntelMVMTypeNIC(PicoScenesDeviceType psdt);
 
+/**
+ * Return the device type string for the given PicoScenesDeviceType type
+ * @return
+ */
 std::string DeviceType2String(PicoScenesDeviceType type);
 
 std::ostream &operator<<(std::ostream &os, const PicoScenesDeviceType &deviceType);
 
-enum class PicoScenesDeviceSubtype : uint16_t { // never alter the order!
+/**
+ * PicoScenes supported device sub-type
+ * @see PicoScenesDeviceType
+ * @note Never try to alter the subtype order
+ */
+enum class PicoScenesDeviceSubtype : uint16_t {
     Unknown = 0,
     QCA9300,
     IWL5300,
@@ -63,34 +80,51 @@ enum class PicoScenesDeviceSubtype : uint16_t { // never alter the order!
     SOAPYSDR_UHD,
 };
 
+/**
+ * Return the device sub-type string
+ * @param subtype
+ * @return A string with identical enum name
+ */
 std::string DeviceSubtype2String(PicoScenesDeviceSubtype subtype);
 
 std::ostream &operator<<(std::ostream &os, const PicoScenesDeviceSubtype &deviceSubtype);
 
+/**
+ * PicoScenes supported packet format
+ */
 enum class PacketFormatEnum : int8_t {
-    PacketFormat_NonHT = 0,
-    PacketFormat_HT = 1,
-    PacketFormat_VHT = 2,
-    PacketFormat_HESU = 3,
-    PacketFormat_HEMU = 4,
+    PacketFormat_NonHT = 0, ///< 11a or 11g
+    PacketFormat_HT = 1, ///< 11n or Wi-Fi 4
+    PacketFormat_VHT = 2, ///< 11ac or Wi-Fi 5
+    PacketFormat_HESU = 3, ///< 11ax Single-User, or Wi-Fi 6
+    PacketFormat_HEMU = 4, ///< 11ax Multi-User, or Wi-Fi 6
     PacketFormat_Unknown = -1
 };
+
 
 std::string PacketFormat2String(PacketFormatEnum format);
 
 std::ostream &operator<<(std::ostream &os, const PacketFormatEnum &format);
 
+/**
+ * Tx/Rx Channel Bandwidth (CBW) parameter
+ * @note CBW doesn't necessarily equals to hardware sampling rate.
+ */
 enum class ChannelBandwidthEnum : uint16_t {
-    CBW_20 = 20,
-    CBW_40 = 40,
-    CBW_80 = 80,
-    CBW_160 = 160,
+    CBW_20 = 20, ///< 20 MHz
+    CBW_40 = 40, ///< 40 MHz
+    CBW_80 = 80, ///< 80 MHz
+    CBW_160 = 160, ///< 160 MHz
 };
 
 std::string ChannelBandwidth2String(ChannelBandwidthEnum cbw);
 
 std::ostream &operator<<(std::ostream &os, const ChannelBandwidthEnum &cbw);
 
+/**
+ * 802.11n Channel Mode
+ * @deprecated
+ */
 enum class ChannelModeEnum : uint8_t {
     HT20 = 8,
     HT40_MINUS = 24,
@@ -101,8 +135,11 @@ std::string channelModel2String(ChannelModeEnum mode);
 
 std::ostream &operator<<(std::ostream &os, const ChannelModeEnum &channelMode);
 
+/**
+ * The guarding interval (ns) between successive OFDM symbols
+ */
 enum class GuardIntervalEnum : uint16_t {
-    GI_400 = 400,
+    GI_400 = 400, ///< 802.11n/ac "Short Guard Interval"
     GI_800 = 800,
     GI_1600 = 1600,
     GI_3200 = 3200
@@ -113,6 +150,9 @@ std::string GuardInterval2String(GuardIntervalEnum gi);
 
 std::ostream &operator<<(std::ostream &os, const GuardIntervalEnum &gi);
 
+/**
+ * Wi-Fi Coding schemes, BCC or LDPC
+ */
 enum class ChannelCodingEnum : uint8_t {
     BCC = 0,
     LDPC = 1,
