@@ -247,9 +247,9 @@ std::string FrontEndModePreset2DescriptiveString(FrontEndModePreset preset) {
         case FrontEndModePreset::TX_CBW_40_VHT_LDPC:
             return FrontEndModePreset2String(preset) + ": [Tx, 40 MHz CBW, 40 MHz actual Tx sampling rate, 1.0 Tx resample ratio, VHT format, and LDPC coding]";
         case FrontEndModePreset::RX_CBW_160:
-            return FrontEndModePreset2String(preset) + ": [Rx, 160 MHz Rx CBW, 200 MHz actual Rx sampling rate, 1.25 Rx resample ratio]";
+            return FrontEndModePreset2String(preset) + ": [Rx, 160 MHz Rx CBW, 200 MHz actual Rx sampling rate, 0.8 Rx resample ratio]";
         case FrontEndModePreset::RX_CBW_80:
-            return FrontEndModePreset2String(preset) + ": [Rx, 80 MHz Rx CBW, 100 MHz actual Rx sampling rate, 1.25 Rx resample ratio]";
+            return FrontEndModePreset2String(preset) + ": [Rx, 80 MHz Rx CBW, 100 MHz actual Rx sampling rate, 0.8 Rx resample ratio]";
         case FrontEndModePreset::RX_CBW_40:
             return FrontEndModePreset2String(preset) + ": [Rx, 40 MHz Rx CBW, 40 MHz actual Rx sampling rate, 1.0 Rx resample ratio]";
         case FrontEndModePreset::Customized:
