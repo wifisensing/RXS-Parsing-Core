@@ -83,6 +83,7 @@ public:
         actualSamplingRate = 20e6;
         samplingRateOffset = 0;
         carrierFrequencyOffset = 0;
+        resampleRatio = 1.0;
         vhtGroupId = 0;
         heAllocationIndex = std::vector<uint8_t>(1, 0);
         txHEExtendedRange = false;
