@@ -25,6 +25,7 @@ public:
 
 class PicoScenesFrameTxParameters {
 public:
+    FrontEndModePreset preset = FrontEndModePreset::Customized;
     std::optional<double> preciseTxTime = std::nullopt;
     bool NDPFrame;
     PacketFormatEnum frameType;
@@ -88,6 +89,122 @@ public:
         heHighDoppler = false;
         heMidamblePeriodicity = 10;
         heLTFType = 4;
+    }
+
+    void applyPreset(const std::string &presetName) {
+        const auto &names = FrontEndModePreset2Strings();
+        if (auto found = std::find(names.cbegin(), names.cend(), presetName); found != names.cend()) {
+            auto presetIndex = std::distance(names.cbegin(), found);
+            auto preset = getAllFrontEndModePresets().at(presetIndex);
+            applyPreset(preset);
+        } else
+            throw std::invalid_argument("invalid frontend mode preset name: " + presetName + "\n" + printHelpContentForFrontEndModePreset());
+    }
+
+    void applyPreset(FrontEndModePreset presetV) {
+        preset = presetV;
+
+        switch (preset) {
+            case FrontEndModePreset::TX_CBW_160_HESU:
+                actualSamplingRate = 200e6;
+                cbw = ChannelBandwidthEnum::CBW_160;
+                frameType = PacketFormatEnum::PacketFormat_HESU;
+                coding = std::vector<ChannelCodingEnum>(1, ChannelCodingEnum::LDPC);
+                resampleRatio = 1.25;
+                break;
+            case FrontEndModePreset::TX_CBW_160_VHT_LDPC:
+                actualSamplingRate = 200e6;
+                cbw = ChannelBandwidthEnum::CBW_160;
+                frameType = PacketFormatEnum::PacketFormat_VHT;
+                coding = std::vector<ChannelCodingEnum>(1, ChannelCodingEnum::LDPC);
+                resampleRatio = 1.25;
+                break;
+            case FrontEndModePreset::TX_CBW_160_VHT:
+                actualSamplingRate = 200e6;
+                cbw = ChannelBandwidthEnum::CBW_160;
+                frameType = PacketFormatEnum::PacketFormat_VHT;
+                coding = std::vector<ChannelCodingEnum>(1, ChannelCodingEnum::BCC);
+                resampleRatio = 1.25;
+                break;
+            case FrontEndModePreset::TX_CBW_80_HESU:
+                actualSamplingRate = 100e6;
+                cbw = ChannelBandwidthEnum::CBW_80;
+                frameType = PacketFormatEnum::PacketFormat_HESU;
+                coding = std::vector<ChannelCodingEnum>(1, ChannelCodingEnum::LDPC);
+                resampleRatio = 1.25;
+                break;
+            case FrontEndModePreset::TX_CBW_80_VHT:
+                actualSamplingRate = 100e6;
+                cbw = ChannelBandwidthEnum::CBW_80;
+                frameType = PacketFormatEnum::PacketFormat_VHT;
+                coding = std::vector<ChannelCodingEnum>(1, ChannelCodingEnum::BCC);
+                resampleRatio = 1.25;
+                break;
+            case FrontEndModePreset::TX_CBW_80_VHT_LDPC:
+                actualSamplingRate = 100e6;
+                cbw = ChannelBandwidthEnum::CBW_80;
+                frameType = PacketFormatEnum::PacketFormat_VHT;
+                coding = std::vector<ChannelCodingEnum>(1, ChannelCodingEnum::LDPC);
+                resampleRatio = 1.25;
+                break;
+            case FrontEndModePreset::TX_CBW_40_RESAMPLE_HESU:
+                actualSamplingRate = 50e6;
+                cbw = ChannelBandwidthEnum::CBW_40;
+                frameType = PacketFormatEnum::PacketFormat_HESU;
+                coding = std::vector<ChannelCodingEnum>(1, ChannelCodingEnum::LDPC);
+                resampleRatio = 1.25;
+                break;
+            case FrontEndModePreset::TX_CBW_40_RESAMPLE_VHT:
+                actualSamplingRate = 50e6;
+                cbw = ChannelBandwidthEnum::CBW_40;
+                frameType = PacketFormatEnum::PacketFormat_VHT;
+                coding = std::vector<ChannelCodingEnum>(1, ChannelCodingEnum::BCC);
+                resampleRatio = 1.25;
+                break;
+            case FrontEndModePreset::TX_CBW_40_RESAMPLE_VHT_LDPC:
+                actualSamplingRate = 50e6;
+                cbw = ChannelBandwidthEnum::CBW_40;
+                frameType = PacketFormatEnum::PacketFormat_VHT;
+                coding = std::vector<ChannelCodingEnum>(1, ChannelCodingEnum::LDPC);
+                resampleRatio = 1.25;
+                break;
+            case FrontEndModePreset::TX_CBW_40_RESAMPLE_HT:
+                actualSamplingRate = 50e6;
+                cbw = ChannelBandwidthEnum::CBW_40;
+                frameType = PacketFormatEnum::PacketFormat_HT;
+                coding = std::vector<ChannelCodingEnum>(1, ChannelCodingEnum::BCC);
+                resampleRatio = 1.25;
+                break;
+            case FrontEndModePreset::TX_CBW_40_HESU:
+                actualSamplingRate = 40e6;
+                cbw = ChannelBandwidthEnum::CBW_40;
+                frameType = PacketFormatEnum::PacketFormat_HESU;
+                coding = std::vector<ChannelCodingEnum>(1, ChannelCodingEnum::LDPC);
+                resampleRatio = 1.0;
+                break;
+            case FrontEndModePreset::TX_CBW_40_VHT:
+                actualSamplingRate = 40e6;
+                cbw = ChannelBandwidthEnum::CBW_40;
+                frameType = PacketFormatEnum::PacketFormat_VHT;
+                coding = std::vector<ChannelCodingEnum>(1, ChannelCodingEnum::BCC);
+                resampleRatio = 1.0;
+                break;
+            case FrontEndModePreset::TX_CBW_40_VHT_LDPC:
+                actualSamplingRate = 40e6;
+                cbw = ChannelBandwidthEnum::CBW_40;
+                frameType = PacketFormatEnum::PacketFormat_VHT;
+                coding = std::vector<ChannelCodingEnum>(1, ChannelCodingEnum::LDPC);
+                resampleRatio = 1.0;
+                break;
+            case FrontEndModePreset::RX_CBW_160:
+                [[fallthrough]];
+            case FrontEndModePreset::RX_CBW_80:
+                [[fallthrough]];
+            case FrontEndModePreset::RX_CBW_40:
+                throw std::invalid_argument("PicoScenesFrameTxParameters::applyPreset method doesn't support Rx presets.");
+            case FrontEndModePreset::Customized:
+                break;
+        }
     }
 
     void validate() const;

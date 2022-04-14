@@ -12,6 +12,7 @@
 #include <string>
 #include <complex>
 #include <numeric>
+#include <mutex>
 #include "SignalMatrix.hxx"
 
 #ifdef BUILD_WITH_MEX
@@ -162,5 +163,39 @@ std::string ChannelCoding2String(ChannelCodingEnum coding);
 
 std::ostream &operator<<(std::ostream &os, const ChannelCodingEnum &coding);
 
+
+enum class FrontEndModePreset : uint8_t {
+    TX_CBW_160_HESU, ///< 160 MHz CBW, 200 MHz actual Tx sampling rate, 1.25 Tx resample ratio, HESU format, LDPC coding
+    TX_CBW_160_VHT, ///< 160 MHz CBW, 200 MHz actual Tx sampling rate, 1.25 Tx resample ratio, VHT format, BCC coding
+    TX_CBW_160_VHT_LDPC, ///< 160 MHz CBW, 200 MHz actual Tx sampling rate, 1.25 Tx resample ratio, VHT format, LDPC coding
+    TX_CBW_80_HESU, ///< 80 MHz CBW, 100 MHz actual Tx sampling rate, 1.25 Tx resample ratio, HESU format, LDPC coding
+    TX_CBW_80_VHT, ///< 80 MHz CBW, 100 MHz actual Tx sampling rate, 1.25 Tx resample ratio, VHT format, BCC coding
+    TX_CBW_80_VHT_LDPC, ///< 80 MHz CBW, 100 MHz actual Tx sampling rate, 1.25 Tx resample ratio, VHT format, LDPC coding
+    TX_CBW_40_RESAMPLE_HESU, ///< 40 MHz CBW, 50 MHz actual Tx sampling rate, 1.25 Tx resample ratio, HESU format, LDPC coding
+    TX_CBW_40_RESAMPLE_VHT, ///< 40 MHz CBW, 50 MHz actual Tx sampling rate, 1.25 Tx resample ratio, VHT format, BCC coding
+    TX_CBW_40_RESAMPLE_VHT_LDPC, ///< 40 MHz CBW, 50 MHz actual Tx sampling rate, 1.25 Tx resample ratio, VHT format, LDPC coding
+    TX_CBW_40_RESAMPLE_HT, ///< 40 MHz CBW, 50 MHz actual Tx sampling rate, 1.25 Tx resample ratio, HT format, BCC coding
+    TX_CBW_40_HESU, ///< 40 MHz CBW, 40 MHz actual Tx sampling rate, 1.0 Tx resample ratio, HESU format, LDPC coding
+    TX_CBW_40_VHT, ///< 40 MHz CBW, 40 MHz actual Tx sampling rate, 1.0 Tx resample ratio, VHT format, BCC coding
+    TX_CBW_40_VHT_LDPC, ///< 40 MHz CBW, 40 MHz actual Tx sampling rate, 1.0 Tx resample ratio, VHT format, LDPC coding
+
+    RX_CBW_160, ///< 160 MHz Rx CBW, 200 MHz actual Rx sampling rate, 1.25 Rx resample ratio
+    RX_CBW_80,  //< 80 MHz Rx CBW, 100 MHz actual Rx sampling rate, 1.25 Rx resample ratio
+    RX_CBW_40,  //< 40 MHz Rx CBW, 40 MHz actual Rx sampling rate, 1.0 Rx resample ratio
+
+    Customized,
+};
+
+std::string FrontEndModePreset2String(FrontEndModePreset preset);
+
+std::string FrontEndModePreset2DescriptiveString(FrontEndModePreset preset);
+
+std::string printHelpContentForFrontEndModePreset();
+
+std::ostream &operator<<(std::ostream &os, const FrontEndModePreset &preset);
+
+const std::vector<std::string> &FrontEndModePreset2Strings();
+
+const std::vector<FrontEndModePreset> &getAllFrontEndModePresets();
 
 #endif //PICOSCENES_PLATFORM_PICOSCENESCOMMONS_HXX
