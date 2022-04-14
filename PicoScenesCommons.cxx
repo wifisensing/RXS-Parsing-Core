@@ -174,3 +174,141 @@ std::ostream &operator<<(std::ostream &os, const PicoScenesDeviceSubtype &device
     os << DeviceSubtype2String(deviceSubtype);
     return os;
 }
+
+std::string FrontEndModePreset2String(FrontEndModePreset preset) {
+    switch (preset) {
+        case FrontEndModePreset::TX_CBW_160_HESU:
+            return "TX_CBW_160_HESU";
+        case FrontEndModePreset::TX_CBW_160_VHT:
+            return "TX_CBW_160_VHT";
+        case FrontEndModePreset::TX_CBW_160_VHT_LDPC:
+            return "TX_CBW_160_VHT_LDPC";
+        case FrontEndModePreset::TX_CBW_80_HESU:
+            return "TX_CBW_80_HESU";
+        case FrontEndModePreset::TX_CBW_80_VHT:
+            return "TX_CBW_80_VHT";
+        case FrontEndModePreset::TX_CBW_80_VHT_LDPC:
+            return "TX_CBW_80_VHT_LDPC";
+        case FrontEndModePreset::TX_CBW_40_RESAMPLE_HESU:
+            return "TX_CBW_40_RESAMPLE_HESU";
+        case FrontEndModePreset::TX_CBW_40_RESAMPLE_VHT:
+            return "TX_CBW_40_RESAMPLE_VHT";
+        case FrontEndModePreset::TX_CBW_40_RESAMPLE_VHT_LDPC:
+            return "TX_CBW_40_RESAMPLE_VHT_LDPC";
+        case FrontEndModePreset::TX_CBW_40_RESAMPLE_HT:
+            return "TX_CBW_40_RESAMPLE_HT";
+        case FrontEndModePreset::TX_CBW_40_HESU:
+            return "TX_CBW_40_HESU";
+        case FrontEndModePreset::TX_CBW_40_VHT:
+            return "TX_CBW_40_VHT";
+        case FrontEndModePreset::TX_CBW_40_VHT_LDPC:
+            return "TX_CBW_40_VHT_LDPC";
+        case FrontEndModePreset::RX_CBW_160:
+            return "RX_CBW_160";
+        case FrontEndModePreset::RX_CBW_80:
+            return "RX_CBW_80";
+        case FrontEndModePreset::RX_CBW_40:
+            return "RX_CBW_40";
+        case FrontEndModePreset::Customized:
+            return "Customized";
+
+        default:
+            throw std::invalid_argument("Unknown Tx parameter reset");
+
+    }
+}
+
+std::string FrontEndModePreset2DescriptiveString(FrontEndModePreset preset) {
+    switch (preset) {
+        case FrontEndModePreset::TX_CBW_160_HESU:
+            return FrontEndModePreset2String(preset) + ": [Tx, 160 MHz CBW, 200 MHz actual Tx sampling rate, 1.25 Tx resample ratio, HESU format, and LDPC coding]";
+        case FrontEndModePreset::TX_CBW_160_VHT:
+            return FrontEndModePreset2String(preset) + ": [Tx, 160 MHz CBW, 200 MHz actual Tx sampling rate, 1.25 Tx resample ratio, VHT format, and BCC coding]";
+        case FrontEndModePreset::TX_CBW_160_VHT_LDPC:
+            return FrontEndModePreset2String(preset) + ": [Tx, 160 MHz CBW, 200 MHz actual Tx sampling rate, 1.25 Tx resample ratio, VHT format, and LDPC coding]";
+        case FrontEndModePreset::TX_CBW_80_HESU:
+            return FrontEndModePreset2String(preset) + ": [Tx, 80 MHz CBW, 100 MHz actual Tx sampling rate, 1.25 Tx resample ratio, HESU format, and LDPC coding]";
+        case FrontEndModePreset::TX_CBW_80_VHT:
+            return FrontEndModePreset2String(preset) + ": [Tx, 80 MHz CBW, 100 MHz actual Tx sampling rate, 1.25 Tx resample ratio, VHT format, and BCC coding]";
+        case FrontEndModePreset::TX_CBW_80_VHT_LDPC:
+            return FrontEndModePreset2String(preset) + ": [Tx, 80 MHz CBW, 100 MHz actual Tx sampling rate, 1.25 Tx resample ratio, VHT format, and LDPC coding]";
+        case FrontEndModePreset::TX_CBW_40_RESAMPLE_HESU:
+            return FrontEndModePreset2String(preset) + ": [Tx, 40 MHz CBW, 50 MHz actual Tx sampling rate, 1.25 Tx resample ratio, HESU format, and LDPC coding]";
+        case FrontEndModePreset::TX_CBW_40_RESAMPLE_VHT:
+            return FrontEndModePreset2String(preset) + ": [Tx, 40 MHz CBW, 50 MHz actual Tx sampling rate, 1.25 Tx resample ratio, VHT format, and BCC coding]";
+        case FrontEndModePreset::TX_CBW_40_RESAMPLE_VHT_LDPC:
+            return FrontEndModePreset2String(preset) + ": [Tx, 40 MHz CBW, 50 MHz actual Tx sampling rate, 1.25 Tx resample ratio, HESU format, and LDPC coding]";
+        case FrontEndModePreset::TX_CBW_40_RESAMPLE_HT:
+            return FrontEndModePreset2String(preset) + ": [Tx, 40 MHz CBW, 50 MHz actual Tx sampling rate, 1.25 Tx resample ratio, HT format, and BCC coding]";
+        case FrontEndModePreset::TX_CBW_40_HESU:
+            return FrontEndModePreset2String(preset) + ": [Tx, 40 MHz CBW, 40 MHz actual Tx sampling rate, 1.0 Tx resample ratio, HESU format, and LDPC coding]";
+        case FrontEndModePreset::TX_CBW_40_VHT:
+            return FrontEndModePreset2String(preset) + ": [Tx, 40 MHz CBW, 40 MHz actual Tx sampling rate, 1.0 Tx resample ratio, VHT format, and BCC coding]";
+        case FrontEndModePreset::TX_CBW_40_VHT_LDPC:
+            return FrontEndModePreset2String(preset) + ": [Tx, 40 MHz CBW, 40 MHz actual Tx sampling rate, 1.0 Tx resample ratio, VHT format, and LDPC coding]";
+        case FrontEndModePreset::RX_CBW_160:
+            return FrontEndModePreset2String(preset) + ": [Rx, 160 MHz Rx CBW, 200 MHz actual Rx sampling rate, 0.8 Rx resample ratio]";
+        case FrontEndModePreset::RX_CBW_80:
+            return FrontEndModePreset2String(preset) + ": [Rx, 80 MHz Rx CBW, 100 MHz actual Rx sampling rate, 0.8 Rx resample ratio]";
+        case FrontEndModePreset::RX_CBW_40:
+            return FrontEndModePreset2String(preset) + ": [Rx, 40 MHz Rx CBW, 40 MHz actual Rx sampling rate, 1.0 Rx resample ratio]";
+        case FrontEndModePreset::Customized:
+            return "Customized: [arbitrary Tx profile]";
+
+        default:
+            throw std::invalid_argument("Unknown Tx parameter reset");
+
+    }
+
+}
+
+std::ostream &operator<<(std::ostream &os, const FrontEndModePreset &preset) {
+    os << FrontEndModePreset2String(preset);
+    return os;
+}
+
+const std::vector<std::string> &FrontEndModePreset2Strings() {
+    static auto list = std::vector<std::string>();
+    static std::once_flag flag;
+    std::call_once(flag, [&] {
+        for (const auto &preset: getAllFrontEndModePresets())
+            list.emplace_back(FrontEndModePreset2String(preset));
+    });
+
+    return list;
+}
+
+const std::vector<FrontEndModePreset> &getAllFrontEndModePresets() {
+    static auto list = std::vector<FrontEndModePreset>{
+            FrontEndModePreset::TX_CBW_160_HESU,
+            FrontEndModePreset::TX_CBW_160_VHT,
+            FrontEndModePreset::TX_CBW_160_VHT_LDPC,
+            FrontEndModePreset::TX_CBW_80_HESU,
+            FrontEndModePreset::TX_CBW_80_VHT,
+            FrontEndModePreset::TX_CBW_80_VHT_LDPC,
+            FrontEndModePreset::TX_CBW_40_RESAMPLE_HESU,
+            FrontEndModePreset::TX_CBW_40_RESAMPLE_VHT,
+            FrontEndModePreset::TX_CBW_40_RESAMPLE_VHT_LDPC,
+            FrontEndModePreset::TX_CBW_40_RESAMPLE_HT,
+            FrontEndModePreset::TX_CBW_40_HESU,
+            FrontEndModePreset::TX_CBW_40_VHT,
+            FrontEndModePreset::TX_CBW_40_VHT_LDPC,
+            FrontEndModePreset::RX_CBW_160,
+            FrontEndModePreset::RX_CBW_80,
+            FrontEndModePreset::RX_CBW_40,
+            FrontEndModePreset::Customized,
+    };
+
+    return list;
+}
+
+std::string printHelpContentForFrontEndModePreset() {
+    std::stringstream ss;
+    ss << "\n\nPicoScenes supports the following frontend mode presets:\n";
+    ss << "-------------------------------------------------------------------------------------\n";
+    for (const auto &preset: getAllFrontEndModePresets())
+        ss << FrontEndModePreset2DescriptiveString(preset) << "\n";
+    ss << "-------------------------------------------------------------------------------------\n\n";
+
+    return ss.str();
+}
