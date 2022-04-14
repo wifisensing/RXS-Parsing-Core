@@ -197,13 +197,7 @@ public:
                 coding = std::vector<ChannelCodingEnum>(1, ChannelCodingEnum::LDPC);
                 resampleRatio = 1.0;
                 break;
-            case FrontEndModePreset::RX_CBW_160:
-                [[fallthrough]];
-            case FrontEndModePreset::RX_CBW_80:
-                [[fallthrough]];
-            case FrontEndModePreset::RX_CBW_40:
-                throw std::invalid_argument("PicoScenesFrameTxParameters::applyPreset method doesn't support Rx presets.");
-            case FrontEndModePreset::Customized:
+            default:
                 break;
         }
     }
