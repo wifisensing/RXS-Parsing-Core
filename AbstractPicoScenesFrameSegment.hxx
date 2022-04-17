@@ -14,13 +14,16 @@
 #include <tuple>
 #include <memory>
 #include <cstring>
-
+/**
+ * @brief PicoScenes Frame Segment is a typed, versioned and named data structure used to carrier various of data from the Tx end, PicoScenes driver or SDR baseband to the PicoScenes Platform.
+ * @details AbstractPicoScenesFrameSegment is the root class for various of Frame segment classes.
+ */
 class AbstractPicoScenesFrameSegment {
 public:
-    std::string segmentName;
-    uint16_t segmentVersionId;
-    uint32_t segmentLength = 0;
-    std::vector<uint8_t> rawBuffer;
+    std::string segmentName; ///< The name of the segment
+    uint16_t segmentVersionId; ///< The version of the segment
+    uint32_t segmentLength = 0; ///< Length of the entire segment data, excluding the 4-byte length itself.
+    std::vector<uint8_t> rawBuffer; ///< The raw buffer of the segment
 
     AbstractPicoScenesFrameSegment(std::string segmentName, uint16_t segmentVersionId);
 
@@ -43,8 +46,22 @@ public:
 
     void removeField(const std::string &fieldName);
 
+    /**
+     * @brief Return the total length of the segment buffer
+     * 
+     * @return uint32_t 
+     */
     uint32_t totalLength() const;
 
+    /**
+     * @brief ModularPicoScenesTxFrame and ModularPicoScenesRxFrame call this method to get the whole data of this segment
+     * @details By default, this method performs 3 things:
+     * 1. call totalLength method to obtain the length of the raw buffer;
+     * 2. pre-allocate a std::vector<uint8_t> buffer;
+     * 3. fill the buffer with the other AbstractPicoScenesFrameSegment#toBuffer method
+     * 
+     * @param totalLengthIncluded where the returned buffer includes the leading 4-byte segment length field
+     */
     virtual std::vector<uint8_t> toBuffer() const = 0;
 
     virtual std::vector<uint8_t> toBuffer(bool totalLengthIncluded) const;
@@ -59,6 +76,9 @@ public:
 
     static std::tuple<std::string, uint32_t, uint16_t, uint32_t> extractSegmentMetaData(const uint8_t *buffer, uint32_t bufferLength);
 
+    /**
+     * @brief Return a short description for this segment
+     */
     virtual std::string toString() const;
 
     virtual ~AbstractPicoScenesFrameSegment() {};
