@@ -107,13 +107,13 @@ public:
     std::optional<CSISegment> legacyCSISegment;
     std::optional<BasebandSignalSegment> basebandSignalSegment;
     std::optional<PreEQSymbolsSegment> preEQSymbolsSegment;
-    std::optional<CargoSegment> cargoSegment;
 
     // Tx side header and segments
     ieee80211_mac_frame_header standardHeader;
     std::optional<PicoScenesFrameHeader> PicoScenesHeader;
     std::optional<ExtraInfoSegment> txExtraInfoSegment;
     std::vector<PayloadSegment> payloadSegments;
+    std::optional<CargoSegment> cargoSegment;
 
     std::map<std::string, std::vector<uint8_t>> rxUnknownSegmentMap;
     std::map<std::string, std::vector<uint8_t>> txUnknownSegmentMap;
@@ -166,6 +166,8 @@ public:
     int toBuffer(uint8_t *buffer, uint32_t bufferLength) const;
 
     [[nodiscard]] Uint8Vector toBuffer() const;
+
+    std::vector<ModularPicoScenesTxFrame> autoSplit(int16_t maxSegmentBuffersLength = 1900);
 
     ModularPicoScenesTxFrame &setMoreFrags();
 

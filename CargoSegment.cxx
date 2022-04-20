@@ -59,10 +59,14 @@ static auto v1Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> Paylo
 
 std::map<uint16_t, std::function<PayloadCargo(const uint8_t *, uint32_t)>> CargoSegment::versionedSolutionMap = initializeSolutionMap();
 
-CargoSegment::CargoSegment() : AbstractPicoScenesFrameSegment("Cargo", 0x1U) {}
-
 std::map<uint16_t, std::function<PayloadCargo(const uint8_t *, uint32_t)>> CargoSegment::initializeSolutionMap() noexcept {
     return std::map<uint16_t, std::function<PayloadCargo(const uint8_t *, uint32_t)>>{{0x1U, v1Parser}};
+}
+
+CargoSegment::CargoSegment() : AbstractPicoScenesFrameSegment("Cargo", 0x1U) {}
+
+CargoSegment::CargoSegment(const PayloadCargo &cargoV) : CargoSegment() {
+    setCargo(cargoV);
 }
 
 const PayloadCargo &CargoSegment::getCargo() const {

@@ -454,6 +454,50 @@ int ModularPicoScenesTxFrame::toBuffer(uint8_t *buffer, uint32_t bufferLength) c
     return pos;
 }
 
+std::vector<ModularPicoScenesTxFrame> ModularPicoScenesTxFrame::autoSplit(int16_t maxSegmentBuffersLength) {
+    if (!frameHeader)
+        return std::vector<ModularPicoScenesTxFrame>{1, *this};
+
+    auto segmentsLength = 0;
+    for (const auto &segment: segments) {
+        segmentsLength += segment->totalLength() + 4;
+    }
+
+    if (segmentsLength < maxSegmentBuffersLength)
+        return std::vector<ModularPicoScenesTxFrame>{1, *this};
+
+    auto pos = 0;
+    Uint8Vector allSegmentBuffer(segmentsLength);
+    for (const auto &segment: segments) {
+        segment->toBuffer(true, allSegmentBuffer.data() + pos);
+        pos += segment->totalLength() + 4;
+    }
+
+    pos = 0;
+    uint8_t sequence = 0;
+    auto cargos = std::vector<PayloadCargo>();
+    while (pos < segmentsLength) {
+        cargos.emplace_back(PayloadCargo{
+                .taskId = frameHeader->taskId,
+                .numSegments = frameHeader->numSegments,
+                .sequence = sequence,
+                .payloadData = Uint8Vector(allSegmentBuffer.data() + pos, allSegmentBuffer.data() + pos + (pos + maxSegmentBuffersLength < maxSegmentBuffersLength ? maxSegmentBuffersLength : segmentsLength - pos)),
+        });
+        sequence++;
+        pos += maxSegmentBuffersLength;
+    }
+
+    auto cargoFrames = std::vector<ModularPicoScenesTxFrame>();
+    for (const auto &cargo: cargos) {
+        auto txframe = *this;
+        txframe.frameHeader->numSegments = 1;
+        txframe.segments.clear();
+
+        txframe.addSegments(std::make_shared<CargoSegment>(cargo));
+    }
+
+    return cargoFrames;
+}
 
 void ModularPicoScenesTxFrame::reset() {
     standardHeader = ieee80211_mac_frame_header();

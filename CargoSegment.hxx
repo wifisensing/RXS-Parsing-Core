@@ -14,6 +14,7 @@ public:
     uint16_t taskId{0};
     uint8_t numSegments{0};
     uint8_t sequence{0};
+    uint8_t totalParts{0};
     std::vector<uint8_t> payloadData;
 
     [[nodiscard]] size_t totalLength() const;
@@ -28,6 +29,8 @@ public:
 class CargoSegment : public AbstractPicoScenesFrameSegment {
 public:
     CargoSegment();
+
+    explicit CargoSegment(const PayloadCargo &cargo);
 
     [[nodiscard]] const PayloadCargo &getCargo() const;
 
