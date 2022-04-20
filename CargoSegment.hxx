@@ -12,6 +12,7 @@
 class PayloadCargo {
 public:
     uint16_t taskId{0};
+    uint8_t numSegments{0};
     uint8_t sequence{0};
     std::vector<uint8_t> payloadData;
 

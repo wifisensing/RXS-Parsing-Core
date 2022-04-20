@@ -222,8 +222,6 @@ std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::fromBuffer(con
             frame.basebandSignalSegment = BasebandSignalSegment::createByBuffer(buffer + pos, segmentLength + 4);
         } else if (segmentName == "PreEQSymbols") {
             frame.preEQSymbolsSegment = PreEQSymbolsSegment::createByBuffer(buffer + pos, segmentLength + 4);
-        } else if (segmentName == "Cargo") {
-            frame.cargoSegment = CargoSegment::createByBuffer(buffer + pos, segmentLength + 4);
         } else {
             frame.rxUnknownSegmentMap.emplace(segmentName, Uint8Vector(buffer + pos, buffer + pos + segmentLength + 4));
         }
@@ -246,6 +244,8 @@ std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::fromBuffer(con
                 frame.dpasRequestSegment = DPASRequestSegment::createByBuffer(buffer + pos, segmentLength + 4);
             } else if (segmentName == "Payload") {
                 frame.payloadSegments.emplace_back(PayloadSegment::createByBuffer(buffer + pos, segmentLength + 4));
+            } else if (segmentName == "Cargo") {
+                frame.cargoSegment = CargoSegment::createByBuffer(buffer + pos, segmentLength + 4);
             } else {
                 frame.txUnknownSegmentMap.emplace(segmentName, Uint8Vector(buffer + pos, buffer + pos + segmentLength + 4));
             }
