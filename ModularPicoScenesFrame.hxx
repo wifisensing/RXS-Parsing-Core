@@ -15,6 +15,7 @@
 #include "BasebandSignalSegment.hxx"
 #include "PayloadSegment.hxx"
 #include "PreEQSymbolsSegment.hxx"
+#include "CargoSegment.hxx"
 #include "PicoScenesFrameTxParameters.hxx"
 
 struct ieee80211_mac_frame_header_frame_control_field {
@@ -106,6 +107,7 @@ public:
     std::optional<CSISegment> legacyCSISegment;
     std::optional<BasebandSignalSegment> basebandSignalSegment;
     std::optional<PreEQSymbolsSegment> preEQSymbolsSegment;
+    std::optional<CargoSegment> cargoSegment;
 
     // Tx side header and segments
     ieee80211_mac_frame_header standardHeader;

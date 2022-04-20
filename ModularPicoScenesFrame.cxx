@@ -222,6 +222,8 @@ std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::fromBuffer(con
             frame.basebandSignalSegment = BasebandSignalSegment::createByBuffer(buffer + pos, segmentLength + 4);
         } else if (segmentName == "PreEQSymbols") {
             frame.preEQSymbolsSegment = PreEQSymbolsSegment::createByBuffer(buffer + pos, segmentLength + 4);
+        } else if (segmentName == "Cargo") {
+            frame.cargoSegment = CargoSegment::createByBuffer(buffer + pos, segmentLength + 4);
         } else {
             frame.rxUnknownSegmentMap.emplace(segmentName, Uint8Vector(buffer + pos, buffer + pos + segmentLength + 4));
         }

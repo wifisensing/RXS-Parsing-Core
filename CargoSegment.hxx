@@ -11,10 +11,11 @@
 
 class PayloadCargo {
 public:
+    uint16_t taskId{0};
     uint8_t sequence{0};
     std::vector<uint8_t> payloadData;
 
-    size_t totalLength() const;
+    [[nodiscard]] size_t totalLength() const;
 
     [[nodiscard]] std::vector<uint8_t> toBuffer() const;
 
@@ -24,8 +25,30 @@ public:
 };
 
 class CargoSegment : public AbstractPicoScenesFrameSegment {
+public:
+    CargoSegment();
 
+    [[nodiscard]] const PayloadCargo &getCargo() const;
+
+    void setCargo(const PayloadCargo &cargo);
+
+    [[nodiscard]] std::vector<uint8_t> toBuffer() const override;
+
+    static CargoSegment createByBuffer(const uint8_t *buffer, uint32_t bufferLength);
+
+    void fromBuffer(const uint8_t *buffer, uint32_t bufferLength) override;
+
+    [[nodiscard]] std::string toString() const override;
+
+private:
+    static std::map<uint16_t, std::function<PayloadCargo(const uint8_t *, uint32_t)>> versionedSolutionMap;
+
+    static std::map<uint16_t, std::function<PayloadCargo(const uint8_t *, uint32_t)>> initializeSolutionMap() noexcept;
+
+    PayloadCargo cargo;
 };
+
+std::ostream &operator<<(std::ostream &os, const CargoSegment &cargoSegment);
 
 
 #endif //PICOSCENES_PLATFORM_CARGOSEGMENT_HXX
