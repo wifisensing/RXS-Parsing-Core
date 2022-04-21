@@ -123,8 +123,6 @@ public:
 
     static std::optional<ModularPicoScenesRxFrame> concatenateFragmentedPicoScenesRxFrames(const std::vector<ModularPicoScenesRxFrame> &frameQueue);
 
-    bool operator==(const ModularPicoScenesRxFrame &rhs) const;
-
     [[nodiscard]] std::string toString() const;
 
     [[nodiscard]] Uint8Vector toBuffer() const;

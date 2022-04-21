@@ -330,10 +330,6 @@ std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::concatenateFra
     return {};
 }
 
-bool ModularPicoScenesRxFrame::operator==(const ModularPicoScenesRxFrame &rhs) const {
-    return false;
-}
-
 Uint8Vector ModularPicoScenesRxFrame::toBuffer() const {
     if (!rawBuffer.empty())
         return rawBuffer;
@@ -494,7 +490,6 @@ std::vector<ModularPicoScenesTxFrame> ModularPicoScenesTxFrame::autoSplit(int16_
     auto cargoFrames = std::vector<ModularPicoScenesTxFrame>();
     for (const auto &cargo: cargos) {
         auto txframe = *this;
-        txframe.frameHeader->taskId++;
         txframe.segments.clear();
         txframe.addSegments(std::make_shared<CargoSegment>(cargo));
         cargoFrames.emplace_back(txframe);
