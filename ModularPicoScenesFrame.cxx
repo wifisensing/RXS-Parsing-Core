@@ -454,7 +454,7 @@ int ModularPicoScenesTxFrame::toBuffer(uint8_t *buffer, uint32_t bufferLength) c
     return pos;
 }
 
-std::vector<ModularPicoScenesTxFrame> ModularPicoScenesTxFrame::autoSplit(int16_t maxSegmentBuffersLength) const{
+std::vector<ModularPicoScenesTxFrame> ModularPicoScenesTxFrame::autoSplit(int16_t maxSegmentBuffersLength) const {
     if (!frameHeader)
         return std::vector<ModularPicoScenesTxFrame>{1, *this};
 
@@ -475,25 +475,26 @@ std::vector<ModularPicoScenesTxFrame> ModularPicoScenesTxFrame::autoSplit(int16_
 
     pos = 0;
     uint8_t sequence = 0;
+    uint8_t numCargos = std::ceil(1.0 * segmentsLength / maxSegmentBuffersLength);
     auto cargos = std::vector<PayloadCargo>();
     while (pos < segmentsLength) {
+        auto stepLength = pos + maxSegmentBuffersLength < segmentsLength ? maxSegmentBuffersLength : segmentsLength - pos;
         cargos.emplace_back(PayloadCargo{
                 .taskId = frameHeader->taskId,
                 .numSegments = frameHeader->numSegments,
-                .sequence = sequence,
-                .payloadData = Uint8Vector(allSegmentBuffer.data() + pos, allSegmentBuffer.data() + pos + (pos + maxSegmentBuffersLength < maxSegmentBuffersLength ? maxSegmentBuffersLength : segmentsLength - pos)),
+                .sequence = sequence++,
+                .totalParts = numCargos,
+                .payloadData = Uint8Vector(allSegmentBuffer.data() + pos, allSegmentBuffer.data() + pos + stepLength),
         });
-        sequence++;
-        pos += maxSegmentBuffersLength;
+        pos += stepLength;
     }
 
     auto cargoFrames = std::vector<ModularPicoScenesTxFrame>();
     for (const auto &cargo: cargos) {
         auto txframe = *this;
-        txframe.frameHeader->numSegments = 1;
         txframe.segments.clear();
-
         txframe.addSegments(std::make_shared<CargoSegment>(cargo));
+        cargoFrames.emplace_back(txframe);
     }
 
     return cargoFrames;
