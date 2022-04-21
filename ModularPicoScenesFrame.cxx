@@ -454,7 +454,7 @@ int ModularPicoScenesTxFrame::toBuffer(uint8_t *buffer, uint32_t bufferLength) c
     return pos;
 }
 
-std::vector<ModularPicoScenesTxFrame> ModularPicoScenesTxFrame::autoSplit(int16_t maxSegmentBuffersLength) {
+std::vector<ModularPicoScenesTxFrame> ModularPicoScenesTxFrame::autoSplit(int16_t maxSegmentBuffersLength) const{
     if (!frameHeader)
         return std::vector<ModularPicoScenesTxFrame>{1, *this};
 

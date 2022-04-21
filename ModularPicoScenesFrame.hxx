@@ -167,7 +167,7 @@ public:
 
     [[nodiscard]] Uint8Vector toBuffer() const;
 
-    std::vector<ModularPicoScenesTxFrame> autoSplit(int16_t maxSegmentBuffersLength = 1900);
+    std::vector<ModularPicoScenesTxFrame> autoSplit(int16_t maxSegmentBuffersLength = 1900) const;
 
     ModularPicoScenesTxFrame &setMoreFrags();
 
