@@ -102,7 +102,6 @@ public:
     ExtraInfoSegment rxExtraInfoSegment;
     CSISegment csiSegment;
     std::optional<MVMExtraSegment> mvmExtraSegment;
-    std::optional<DPASRequestSegment> dpasRequestSegment;
     std::optional<CSISegment> pilotCSISegment;
     std::optional<CSISegment> legacyCSISegment;
     std::optional<BasebandSignalSegment> basebandSignalSegment;
@@ -112,6 +111,7 @@ public:
     ieee80211_mac_frame_header standardHeader;
     std::optional<PicoScenesFrameHeader> PicoScenesHeader;
     std::optional<ExtraInfoSegment> txExtraInfoSegment;
+    std::optional<DPASRequestSegment> dpasRequestSegment;
     std::vector<PayloadSegment> payloadSegments;
     std::optional<CargoSegment> cargoSegment;
 
@@ -124,6 +124,8 @@ public:
     static std::optional<ModularPicoScenesRxFrame> concatenateFragmentedPicoScenesRxFrames(const std::vector<ModularPicoScenesRxFrame> &frameQueue);
 
     [[nodiscard]] std::string toString() const;
+
+    void rebuildRawBuffer();
 
     [[nodiscard]] Uint8Vector toBuffer() const;
 
