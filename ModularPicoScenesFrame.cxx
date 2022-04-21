@@ -308,6 +308,8 @@ std::string ModularPicoScenesRxFrame::toString() const {
         temp.append(")");
         ss << ", " << temp;
     }
+    if (cargoSegment)
+        ss << ", " << *cargoSegment;
     if (!txUnknownSegmentMap.empty()) {
         std::stringstream segss;
         segss << "TxSegments:(";
@@ -492,6 +494,7 @@ std::vector<ModularPicoScenesTxFrame> ModularPicoScenesTxFrame::autoSplit(int16_
     auto cargoFrames = std::vector<ModularPicoScenesTxFrame>();
     for (const auto &cargo: cargos) {
         auto txframe = *this;
+        txframe.frameHeader->taskId++;
         txframe.segments.clear();
         txframe.addSegments(std::make_shared<CargoSegment>(cargo));
         cargoFrames.emplace_back(txframe);

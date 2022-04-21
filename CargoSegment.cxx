@@ -9,11 +9,12 @@ public:
     uint16_t taskId{0};
     uint8_t numSegments{0};
     uint8_t sequence{0};
+    uint8_t totalParts{0};
     std::vector<uint8_t> payloadData;
 };
 
 size_t PayloadCargo::totalLength() const {
-    return sizeof(taskId) + sizeof(numSegments) + sizeof(sequence) + payloadData.size();
+    return sizeof(taskId) + sizeof(numSegments) + sizeof(totalParts) + sizeof(sequence) + payloadData.size();
 }
 
 std::vector<uint8_t> PayloadCargo::toBuffer() const {
@@ -23,6 +24,7 @@ std::vector<uint8_t> PayloadCargo::toBuffer() const {
     std::copy((uint8_t *) &taskId, (uint8_t *) &taskId + sizeof(taskId), std::back_inserter(buffer));
     std::copy((uint8_t *) &numSegments, (uint8_t *) &numSegments + sizeof(numSegments), std::back_inserter(buffer));
     std::copy((uint8_t *) &sequence, (uint8_t *) &sequence + sizeof(sequence), std::back_inserter(buffer));
+    std::copy((uint8_t *) &totalParts, (uint8_t *) &totalParts + sizeof(totalParts), std::back_inserter(buffer));
     std::copy(payloadData.cbegin(), payloadData.cend(), std::back_inserter(buffer));
 
     return buffer;
@@ -43,6 +45,8 @@ PayloadCargo PayloadCargo::fromBuffer(const uint8_t *buffer, uint32_t bufferLeng
     pos += sizeof(numSegments);
     cargo.sequence = *(decltype(sequence) *) (buffer + pos);
     pos += sizeof(sequence);
+    cargo.totalParts = *(decltype(totalParts) *) (buffer + pos);
+    pos += sizeof(totalParts);
     std::copy(buffer + pos, buffer + bufferLength, std::back_inserter(cargo.payloadData));
 
     return cargo;
@@ -105,10 +109,7 @@ void CargoSegment::fromBuffer(const uint8_t *buffer, uint32_t bufferLength) {
 }
 
 std::string CargoSegment::toString() const {
-    std::stringstream ss;
-    ss << segmentName + ":[taskId=" + std::to_string(cargo.taskId) + ", seq=" + std::to_string(cargo.sequence) + ", payload_len=" + std::to_string(cargo.payloadData.size()) + "]";
-    auto temp = ss.str();
-    return temp;
+    return segmentName + ":[taskId=" + std::to_string(cargo.taskId) + ", numSeg=" + std::to_string(cargo.numSegments) + ", seq=" + std::to_string(cargo.sequence) + ", total=" + std::to_string(cargo.totalParts) + ", payload_len=" + std::to_string(cargo.payloadData.size()) + "]";
 }
 
 std::ostream &operator<<(std::ostream &os, const CargoSegment &cargoSegment) {
