@@ -193,7 +193,7 @@ std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::fromBuffer(con
     auto frame = ModularPicoScenesRxFrame();
     frame.rxFrameHeader = rxFrameHeader;
     for (auto i = 0; i < frame.rxFrameHeader.numRxSegments; i++) {
-        auto [segmentName, segmentLength, versionId, offset] = AbstractPicoScenesFrameSegment::extractSegmentMetaData(buffer + pos, bufferLength - pos);
+        auto[segmentName, segmentLength, versionId, offset] = AbstractPicoScenesFrameSegment::extractSegmentMetaData(buffer + pos, bufferLength - pos);
         if (segmentName == "RxSBasic") {
             frame.rxSBasicSegment.fromBuffer(buffer + pos, segmentLength + 4);
         } else if (segmentName == "ExtraInfo") {
@@ -237,7 +237,7 @@ std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::fromBuffer(con
         pos += sizeof(PicoScenesFrameHeader);
 
         for (auto i = 0; i < frame.PicoScenesHeader->numSegments; i++) {
-            auto [segmentName, segmentLength, versionId, offset] = AbstractPicoScenesFrameSegment::extractSegmentMetaData(buffer + pos, bufferLength);
+            auto[segmentName, segmentLength, versionId, offset] = AbstractPicoScenesFrameSegment::extractSegmentMetaData(buffer + pos, bufferLength);
             if (segmentName == "ExtraInfo") {
                 frame.txExtraInfoSegment = ExtraInfoSegment::createByBuffer(buffer + pos, segmentLength + 4);
             } else if (segmentName == "DPASRequest") {
@@ -336,7 +336,7 @@ std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::concatenateFra
 
     auto pos = 0, numSegment = 0;
     while (pos < mergedPayload.size()) {
-        auto [segmentName, segmentLength, versionId, contentOffset] = AbstractPicoScenesFrameSegment::extractSegmentMetaData(mergedPayload.data() + pos, mergedPayload.size() - pos);
+        auto[segmentName, segmentLength, versionId, contentOffset] = AbstractPicoScenesFrameSegment::extractSegmentMetaData(mergedPayload.data() + pos, mergedPayload.size() - pos);
         if (segmentName == "ExtraInfo") {
             baseFrame.txExtraInfoSegment = ExtraInfoSegment::createByBuffer(mergedPayload.data() + pos, segmentLength + 4);
         } else if (segmentName == "DPASRequest") {
@@ -351,6 +351,7 @@ std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::concatenateFra
         pos += segmentLength + 4;
         numSegment++;
     }
+    baseFrame.cargoSegment = std::nullopt;
     baseFrame.PicoScenesHeader->numSegments = numSegment;
     baseFrame.rebuildRawBuffer();
 
@@ -401,7 +402,7 @@ Uint8Vector ModularPicoScenesRxFrame::toBuffer() const {
     //// for in-situ validation
 //    {
 //        auto recovered = ModularPicoScenesRxFrame::fromBuffer(frameBuffer.data(), frameBuffer.size());
-//        std::cout<< *recovered <<std::endl;
+//        std::cout << "recovered:" << *recovered << std::endl;
 //    }
 
     return frameBuffer;
@@ -412,11 +413,8 @@ void ModularPicoScenesRxFrame::rebuildRawBuffer() {
 
     if (PicoScenesHeader) {
         mpdu.clear();
-        uint32_t pos{0};
         std::copy((uint8_t *) &standardHeader, (uint8_t *) &standardHeader + sizeof(standardHeader), std::back_inserter(mpdu));
-        pos = sizeof(ieee80211_mac_frame_header);
         std::copy((uint8_t *) &PicoScenesHeader.value(), (uint8_t *) &PicoScenesHeader.value() + sizeof(PicoScenesFrameHeader), std::back_inserter(mpdu));
-        pos = sizeof(PicoScenesFrameHeader);
 
         if (txExtraInfoSegment) {
             const auto &buffer = txExtraInfoSegment->toBuffer();
