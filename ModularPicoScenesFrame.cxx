@@ -327,7 +327,14 @@ std::string ModularPicoScenesRxFrame::toString() const {
 }
 
 std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::concatenateFragmentedPicoScenesRxFrames(const std::vector<ModularPicoScenesRxFrame> &frameQueue) {
-    return {};
+    ModularPicoScenesRxFrame baseFrame = frameQueue.front();
+    std::vector<PayloadCargo> cargos;
+    std::for_each(frameQueue.cbegin(), frameQueue.cend(), [&](const ModularPicoScenesRxFrame &frame) {
+        cargos.emplace_back(frame.cargoSegment->getCargo());
+    });
+    auto mergedCargo = PayloadCargo::mergeAndValidateCargo(cargos);
+
+    return std::nullopt;
 }
 
 Uint8Vector ModularPicoScenesRxFrame::toBuffer() const {

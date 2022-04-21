@@ -24,6 +24,8 @@ public:
     static PayloadCargo fromBuffer(const uint8_t *buffer, uint32_t bufferLength);
 
     static PayloadCargo fromBuffer(const std::vector<uint8_t> &buffer);
+
+    static Uint8Vector mergeAndValidateCargo(const std::vector<PayloadCargo> &cargos);
 };
 
 class CargoSegment : public AbstractPicoScenesFrameSegment {

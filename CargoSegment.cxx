@@ -56,6 +56,25 @@ PayloadCargo PayloadCargo::fromBuffer(const std::vector<uint8_t> &buffer) {
     return fromBuffer(buffer.data(), buffer.size());
 }
 
+Uint8Vector PayloadCargo::mergeAndValidateCargo(const std::vector<PayloadCargo> &cargos) {
+    Uint8Vector mergedPayload;
+    std::for_each(cargos.cbegin(), cargos.cend(), [&](const PayloadCargo &cargo) {
+        std::copy(cargo.payloadData.cbegin(), cargo.payloadData.cend(), std::back_inserter(mergedPayload));
+    });
+    auto pos = 0, numSegment = 0;
+    while (pos < mergedPayload.size()) {
+        auto[segmentName, segmentLength, versionId, contentOffset] = AbstractPicoScenesFrameSegment::extractSegmentMetaData(mergedPayload.data() + pos, mergedPayload.size() - pos);
+        pos += segmentLength + 4;
+        numSegment++;
+    }
+
+    if (pos != mergedPayload.size() && numSegment != cargos.front().numSegments) [[unlikely]] {
+        throw std::runtime_error("incorrect cargo length");
+    }
+
+    return mergedPayload;
+}
+
 static auto v1Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> PayloadCargo {
     auto cargo = PayloadCargo::fromBuffer(buffer, bufferLength);
     return cargo;
