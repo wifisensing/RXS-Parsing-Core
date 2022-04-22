@@ -366,27 +366,40 @@ Uint8Vector ModularPicoScenesRxFrame::toBuffer() const {
     Uint8Vector rxSegmentBuffer;
     auto modularFrameHeader = ModularPicoScenesRxFrameHeader().initialize2Default();
     modularFrameHeader.numRxSegments = 3;
+
     auto rxsBasicBuffer = rxSBasicSegment.toBuffer();
-    auto rxsExtraInfoBuffer = rxExtraInfoSegment.toBuffer();
-    auto csiBuffer = csiSegment.toBuffer();
     std::copy(rxsBasicBuffer.cbegin(), rxsBasicBuffer.cend(), std::back_inserter(rxSegmentBuffer));
+
+    auto rxsExtraInfoBuffer = rxExtraInfoSegment.toBuffer();
     std::copy(rxsExtraInfoBuffer.cbegin(), rxsExtraInfoBuffer.cend(), std::back_inserter(rxSegmentBuffer));
+
+    if (mvmExtraSegment) {
+        auto buffer = mvmExtraSegment->toBuffer();
+        std::copy(buffer.cbegin(), buffer.cend(), std::back_inserter(rxSegmentBuffer));
+        modularFrameHeader.numRxSegments++;
+    }
+
+    auto csiBuffer = csiSegment.toBuffer();
     std::copy(csiBuffer.cbegin(), csiBuffer.cend(), std::back_inserter(rxSegmentBuffer));
+
     if (pilotCSISegment) {
         auto pilotCSIBuffer = pilotCSISegment->toBuffer();
         std::copy(pilotCSIBuffer.cbegin(), pilotCSIBuffer.cend(), std::back_inserter(rxSegmentBuffer));
         modularFrameHeader.numRxSegments++;
     }
+
     if (legacyCSISegment) {
         auto legacyCSIBuffer = legacyCSISegment->toBuffer();
         std::copy(legacyCSIBuffer.cbegin(), legacyCSIBuffer.cend(), std::back_inserter(rxSegmentBuffer));
         modularFrameHeader.numRxSegments++;
     }
+
     if (basebandSignalSegment) {
         auto segmentBuffer = basebandSignalSegment->toBuffer();
         std::copy(segmentBuffer.cbegin(), segmentBuffer.cend(), std::back_inserter(rxSegmentBuffer));
         modularFrameHeader.numRxSegments++;
     }
+
     if (preEQSymbolsSegment) {
         auto segmentBuffer = preEQSymbolsSegment->toBuffer();
         std::copy(segmentBuffer.cbegin(), segmentBuffer.cend(), std::back_inserter(rxSegmentBuffer));
