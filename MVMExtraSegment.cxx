@@ -72,7 +72,7 @@ void MVMExtraSegment::fromBuffer(const uint8_t *buffer, uint32_t bufferLength) {
     mvmExtra = versionedSolutionMap.at(versionId)(buffer + offset, bufferLength - offset);
     rawBuffer.reserve(bufferLength);
     std::copy(buffer, buffer + offset, std::back_inserter(rawBuffer));
-    std::copy(&mvmExtra.CSIHeaderLength, &mvmExtra.CSIHeaderLength + sizeof(mvmExtra.CSIHeaderLength), std::back_inserter(rawBuffer));
+    std::copy((uint8_t *) &mvmExtra.CSIHeaderLength, (uint8_t *) &mvmExtra.CSIHeaderLength + sizeof(mvmExtra.CSIHeaderLength), std::back_inserter(rawBuffer));
     std::copy(mvmExtra.CSIHeader.cbegin(), mvmExtra.CSIHeader.cend(), std::back_inserter(rawBuffer));
     this->segmentLength = segmentLength;
     successfullyDecoded = true;
@@ -85,7 +85,13 @@ MVMExtraSegment MVMExtraSegment::createByBuffer(const uint8_t *buffer, uint32_t 
 }
 
 std::vector<uint8_t> MVMExtraSegment::toBuffer() const {
-    return AbstractPicoScenesFrameSegment::toBuffer(true);
+    auto buffer = AbstractPicoScenesFrameSegment::toBuffer(true);
+    if (false) {
+        auto extraSeg = createByBuffer(buffer.data(), buffer.size());
+        std::cout << extraSeg << std::endl;
+    }
+
+    return buffer;
 }
 
 std::string MVMExtraSegment::toString() const {
