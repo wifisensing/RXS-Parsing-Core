@@ -548,13 +548,14 @@ std::vector<ModularPicoScenesTxFrame> ModularPicoScenesTxFrame::autoSplit(int16_
     }
 
     auto cargoFrames = std::vector<ModularPicoScenesTxFrame>();
-    for (const auto &cargo: cargos) {
+    for (auto i = 0; i < cargos.size(); i++) {
+        const auto &cargo = cargos[i];
         auto txframe = *this;
+        txframe.standardHeader.seq = i;
         txframe.segments.clear();
         txframe.addSegments(std::make_shared<CargoSegment>(cargo));
         cargoFrames.emplace_back(txframe);
     }
-
     return cargoFrames;
 }
 
