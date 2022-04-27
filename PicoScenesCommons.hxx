@@ -79,6 +79,7 @@ enum class PicoScenesDeviceSubtype : uint16_t {
     LimeSDR,
     BladeRF,
     SOAPYSDR_UHD,
+    AX211,
 };
 
 /**

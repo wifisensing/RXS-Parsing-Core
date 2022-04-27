@@ -45,6 +45,8 @@ std::string DeviceSubtype2String(PicoScenesDeviceSubtype subtype) {
             return "AX200";
         case PicoScenesDeviceSubtype::AX210:
             return "AX210";
+        case PicoScenesDeviceSubtype::AX211:
+            return "AX211";
         case PicoScenesDeviceSubtype::USRP_N2x0:
             return "USRP N2x0";
         case PicoScenesDeviceSubtype::USRP_B2x0:
