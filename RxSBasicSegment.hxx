@@ -12,6 +12,7 @@
 struct RxSBasic {
     uint16_t deviceType;    /* device type code */
     uint64_t tstamp;        /* h/w assigned timestamp */
+    uint64_t systemTime;    /* system nanosecond time via ktime_get_real() */
     int16_t centerFreq;     /* receiving channel frequency */
     int16_t controlFreq;    /* control channel frequency */
     uint16_t cbw;           /* channel bandwidth [20, 40, 80, 160] */
