@@ -49,6 +49,19 @@ enum class PicoScenesDeviceType : uint16_t {
 bool isIntelMVMTypeNIC(PicoScenesDeviceType psdt);
 
 /**
+ * Check the specified device type is COTS Wi-Fi NICS (210/200/9300/5300/802)
+ * @return
+ */
+bool isCOTSNIC(PicoScenesDeviceType psdt);
+
+/**
+ * Check the specified device type is SDR (USRP or SoapySDR)
+ * @param psdt
+ * @return
+ */
+bool isSDR(PicoScenesDeviceType psdt);
+
+/**
  * Return the device type string for the given PicoScenesDeviceType type
  * @return
  */

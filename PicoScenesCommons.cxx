@@ -3,9 +3,19 @@
 //
 
 #include "PicoScenesCommons.hxx"
+#include "../../headers/PicoScenesCommons.hxx"
+
 
 bool isIntelMVMTypeNIC(PicoScenesDeviceType psdt) {
     return psdt == PicoScenesDeviceType::IWLMVM_AX200 || psdt == PicoScenesDeviceType::IWLMVM_AX210;
+}
+
+bool isCOTSNIC(PicoScenesDeviceType psdt) {
+    return isIntelMVMTypeNIC(psdt) || psdt == PicoScenesDeviceType::QCA9300 || psdt == PicoScenesDeviceType::IWL5300 || psdt == PicoScenesDeviceType::MAC80211Compatible;
+}
+
+bool isSDR(PicoScenesDeviceType psdt) {
+    return psdt == PicoScenesDeviceType::USRP || psdt == PicoScenesDeviceType::SoapySDR;
 }
 
 std::string DeviceType2String(PicoScenesDeviceType type) {
