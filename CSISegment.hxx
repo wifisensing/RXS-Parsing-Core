@@ -212,8 +212,7 @@ public:
     /**
      * Create CSI object from the AX200/AX210 NIC returned raw bytes
      */
-    static std::optional<CSI> fromIWLMVM(const uint8_t *buffer, uint32_t bufferLength, uint8_t firmwareVersion, uint8_t numTx, uint8_t numRx, uint16_t numTones, PacketFormatEnum format, ChannelBandwidthEnum cbw, int16_t subcarrierIndexOffset, bool skipPilotSubcarriers = true);
-
+    static std::optional<CSI> fromIWLMVM(const uint8_t *buffer, uint32_t bufferLength, uint8_t firmwareVersion, uint8_t numTx, uint8_t numRx, uint16_t numTones, PacketFormatEnum format, ChannelBandwidthEnum cbw, int16_t subcarrierIndexOffset, bool skipPilotSubcarriers = true, uint8_t antSelByte = 0);
     /**
      * A CSI data format converter
      * @tparam OutputValueType

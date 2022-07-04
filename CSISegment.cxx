@@ -69,66 +69,61 @@ CSI CSI::fromIWL5300(const uint8_t *buffer, uint32_t bufferLength, uint8_t numTx
     return csi;
 }
 
-std::optional<CSI> CSI::fromIWLMVM(const uint8_t *buffer, uint32_t bufferLength, uint8_t firmwareVersion, uint8_t numTx, uint8_t numRx, uint16_t numTones, PacketFormatEnum format, ChannelBandwidthEnum cbw, int16_t subcarrierIndexOffset, bool skipPilotSubcarriers) {
+std::optional<CSI> CSI::fromIWLMVM(const uint8_t *buffer, uint32_t bufferLength, uint8_t firmwareVersion, uint8_t numTx, uint8_t numRx, uint16_t numTones, PacketFormatEnum format, ChannelBandwidthEnum cbw, int16_t subcarrierIndexOffset, bool skipPilotSubcarriers, uint8_t antSelByte) {
     if (numTx * numRx * numTones * 4 != bufferLength)
         throw std::runtime_error("Incorrect Intel MVM-based CSI data format.");
 
-    auto totalTones = numRx * numTx * numTones, pos = 0;
+    auto dataTones = numRx * numTx * numTones, pos = 0;
     const auto &pilotArray = CSISubcarrierIndex::getPilotSubcarrierIndices(format, cbw);
     const auto &subcarrierIndices = skipPilotSubcarriers ? CSISubcarrierIndex::getDataSubcarrierIndices(format, cbw) : CSISubcarrierIndex::getAllSubcarrierIndices(format, cbw);
-    std::vector<std::complex<double>> CSIArray;
-    CSIArray.reserve(numTx * numRx * numTones);
-    for (auto i = 0, ssI = 0, bugFixSSI = 0, lastPilotIndex = 0; i < totalTones; i++) {
-        auto real = *(int16_t *) (buffer + pos);
-        auto imag = *(int16_t *) (buffer + pos + 2);
+    std::vector<std::complex<double>> CSIArray(subcarrierIndices.size() * numRx * numTx, std::complex<double>{});
+
+    for (auto valueIndex = 0, toneIndexWithoutPilot = 0, lastPilotIndex = 0; valueIndex < dataTones; valueIndex++) {
+        const auto *real = (int16_t *) (buffer + pos);
+        const auto *imag = (int16_t *) (buffer + pos + 2);
         pos += 4;
-        ssI = i % numTones;
-        bugFixSSI = ssI; // Fix the firmware bug
 
-        if (firmwareVersion == 67 || (firmwareVersion == 68)) {
-            if (format == PacketFormatEnum::PacketFormat_HESU && cbw == ChannelBandwidthEnum::CBW_160) {
-                if (ssI > 995 && ssI < 1024) // Fix the firmware bug
+        auto toneIndex = valueIndex % numTones;
+        auto toneIndexBugFix = toneIndex;
+        auto stsIndex = valueIndex / numTones % numTx;
+        auto rxIndex = valueIndex / (numTones * numTx);
+        rxIndex = antSelByte == 1 ? (rxIndex == 0 ? 1 : 0) : (rxIndex == 0 ? 0 : 1);
+
+        if (cbw == ChannelBandwidthEnum::CBW_160 && firmwareVersion >= 67) {
+            if (format == PacketFormatEnum::PacketFormat_HESU) {
+                if (toneIndex > 995 && toneIndex < 1024) // Fix the firmware bug
                     continue;
 
-                if (ssI >= 1024) // Fix the firmware bug
-                    bugFixSSI -= 28;
+                if (toneIndex >= 1024) // Fix the firmware bug
+                    toneIndexBugFix -= 28;
             }
 
-            if (format == PacketFormatEnum::PacketFormat_VHT && cbw == ChannelBandwidthEnum::CBW_160) {
-                if (ssI > 241 && ssI < 256) // Fix the firmware bug
+            if (format == PacketFormatEnum::PacketFormat_VHT) {
+                if (toneIndex > 241 && toneIndex < 256) // Fix the firmware bug
                     continue;
 
-                if (ssI >= 256) // Fix the firmware bug
-                    bugFixSSI -= 14;
+                if (toneIndex >= 256) // Fix the firmware bug
+                    toneIndexBugFix -= 14;
             }
         }
 
-        if (skipPilotSubcarriers) {
-            if (bugFixSSI == 0)
+        if (skipPilotSubcarriers) { // the CSI value measured by AX200/210 is too low to be useful, so skip it.
+            if (toneIndexBugFix == 0) {
                 lastPilotIndex = 0;
-            if (bugFixSSI == pilotArray[lastPilotIndex]) {
-                lastPilotIndex++;
-                continue;
+                toneIndexWithoutPilot = 0;
+            } else {
+                if (toneIndexBugFix == pilotArray[lastPilotIndex]) {
+                    lastPilotIndex++;
+                    continue;
+                }
+                toneIndexWithoutPilot++;
             }
+        } else {
+            toneIndexWithoutPilot = toneIndexBugFix;
         }
 
-        CSIArray.emplace_back(std::complex<double>(real, imag));
-
-        if (firmwareVersion == 67 || (firmwareVersion == 68)) {
-            if (format == PacketFormatEnum::PacketFormat_HESU && ssI == 1991) { // Fix the firmware bug
-                for (auto i = 0; i < 28; i++)
-                    CSIArray.emplace_back(std::complex<double>(0, 0));
-            }
-
-            if (format == PacketFormatEnum::PacketFormat_VHT && ssI == 483) { // Fix the firmware bug
-                for (auto i = 0; i < 14; i++)
-                    CSIArray.emplace_back(std::complex<double>(0, 0));
-            }
-        }
-    }
-
-    if (CSIArray.size() != subcarrierIndices.size() * numTx * numRx) {
-        return {};
+        auto newIndex = rxIndex * (numTx * subcarrierIndices.size()) + stsIndex * subcarrierIndices.size() + toneIndexWithoutPilot;
+        CSIArray.at(newIndex) = std::complex<double>(*real, *imag);
     }
 
     auto CSIMatrix = SignalMatrix(CSIArray, std::vector<int32_t>{static_cast<int>(subcarrierIndices.size()), numTx, numRx, 1}, SignalMatrixStorageMajority::ColumnMajor);
@@ -137,7 +132,7 @@ std::optional<CSI> CSI::fromIWLMVM(const uint8_t *buffer, uint32_t bufferLength,
             .packetFormat = format,
             .cbw = cbw,
             .dimensions = CSIDimension{.numTones = static_cast<uint16_t>(subcarrierIndices.size()), .numTx = numTx, .numRx = numRx, .numESS = 0, .numCSI = 1},
-            .antSel = 0,
+            .antSel = antSelByte,
             .subcarrierOffset = subcarrierIndexOffset,
             .subcarrierIndices = subcarrierIndices,
             .CSIArray = CSIMatrix
@@ -152,6 +147,90 @@ std::optional<CSI> CSI::fromIWLMVM(const uint8_t *buffer, uint32_t bufferLength,
 
     return csi;
 }
+
+//std::optional<CSI> CSI::fromIWLMVM2(const uint8_t *buffer, uint32_t bufferLength, uint8_t firmwareVersion, uint8_t numTx, uint8_t numRx, uint16_t numTones, PacketFormatEnum format, ChannelBandwidthEnum cbw, int16_t subcarrierIndexOffset, bool skipPilotSubcarriers, uint8_t antSelByte) {
+//    if (numTx * numRx * numTones * 4 != bufferLength)
+//        throw std::runtime_error("Incorrect Intel MVM-based CSI data format.");
+//
+//    auto totalTones = numRx * numTx * numTones, pos = 0;
+//    const auto &pilotArray = CSISubcarrierIndex::getPilotSubcarrierIndices(format, cbw);
+//    const auto &subcarrierIndices = skipPilotSubcarriers ? CSISubcarrierIndex::getDataSubcarrierIndices(format, cbw) : CSISubcarrierIndex::getAllSubcarrierIndices(format, cbw);
+//    std::vector<std::complex<double>> CSIArray;
+//    CSIArray.reserve(numTx * numRx * numTones);
+//    for (auto i = 0, ssI = 0, bugFixSSI = 0, lastPilotIndex = 0; i < totalTones; i++) {
+//        auto real = *(int16_t *) (buffer + pos);
+//        auto imag = *(int16_t *) (buffer + pos + 2);
+//        pos += 4;
+//        ssI = i % numTones;
+//        bugFixSSI = ssI; // Fix the firmware bug
+//
+//        if (firmwareVersion == 67 || (firmwareVersion == 68)) {
+//            if (format == PacketFormatEnum::PacketFormat_HESU && cbw == ChannelBandwidthEnum::CBW_160) {
+//                if (ssI > 995 && ssI < 1024) // Fix the firmware bug
+//                    continue;
+//
+//                if (ssI >= 1024) // Fix the firmware bug
+//                    bugFixSSI -= 28;
+//            }
+//
+//            if (format == PacketFormatEnum::PacketFormat_VHT && cbw == ChannelBandwidthEnum::CBW_160) {
+//                if (ssI > 241 && ssI < 256) // Fix the firmware bug
+//                    continue;
+//
+//                if (ssI >= 256) // Fix the firmware bug
+//                    bugFixSSI -= 14;
+//            }
+//        }
+//
+//        if (skipPilotSubcarriers) {
+//            if (bugFixSSI == 0)
+//                lastPilotIndex = 0;
+//            if (bugFixSSI == pilotArray[lastPilotIndex]) {
+//                lastPilotIndex++;
+//                continue;
+//            }
+//        }
+//
+//        CSIArray.emplace_back(std::complex<double>(real, imag));
+//
+//        if (firmwareVersion == 67 || (firmwareVersion == 68)) {
+//            if (format == PacketFormatEnum::PacketFormat_HESU && ssI == 1991) { // Fix the firmware bug
+//                for (auto i = 0; i < 28; i++)
+//                    CSIArray.emplace_back(std::complex<double>(0, 0));
+//            }
+//
+//            if (format == PacketFormatEnum::PacketFormat_VHT && ssI == 483) { // Fix the firmware bug
+//                for (auto i = 0; i < 14; i++)
+//                    CSIArray.emplace_back(std::complex<double>(0, 0));
+//            }
+//        }
+//    }
+//
+//    if (CSIArray.size() != subcarrierIndices.size() * numTx * numRx) {
+//        return {};
+//    }
+//
+//    auto CSIMatrix = SignalMatrix(CSIArray, std::vector<int32_t>{static_cast<int>(subcarrierIndices.size()), numTx, numRx, 1}, SignalMatrixStorageMajority::ColumnMajor);
+//
+//    auto csi = CSI{.firmwareVersion = firmwareVersion,
+//            .packetFormat = format,
+//            .cbw = cbw,
+//            .dimensions = CSIDimension{.numTones = static_cast<uint16_t>(subcarrierIndices.size()), .numTx = numTx, .numRx = numRx, .numESS = 0, .numCSI = 1},
+//            .antSel = antSelByte,
+//            .subcarrierOffset = subcarrierIndexOffset,
+//            .subcarrierIndices = subcarrierIndices,
+//            .CSIArray = CSIMatrix
+//    };
+//    std::copy(buffer, buffer + bufferLength, std::back_inserter(csi.rawCSIData));
+//
+//    if (subcarrierIndexOffset != 0) {
+//        std::transform(csi.subcarrierIndices.begin(), csi.subcarrierIndices.end(), csi.subcarrierIndices.begin(), [=](int16_t index) {
+//            return index + subcarrierIndexOffset;
+//        });
+//    }
+//
+//    return csi;
+//}
 
 void CSI::removeCSDAndInterpolateCSI() {
 
@@ -516,7 +595,7 @@ static auto v4Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> std::
         csi.subcarrierBandwidth = subcarrierBandwidth;
         return csi;
     } else if (deviceType == PicoScenesDeviceType::IWLMVM_AX200 || deviceType == PicoScenesDeviceType::IWLMVM_AX210) {
-        if (auto csi = CSI::fromIWLMVM(buffer + pos, CSIBufferLength, firmwareVersion, numSTS, numRx, numTone, packetFormat, cbw, subcarrierIndexOffset, true)) {
+        if (auto csi = CSI::fromIWLMVM(buffer + pos, CSIBufferLength, firmwareVersion, numSTS, numRx, numTone, packetFormat, cbw, subcarrierIndexOffset, true, antSelByte)) {
             csi->deviceType = deviceType;
             csi->carrierFreq = carrierFreq;
             csi->samplingRate = samplingRate;
@@ -566,7 +645,7 @@ CSISegment::CSISegment() : AbstractPicoScenesFrameSegment("CSI", 0x4U) {
 }
 
 void CSISegment::fromBuffer(const uint8_t *buffer, uint32_t bufferLength) {
-    auto[segmentName, segmentLength, versionId, offset] = extractSegmentMetaData(buffer, bufferLength);
+    auto [segmentName, segmentLength, versionId, offset] = extractSegmentMetaData(buffer, bufferLength);
     if (segmentName != "CSI" && segmentName != "LegacyCSI" && segmentName != "PilotCSI")
         throw std::runtime_error("CSISegment cannot parse the segment named " + segmentName + ".");
     if (segmentLength + 4 > bufferLength)
