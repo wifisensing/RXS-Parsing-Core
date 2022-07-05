@@ -55,6 +55,7 @@ std::map<uint16_t, std::function<IntelMVMExtrta(const uint8_t *, uint32_t)>> MVM
 }
 
 bool MVMExtraSegment::blockAdvancedProperties = false;
+bool MVMExtraSegment::blockReservedProperties = false;
 
 MVMExtraSegment::MVMExtraSegment() : AbstractPicoScenesFrameSegment("MVMExtra", 0x1U) {}
 
