@@ -31,6 +31,8 @@ static auto v1Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> Intel
     if (MVMExtraSegment::isAdvancedPropertiesBlocked()) {
         std::memset(extra.parsedHeader.blockedSection4, 0, sizeof(extra.parsedHeader.blockedSection4));
         std::memset(extra.parsedHeader.blockedSection56, 0, sizeof(extra.parsedHeader.blockedSection56));
+    }
+    if (MVMExtraSegment::isReservedPropertiesBlocked()) {
         std::memset(extra.parsedHeader.blockedSection96, 0, sizeof(extra.parsedHeader.blockedSection96));
     }
     std::copy((uint8_t *) &extra.parsedHeader, (uint8_t *) (&extra.parsedHeader) + sizeof(IntelMVMParsedCSIHeader), std::back_inserter(extra.CSIHeader));
@@ -117,4 +119,15 @@ void MVMExtraSegment::setBlockingAdvancedProperties(bool block) {
 
 bool MVMExtraSegment::isAdvancedPropertiesBlocked() {
     return blockAdvancedProperties;
+}
+
+bool MVMExtraSegment::isReservedPropertiesBlocked() {
+    return blockReservedProperties;
+}
+
+void MVMExtraSegment::setBlockingReservedProperties(bool block) {
+    static std::once_flag flag;
+    std::call_once(flag, [&] {
+        blockReservedProperties = block; // this property can only be set once during the start
+    });
 }

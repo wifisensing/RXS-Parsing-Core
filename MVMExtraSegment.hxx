@@ -89,6 +89,10 @@ public:
 
     static void setBlockingAdvancedProperties(bool block);
 
+    static bool isReservedPropertiesBlocked();
+
+    static void setBlockingReservedProperties(bool block);
+
     void fromBuffer(const uint8_t *buffer, uint32_t bufferLength) override;
 
     std::vector<uint8_t> toBuffer() const override;
@@ -103,6 +107,8 @@ private:
     static std::map<uint16_t, std::function<IntelMVMExtrta(const uint8_t *, uint32_t)>> initializeSolutionMap() noexcept;
 
     static bool blockAdvancedProperties;
+
+    static bool blockReservedProperties;
 
     IntelMVMExtrta mvmExtra;
 };
