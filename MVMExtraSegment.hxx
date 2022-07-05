@@ -11,21 +11,31 @@
 class IntelMVMParsedCSIHeader {
 public:
     uint32_t iqDataSize{};
-    uint32_t reserved4;
-    uint32_t ftmClock;
-    uint8_t reserved12_52[40];
+    union {
+        uint8_t blockedSection4[48] __attribute__ ((__packed__));
+        struct {
+            uint32_t reserved4;
+            uint32_t ftmClock;
+            uint8_t reserved12_52[40];
+        } __attribute__ ((__packed__));
+    };
     uint32_t numTones;
-    uint32_t reserved56;
-    uint32_t rssi1;
-    uint32_t rssi2;
-    uint8_t sourceAddress[6];
-    uint16_t addressPadding;
-    uint8_t csiSequence;
-    uint8_t reserved77[11];
+    union {
+        uint8_t blockedSection56[32] __attribute__ ((__packed__));
+        struct {
+            uint32_t reserved56;
+            uint32_t rssi1;
+            uint32_t rssi2;
+            uint8_t sourceAddress[6];
+            uint16_t addressPadding;
+            uint8_t csiSequence;
+            uint8_t reserved77[11];
+        }__attribute__ ((__packed__));
+    };
     uint32_t muClock; // 88
     uint32_t rate_n_flags; // 92
     union {
-        uint8_t blockedSection[176] __attribute__ ((__packed__));
+        uint8_t blockedSection96[176] __attribute__ ((__packed__));
         struct {
             uint8_t chain0Info96[20];
             uint8_t chain1Info96[20];
@@ -52,7 +62,6 @@ public:
             uint16_t value270;
         } __attribute__ ((__packed__));
     };
-
 
     IntelMVMParsedCSIHeader();
 

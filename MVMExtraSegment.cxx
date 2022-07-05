@@ -29,12 +29,9 @@ static auto v1Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> Intel
     extra.parsedHeader = *(IntelMVMParsedCSIHeader *) (buffer + pos);
     pos += sizeof(IntelMVMParsedCSIHeader);
     if (MVMExtraSegment::isAdvancedPropertiesBlocked()) {
-        extra.parsedHeader.ftmClock = 0;
-        extra.parsedHeader.reserved4 = 0;
-        extra.parsedHeader.reserved56 = 0;
-        std::memset(extra.parsedHeader.reserved12_52, 0, sizeof(extra.parsedHeader.reserved12_52));
-        std::memset(extra.parsedHeader.reserved77, 0, sizeof(extra.parsedHeader.reserved77));
-        std::memset(extra.parsedHeader.blockedSection, 0, sizeof(extra.parsedHeader.blockedSection));
+        std::memset(extra.parsedHeader.blockedSection4, 0, sizeof(extra.parsedHeader.blockedSection4));
+        std::memset(extra.parsedHeader.blockedSection56, 0, sizeof(extra.parsedHeader.blockedSection56));
+        std::memset(extra.parsedHeader.blockedSection96, 0, sizeof(extra.parsedHeader.blockedSection96));
     }
     std::copy((uint8_t *) &extra.parsedHeader, (uint8_t *) (&extra.parsedHeader) + sizeof(IntelMVMParsedCSIHeader), std::back_inserter(extra.CSIHeader));
     std::copy(buffer + pos, buffer + bufferLength, std::back_inserter(extra.CSIHeader));
@@ -60,7 +57,7 @@ bool MVMExtraSegment::blockAdvancedProperties = false;
 MVMExtraSegment::MVMExtraSegment() : AbstractPicoScenesFrameSegment("MVMExtra", 0x1U) {}
 
 void MVMExtraSegment::fromBuffer(const uint8_t *buffer, uint32_t bufferLength) {
-    auto[segmentName, segmentLength, versionId, offset] = extractSegmentMetaData(buffer, bufferLength);
+    auto [segmentName, segmentLength, versionId, offset] = extractSegmentMetaData(buffer, bufferLength);
     if (segmentName != "MVMExtra")
         throw std::runtime_error("MVMExtraSegment cannot parse the segment named " + segmentName + ".");
     if (segmentLength + 4 > bufferLength)

@@ -595,7 +595,7 @@ static auto v4Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> std::
         csi.subcarrierBandwidth = subcarrierBandwidth;
         return csi;
     } else if (deviceType == PicoScenesDeviceType::IWLMVM_AX200 || deviceType == PicoScenesDeviceType::IWLMVM_AX210) {
-        if (auto csi = CSI::fromIWLMVM(buffer + pos, CSIBufferLength, firmwareVersion, numSTS, numRx, numTone, packetFormat, cbw, subcarrierIndexOffset, true, antSelByte)) {
+        if (auto csi = CSI::fromIWLMVM(buffer + pos, CSIBufferLength, firmwareVersion, numSTS, numRx, numTone, packetFormat, cbw, subcarrierIndexOffset, true, 0)) {
             csi->deviceType = deviceType;
             csi->carrierFreq = carrierFreq;
             csi->samplingRate = samplingRate;
