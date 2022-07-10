@@ -6,7 +6,7 @@
 #include <utility>
 #include <deque>
 #include "CSISegment.hxx"
-#include "interpolationAndCSDRemoval/generated/CSIPreprocessor2.h"
+#include "preprocess/generated/CSIPreprocessor.h"
 
 SignalMatrix<std::complex<double>> parseQCA9300CSIData(const uint8_t *csiData, int nSTS, int nRx, int nTones) {
     std::vector<std::complex<double>> CSIArray(nSTS * nRx * nTones);
@@ -19,6 +19,8 @@ SignalMatrix<std::complex<double>> parseIWL5300CSIData(const uint8_t *payload, i
     parseIWL5300CSIData(CSIArray.begin(), payload, ntx, nrx, ant_sel);
     return SignalMatrix(CSIArray, std::vector<int32_t>{30, ntx, nrx, 1}, SignalMatrixStorageMajority::ColumnMajor);
 }
+
+bool CSI::autoUnperm = false;
 
 CSI CSI::fromQCA9300(const uint8_t *buffer, uint32_t bufferLength, uint8_t numTx, uint8_t numRx, uint8_t numTones, ChannelBandwidthEnum cbw, int16_t subcarrierIndexOffset) {
     uint32_t actualNumSTSPerChain = bufferLength / (cbw == ChannelBandwidthEnum::CBW_20 ? 140 : 285) / numRx; // 56 * 2 * 10 / 8 = 140B , 114 * 2 * 10 / 8 = 285;
@@ -234,7 +236,7 @@ std::optional<CSI> CSI::fromIWLMVM(const uint8_t *buffer, uint32_t bufferLength,
 
 void CSI::removeCSDAndInterpolateCSI() {
 
-    thread_local static auto preprocessorInstance = std::make_shared<CSIPreprocessor2>();
+    thread_local static auto preprocessorInstance = std::make_shared<CSIPreprocessor>();
 
     coder::array<creal_T, 4U> CSIWrapper;
     coder::array<short, 1U> subcarrierIndex_int16;
@@ -243,6 +245,7 @@ void CSI::removeCSDAndInterpolateCSI() {
     coder::array<double, 4U> newMag;
     coder::array<double, 4U> newPhase;
     coder::array<short, 1U> interpedIndex_int16;
+    double permCoef;
 
     CSIWrapper.set_size(dimensions.numTones, (dimensions.numTx + dimensions.numESS), dimensions.numRx, dimensions.numCSI);
     assert(CSIWrapper.numel() == CSIArray.array.size());
@@ -251,12 +254,11 @@ void CSI::removeCSDAndInterpolateCSI() {
     subcarrierIndex_int16.set_size(subcarrierIndices.size());
     std::copy(subcarrierIndices.cbegin(), subcarrierIndices.cend(), subcarrierIndex_int16.data());
 
-    bool performCSDRemoval{deviceType != PicoScenesDeviceType::IWLMVM_AX200 && deviceType != PicoScenesDeviceType::IWLMVM_AX210};
-    preprocessorInstance->InterpolateCSIAndRemoveCSD(CSIWrapper, subcarrierIndex_int16, dimensions.numTx, dimensions.numESS, dimensions.numRx, dimensions.numCSI, static_cast<real_T>(packetFormat), static_cast<real_T>(cbw), performCSDRemoval, newCSI, newMag, newPhase, interpedIndex_int16);
+    bool isIntelMVMNIC{deviceType == PicoScenesDeviceType::IWLMVM_AX200 || deviceType == PicoScenesDeviceType::IWLMVM_AX210};
+    preprocessorInstance->InterpolateCSIAndRemoveCSDAndAutoUnpermutation(CSIWrapper, subcarrierIndex_int16, dimensions.numTx, dimensions.numESS, dimensions.numRx, dimensions.numCSI, static_cast<double>(packetFormat), static_cast<double>(cbw), !isIntelMVMNIC, isIntelMVMNIC && autoUnperm, newCSI, newMag, newPhase, interpedIndex_int16, &antSel, &permCoef);
 
     CSIArray.array.clear();
     std::copy((std::complex<double> *) newCSI.data(), (std::complex<double> *) newCSI.data() + newCSI.numel(), std::back_inserter(CSIArray.array));
-    // TODO check consistency
     CSIArray.dimensions[0] = newCSI.size(0);
 
     magnitudeArray.array.clear();
@@ -344,6 +346,13 @@ std::optional<double> CSI::getPhase(int16_t subcarrierIndex, uint8_t stsIndex, u
     }
 
     return std::nullopt;
+}
+
+void CSI::setAutoUnperm(bool setAutoUnperm) {
+    static std::once_flag flag;
+    std::call_once(flag, [&] {
+        autoUnperm = setAutoUnperm;
+    });
 }
 
 static auto v1Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> std::optional<CSI> {

@@ -249,6 +249,11 @@ public:
     std::optional<double> getMagnitude(int16_t subcarrierIndex, uint8_t stsIndex = 0, uint8_t rxIndex = 0, uint16_t csiIndexStartingFrom0 = 0) const;
 
     std::optional<double> getPhase(int16_t subcarrierIndex, uint8_t stsIndex = 0, uint8_t rxIndex = 0, uint16_t csiIndexStartingFrom0 = 0) const;
+
+    static void setAutoUnperm(bool autoUnperm);
+
+private:
+    static bool autoUnperm;
 };
 
 class CSISubcarrierIndex {
