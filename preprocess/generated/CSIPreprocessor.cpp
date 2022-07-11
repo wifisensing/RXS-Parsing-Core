@@ -1069,7 +1069,8 @@ void CSIPreprocessor::InterpolateCSIAndRemoveCSDAndAutoUnpermutation(
                 }
                 dp = (1.0 - nfft) * static_cast<double>(nfft < 1.0);
             }
-            *permCoef = permLogic(cumsum_dp_corr + 1.0E-9, b_D + 1.0E-9, dp + 1.0E-9, D + 1.0E-9, rn1, rn2, rp1, rp2);
+            *permCoef = permLogic(CBW, format, cumsum_dp_corr + 1.0E-9, b_D + 1.0E-9, dp + 1.0E-9, D + 1.0E-9, rn1, rn2,
+                                  rp1, rp2);
             if (*permCoef < 0.0) {
                 i = rawPhase.size(0);
                 i1 = rawPhase.size(1);
