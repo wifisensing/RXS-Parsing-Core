@@ -8,8 +8,8 @@
 
 // Type Definitions
 struct InterpolateCSIAndRemoveCSDAndAutoUnpermutationPersistentData {
-    coder::array<double, 2U> lastMag;
-    boolean_T lastMag_not_empty;
+    coder::array<double, 2U> lmag;
+    boolean_T lmag_not_empty;
 };
 
 struct InterpolateCSIAndRemoveCSDAndAutoUnpermutationStackData {
