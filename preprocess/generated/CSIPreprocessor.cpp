@@ -275,11 +275,11 @@ void CSIPreprocessor::InterpolateCSIAndRemoveCSDAndAutoUnpermutation(
     coder::array<boolean_T, 2U> b_r;
     coder::array<boolean_T, 1U> c_x;
     coder::array<boolean_T, 1U> positiveInput;
-    double absx;
     double cumsum_dp_corr;
+    double dp;
+    double meanpast2;
     double nfft;
     double r;
-    double re_tmp;
     int b_exponent;
     int c_exponent;
     int d_exponent;
@@ -396,20 +396,20 @@ void CSIPreprocessor::InterpolateCSIAndRemoveCSDAndAutoUnpermutation(
         for (i = 0; i < ncols; i++) {
             for (i1 = 0; i1 < ibtile; i1++) {
                 nrows = subcarrierIndex[i1];
-                absx = static_cast<double>(nrows) * 6.2831853071795862;
+                dp = static_cast<double>(nrows) * 6.2831853071795862;
                 cumsum_dp_corr = b_csdInSamples_data[i].im;
-                re_tmp = b_csdInSamples_data[i].re;
-                r = 0.0 * re_tmp - absx * cumsum_dp_corr;
-                absx = 0.0 * cumsum_dp_corr + absx * re_tmp;
-                if (absx == 0.0) {
+                meanpast2 = b_csdInSamples_data[i].re;
+                r = 0.0 * meanpast2 - dp * cumsum_dp_corr;
+                dp = 0.0 * cumsum_dp_corr + dp * meanpast2;
+                if (dp == 0.0) {
                     phaseShiftPerRx[i1 + phaseShiftPerRx.size(0) * i].re = r / nfft;
                     phaseShiftPerRx[i1 + phaseShiftPerRx.size(0) * i].im = 0.0;
                 } else if (r == 0.0) {
                     phaseShiftPerRx[i1 + phaseShiftPerRx.size(0) * i].re = 0.0;
-                    phaseShiftPerRx[i1 + phaseShiftPerRx.size(0) * i].im = absx / nfft;
+                    phaseShiftPerRx[i1 + phaseShiftPerRx.size(0) * i].im = dp / nfft;
                 } else {
                     phaseShiftPerRx[i1 + phaseShiftPerRx.size(0) * i].re = r / nfft;
-                    phaseShiftPerRx[i1 + phaseShiftPerRx.size(0) * i].im = absx / nfft;
+                    phaseShiftPerRx[i1 + phaseShiftPerRx.size(0) * i].im = dp / nfft;
                 }
             }
         }
@@ -424,9 +424,9 @@ void CSIPreprocessor::InterpolateCSIAndRemoveCSDAndAutoUnpermutation(
                 phaseShiftPerRx[k].im = 0.0;
             } else {
                 r = std::exp(phaseShiftPerRx[k].re / 2.0);
-                absx = phaseShiftPerRx[k].im;
+                dp = phaseShiftPerRx[k].im;
                 phaseShiftPerRx[k].re = r * (r * std::cos(phaseShiftPerRx[k].im));
-                phaseShiftPerRx[k].im = r * (r * std::sin(absx));
+                phaseShiftPerRx[k].im = r * (r * std::sin(dp));
             }
         }
         phaseShiftAll.set_size(phaseShiftPerRx.size(0), phaseShiftPerRx.size(1), static_cast<int>(numRx),
@@ -447,11 +447,11 @@ void CSIPreprocessor::InterpolateCSIAndRemoveCSDAndAutoUnpermutation(
         ibtile = CSI.size(0) * CSI.size(1) * CSI.size(2) * CSI.size(3);
         for (i = 0; i < ibtile; i++) {
             cumsum_dp_corr = CSI[i].re;
-            re_tmp = phaseShiftAll[i].im;
+            meanpast2 = phaseShiftAll[i].im;
             nfft = CSI[i].im;
-            absx = phaseShiftAll[i].re;
-            CSI[i].re = cumsum_dp_corr * absx - nfft * re_tmp;
-            CSI[i].im = cumsum_dp_corr * re_tmp + nfft * absx;
+            dp = phaseShiftAll[i].re;
+            CSI[i].re = cumsum_dp_corr * dp - nfft * meanpast2;
+            CSI[i].im = cumsum_dp_corr * meanpast2 + nfft * dp;
         }
     }
     if (subcarrierIndex[subcarrierIndex.size(0) - 1] < subcarrierIndex[0]) {
@@ -501,8 +501,8 @@ void CSIPreprocessor::InterpolateCSIAndRemoveCSDAndAutoUnpermutation(
         }
         nx = y.size(1);
         for (k = 0; k < nx; k++) {
-            absx = y[k];
-            if ((!(absx > X[X.size(0) - 1])) && (!(absx < X[0]))) {
+            dp = y[k];
+            if ((!(dp > X[X.size(0) - 1])) && (!(dp < X[0]))) {
                 high_i = X.size(0);
                 ibtile = 1;
                 nrows = 2;
@@ -604,10 +604,14 @@ void CSIPreprocessor::InterpolateCSIAndRemoveCSDAndAutoUnpermutation(
         }
         if (nanflag) {
             double D;
+            double b_D;
+            double meannow1;
+            double meannow2;
+            double meanpast1;
             boolean_T b_nanflag;
             //  the same pattern
             if (magDb.size(0) == 0) {
-                absx = 0.0;
+                dp = 0.0;
             } else {
                 if (magDb.size(0) <= 1024) {
                     ncols = magDb.size(0);
@@ -623,9 +627,9 @@ void CSIPreprocessor::InterpolateCSIAndRemoveCSDAndAutoUnpermutation(
                         ibmat = 1024;
                     }
                 }
-                absx = magDb[0];
+                dp = magDb[0];
                 for (k = 2; k <= ncols; k++) {
-                    absx += magDb[k - 1];
+                    dp += magDb[k - 1];
                 }
                 for (ncols = 2; ncols <= high_i; ncols++) {
                     nrows = (ncols - 1) << 10;
@@ -638,17 +642,12 @@ void CSIPreprocessor::InterpolateCSIAndRemoveCSDAndAutoUnpermutation(
                     for (k = 2; k <= nx; k++) {
                         nfft += magDb[(nrows + k) - 1];
                     }
-                    absx += nfft;
+                    dp += nfft;
                 }
             }
-            absx /= static_cast<double>(magDb.size(0));
-            ibtile = magDb.size(0);
-            now1.set_size(1, magDb.size(0));
-            for (i = 0; i < ibtile; i++) {
-                now1[i] = magDb[i] - absx;
-            }
+            meannow1 = dp / static_cast<double>(magDb.size(0));
             if (magDb.size(0) == 0) {
-                absx = 0.0;
+                dp = 0.0;
             } else {
                 if (magDb.size(0) <= 1024) {
                     ncols = magDb.size(0);
@@ -664,9 +663,9 @@ void CSIPreprocessor::InterpolateCSIAndRemoveCSDAndAutoUnpermutation(
                         ibmat = 1024;
                     }
                 }
-                absx = magDb[magDb.size(0)];
+                dp = magDb[magDb.size(0)];
                 for (k = 2; k <= ncols; k++) {
-                    absx += magDb[(k + magDb.size(0)) - 1];
+                    dp += magDb[(k + magDb.size(0)) - 1];
                 }
                 for (ncols = 2; ncols <= high_i; ncols++) {
                     nrows = (ncols - 1) << 10;
@@ -679,17 +678,12 @@ void CSIPreprocessor::InterpolateCSIAndRemoveCSDAndAutoUnpermutation(
                     for (k = 2; k <= nx; k++) {
                         nfft += magDb[((nrows + k) + magDb.size(0)) - 1];
                     }
-                    absx += nfft;
+                    dp += nfft;
                 }
             }
-            absx /= static_cast<double>(magDb.size(0));
-            ibtile = magDb.size(0);
-            now2.set_size(1, magDb.size(0));
-            for (i = 0; i < ibtile; i++) {
-                now2[i] = magDb[i + magDb.size(0)] - absx;
-            }
+            meannow2 = dp / static_cast<double>(magDb.size(0));
             if (pd_.lastMag.size(0) == 0) {
-                absx = 0.0;
+                dp = 0.0;
             } else {
                 if (pd_.lastMag.size(0) <= 1024) {
                     ncols = pd_.lastMag.size(0);
@@ -705,9 +699,9 @@ void CSIPreprocessor::InterpolateCSIAndRemoveCSDAndAutoUnpermutation(
                         ibmat = 1024;
                     }
                 }
-                absx = pd_.lastMag[0];
+                dp = pd_.lastMag[0];
                 for (k = 2; k <= ncols; k++) {
-                    absx += pd_.lastMag[k - 1];
+                    dp += pd_.lastMag[k - 1];
                 }
                 for (ncols = 2; ncols <= high_i; ncols++) {
                     nrows = (ncols - 1) << 10;
@@ -720,12 +714,12 @@ void CSIPreprocessor::InterpolateCSIAndRemoveCSDAndAutoUnpermutation(
                     for (k = 2; k <= nx; k++) {
                         nfft += pd_.lastMag[(nrows + k) - 1];
                     }
-                    absx += nfft;
+                    dp += nfft;
                 }
             }
-            absx /= static_cast<double>(pd_.lastMag.size(0));
+            meanpast1 = dp / static_cast<double>(pd_.lastMag.size(0));
             if (pd_.lastMag.size(0) == 0) {
-                r = 0.0;
+                dp = 0.0;
             } else {
                 if (pd_.lastMag.size(0) <= 1024) {
                     ncols = pd_.lastMag.size(0);
@@ -741,9 +735,9 @@ void CSIPreprocessor::InterpolateCSIAndRemoveCSDAndAutoUnpermutation(
                         ibmat = 1024;
                     }
                 }
-                r = pd_.lastMag[pd_.lastMag.size(0)];
+                dp = pd_.lastMag[pd_.lastMag.size(0)];
                 for (k = 2; k <= ncols; k++) {
-                    r += pd_.lastMag[(k + pd_.lastMag.size(0)) - 1];
+                    dp += pd_.lastMag[(k + pd_.lastMag.size(0)) - 1];
                 }
                 for (ncols = 2; ncols <= high_i; ncols++) {
                     nrows = (ncols - 1) << 10;
@@ -756,12 +750,22 @@ void CSIPreprocessor::InterpolateCSIAndRemoveCSDAndAutoUnpermutation(
                     for (k = 2; k <= nx; k++) {
                         nfft += pd_.lastMag[((nrows + k) + pd_.lastMag.size(0)) - 1];
                     }
-                    r += nfft;
+                    dp += nfft;
                 }
             }
-            r /= static_cast<double>(pd_.lastMag.size(0));
+            meanpast2 = dp / static_cast<double>(pd_.lastMag.size(0));
+            ibtile = magDb.size(0);
+            now1.set_size(1, magDb.size(0));
+            for (i = 0; i < ibtile; i++) {
+                now1[i] = magDb[i] - meannow1;
+            }
+            ibtile = magDb.size(0);
+            now2.set_size(1, magDb.size(0));
+            for (i = 0; i < ibtile; i++) {
+                now2[i] = magDb[i + magDb.size(0)] - meannow2;
+            }
             nrows = now1.size(1) - 1;
-            D = rtNaN;
+            cumsum_dp_corr = rtNaN;
             b_X.set_size(now1.size(1));
             ibtile = now1.size(1);
             for (i = 0; i < ibtile; i++) {
@@ -775,7 +779,7 @@ void CSIPreprocessor::InterpolateCSIAndRemoveCSDAndAutoUnpermutation(
             ibtile = pd_.lastMag.size(0);
             b_Y.set_size(pd_.lastMag.size(0));
             for (i = 0; i < ibtile; i++) {
-                b_Y[i] = pd_.lastMag[i] - absx;
+                b_Y[i] = pd_.lastMag[i] - meanpast1;
             }
             Y.set_size(b_Y.size(0));
             ibtile = b_Y.size(0);
@@ -783,7 +787,7 @@ void CSIPreprocessor::InterpolateCSIAndRemoveCSDAndAutoUnpermutation(
                 Y[i] = b_Y[i];
             }
             nx = b_X.size(0);
-            absx = 0.0;
+            r = 0.0;
             nfft = 0.0;
             for (ncols = 0; ncols < nx; ncols++) {
                 nfft += b_X[ncols] * b_X[ncols];
@@ -794,13 +798,13 @@ void CSIPreprocessor::InterpolateCSIAndRemoveCSDAndAutoUnpermutation(
                 X[i] = b_X[i] / nfft;
             }
             if ((!(nfft < rtInf)) && (nfft > 0.0)) {
-                absx = rtInf;
+                r = rtInf;
             }
-            if ((!std::isinf(absx)) && (!(absx <= 2.2250738585072014E-308))) {
-                frexp(absx, &nycols);
+            if ((!std::isinf(r)) && (!(r <= 2.2250738585072014E-308))) {
+                frexp(r, &nycols);
             }
             nx = b_Y.size(0);
-            absx = 0.0;
+            r = 0.0;
             nfft = 0.0;
             for (ncols = 0; ncols < nx; ncols++) {
                 nfft += b_Y[ncols] * b_Y[ncols];
@@ -811,10 +815,10 @@ void CSIPreprocessor::InterpolateCSIAndRemoveCSDAndAutoUnpermutation(
                 Y[i] = b_Y[i] / nfft;
             }
             if ((!(nfft < rtInf)) && (nfft > 0.0)) {
-                absx = rtInf;
+                r = rtInf;
             }
-            if ((!std::isinf(absx)) && (!(absx <= 2.2250738585072014E-308))) {
-                frexp(absx, &b_exponent);
+            if ((!std::isinf(r)) && (!(r <= 2.2250738585072014E-308))) {
+                frexp(r, &b_exponent);
             }
             nanflag = false;
             high_i = 0;
@@ -839,15 +843,15 @@ void CSIPreprocessor::InterpolateCSIAndRemoveCSDAndAutoUnpermutation(
                 }
             }
             if ((!b_nanflag) && (!nanflag)) {
-                absx = 0.0;
+                nfft = 0.0;
                 i = now1.size(1);
                 for (high_i = 0; high_i < i; high_i++) {
-                    absx += X[high_i] * Y[high_i];
+                    nfft += X[high_i] * Y[high_i];
                 }
-                D = (1.0 - absx) * static_cast<double>(absx < 1.0);
+                cumsum_dp_corr = (1.0 - nfft) * static_cast<double>(nfft < 1.0);
             }
             nrows = now2.size(1) - 1;
-            cumsum_dp_corr = rtNaN;
+            D = rtNaN;
             c_X.set_size(now2.size(1));
             ibtile = now2.size(1);
             for (i = 0; i < ibtile; i++) {
@@ -861,7 +865,7 @@ void CSIPreprocessor::InterpolateCSIAndRemoveCSDAndAutoUnpermutation(
             ibtile = pd_.lastMag.size(0);
             c_Y.set_size(pd_.lastMag.size(0));
             for (i = 0; i < ibtile; i++) {
-                c_Y[i] = pd_.lastMag[i + pd_.lastMag.size(0)] - r;
+                c_Y[i] = pd_.lastMag[i + pd_.lastMag.size(0)] - meanpast2;
             }
             Y.set_size(c_Y.size(0));
             ibtile = c_Y.size(0);
@@ -869,7 +873,7 @@ void CSIPreprocessor::InterpolateCSIAndRemoveCSDAndAutoUnpermutation(
                 Y[i] = c_Y[i];
             }
             nx = c_X.size(0);
-            absx = 0.0;
+            r = 0.0;
             nfft = 0.0;
             for (ncols = 0; ncols < nx; ncols++) {
                 nfft += c_X[ncols] * c_X[ncols];
@@ -880,13 +884,13 @@ void CSIPreprocessor::InterpolateCSIAndRemoveCSDAndAutoUnpermutation(
                 X[i] = c_X[i] / nfft;
             }
             if ((!(nfft < rtInf)) && (nfft > 0.0)) {
-                absx = rtInf;
+                r = rtInf;
             }
-            if ((!std::isinf(absx)) && (!(absx <= 2.2250738585072014E-308))) {
-                frexp(absx, &ii_data);
+            if ((!std::isinf(r)) && (!(r <= 2.2250738585072014E-308))) {
+                frexp(r, &ii_data);
             }
             nx = c_Y.size(0);
-            absx = 0.0;
+            r = 0.0;
             nfft = 0.0;
             for (ncols = 0; ncols < nx; ncols++) {
                 nfft += c_Y[ncols] * c_Y[ncols];
@@ -897,10 +901,10 @@ void CSIPreprocessor::InterpolateCSIAndRemoveCSDAndAutoUnpermutation(
                 Y[i] = c_Y[i] / nfft;
             }
             if ((!(nfft < rtInf)) && (nfft > 0.0)) {
-                absx = rtInf;
+                r = rtInf;
             }
-            if ((!std::isinf(absx)) && (!(absx <= 2.2250738585072014E-308))) {
-                frexp(absx, &exponent);
+            if ((!std::isinf(r)) && (!(r <= 2.2250738585072014E-308))) {
+                frexp(r, &exponent);
             }
             nanflag = false;
             high_i = 0;
@@ -925,17 +929,17 @@ void CSIPreprocessor::InterpolateCSIAndRemoveCSDAndAutoUnpermutation(
                 }
             }
             if ((!b_nanflag) && (!nanflag)) {
-                absx = 0.0;
+                nfft = 0.0;
                 i = now2.size(1);
                 for (high_i = 0; high_i < i; high_i++) {
-                    absx += X[high_i] * Y[high_i];
+                    nfft += X[high_i] * Y[high_i];
                 }
-                cumsum_dp_corr = (1.0 - absx) * static_cast<double>(absx < 1.0);
+                D = (1.0 - nfft) * static_cast<double>(nfft < 1.0);
             }
             nrows = now1.size(1) - 1;
-            re_tmp = rtNaN;
+            b_D = rtNaN;
             nx = b_X.size(0);
-            absx = 0.0;
+            r = 0.0;
             nfft = 0.0;
             for (ncols = 0; ncols < nx; ncols++) {
                 nfft += b_X[ncols] * b_X[ncols];
@@ -951,13 +955,13 @@ void CSIPreprocessor::InterpolateCSIAndRemoveCSDAndAutoUnpermutation(
                 b_X[i] = X[i];
             }
             if ((!(nfft < rtInf)) && (nfft > 0.0)) {
-                absx = rtInf;
+                r = rtInf;
             }
-            if ((!std::isinf(absx)) && (!(absx <= 2.2250738585072014E-308))) {
-                frexp(absx, &c_exponent);
+            if ((!std::isinf(r)) && (!(r <= 2.2250738585072014E-308))) {
+                frexp(r, &c_exponent);
             }
             nx = c_Y.size(0);
-            absx = 0.0;
+            r = 0.0;
             nfft = 0.0;
             for (ncols = 0; ncols < nx; ncols++) {
                 nfft += c_Y[ncols] * c_Y[ncols];
@@ -973,10 +977,10 @@ void CSIPreprocessor::InterpolateCSIAndRemoveCSDAndAutoUnpermutation(
                 c_Y[i] = Y[i];
             }
             if ((!(nfft < rtInf)) && (nfft > 0.0)) {
-                absx = rtInf;
+                r = rtInf;
             }
-            if ((!std::isinf(absx)) && (!(absx <= 2.2250738585072014E-308))) {
-                frexp(absx, &d_exponent);
+            if ((!std::isinf(r)) && (!(r <= 2.2250738585072014E-308))) {
+                frexp(r, &d_exponent);
             }
             nanflag = false;
             high_i = 0;
@@ -1001,17 +1005,17 @@ void CSIPreprocessor::InterpolateCSIAndRemoveCSDAndAutoUnpermutation(
                 }
             }
             if ((!b_nanflag) && (!nanflag)) {
-                absx = 0.0;
+                nfft = 0.0;
                 i = now1.size(1);
                 for (high_i = 0; high_i < i; high_i++) {
-                    absx += b_X[high_i] * c_Y[high_i];
+                    nfft += b_X[high_i] * c_Y[high_i];
                 }
-                re_tmp = (1.0 - absx) * static_cast<double>(absx < 1.0);
+                b_D = (1.0 - nfft) * static_cast<double>(nfft < 1.0);
             }
             nrows = now2.size(1) - 1;
-            r = rtNaN;
+            dp = rtNaN;
             nx = c_X.size(0);
-            absx = 0.0;
+            r = 0.0;
             nfft = 0.0;
             for (ncols = 0; ncols < nx; ncols++) {
                 nfft += c_X[ncols] * c_X[ncols];
@@ -1027,13 +1031,13 @@ void CSIPreprocessor::InterpolateCSIAndRemoveCSDAndAutoUnpermutation(
                 c_X[i] = X[i];
             }
             if ((!(nfft < rtInf)) && (nfft > 0.0)) {
-                absx = rtInf;
+                r = rtInf;
             }
-            if ((!std::isinf(absx)) && (!(absx <= 2.2250738585072014E-308))) {
-                frexp(absx, &e_exponent);
+            if ((!std::isinf(r)) && (!(r <= 2.2250738585072014E-308))) {
+                frexp(r, &e_exponent);
             }
             nx = b_Y.size(0);
-            absx = 0.0;
+            r = 0.0;
             nfft = 0.0;
             for (ncols = 0; ncols < nx; ncols++) {
                 nfft += b_Y[ncols] * b_Y[ncols];
@@ -1049,10 +1053,10 @@ void CSIPreprocessor::InterpolateCSIAndRemoveCSDAndAutoUnpermutation(
                 b_Y[i] = Y[i];
             }
             if ((!(nfft < rtInf)) && (nfft > 0.0)) {
-                absx = rtInf;
+                r = rtInf;
             }
-            if ((!std::isinf(absx)) && (!(absx <= 2.2250738585072014E-308))) {
-                frexp(absx, &f_exponent);
+            if ((!std::isinf(r)) && (!(r <= 2.2250738585072014E-308))) {
+                frexp(r, &f_exponent);
             }
             nanflag = false;
             high_i = 0;
@@ -1077,14 +1081,15 @@ void CSIPreprocessor::InterpolateCSIAndRemoveCSDAndAutoUnpermutation(
                 }
             }
             if ((!b_nanflag) && (!nanflag)) {
-                absx = 0.0;
+                nfft = 0.0;
                 i = now2.size(1);
                 for (high_i = 0; high_i < i; high_i++) {
-                    absx += c_X[high_i] * b_Y[high_i];
+                    nfft += c_X[high_i] * b_Y[high_i];
                 }
-                r = (1.0 - absx) * static_cast<double>(absx < 1.0);
+                dp = (1.0 - nfft) * static_cast<double>(nfft < 1.0);
             }
-            *permCoef = permLogic(D + 1.0E-9, re_tmp + 1.0E-9, r + 1.0E-9, cumsum_dp_corr + 1.0E-9);
+            *permCoef = permLogic(cumsum_dp_corr + 1.0E-9, b_D + 1.0E-9, dp + 1.0E-9, D + 1.0E-9, meannow1, meannow2,
+                                  meanpast1, meanpast2);
             if (*permCoef < 0.0) {
                 i = rawPhase.size(0);
                 i1 = rawPhase.size(1);
@@ -1283,8 +1288,8 @@ void CSIPreprocessor::InterpolateCSIAndRemoveCSDAndAutoUnpermutation(
             pivotIndex_data = 1U;
             exitg1 = false;
             while ((!exitg1) && (static_cast<int>(pivotIndex_data) < high_i)) {
-                absx = X[static_cast<int>(pivotIndex_data) - 1];
-                if (std::isinf(absx) || std::isnan(absx)) {
+                dp = X[static_cast<int>(pivotIndex_data) - 1];
+                if (std::isinf(dp) || std::isnan(dp)) {
                     pivotIndex_data = static_cast<unsigned int>(static_cast<int>(pivotIndex_data) + 1);
                 } else {
                     exitg1 = true;
@@ -1298,8 +1303,8 @@ void CSIPreprocessor::InterpolateCSIAndRemoveCSDAndAutoUnpermutation(
                     pivotIndex_data++;
                     exitg1 = false;
                     while ((!exitg1) && (pivotIndex_data <= static_cast<unsigned int>(high_i))) {
-                        absx = X[static_cast<int>(pivotIndex_data) - 1];
-                        if (std::isinf(absx) || std::isnan(absx)) {
+                        dp = X[static_cast<int>(pivotIndex_data) - 1];
+                        if (std::isinf(dp) || std::isnan(dp)) {
                             pivotIndex_data++;
                         } else {
                             exitg1 = true;
@@ -1308,19 +1313,19 @@ void CSIPreprocessor::InterpolateCSIAndRemoveCSDAndAutoUnpermutation(
                     if (pivotIndex_data > static_cast<unsigned int>(high_i)) {
                         exitg2 = 1;
                     } else {
-                        absx = X[static_cast<int>(pivotIndex_data) - 1];
-                        nfft = absx - nfft;
-                        r = nfft / 6.2831853071795862;
-                        if (std::abs(rt_remd_snf(r, 1.0)) <= 0.5) {
-                            r = std::trunc(r);
+                        r = X[static_cast<int>(pivotIndex_data) - 1];
+                        dp = r - nfft;
+                        nfft = dp / 6.2831853071795862;
+                        if (std::abs(rt_remd_snf(nfft, 1.0)) <= 0.5) {
+                            nfft = std::trunc(nfft);
                         } else {
-                            r = std::round(r);
+                            nfft = std::round(nfft);
                         }
-                        if (std::abs(nfft) >= 3.1415926535897931) {
-                            cumsum_dp_corr += r;
+                        if (std::abs(dp) >= 3.1415926535897931) {
+                            cumsum_dp_corr += nfft;
                         }
-                        nfft = absx;
-                        X[static_cast<int>(pivotIndex_data) - 1] = absx - 6.2831853071795862 * cumsum_dp_corr;
+                        nfft = r;
+                        X[static_cast<int>(pivotIndex_data) - 1] = r - 6.2831853071795862 * cumsum_dp_corr;
                     }
                 } while (exitg2 == 0);
             }
@@ -1405,11 +1410,11 @@ void CSIPreprocessor::InterpolateCSIAndRemoveCSDAndAutoUnpermutation(
                     for (b_exponent = 0; b_exponent <= nycols; b_exponent++) {
                         ncols = ibtile + b_exponent * nyrows;
                         nfft = rawPhase[ncols - 1];
-                        absx = rawPhase[ncols];
-                        if (nfft == absx) {
+                        dp = rawPhase[ncols];
+                        if (nfft == dp) {
                             resultPhase[k + b_exponent * nx] = nfft;
                         } else {
-                            resultPhase[k + b_exponent * nx] = (1.0 - r) * nfft + r * absx;
+                            resultPhase[k + b_exponent * nx] = (1.0 - r) * nfft + r * dp;
                         }
                     }
                 }
@@ -1598,23 +1603,23 @@ void CSIPreprocessor::InterpolateCSIAndRemoveCSDAndAutoUnpermutation(
         for (i = 0; i < ibtile; i++) {
             nfft = X[i];
             if (std::isnan(nfft) || std::isinf(nfft)) {
-                absx = rtNaN;
+                dp = rtNaN;
             } else if (nfft == 0.0) {
-                absx = 0.0;
+                dp = 0.0;
             } else {
-                absx = std::fmod(nfft, 6.2831853071795862);
-                nanflag = (absx == 0.0);
+                dp = std::fmod(nfft, 6.2831853071795862);
+                nanflag = (dp == 0.0);
                 if (!nanflag) {
                     r = std::abs(nfft / 6.2831853071795862);
                     nanflag = !(std::abs(r - std::floor(r + 0.5)) > 2.2204460492503131E-16 * r);
                 }
                 if (nanflag) {
-                    absx = 0.0;
+                    dp = 0.0;
                 } else if (nfft < 0.0) {
-                    absx += 6.2831853071795862;
+                    dp += 6.2831853071795862;
                 }
             }
-            X[i] = absx;
+            X[i] = dp;
         }
         if (X.size(0) == positiveInput.size(0)) {
             positiveInput.set_size(X.size(0));
@@ -1781,11 +1786,11 @@ void CSIPreprocessor::InterpolateCSIAndRemoveCSDAndAutoUnpermutation(
                     for (b_exponent = 0; b_exponent <= nycols; b_exponent++) {
                         ncols = ibtile + b_exponent * nyrows;
                         nfft = rawMag[ncols - 1];
-                        absx = rawMag[ncols];
-                        if (nfft == absx) {
+                        dp = rawMag[ncols];
+                        if (nfft == dp) {
                             resultMag[k + b_exponent * nx] = nfft;
                         } else {
-                            resultMag[k + b_exponent * nx] = (1.0 - r) * nfft + r * absx;
+                            resultMag[k + b_exponent * nx] = (1.0 - r) * nfft + r * dp;
                         }
                     }
                 }
@@ -1808,9 +1813,9 @@ void CSIPreprocessor::InterpolateCSIAndRemoveCSDAndAutoUnpermutation(
             resultCSI[k].im = 0.0;
         } else {
             r = std::exp(resultCSI[k].re / 2.0);
-            absx = resultCSI[k].im;
+            dp = resultCSI[k].im;
             resultCSI[k].re = r * (r * std::cos(resultCSI[k].im));
-            resultCSI[k].im = r * (r * std::sin(absx));
+            resultCSI[k].im = r * (r * std::sin(dp));
         }
     }
     ibtile = resultMag.size(0) * resultMag.size(1) * resultMag.size(2) * resultMag.size(3);
