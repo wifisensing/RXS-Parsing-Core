@@ -48,26 +48,10 @@ public:
             uint16_t value198;
             uint64_t timeValue200;
             uint8_t reserved208_240[32];
-            union {
-                struct {
-                    uint32_t chainInfo240_32;
-                    uint32_t chainInfo244_32;
-                    uint32_t chainInfo248_32;
-                    uint32_t chainInfo252_32;
-                }__attribute__ ((__packed__));
-                struct {
-                    uint16_t chainInfo240_16[2];
-                    uint16_t chainInfo244_16[2];
-                    uint16_t chainInfo248_16[2];
-                    uint16_t chainInfo252_16[2];
-                }__attribute__ ((__packed__));
-                struct {
-                    uint8_t chainInfo240[4];
-                    uint8_t chainInfo244[4];
-                    uint8_t chainInfo248[4];
-                    uint8_t chainInfo252[4];
-                }__attribute__ ((__packed__));
-            };
+            uint32_t chainInfo240;
+            uint32_t chainInfo244;
+            uint32_t chainInfo248;
+            uint32_t chainInfo252;
             uint16_t value256;
             uint16_t value258;
             uint16_t value260;
