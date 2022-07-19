@@ -81,8 +81,8 @@ std::optional<CSI> CSI::fromIWLMVM(const uint8_t *buffer, uint32_t bufferLength,
     std::vector<std::complex<double>> CSIArray(subcarrierIndices.size() * numRx * numTx, std::complex<double>{});
 
     for (auto valueIndex = 0, toneIndexWithoutPilot = 0, lastPilotIndex = 0; valueIndex < dataTones; valueIndex++) {
-        const auto *real = (int16_t *) (buffer + pos);
-        const auto *imag = (int16_t *) (buffer + pos + 2);
+        const auto *imag = (int16_t *) (buffer + pos);
+        const auto *real = (int16_t *) (buffer + pos + 2);
         pos += 4;
 
         auto toneIndex = valueIndex % numTones;
@@ -171,7 +171,7 @@ void CSI::removeCSDAndInterpolateCSI() {
     std::copy(subcarrierIndices.cbegin(), subcarrierIndices.cend(), subcarrierIndex_int16.data());
 
     bool isIntelMVMNIC{deviceType == PicoScenesDeviceType::IWLMVM_AX200 || deviceType == PicoScenesDeviceType::IWLMVM_AX210};
-    preprocessorInstance->InterpolateCSIAndRemoveCSDAndAutoUnpermutation(CSIWrapper, subcarrierIndex_int16, dimensions.numTx, dimensions.numESS, dimensions.numRx, dimensions.numCSI, static_cast<double>(packetFormat), static_cast<double>(cbw), !isIntelMVMNIC, isIntelMVMNIC && autoUnperm, newCSI, newMag, newPhase, interpedIndex_int16, &antSel, &permCoef);
+    preprocessorInstance->InterpolateCSIAndRemoveCSDAndAutoUnpermutation(CSIWrapper, subcarrierIndex_int16, dimensions.numTx, dimensions.numESS, dimensions.numRx, dimensions.numCSI, static_cast<double>(packetFormat), static_cast<double>(cbw), true, isIntelMVMNIC && autoUnperm, newCSI, newMag, newPhase, interpedIndex_int16, &antSel, &permCoef);
 
     CSIArray.array.clear();
     std::copy((std::complex<double> *) newCSI.data(), (std::complex<double> *) newCSI.data() + newCSI.numel(), std::back_inserter(CSIArray.array));
