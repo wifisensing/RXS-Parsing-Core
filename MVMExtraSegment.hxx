@@ -32,11 +32,11 @@ public:
             uint8_t reserved77[11];
         }__attribute__ ((__packed__));
     };
-    uint32_t muClock; // 88
-    uint32_t rate_n_flags; // 92
     union {
-        uint8_t blockedSection96[176] __attribute__ ((__packed__));
+        uint8_t blockedSection96[184] __attribute__ ((__packed__));
         struct {
+            uint32_t muClock; // 88
+            uint32_t rate_n_flags; // 92
             uint8_t chain0Info96[20];
             uint8_t chain1Info96[20];
             uint8_t chain2Info96[20];
