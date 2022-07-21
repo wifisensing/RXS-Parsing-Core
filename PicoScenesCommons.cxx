@@ -146,7 +146,7 @@ std::string ChannelCoding2String(ChannelCodingEnum coding) {
         case ChannelCodingEnum::BCC:
             return "BCC";
         default:
-            throw std::runtime_error("Unsupported ChannelCodingEnum...");
+            return "Unknown";
     }
 }
 
