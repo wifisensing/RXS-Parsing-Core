@@ -85,12 +85,28 @@ PayloadSegment::PayloadSegment(const std::string &description, const std::vector
     setPayload(payloadData);
 }
 
+PayloadSegment::PayloadSegment(const std::string &description, const uint8_t *payloadBuffer, size_t bufferLength, std::optional<PayloadDataType> payloadType) : PayloadSegment() {
+    auto payload = std::vector<uint8_t>(payloadBuffer, payloadBuffer + bufferLength);
+    PayloadData payloadData{.dataType = payloadType.value_or(PayloadDataType::RawData),
+            .payloadDescription = description,
+            .payloadData = payload};
+    setPayload(payloadData);
+}
+
+PayloadSegment::PayloadSegment(const std::string &description, const std::string &stringPayload, std::optional<PayloadDataType> payloadType) : PayloadSegment() {
+    auto payload = std::vector<uint8_t>(stringPayload.cbegin(), stringPayload.cend());
+    PayloadData payloadData{.dataType = payloadType.value_or(PayloadDataType::RawData),
+            .payloadDescription = description,
+            .payloadData = payload};
+    setPayload(payloadData);
+}
+
 std::vector<uint8_t> PayloadSegment::toBuffer() const {
     return AbstractPicoScenesFrameSegment::toBuffer(true);
 }
 
 void PayloadSegment::fromBuffer(const uint8_t *buffer, uint32_t bufferLength) {
-    auto[segmentName, segmentLength, versionId, offset] = extractSegmentMetaData(buffer, bufferLength);
+    auto [segmentName, segmentLength, versionId, offset] = extractSegmentMetaData(buffer, bufferLength);
     if (segmentName != "Payload")
         throw std::runtime_error("PayloadSegment cannot parse the segment named " + segmentName + ".");
     if (segmentLength + 4 > bufferLength)
