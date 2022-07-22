@@ -77,7 +77,10 @@ std::optional<CSI> CSI::fromIWLMVM(const uint8_t *buffer, uint32_t bufferLength,
 
     auto dataTones = numRx * numTx * numTones, pos = 0;
     const auto &pilotArray = CSISubcarrierIndex::getPilotSubcarrierIndices(format, cbw);
-    const auto &subcarrierIndices = skipPilotSubcarriers ? CSISubcarrierIndex::getDataSubcarrierIndices(format, cbw) : CSISubcarrierIndex::getAllSubcarrierIndices(format, cbw);
+    const auto &dataSubcarrierIndeices = CSISubcarrierIndex::getDataSubcarrierIndices(format, cbw);
+    const auto &allSubcarrierIndices = CSISubcarrierIndex::getAllSubcarrierIndices(format, cbw);
+    skipPilotSubcarriers &= (numTones == allSubcarrierIndices.size());
+    const auto &subcarrierIndices = skipPilotSubcarriers ? dataSubcarrierIndeices : allSubcarrierIndices;
     std::vector<std::complex<double>> CSIArray(subcarrierIndices.size() * numRx * numTx, std::complex<double>{});
 
     for (auto valueIndex = 0, toneIndexWithoutPilot = 0, lastPilotIndex = 0; valueIndex < dataTones; valueIndex++) {
