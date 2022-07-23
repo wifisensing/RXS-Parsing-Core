@@ -41,6 +41,10 @@ public:
 
     PayloadSegment(const std::string &description, const std::vector<uint8_t> &payload, std::optional<PayloadDataType> payloadType = std::nullopt);
 
+    PayloadSegment(const std::string &description, const uint8_t *payloadBuffer, size_t bufferLength, std::optional<PayloadDataType> payloadType = std::nullopt);
+
+    PayloadSegment(const std::string &description, const std::string &stringPayload, std::optional<PayloadDataType> payloadType = std::nullopt);
+
     std::vector<uint8_t> toBuffer() const override;
 
     static PayloadSegment createByBuffer(const uint8_t *buffer, uint32_t bufferLength);
