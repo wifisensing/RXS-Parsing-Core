@@ -37,10 +37,30 @@ public:
         struct {
             uint32_t muClock; // 88
             uint32_t rate_n_flags; // 92
-            uint8_t chain0Info96[20];
-            uint8_t chain1Info96[20];
-            uint8_t chain2Info96[20];
-            uint8_t chain3Info96[20];
+            union {
+                uint8_t chain0Info96[20]; __attribute__ ((__packed__));
+                struct {
+                    int32_t chain0Info96_32[5];
+                } __attribute__ ((__packed__));
+            };
+            union {
+                uint8_t chain1Info96[20]; __attribute__ ((__packed__));
+                struct {
+                    int32_t chain1Info96_32[5];
+                } __attribute__ ((__packed__));
+            };
+            union {
+                uint8_t chain2Info96[20]; __attribute__ ((__packed__));
+                struct {
+                    int32_t chain2Info96_32[5];
+                } __attribute__ ((__packed__));
+            };
+            union {
+                uint8_t chain3Info96[20]; __attribute__ ((__packed__));
+                struct {
+                    int32_t chain3Info96_32[5];
+                } __attribute__ ((__packed__));
+            };
             uint32_t value176;
             uint32_t value180;
             uint32_t value184;
