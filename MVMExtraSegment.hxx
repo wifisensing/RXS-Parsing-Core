@@ -15,7 +15,7 @@ public:
 
     static const std::map<std::string, std::tuple<std::string, size_t, size_t, bool>> &getCurrentFieldMapping();
 
-    static void overrideDefaultDefinition(const std::map<std::string, std::tuple<std::string, size_t, size_t, bool>> &newMapping);
+    static void setNewFieldMapping(const std::map<std::string, std::tuple<std::string, size_t, size_t, bool>> &newMapping);
 
     template<typename FieldType, size_t fieldPosition, size_t numFieldElements = 1>
     static std::pair<std::string, std::tuple<std::string, size_t, size_t, bool>> makeField(std::string fieldName, bool display) {

@@ -3,7 +3,6 @@
 //
 
 #include "MVMExtraSegment.hxx"
-#include <mutex>
 
 std::map<std::string, std::tuple<std::string, size_t, size_t, bool>> IntelMVMCSIHeaderDefinition::fieldMapping;
 std::unordered_map<std::type_index, std::string> IntelMVMCSIHeaderDefinition::typeNames;
@@ -37,7 +36,7 @@ const std::map<std::string, std::tuple<std::string, size_t, size_t, bool>> &Inte
     return fieldMapping;
 }
 
-void IntelMVMCSIHeaderDefinition::overrideDefaultDefinition(const std::map<std::string, std::tuple<std::string, size_t, size_t, bool>> &newMapping) {
+void IntelMVMCSIHeaderDefinition::setNewFieldMapping(const std::map<std::string, std::tuple<std::string, size_t, size_t, bool>> &newMapping) {
     fieldMapping = newMapping;
 }
 
