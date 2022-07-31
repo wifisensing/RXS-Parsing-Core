@@ -5,85 +5,74 @@
 #ifndef PICOSCENES_PLATFORM_MVMEXTRASEGMENT_HXX
 #define PICOSCENES_PLATFORM_MVMEXTRASEGMENT_HXX
 
+#include <typeindex>
 #include "AbstractPicoScenesFrameSegment.hxx"
 #include "PicoScenesCommons.hxx"
 
+class IntelMVMCSIHeaderDefinition {
+public:
+    IntelMVMCSIHeaderDefinition() = delete;
+
+    static const std::vector<std::pair<std::string, std::tuple<std::string, size_t, size_t, bool>>> &getCurrentFields();
+
+    static void setNewFieldMapping(const std::vector<std::pair<std::string, std::tuple<std::string, size_t, size_t, bool>>> &newFields);
+
+    static const std::map<std::string, std::tuple<std::string, size_t, size_t, bool>> &getCurrentFieldMapping();
+
+private:
+
+    static std::vector<std::pair<std::string, std::tuple<std::string, size_t, size_t, bool>>> fieldList;
+
+    static std::map<std::string, std::tuple<std::string, size_t, size_t, bool>> fieldMapping;
+
+    static std::unordered_map<std::type_index, std::string> typeNames;
+
+    template<typename FieldType, size_t fieldPosition, size_t numFieldElements = 1>
+    static std::pair<std::string, std::tuple<std::string, size_t, size_t, bool>> makeField(std::string fieldName, bool display) {
+        ensureTypeNameMapReady();
+        return std::make_pair(fieldName, std::make_tuple(typeNames[std::type_index(typeid(FieldType))], fieldPosition, sizeof(FieldType) * numFieldElements, display));
+    }
+
+    static void ensureTypeNameMapReady();
+
+    static void buildDefaultFieldMapping();
+};
+
 class IntelMVMParsedCSIHeader {
 public:
-    uint32_t iqDataSize{};
     union {
-        uint8_t blockedSection4[48] __attribute__ ((__packed__));
+        uint8_t headerBytes[272]  __attribute__ ((__packed__));;
         struct {
-            uint32_t reserved4;
-            uint32_t ftmClock;
-            uint8_t reserved12_52[40];
-        } __attribute__ ((__packed__));
-    };
-    uint32_t numTones;
-    union {
-        uint8_t blockedSection56[32] __attribute__ ((__packed__));
-        struct {
-            uint32_t reserved56;
-            uint32_t rssi1;
-            uint32_t rssi2;
-            uint8_t sourceAddress[6];
-            uint16_t addressPadding;
-            uint8_t csiSequence;
-            uint8_t reserved77[11];
+            uint32_t iqDataSize{};
+            union {
+                uint32_t blockedSection4[12] __attribute__ ((__packed__));
+                struct {
+                    uint32_t value4;
+                    uint32_t ftmClock;
+                    uint8_t value12[40];
+                } __attribute__ ((__packed__));
+            };
+            uint32_t numTones;
+            uint32_t value56[54];
         }__attribute__ ((__packed__));
-    };
-    union {
-        uint8_t blockedSection96[184] __attribute__ ((__packed__));
-        struct {
-            uint32_t muClock; // 88
-            uint32_t rate_n_flags; // 92
-            union {
-                uint8_t chain0Info96[20]; __attribute__ ((__packed__));
-                struct {
-                    int32_t chain0Info96_32[5];
-                } __attribute__ ((__packed__));
-            };
-            union {
-                uint8_t chain1Info96[20]; __attribute__ ((__packed__));
-                struct {
-                    int32_t chain1Info96_32[5];
-                } __attribute__ ((__packed__));
-            };
-            union {
-                uint8_t chain2Info96[20]; __attribute__ ((__packed__));
-                struct {
-                    int32_t chain2Info96_32[5];
-                } __attribute__ ((__packed__));
-            };
-            union {
-                uint8_t chain3Info96[20]; __attribute__ ((__packed__));
-                struct {
-                    int32_t chain3Info96_32[5];
-                } __attribute__ ((__packed__));
-            };
-            uint32_t value176;
-            uint32_t value180;
-            uint32_t value184;
-            uint8_t reserved188_198[10];
-            uint16_t value198;
-            uint64_t timeValue200;
-            uint8_t reserved208_240[32];
-            uint32_t chainInfo240;
-            uint32_t chainInfo244;
-            uint32_t chainInfo248;
-            uint32_t chainInfo252;
-            uint16_t value256;
-            uint16_t value258;
-            uint16_t value260;
-            uint16_t value262;
-            uint16_t value264;
-            uint16_t value266;
-            uint16_t value268;
-            uint16_t value270;
-        } __attribute__ ((__packed__));
     };
 
     IntelMVMParsedCSIHeader();
+
+    template<typename OutputType>
+    OutputType accessField(const std::string &fieldName) const noexcept {
+        static std::unordered_map<std::string, size_t> quickMap;
+        if (quickMap.contains(fieldName))
+            return *(OutputType *) (headerBytes + quickMap[fieldName]);
+
+        if (IntelMVMCSIHeaderDefinition::getCurrentFieldMapping().contains(fieldName)) {
+            auto pos = std::get<1>(IntelMVMCSIHeaderDefinition::getCurrentFieldMapping().at(fieldName));
+            quickMap[fieldName] = pos;
+            return *(OutputType *) (headerBytes + pos);
+        }
+
+        return OutputType{};
+    }
 
     bool operator==(const IntelMVMParsedCSIHeader &rhs) const;
 
@@ -105,13 +94,9 @@ public:
 
     static MVMExtraSegment createByBuffer(const uint8_t *buffer, uint32_t bufferLength);
 
-    static bool isAdvancedPropertiesBlocked();
+    static void manipulateHeader(IntelMVMParsedCSIHeader &header);
 
-    static void setBlockingAdvancedProperties(bool block);
-
-    static bool isReservedPropertiesBlocked();
-
-    static void setBlockingReservedProperties(bool block);
+    static void setHeaderManipulator(const std::function<void(IntelMVMParsedCSIHeader &)> &headerManipulator);
 
     void fromBuffer(const uint8_t *buffer, uint32_t bufferLength) override;
 
@@ -126,9 +111,7 @@ private:
 
     static std::map<uint16_t, std::function<IntelMVMExtrta(const uint8_t *, uint32_t)>> initializeSolutionMap() noexcept;
 
-    static bool blockAdvancedProperties;
-
-    static bool blockReservedProperties;
+    static std::function<void(IntelMVMParsedCSIHeader &)> headerManipulator;
 
     IntelMVMExtrta mvmExtra;
 };

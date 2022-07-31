@@ -3,8 +3,56 @@
 //
 
 #include "MVMExtraSegment.hxx"
-#include <mutex>
 
+std::map<std::string, std::tuple<std::string, size_t, size_t, bool>> IntelMVMCSIHeaderDefinition::fieldMapping;
+std::vector<std::pair<std::string, std::tuple<std::string, size_t, size_t, bool>>> IntelMVMCSIHeaderDefinition::fieldList;
+std::unordered_map<std::type_index, std::string> IntelMVMCSIHeaderDefinition::typeNames;
+
+void IntelMVMCSIHeaderDefinition::ensureTypeNameMapReady() {
+    if (typeNames.empty()) {
+        typeNames[std::type_index(typeid(int8_t))] = "int8";
+        typeNames[std::type_index(typeid(uint8_t))] = "uint8";
+        typeNames[std::type_index(typeid(int16_t))] = "int16";
+        typeNames[std::type_index(typeid(uint16_t))] = "uint16";
+        typeNames[std::type_index(typeid(int32_t))] = "int32";
+        typeNames[std::type_index(typeid(uint32_t))] = "uint32";
+        typeNames[std::type_index(typeid(int64_t))] = "int64";
+        typeNames[std::type_index(typeid(uint64_t))] = "uint64";
+    }
+}
+
+void IntelMVMCSIHeaderDefinition::buildDefaultFieldMapping() {
+    ensureTypeNameMapReady();
+    fieldList.clear();
+    fieldMapping.clear();
+    fieldList.emplace_back(makeField<uint32_t, 0, 1>("IQDataSize", false));
+    fieldList.emplace_back(makeField<uint32_t, 8, 1>("FTMClock", true));
+    fieldList.emplace_back(makeField<uint32_t, 12 + 10 * 4, 1>("NumTone", false));
+    std::copy(fieldList.cbegin(), fieldList.cend(), std::inserter(fieldMapping, fieldMapping.begin()));
+}
+
+const std::map<std::string, std::tuple<std::string, size_t, size_t, bool>> &IntelMVMCSIHeaderDefinition::getCurrentFieldMapping() {
+    if (fieldMapping.empty()) [[unlikely]] {
+        buildDefaultFieldMapping();
+    }
+
+    return fieldMapping;
+}
+
+const std::vector<std::pair<std::string, std::tuple<std::string, size_t, size_t, bool>>> &IntelMVMCSIHeaderDefinition::getCurrentFields() {
+    if (fieldList.empty()) [[unlikely]] {
+        buildDefaultFieldMapping();
+    }
+
+    return fieldList;
+}
+
+void IntelMVMCSIHeaderDefinition::setNewFieldMapping(const std::vector<std::pair<std::string, std::tuple<std::string, size_t, size_t, bool>>> &newFields) {
+    fieldList.clear();
+    fieldMapping.clear();
+    std::copy(newFields.cbegin(), newFields.cend(), std::back_inserter(fieldList));
+    std::copy(newFields.cbegin(), newFields.cend(), std::inserter(fieldMapping, fieldMapping.begin()));
+}
 
 IntelMVMParsedCSIHeader::IntelMVMParsedCSIHeader() {
     memset(this, 0, sizeof(IntelMVMParsedCSIHeader));
@@ -28,13 +76,8 @@ static auto v1Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> Intel
 
     extra.parsedHeader = *(IntelMVMParsedCSIHeader *) (buffer + pos);
     pos += sizeof(IntelMVMParsedCSIHeader);
-    if (MVMExtraSegment::isAdvancedPropertiesBlocked()) {
-        std::memset(extra.parsedHeader.blockedSection4, 0, sizeof(extra.parsedHeader.blockedSection4));
-        std::memset(extra.parsedHeader.blockedSection56, 0, sizeof(extra.parsedHeader.blockedSection56));
-    }
-    if (MVMExtraSegment::isReservedPropertiesBlocked()) {
-        std::memset(extra.parsedHeader.blockedSection96, 0, sizeof(extra.parsedHeader.blockedSection96));
-    }
+    MVMExtraSegment::manipulateHeader(extra.parsedHeader);
+
     std::copy((uint8_t *) &extra.parsedHeader, (uint8_t *) (&extra.parsedHeader) + sizeof(IntelMVMParsedCSIHeader), std::back_inserter(extra.CSIHeader));
     std::copy(buffer + pos, buffer + bufferLength, std::back_inserter(extra.CSIHeader));
     if (false) {
@@ -54,8 +97,7 @@ std::map<uint16_t, std::function<IntelMVMExtrta(const uint8_t *, uint32_t)>> MVM
     return map;
 }
 
-bool MVMExtraSegment::blockAdvancedProperties = false;
-bool MVMExtraSegment::blockReservedProperties = false;
+std::function<void(IntelMVMParsedCSIHeader &)> MVMExtraSegment::headerManipulator{nullptr};
 
 MVMExtraSegment::MVMExtraSegment() : AbstractPicoScenesFrameSegment("MVMExtra", 0x1U) {}
 
@@ -97,7 +139,7 @@ std::vector<uint8_t> MVMExtraSegment::toBuffer() const {
 std::string MVMExtraSegment::toString() const {
     std::stringstream ss;
     ss << segmentName + ":[";
-    ss << "hdr_len=" << mvmExtra.CSIHeaderLength << ", csi_len=" << mvmExtra.parsedHeader.iqDataSize << "B, num_tone=" << mvmExtra.parsedHeader.numTones << ", rate_n_flags=0x" << std::hex << mvmExtra.parsedHeader.rate_n_flags << ", ftm_clock=" << std::dec << mvmExtra.parsedHeader.ftmClock << ", mu_clock=" << mvmExtra.parsedHeader.muClock << "]";
+    ss << "hdr_len=" << mvmExtra.CSIHeaderLength << ", csi_len=" << mvmExtra.parsedHeader.iqDataSize << "B, num_tone=" << mvmExtra.parsedHeader.numTones << ", ftm_clock=" << std::dec << mvmExtra.parsedHeader.ftmClock << "]";
     auto temp = ss.str();
     return temp;
 }
@@ -111,24 +153,14 @@ const IntelMVMExtrta &MVMExtraSegment::getMvmExtra() const {
     return mvmExtra;
 }
 
-void MVMExtraSegment::setBlockingAdvancedProperties(bool block) {
+void MVMExtraSegment::manipulateHeader(IntelMVMParsedCSIHeader &header) {
+    if (headerManipulator)
+        headerManipulator(header);
+}
+
+void MVMExtraSegment::setHeaderManipulator(const std::function<void(IntelMVMParsedCSIHeader &)> &headerManipulatorV) {
     static std::once_flag flag;
     std::call_once(flag, [&] {
-        blockAdvancedProperties = block; // this property can only be set once during the start
-    });
-}
-
-bool MVMExtraSegment::isAdvancedPropertiesBlocked() {
-    return blockAdvancedProperties;
-}
-
-bool MVMExtraSegment::isReservedPropertiesBlocked() {
-    return blockReservedProperties;
-}
-
-void MVMExtraSegment::setBlockingReservedProperties(bool block) {
-    static std::once_flag flag;
-    std::call_once(flag, [&] {
-        blockReservedProperties = block; // this property can only be set once during the start
+        headerManipulator = headerManipulatorV == nullptr ? headerManipulator : headerManipulatorV; // this property can only be set once during the start
     });
 }
