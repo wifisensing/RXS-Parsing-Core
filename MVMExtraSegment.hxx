@@ -13,21 +13,25 @@ class IntelMVMCSIHeaderDefinition {
 public:
     IntelMVMCSIHeaderDefinition() = delete;
 
+    static const std::vector<std::pair<std::string, std::tuple<std::string, size_t, size_t, bool>>> &getCurrentFields();
+
+    static void setNewFieldMapping(const std::vector<std::pair<std::string, std::tuple<std::string, size_t, size_t, bool>>> &newFields);
+
     static const std::map<std::string, std::tuple<std::string, size_t, size_t, bool>> &getCurrentFieldMapping();
 
-    static void setNewFieldMapping(const std::map<std::string, std::tuple<std::string, size_t, size_t, bool>> &newMapping);
+private:
+
+    static std::vector<std::pair<std::string, std::tuple<std::string, size_t, size_t, bool>>> fieldList;
+
+    static std::map<std::string, std::tuple<std::string, size_t, size_t, bool>> fieldMapping;
+
+    static std::unordered_map<std::type_index, std::string> typeNames;
 
     template<typename FieldType, size_t fieldPosition, size_t numFieldElements = 1>
     static std::pair<std::string, std::tuple<std::string, size_t, size_t, bool>> makeField(std::string fieldName, bool display) {
         ensureTypeNameMapReady();
         return std::make_pair(fieldName, std::make_tuple(typeNames[std::type_index(typeid(FieldType))], fieldPosition, sizeof(FieldType) * numFieldElements, display));
     }
-
-private:
-
-    static std::map<std::string, std::tuple<std::string, size_t, size_t, bool>> fieldMapping;
-
-    static std::unordered_map<std::type_index, std::string> typeNames;
 
     static void ensureTypeNameMapReady();
 

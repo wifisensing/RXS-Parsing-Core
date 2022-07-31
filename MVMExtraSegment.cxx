@@ -5,6 +5,7 @@
 #include "MVMExtraSegment.hxx"
 
 std::map<std::string, std::tuple<std::string, size_t, size_t, bool>> IntelMVMCSIHeaderDefinition::fieldMapping;
+std::vector<std::pair<std::string, std::tuple<std::string, size_t, size_t, bool>>> IntelMVMCSIHeaderDefinition::fieldList;
 std::unordered_map<std::type_index, std::string> IntelMVMCSIHeaderDefinition::typeNames;
 
 void IntelMVMCSIHeaderDefinition::ensureTypeNameMapReady() {
@@ -22,10 +23,12 @@ void IntelMVMCSIHeaderDefinition::ensureTypeNameMapReady() {
 
 void IntelMVMCSIHeaderDefinition::buildDefaultFieldMapping() {
     ensureTypeNameMapReady();
+    fieldList.clear();
     fieldMapping.clear();
-    fieldMapping.emplace(makeField<uint32_t, 0, 1>("IQDataSize", false));
-    fieldMapping.emplace(makeField<uint32_t, 8, 1>("FTMClock", true));
-    fieldMapping.emplace(makeField<uint32_t, 12 + 10 * 4, 1>("NumTone", false));
+    fieldList.emplace_back(makeField<uint32_t, 0, 1>("IQDataSize", false));
+    fieldList.emplace_back(makeField<uint32_t, 8, 1>("FTMClock", true));
+    fieldList.emplace_back(makeField<uint32_t, 12 + 10 * 4, 1>("NumTone", false));
+    std::copy(fieldList.cbegin(), fieldList.cend(), std::inserter(fieldMapping, fieldMapping.begin()));
 }
 
 const std::map<std::string, std::tuple<std::string, size_t, size_t, bool>> &IntelMVMCSIHeaderDefinition::getCurrentFieldMapping() {
@@ -36,8 +39,19 @@ const std::map<std::string, std::tuple<std::string, size_t, size_t, bool>> &Inte
     return fieldMapping;
 }
 
-void IntelMVMCSIHeaderDefinition::setNewFieldMapping(const std::map<std::string, std::tuple<std::string, size_t, size_t, bool>> &newMapping) {
-    fieldMapping = newMapping;
+const std::vector<std::pair<std::string, std::tuple<std::string, size_t, size_t, bool>>> &IntelMVMCSIHeaderDefinition::getCurrentFields() {
+    if (fieldList.empty()) [[unlikely]] {
+        buildDefaultFieldMapping();
+    }
+
+    return fieldList;
+}
+
+void IntelMVMCSIHeaderDefinition::setNewFieldMapping(const std::vector<std::pair<std::string, std::tuple<std::string, size_t, size_t, bool>>> &newFields) {
+    fieldList.clear();
+    fieldMapping.clear();
+    std::copy(newFields.cbegin(), newFields.cend(), std::back_inserter(fieldList));
+    std::copy(newFields.cbegin(), newFields.cend(), std::inserter(fieldMapping, fieldMapping.begin()));
 }
 
 IntelMVMParsedCSIHeader::IntelMVMParsedCSIHeader() {
