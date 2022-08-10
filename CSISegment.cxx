@@ -131,7 +131,7 @@ std::optional<CSI> CSI::fromIWLMVM(const uint8_t *buffer, uint32_t bufferLength,
         auto newIndex = rxIndex * (numTx * numTonesNew) + stsIndex * numTonesNew + toneIndexWithoutPilot;
         if (newIndex >= CSIArray.size()) [[unlikely]] {
             std::stringstream ss;
-            ss << numTx << " " << numRx << " " << numTones << " " << int(format) << " " << rxIndex << " " << stsIndex << " " << numTonesNew << " " << newIndex << std::endl;
+            ss << int(numTx) << " " << int(numRx) << " " << int(numTones) << " " << int(format) << " " << int(cbw) << " " << rxIndex << " " << stsIndex << " " << numTonesNew << " " << newIndex << std::endl;
             throw std::runtime_error("array indexing bug: " + ss.str());
         }
         CSIArray.at(newIndex) = std::complex<double>(*real, *imag);
