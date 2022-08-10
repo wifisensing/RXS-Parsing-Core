@@ -75,23 +75,24 @@ std::optional<CSI> CSI::fromIWLMVM(const uint8_t *buffer, uint32_t bufferLength,
     if (numTx * numRx * numTones * 4 != bufferLength)
         throw std::runtime_error("Incorrect Intel MVM-based CSI data format.");
 
-    auto dataTones = numRx * numTx * numTones, pos = 0;
+    auto inputNumTones = numRx * numTx * numTones, pos = 0;
     const auto &pilotArray = CSISubcarrierIndex::getPilotSubcarrierIndices(format, cbw);
     const auto &dataSubcarrierIndeices = CSISubcarrierIndex::getDataSubcarrierIndices(format, cbw);
     const auto &allSubcarrierIndices = CSISubcarrierIndex::getAllSubcarrierIndices(format, cbw);
     skipPilotSubcarriers &= (numTones == allSubcarrierIndices.size());
     const auto &subcarrierIndices = skipPilotSubcarriers ? dataSubcarrierIndeices : allSubcarrierIndices;
-    std::vector<std::complex<double>> CSIArray(subcarrierIndices.size() * numRx * numTx, std::complex<double>{});
+    auto numTonesNew = subcarrierIndices.size();
+    std::vector<std::complex<double>> CSIArray(numTonesNew * numRx * numTx, std::complex<double>{});
 
-    for (auto valueIndex = 0, toneIndexWithoutPilot = 0, lastPilotIndex = 0; valueIndex < dataTones; valueIndex++) {
+    for (auto inputToneIndex = 0, toneIndexWithoutPilot = 0, lastPilotIndex = 0; inputToneIndex < inputNumTones; inputToneIndex++) {
         const auto *imag = (int16_t *) (buffer + pos);
         const auto *real = (int16_t *) (buffer + pos + 2);
         pos += 4;
 
-        auto toneIndex = valueIndex % numTones;
+        auto toneIndex = inputToneIndex % numTones;
         auto toneIndexBugFix = toneIndex;
-        auto stsIndex = valueIndex / numTones % numTx;
-        auto rxIndex = valueIndex / (numTones * numTx);
+        auto stsIndex = inputToneIndex / numTones % numTx;
+        auto rxIndex = inputToneIndex / (numTones * numTx);
         rxIndex = antSelByte == 1 ? (rxIndex == 0 ? 1 : 0) : (rxIndex == 0 ? 0 : 1);
 
         if (cbw == ChannelBandwidthEnum::CBW_160 && firmwareVersion >= 67) {
@@ -127,7 +128,12 @@ std::optional<CSI> CSI::fromIWLMVM(const uint8_t *buffer, uint32_t bufferLength,
             toneIndexWithoutPilot = toneIndexBugFix;
         }
 
-        auto newIndex = rxIndex * (numTx * subcarrierIndices.size()) + stsIndex * subcarrierIndices.size() + toneIndexWithoutPilot;
+        auto newIndex = rxIndex * (numTx * numTonesNew) + stsIndex * numTonesNew + toneIndexWithoutPilot;
+        if (newIndex >= CSIArray.size()) [[unlikely]] {
+            std::stringstream ss;
+            ss << numTx << " " << numRx << " " << numTones << " " << int(format) << " " << rxIndex << " " << stsIndex << " " << numTonesNew << " " << newIndex << std::endl;
+            throw std::runtime_error("array indexing bug: " + ss.str());
+        }
         CSIArray.at(newIndex) = std::complex<double>(*real, *imag);
     }
 
