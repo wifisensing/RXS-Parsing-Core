@@ -75,6 +75,14 @@ std::optional<CSI> CSI::fromIWLMVM(const uint8_t *buffer, uint32_t bufferLength,
     if (numTx * numRx * numTones * 4 != bufferLength)
         throw std::runtime_error("Incorrect Intel MVM-based CSI data format.");
 
+    /**
+     * @brief workaround for the Intel firmware bug
+     * This bug has been fixed in the latest driver. But for the sake of backward compatibility, add here again.
+     */
+    if (format == PacketFormatEnum::PacketFormat_NonHT && ((cbw == ChannelBandwidthEnum::CBW_40 && numTones == 114) || (cbw == ChannelBandwidthEnum::CBW_80 && numTones == 242) || (cbw == ChannelBandwidthEnum::CBW_160 && numTones == 484))) {
+        format = PacketFormatEnum::PacketFormat_VHT;
+    }
+
     auto inputNumTones = numRx * numTx * numTones, pos = 0;
     const auto &pilotArray = CSISubcarrierIndex::getPilotSubcarrierIndices(format, cbw);
     const auto &dataSubcarrierIndeices = CSISubcarrierIndex::getDataSubcarrierIndices(format, cbw);
@@ -132,7 +140,8 @@ std::optional<CSI> CSI::fromIWLMVM(const uint8_t *buffer, uint32_t bufferLength,
         if (newIndex >= CSIArray.size()) [[unlikely]] {
             std::stringstream ss;
             ss << int(numTx) << " " << int(numRx) << " " << int(numTones) << " " << int(format) << " " << int(cbw) << " " << rxIndex << " " << stsIndex << " " << numTonesNew << " " << newIndex << std::endl;
-            throw std::runtime_error("array indexing bug: " + ss.str());
+            std::cout << ss.str() << std::endl;
+            throw std::runtime_error("Firmware data size inconsistent bug encountered: " + ss.str());
         }
         CSIArray.at(newIndex) = std::complex<double>(*real, *imag);
     }
