@@ -208,14 +208,14 @@ void CSI::removeCSDAndInterpolateCSI() {
     subcarrierIndices.clear();
     std::copy((int16_t *) interpedIndex_int16.data(), (int16_t *) interpedIndex_int16.data() + interpedIndex_int16.numel(), std::back_inserter(subcarrierIndices));
     dimensions.numTones = subcarrierIndices.size();
-    
+
     phaseSlope.array.clear();
     std::copy((double *) phaseSlopeResult.data(), (double *) phaseSlopeResult.data() + phaseSlopeResult.numel(), std::back_inserter(phaseSlope.array));
     phaseSlope.dimensions.clear();
     std::copy(CSIArray.dimensions.cbegin() + 1, CSIArray.dimensions.cend(), std::back_inserter(phaseSlope.dimensions));
 
     phaseIntercept.array.clear();
-    std::copy((double *) phaseInterceptResult.data(), (double *) phaseInterceptResult.data() + phaseInterceptResult.numel(), std::back_inserter(phaseSlope.array));
+    std::copy((double *) phaseInterceptResult.data(), (double *) phaseInterceptResult.data() + phaseInterceptResult.numel(), std::back_inserter(phaseIntercept.array));
     phaseIntercept.dimensions = phaseSlope.dimensions;
 
 }

@@ -621,8 +621,8 @@ void CSIPreprocessor::InterpolateCSIAndRemoveCSDAndAutoUnpermutation(
     coder::array<creal_T, 4U> phaseShiftAll;
     coder::array<creal_T, 2U> phaseShiftPerRx;
     coder::array<double, 4U> b;
-    coder::array<double, 4U> b_resultPhase;
     coder::array<double, 4U> b_x;
+    coder::array<double, 4U> c_resultPhase;
     coder::array<double, 4U> pivotPhase;
     coder::array<double, 4U> rawMag;
     coder::array<double, 4U> rawPhase;
@@ -637,9 +637,9 @@ void CSIPreprocessor::InterpolateCSIAndRemoveCSDAndAutoUnpermutation(
     coder::array<double, 1U> Y;
     coder::array<double, 1U> b_X;
     coder::array<double, 1U> b_Y;
+    coder::array<double, 1U> b_resultPhase;
     coder::array<double, 1U> c_X;
     coder::array<double, 1U> c_Y;
-    coder::array<double, 1U> c_resultPhase;
     coder::array<double, 1U> interpedIndex;
     coder::array<int, 1U> r3;
     coder::array<int, 1U> r4;
@@ -1819,18 +1819,10 @@ void CSIPreprocessor::InterpolateCSIAndRemoveCSDAndAutoUnpermutation(
     for (i = 0; i < nblocks; i++) {
         resultPhase[i] = resultPhase[i] - b[i];
     }
-    i = static_cast<int>(numSTS);
-    phaseSlope.set_size(i, static_cast<int>(numRx), static_cast<int>(numCSI));
-    nrows = static_cast<int>(numSTS) * static_cast<int>(numRx) * static_cast<int>(numCSI);
-    phaseIntercept.set_size(i, static_cast<int>(numRx), static_cast<int>(numCSI));
-    for (i1 = 0; i1 < nrows; i1++) {
-        phaseSlope[i1] = 0.0;
-        phaseIntercept[i1] = 0.0;
-    }
     c_x.set_size(interpedIndex.size(0));
     nblocks = interpedIndex.size(0);
-    for (i1 = 0; i1 < nblocks; i1++) {
-        c_x[i1] = (interpedIndex[i1] == 0.0);
+    for (i = 0; i < nblocks; i++) {
+        c_x[i] = (interpedIndex[i] == 0.0);
     }
     nanflag = false;
     nrows = 1;
@@ -1846,8 +1838,8 @@ void CSIPreprocessor::InterpolateCSIAndRemoveCSDAndAutoUnpermutation(
     if (nanflag) {
         positiveInput.set_size(interpedIndex.size(0));
         nblocks = interpedIndex.size(0);
-        for (i1 = 0; i1 < nblocks; i1++) {
-            positiveInput[i1] = (interpedIndex[i1] == 0.0);
+        for (i = 0; i < nblocks; i++) {
+            positiveInput[i] = (interpedIndex[i] == 0.0);
         }
         exponent = (positiveInput.size(0) >= 1);
         nrows = 0;
@@ -1869,50 +1861,50 @@ void CSIPreprocessor::InterpolateCSIAndRemoveCSDAndAutoUnpermutation(
         } else {
             exponent = (nrows >= 1);
         }
-        for (i1 = 0; i1 < exponent; i1++) {
+        for (i = 0; i < exponent; i++) {
             pivotIndex_data = static_cast<unsigned int>(ii_data);
         }
         pivotPhase.set_size(1, resultPhase.size(1), resultPhase.size(2), resultPhase.size(3));
         nblocks = resultPhase.size(3);
-        for (i1 = 0; i1 < nblocks; i1++) {
+        for (i = 0; i < nblocks; i++) {
             nrows = resultPhase.size(2);
-            for (nyrows = 0; nyrows < nrows; nyrows++) {
+            for (i1 = 0; i1 < nrows; i1++) {
                 nx = resultPhase.size(1);
-                for (ibtile = 0; ibtile < nx; ibtile++) {
-                    pivotPhase[(ibtile + pivotPhase.size(1) * nyrows) + pivotPhase.size(1) * pivotPhase.size(2) * i1] =
-                        resultPhase[(((static_cast<int>(pivotIndex_data) + resultPhase.size(0) * ibtile) +
-                                      resultPhase.size(0) * resultPhase.size(1) * nyrows) +
-                                     resultPhase.size(0) * resultPhase.size(1) * resultPhase.size(2) * i1) -
+                for (nyrows = 0; nyrows < nx; nyrows++) {
+                    pivotPhase[(nyrows + pivotPhase.size(1) * i1) + pivotPhase.size(1) * pivotPhase.size(2) * i] =
+                        resultPhase[(((static_cast<int>(pivotIndex_data) + resultPhase.size(0) * nyrows) +
+                                      resultPhase.size(0) * resultPhase.size(1) * i1) +
+                                     resultPhase.size(0) * resultPhase.size(1) * resultPhase.size(2) * i) -
                                     1];
                 }
             }
         }
         r1.set_size(1, resultPhase.size(1), resultPhase.size(2), resultPhase.size(3));
         nblocks = resultPhase.size(3);
-        for (i1 = 0; i1 < nblocks; i1++) {
+        for (i = 0; i < nblocks; i++) {
             nrows = resultPhase.size(2);
-            for (nyrows = 0; nyrows < nrows; nyrows++) {
+            for (i1 = 0; i1 < nrows; i1++) {
                 nx = resultPhase.size(1);
-                for (ibtile = 0; ibtile < nx; ibtile++) {
-                    r1[(ibtile + r1.size(1) * nyrows) + r1.size(1) * r1.size(2) * i1] =
-                        (resultPhase[(((static_cast<int>(pivotIndex_data) + resultPhase.size(0) * ibtile) +
-                                       resultPhase.size(0) * resultPhase.size(1) * nyrows) +
-                                      resultPhase.size(0) * resultPhase.size(1) * resultPhase.size(2) * i1) -
+                for (nyrows = 0; nyrows < nx; nyrows++) {
+                    r1[(nyrows + r1.size(1) * i1) + r1.size(1) * r1.size(2) * i] =
+                        (resultPhase[(((static_cast<int>(pivotIndex_data) + resultPhase.size(0) * nyrows) +
+                                       resultPhase.size(0) * resultPhase.size(1) * i1) +
+                                      resultPhase.size(0) * resultPhase.size(1) * resultPhase.size(2) * i) -
                                      1] < -3.1415926535897931);
                 }
             }
         }
         r2.set_size(1, resultPhase.size(1), resultPhase.size(2), resultPhase.size(3));
         nblocks = resultPhase.size(3);
-        for (i1 = 0; i1 < nblocks; i1++) {
+        for (i = 0; i < nblocks; i++) {
             nrows = resultPhase.size(2);
-            for (nyrows = 0; nyrows < nrows; nyrows++) {
+            for (i1 = 0; i1 < nrows; i1++) {
                 nx = resultPhase.size(1);
-                for (ibtile = 0; ibtile < nx; ibtile++) {
-                    r2[(ibtile + r2.size(1) * nyrows) + r2.size(1) * r2.size(2) * i1] =
-                        (resultPhase[(((static_cast<int>(pivotIndex_data) + resultPhase.size(0) * ibtile) +
-                                       resultPhase.size(0) * resultPhase.size(1) * nyrows) +
-                                      resultPhase.size(0) * resultPhase.size(1) * resultPhase.size(2) * i1) -
+                for (nyrows = 0; nyrows < nx; nyrows++) {
+                    r2[(nyrows + r2.size(1) * i1) + r2.size(1) * r2.size(2) * i] =
+                        (resultPhase[(((static_cast<int>(pivotIndex_data) + resultPhase.size(0) * nyrows) +
+                                       resultPhase.size(0) * resultPhase.size(1) * i1) +
+                                      resultPhase.size(0) * resultPhase.size(1) * resultPhase.size(2) * i) -
                                      1] > 3.1415926535897931);
                 }
             }
@@ -1932,35 +1924,35 @@ void CSIPreprocessor::InterpolateCSIAndRemoveCSDAndAutoUnpermutation(
                 nrows++;
             }
         }
-        b_resultPhase.set_size(1, resultPhase.size(1), resultPhase.size(2), resultPhase.size(3));
+        c_resultPhase.set_size(1, resultPhase.size(1), resultPhase.size(2), resultPhase.size(3));
         nblocks = resultPhase.size(3);
-        for (i1 = 0; i1 < nblocks; i1++) {
+        for (i = 0; i < nblocks; i++) {
             nrows = resultPhase.size(2);
-            for (nyrows = 0; nyrows < nrows; nyrows++) {
+            for (i1 = 0; i1 < nrows; i1++) {
                 nx = resultPhase.size(1);
-                for (ibtile = 0; ibtile < nx; ibtile++) {
-                    b_resultPhase[(ibtile + b_resultPhase.size(1) * nyrows) +
-                                  b_resultPhase.size(1) * b_resultPhase.size(2) * i1] =
-                        resultPhase[(((static_cast<int>(pivotIndex_data) + resultPhase.size(0) * ibtile) +
-                                      resultPhase.size(0) * resultPhase.size(1) * nyrows) +
-                                     resultPhase.size(0) * resultPhase.size(1) * resultPhase.size(2) * i1) -
+                for (nyrows = 0; nyrows < nx; nyrows++) {
+                    c_resultPhase[(nyrows + c_resultPhase.size(1) * i1) +
+                                  c_resultPhase.size(1) * c_resultPhase.size(2) * i] =
+                        resultPhase[(((static_cast<int>(pivotIndex_data) + resultPhase.size(0) * nyrows) +
+                                      resultPhase.size(0) * resultPhase.size(1) * i1) +
+                                     resultPhase.size(0) * resultPhase.size(1) * resultPhase.size(2) * i) -
                                     1];
                 }
             }
         }
         X.set_size(r3.size(0));
         nblocks = r3.size(0);
-        for (i1 = 0; i1 < nblocks; i1++) {
-            X[i1] = b_resultPhase[r3[i1] - 1] + 3.1415926535897931;
+        for (i = 0; i < nblocks; i++) {
+            X[i] = c_resultPhase[r3[i] - 1] + 3.1415926535897931;
         }
         positiveInput.set_size(X.size(0));
         nblocks = X.size(0);
-        for (i1 = 0; i1 < nblocks; i1++) {
-            positiveInput[i1] = (X[i1] > 0.0);
+        for (i = 0; i < nblocks; i++) {
+            positiveInput[i] = (X[i] > 0.0);
         }
         nblocks = X.size(0);
-        for (i1 = 0; i1 < nblocks; i1++) {
-            nfft = X[i1];
+        for (i = 0; i < nblocks; i++) {
+            nfft = X[i];
             if (std::isnan(nfft) || std::isinf(nfft)) {
                 dp = rtNaN;
             } else if (nfft == 0.0) {
@@ -1978,13 +1970,13 @@ void CSIPreprocessor::InterpolateCSIAndRemoveCSDAndAutoUnpermutation(
                     dp += 6.2831853071795862;
                 }
             }
-            X[i1] = dp;
+            X[i] = dp;
         }
         if (X.size(0) == positiveInput.size(0)) {
             positiveInput.set_size(X.size(0));
             nblocks = X.size(0);
-            for (i1 = 0; i1 < nblocks; i1++) {
-                positiveInput[i1] = ((X[i1] == 0.0) && positiveInput[i1]);
+            for (i = 0; i < nblocks; i++) {
+                positiveInput[i] = ((X[i] == 0.0) && positiveInput[i]);
             }
         } else {
             binary_expand_op(positiveInput, X);
@@ -2011,30 +2003,29 @@ void CSIPreprocessor::InterpolateCSIAndRemoveCSDAndAutoUnpermutation(
             }
         }
         nblocks = X.size(0);
-        for (i1 = 0; i1 < nblocks; i1++) {
-            pivotPhase[r4[i1] - 1] = X[i1] - 3.1415926535897931;
+        for (i = 0; i < nblocks; i++) {
+            pivotPhase[r4[i] - 1] = X[i] - 3.1415926535897931;
         }
         pivotPhase.set_size(1, resultPhase.size(1), resultPhase.size(2), resultPhase.size(3));
         nblocks = resultPhase.size(3);
-        for (i1 = 0; i1 < nblocks; i1++) {
+        for (i = 0; i < nblocks; i++) {
             nrows = resultPhase.size(2);
-            for (nyrows = 0; nyrows < nrows; nyrows++) {
+            for (i1 = 0; i1 < nrows; i1++) {
                 nx = resultPhase.size(1);
-                for (ibtile = 0; ibtile < nx; ibtile++) {
-                    pivotPhase[(ibtile + pivotPhase.size(1) * nyrows) + pivotPhase.size(1) * pivotPhase.size(2) * i1] =
-                        resultPhase[(((static_cast<int>(pivotIndex_data) + resultPhase.size(0) * ibtile) +
-                                      resultPhase.size(0) * resultPhase.size(1) * nyrows) +
-                                     resultPhase.size(0) * resultPhase.size(1) * resultPhase.size(2) * i1) -
+                for (nyrows = 0; nyrows < nx; nyrows++) {
+                    pivotPhase[(nyrows + pivotPhase.size(1) * i1) + pivotPhase.size(1) * pivotPhase.size(2) * i] =
+                        resultPhase[(((static_cast<int>(pivotIndex_data) + resultPhase.size(0) * nyrows) +
+                                      resultPhase.size(0) * resultPhase.size(1) * i1) +
+                                     resultPhase.size(0) * resultPhase.size(1) * resultPhase.size(2) * i) -
                                     1] -
-                        pivotPhase[(ibtile + pivotPhase.size(1) * nyrows) +
-                                   pivotPhase.size(1) * pivotPhase.size(2) * i1];
+                        pivotPhase[(nyrows + pivotPhase.size(1) * i1) + pivotPhase.size(1) * pivotPhase.size(2) * i];
                 }
             }
         }
         positiveInput.set_size(pivotPhase.size(1) * pivotPhase.size(2) * pivotPhase.size(3));
         nblocks = pivotPhase.size(1) * pivotPhase.size(2) * pivotPhase.size(3);
-        for (i1 = 0; i1 < nblocks; i1++) {
-            positiveInput[i1] = (pivotPhase[i1] == 0.0);
+        for (i = 0; i < nblocks; i++) {
+            positiveInput[i] = (pivotPhase[i] == 0.0);
         }
         nanflag = true;
         nrows = 1;
@@ -2054,11 +2045,11 @@ void CSIPreprocessor::InterpolateCSIAndRemoveCSDAndAutoUnpermutation(
                 nrows = pivotPhase.size(3);
                 nx = pivotPhase.size(2);
                 ibmat = pivotPhase.size(1);
-                i1 = interpedIndex.size(0) - 1;
+                i = interpedIndex.size(0) - 1;
                 for (k = 0; k < nrows; k++) {
                     for (exponent = 0; exponent < nx; exponent++) {
                         for (ntilecols = 0; ntilecols < ibmat; ntilecols++) {
-                            for (ibtile = 0; ibtile <= i1; ibtile++) {
+                            for (ibtile = 0; ibtile <= i; ibtile++) {
                                 b[((ibtile + b.size(0) * ntilecols) + b.size(0) * b.size(1) * exponent) +
                                   b.size(0) * b.size(1) * b.size(2) * k] =
                                     pivotPhase[(ntilecols + pivotPhase.size(1) * exponent) +
@@ -2069,32 +2060,33 @@ void CSIPreprocessor::InterpolateCSIAndRemoveCSDAndAutoUnpermutation(
                 }
             }
             nblocks = resultPhase.size(0) * resultPhase.size(1) * resultPhase.size(2) * resultPhase.size(3);
-            for (i1 = 0; i1 < nblocks; i1++) {
-                resultPhase[i1] = resultPhase[i1] - b[i1];
+            for (i = 0; i < nblocks; i++) {
+                resultPhase[i] = resultPhase[i] - b[i];
             }
         }
-        phaseSlope.set_size(i, static_cast<int>(numRx), static_cast<int>(numCSI));
-        phaseIntercept.set_size(i, static_cast<int>(numRx), static_cast<int>(numCSI));
-        for (nrows = 0; nrows < i; nrows++) {
-            i1 = static_cast<int>(numRx);
-            for (nx = 0; nx < i1; nx++) {
-                nyrows = static_cast<int>(numCSI);
-                for (ntilecols = 0; ntilecols < nyrows; ntilecols++) {
-                    nblocks = resultPhase.size(0);
-                    c_resultPhase.set_size(resultPhase.size(0));
-                    for (ibtile = 0; ibtile < nblocks; ibtile++) {
-                        c_resultPhase[ibtile] =
-                            resultPhase[((ibtile + resultPhase.size(0) * nrows) +
-                                         resultPhase.size(0) * resultPhase.size(1) * nx) +
-                                        resultPhase.size(0) * resultPhase.size(1) * resultPhase.size(2) * ntilecols];
-                    }
-                    double outsize[2];
-                    coder::polyfit(interpedIndex, c_resultPhase, outsize);
-                    phaseSlope[(nrows + phaseSlope.size(0) * nx) +
-                               phaseSlope.size(0) * phaseSlope.size(1) * ntilecols] = outsize[0];
-                    phaseIntercept[(nrows + phaseIntercept.size(0) * nx) +
-                                   phaseIntercept.size(0) * phaseIntercept.size(1) * ntilecols] = outsize[1];
+    }
+    i = static_cast<int>(numSTS);
+    phaseSlope.set_size(i, static_cast<int>(numRx), static_cast<int>(numCSI));
+    phaseIntercept.set_size(i, static_cast<int>(numRx), static_cast<int>(numCSI));
+    for (nrows = 0; nrows < i; nrows++) {
+        i1 = static_cast<int>(numRx);
+        for (nx = 0; nx < i1; nx++) {
+            nyrows = static_cast<int>(numCSI);
+            for (ntilecols = 0; ntilecols < nyrows; ntilecols++) {
+                nblocks = resultPhase.size(0);
+                b_resultPhase.set_size(resultPhase.size(0));
+                for (ibtile = 0; ibtile < nblocks; ibtile++) {
+                    b_resultPhase[ibtile] =
+                        resultPhase[((ibtile + resultPhase.size(0) * nrows) +
+                                     resultPhase.size(0) * resultPhase.size(1) * nx) +
+                                    resultPhase.size(0) * resultPhase.size(1) * resultPhase.size(2) * ntilecols];
                 }
+                double outsize[2];
+                coder::polyfit(interpedIndex, b_resultPhase, outsize);
+                phaseSlope[(nrows + phaseSlope.size(0) * nx) + phaseSlope.size(0) * phaseSlope.size(1) * ntilecols] =
+                    outsize[0];
+                phaseIntercept[(nrows + phaseIntercept.size(0) * nx) +
+                               phaseIntercept.size(0) * phaseIntercept.size(1) * ntilecols] = outsize[1];
             }
         }
     }
