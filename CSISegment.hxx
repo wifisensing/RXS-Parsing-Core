@@ -164,6 +164,8 @@ public:
     SignalMatrix<std::complex<double>> CSIArray; ///< The core CSI data matrix
     SignalMatrix<double> magnitudeArray; ///< The magnitude data matrix
     SignalMatrix<double> phaseArray; ///< The phase data matrix
+    SignalMatrix<double> phaseSlope; ///< The slope of the interpolated & unwrapped phase
+    SignalMatrix<double> phaseIntercept; ///< The intercept of the interpolated & unwrapped phase
 
     Uint8Vector rawCSIData; ///< The raw CSI data
 

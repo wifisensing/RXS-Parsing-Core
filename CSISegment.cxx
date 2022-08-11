@@ -178,6 +178,8 @@ void CSI::removeCSDAndInterpolateCSI() {
     coder::array<creal_T, 4U> newCSI;
     coder::array<double, 4U> newMag;
     coder::array<double, 4U> newPhase;
+    coder::array<double, 3U> phaseSlopeResult;
+    coder::array<double, 3U> phaseInterceptResult;
     coder::array<short, 1U> interpedIndex_int16;
     double permCoef;
 
@@ -189,7 +191,7 @@ void CSI::removeCSDAndInterpolateCSI() {
     std::copy(subcarrierIndices.cbegin(), subcarrierIndices.cend(), subcarrierIndex_int16.data());
 
     bool isIntelMVMNIC{deviceType == PicoScenesDeviceType::IWLMVM_AX200 || deviceType == PicoScenesDeviceType::IWLMVM_AX210};
-    preprocessorInstance->InterpolateCSIAndRemoveCSDAndAutoUnpermutation(CSIWrapper, subcarrierIndex_int16, dimensions.numTx, dimensions.numESS, dimensions.numRx, dimensions.numCSI, static_cast<double>(packetFormat), static_cast<double>(cbw), true, isIntelMVMNIC && autoUnperm, newCSI, newMag, newPhase, interpedIndex_int16, &antSel, &permCoef);
+    preprocessorInstance->InterpolateCSIAndRemoveCSDAndAutoUnpermutation(CSIWrapper, subcarrierIndex_int16, dimensions.numTx, dimensions.numESS, dimensions.numRx, dimensions.numCSI, static_cast<double>(packetFormat), static_cast<double>(cbw), true, isIntelMVMNIC && autoUnperm, newCSI, newMag, newPhase, interpedIndex_int16, phaseSlopeResult, phaseInterceptResult, &antSel, &permCoef);
 
     CSIArray.array.clear();
     std::copy((std::complex<double> *) newCSI.data(), (std::complex<double> *) newCSI.data() + newCSI.numel(), std::back_inserter(CSIArray.array));
@@ -206,6 +208,16 @@ void CSI::removeCSDAndInterpolateCSI() {
     subcarrierIndices.clear();
     std::copy((int16_t *) interpedIndex_int16.data(), (int16_t *) interpedIndex_int16.data() + interpedIndex_int16.numel(), std::back_inserter(subcarrierIndices));
     dimensions.numTones = subcarrierIndices.size();
+    
+    phaseSlope.array.clear();
+    std::copy((double *) phaseSlopeResult.data(), (double *) phaseSlopeResult.data() + phaseSlopeResult.numel(), std::back_inserter(phaseSlope.array));
+    phaseSlope.dimensions.clear();
+    std::copy(CSIArray.dimensions.cbegin() + 1, CSIArray.dimensions.cend(), std::back_inserter(phaseSlope.dimensions));
+
+    phaseIntercept.array.clear();
+    std::copy((double *) phaseInterceptResult.data(), (double *) phaseInterceptResult.data() + phaseInterceptResult.numel(), std::back_inserter(phaseSlope.array));
+    phaseIntercept.dimensions = phaseSlope.dimensions;
+
 }
 
 std::vector<uint8_t> CSI::toBuffer() {
