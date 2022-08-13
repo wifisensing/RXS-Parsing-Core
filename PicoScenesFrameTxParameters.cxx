@@ -43,7 +43,7 @@ void PicoScenesFrameTxParameters::validate() const {
         if (int(cbw) > int(ChannelBandwidthEnum::CBW_40))
             throw std::invalid_argument("Invalid Tx CBW: " + ChannelBandwidth2String(cbw) + " for HT frame.");
 
-        if (mcs[0] > 8)
+        if (mcs[0] > 7)
             throw std::invalid_argument("Invalid Tx MCS: " + std::to_string(mcs[0]) + " for HT frame.");
 
         if (numSTS[0] > 4)
