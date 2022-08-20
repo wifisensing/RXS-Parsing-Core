@@ -8,6 +8,7 @@
 #include <typeindex>
 #include "AbstractPicoScenesFrameSegment.hxx"
 #include "PicoScenesCommons.hxx"
+#include "IntelRateNFlag.hxx"
 
 class IntelMVMCSIHeaderDefinition {
 public:
@@ -53,7 +54,9 @@ public:
                 } __attribute__ ((__packed__));
             };
             uint32_t numTones;
-            uint32_t value56[54];
+            uint32_t value56[9];
+            uint32_t rateNflag;
+            uint32_t value96[44];
         }__attribute__ ((__packed__));
     };
 
@@ -73,6 +76,8 @@ public:
 
         return OutputType{};
     }
+
+    IntelRateNFlag getRateNFlagInterpretation() const;
 
     bool operator==(const IntelMVMParsedCSIHeader &rhs) const;
 

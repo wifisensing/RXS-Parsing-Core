@@ -113,6 +113,8 @@ enum class PacketFormatEnum : int8_t {
     PacketFormat_VHT = 2, ///< 11ac or Wi-Fi 5
     PacketFormat_HESU = 3, ///< 11ax Single-User, or Wi-Fi 6
     PacketFormat_HEMU = 4, ///< 11ax Multi-User, or Wi-Fi 6
+    PacketFormat_HETB = 5, ///< 11ax Trigger-Based
+    PacketFormat_EHT = 6, ///< 11be
     PacketFormat_Unknown = -1
 };
 
@@ -130,6 +132,7 @@ enum class ChannelBandwidthEnum : uint16_t {
     CBW_40 = 40, ///< 40 MHz
     CBW_80 = 80, ///< 80 MHz
     CBW_160 = 160, ///< 160 MHz
+    CBW_320 = 320,  ///< 320 MHz
 };
 
 std::string ChannelBandwidth2String(ChannelBandwidthEnum cbw);
