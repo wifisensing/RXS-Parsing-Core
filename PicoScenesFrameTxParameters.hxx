@@ -49,6 +49,7 @@ public:
     double samplingRateOffset;
     double carrierFrequencyOffset;
     double resampleRatio;
+    double simulateTxDistance;
     double vhtGroupId;
     std::vector<uint8_t> heAllocationIndex;
     bool txHEExtendedRange;
@@ -84,6 +85,7 @@ public:
         samplingRateOffset = 0;
         carrierFrequencyOffset = 0;
         resampleRatio = 1.0;
+        simulateTxDistance = 0;
         vhtGroupId = 0;
         heAllocationIndex = std::vector<uint8_t>(1, 0);
         txHEExtendedRange = false;
