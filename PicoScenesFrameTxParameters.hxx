@@ -9,18 +9,20 @@
 
 class TxPrecodingParameters {
 public:
-    bool precodingEnabled = false;
-
     SignalMatrix<std::complex<double>> userSpecifiedSpatialMappingMatrix;
 
-    SignalMatrix<std::complex<double>> rxCSI4TxBeamforming; /// N_{sc}-by-N_{tx_sts}-by-N_{rx}
-    uint8_t txNumSTS4TxBeamforming = 1;
+    double simulateTxDistance{0};
 
-    std::vector<std::array<double, 3>> antennaPositions{};
-    double txSteeringAngles4PhasedArray = 0;
-    double txCarrierFrequency4PhasedArray = 0;
-    double subcarrierBandwidth4PhasedArray = 312.5e3;
-    std::vector<int16_t> subcarrierIndices4PhasedArray{};
+    SignalMatrix<std::complex<double>> rxCSI4TxBeamforming; /// N_{sc}-by-N_{tx_sts}-by-N_{rx}
+    uint8_t txNumSTS4TxBeamforming{1};
+
+    std::vector<std::array<double, 3>> antennaPositions;
+    double txSteeringAngles4PhasedArray{0};
+    double carrierFrequency{0};
+
+    [[nodiscard]] inline bool isActivated() const {
+        return !userSpecifiedSpatialMappingMatrix.empty() || simulateTxDistance != 0 || !rxCSI4TxBeamforming.empty() || (txSteeringAngles4PhasedArray != 0 && !antennaPositions.empty());
+    }
 };
 
 class PicoScenesFrameTxParameters {
