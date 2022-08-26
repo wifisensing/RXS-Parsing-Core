@@ -58,6 +58,8 @@ public:
     bool heHighDoppler;
     double heMidamblePeriodicity;
     double heLTFType;
+    bool hePreHESpatialMapping;
+    double additiveNoiseVarianceDb;
     TxPrecodingParameters precodingParameters;
 
     PicoScenesFrameTxParameters() {
@@ -94,6 +96,8 @@ public:
         heHighDoppler = false;
         heMidamblePeriodicity = 10;
         heLTFType = 4;
+        hePreHESpatialMapping = false;
+        additiveNoiseVarianceDb = -45;
     }
 
     void applyPreset(const std::string &presetName) {
