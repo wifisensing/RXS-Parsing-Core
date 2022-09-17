@@ -6,6 +6,7 @@
 #define PICOSCENES_PLATFORM_MVMEXTRASEGMENT_HXX
 
 #include <typeindex>
+#include <unordered_map>
 #include "AbstractPicoScenesFrameSegment.hxx"
 #include "PicoScenesCommons.hxx"
 #include "IntelRateNFlag.hxx"
