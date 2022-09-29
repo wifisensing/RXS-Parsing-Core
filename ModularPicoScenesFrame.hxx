@@ -144,6 +144,7 @@ public:
     Uint8Vector arbitraryMPDUContent;
     std::vector<ModularPicoScenesTxFrame> AMPDUFrames;
 
+    Uint8Vector prebuiltMPDU;
     std::vector<std::vector<std::complex<int8_t>>> prebuiltCS8Signals;
     std::vector<std::vector<std::complex<int16_t>>> prebuiltCS16Signals;
 
@@ -166,6 +167,8 @@ public:
     int toBuffer(uint8_t *buffer, uint32_t bufferLength) const;
 
     [[nodiscard]] Uint8Vector toBuffer() const;
+
+    void prebuildMPDU();
 
     std::vector<ModularPicoScenesTxFrame> autoSplit(int16_t maxSegmentBuffersLength = 1400) const;
 
