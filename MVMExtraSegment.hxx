@@ -78,6 +78,8 @@ public:
         return OutputType{};
     }
 
+    [[maybe_unused]] bool hasNamedField(const std::string &fieldName) const noexcept;
+
     IntelRateNFlag getRateNFlagInterpretation() const;
 
     bool operator==(const IntelMVMParsedCSIHeader &rhs) const;

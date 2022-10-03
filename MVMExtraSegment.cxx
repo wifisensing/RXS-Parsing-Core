@@ -70,6 +70,10 @@ IntelRateNFlag IntelMVMParsedCSIHeader::getRateNFlagInterpretation() const {
     return IntelRateNFlag(rateNflag);
 }
 
+bool IntelMVMParsedCSIHeader::hasNamedField(const std::string &fieldName) const noexcept {
+    return IntelMVMCSIHeaderDefinition::getCurrentFieldMapping().contains(fieldName);
+}
+
 static auto v1Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> IntelMVMExtrta {
     uint32_t pos = 0;
     auto extra = IntelMVMExtrta();
