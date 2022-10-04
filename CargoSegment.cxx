@@ -63,7 +63,7 @@ Uint8Vector PayloadCargo::mergeAndValidateCargo(const std::vector<PayloadCargo> 
     });
     auto pos = 0, numSegment = 0;
     while (pos < mergedPayload.size()) {
-        auto[segmentName, segmentLength, versionId, contentOffset] = AbstractPicoScenesFrameSegment::extractSegmentMetaData(mergedPayload.data() + pos, mergedPayload.size() - pos);
+        auto [segmentName, segmentLength, versionId, contentOffset] = AbstractPicoScenesFrameSegment::extractSegmentMetaData(mergedPayload.data() + pos, mergedPayload.size() - pos);
         pos += segmentLength + 4;
         numSegment++;
     }
@@ -88,6 +88,15 @@ std::map<uint16_t, std::function<PayloadCargo(const uint8_t *, uint32_t)>> Cargo
 
 CargoSegment::CargoSegment() : AbstractPicoScenesFrameSegment("Cargo", 0x1U) {}
 
+CargoSegment::CargoSegment(const uint8_t *buffer, uint32_t bufferLength) : AbstractPicoScenesFrameSegment(buffer, bufferLength) {
+    if (segmentName != "Cargo")
+        throw std::runtime_error("CargoSegment cannot parse the segment named " + segmentName + ".");
+    if (!versionedSolutionMap.count(segmentVersionId)) {
+        throw std::runtime_error("CargoSegment cannot parse the segment with version v" + std::to_string(segmentVersionId) + ".");
+    }
+    cargo = versionedSolutionMap.at(segmentVersionId)(segmentPayload.data(), segmentPayload.size());
+}
+
 CargoSegment::CargoSegment(const PayloadCargo &cargoV) : CargoSegment() {
     setCargo(cargoV);
 }
@@ -98,33 +107,7 @@ const PayloadCargo &CargoSegment::getCargo() const {
 
 void CargoSegment::setCargo(const PayloadCargo &cargoV) {
     cargo = cargoV;
-    addField("core", cargo.toBuffer());
-}
-
-std::vector<uint8_t> CargoSegment::toBuffer() const {
-    return AbstractPicoScenesFrameSegment::toBuffer(true);
-}
-
-CargoSegment CargoSegment::createByBuffer(const uint8_t *buffer, uint32_t bufferLength) {
-    CargoSegment segment;
-    segment.fromBuffer(buffer, bufferLength);
-    return segment;
-}
-
-void CargoSegment::fromBuffer(const uint8_t *buffer, uint32_t bufferLength) {
-    auto[segmentName, segmentLength, versionId, offset] = extractSegmentMetaData(buffer, bufferLength);
-    if (segmentName != "Cargo")
-        throw std::runtime_error("CargoSegment cannot parse the segment named " + segmentName + ".");
-    if (segmentLength + 4 > bufferLength)
-        throw std::underflow_error("CargoSegment cannot parse the segment with less than " + std::to_string(segmentLength + 4) + "B.");
-    if (!versionedSolutionMap.count(versionId)) {
-        throw std::runtime_error("CargoSegment cannot parse the segment with version v" + std::to_string(versionId) + ".");
-    }
-
-    cargo = versionedSolutionMap.at(versionId)(buffer + offset, bufferLength - offset);
-    std::copy(buffer, buffer + bufferLength, std::back_inserter(rawBuffer));
-    this->segmentLength = segmentLength;
-    successfullyDecoded = true;
+    setSegmentPayload(cargo.toBuffer());
 }
 
 std::string CargoSegment::toString() const {

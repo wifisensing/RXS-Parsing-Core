@@ -88,11 +88,13 @@ public:
 
 } __attribute__ ((__packed__));
 
-class IntelMVMExtrta {
+class IntelMVMExtraInfo {
 public:
     uint16_t CSIHeaderLength;
     std::vector<uint8_t> CSIHeader;
     IntelMVMParsedCSIHeader parsedHeader;
+
+    std::vector<uint8_t> toBuffer() const;
 };
 
 
@@ -100,28 +102,26 @@ class MVMExtraSegment : public AbstractPicoScenesFrameSegment {
 public:
     MVMExtraSegment();
 
-    static MVMExtraSegment createByBuffer(const uint8_t *buffer, uint32_t bufferLength);
+    MVMExtraSegment(const uint8_t *buffer, uint32_t bufferLength);
 
     static void manipulateHeader(IntelMVMParsedCSIHeader &header);
 
     static void setHeaderManipulator(const std::function<void(IntelMVMParsedCSIHeader &)> &headerManipulator);
 
-    void fromBuffer(const uint8_t *buffer, uint32_t bufferLength) override;
-
-    std::vector<uint8_t> toBuffer() const override;
-
     [[nodiscard]] std::string toString() const override;
 
-    const IntelMVMExtrta &getMvmExtra() const;
+    const IntelMVMExtraInfo &getMvmExtra() const;
+
+    void setMvmExtra(const IntelMVMExtraInfo &mvmExtra);
 
 private:
-    static std::map<uint16_t, std::function<IntelMVMExtrta(const uint8_t *, uint32_t)>> versionedSolutionMap;
+    static std::map<uint16_t, std::function<IntelMVMExtraInfo(const uint8_t *, uint32_t)>> versionedSolutionMap;
 
-    static std::map<uint16_t, std::function<IntelMVMExtrta(const uint8_t *, uint32_t)>> initializeSolutionMap() noexcept;
+    static std::map<uint16_t, std::function<IntelMVMExtraInfo(const uint8_t *, uint32_t)>> initializeSolutionMap() noexcept;
 
     static std::function<void(IntelMVMParsedCSIHeader &)> headerManipulator;
 
-    IntelMVMExtrta mvmExtra;
+    IntelMVMExtraInfo mvmExtra;
 };
 
 std::ostream &operator<<(std::ostream &os, const MVMExtraSegment &mvmSegment);

@@ -197,34 +197,28 @@ std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::fromBuffer(con
     for (auto i = 0; i < frame.rxFrameHeader.numRxSegments; i++) {
         auto [segmentName, segmentLength, versionId, offset] = AbstractPicoScenesFrameSegment::extractSegmentMetaData(buffer + pos, bufferLength - pos);
         if (segmentName == "RxSBasic") {
-            frame.rxSBasicSegment.fromBuffer(buffer + pos, segmentLength + 4);
+            frame.rxSBasicSegment = RxSBasicSegment(buffer + pos, segmentLength + 4);
         } else if (segmentName == "ExtraInfo") {
-            frame.rxExtraInfoSegment.fromBuffer(buffer + pos, segmentLength + 4);
+            frame.rxExtraInfoSegment = ExtraInfoSegment(buffer + pos, segmentLength + 4);
         } else if (segmentName == "MVMExtra") {
-            frame.mvmExtraSegment = MVMExtraSegment::createByBuffer(buffer + pos, segmentLength + 4);
+            frame.mvmExtraSegment = MVMExtraSegment(buffer + pos, segmentLength + 4);
             std::copy(frame.mvmExtraSegment->rawBuffer.cbegin(), frame.mvmExtraSegment->rawBuffer.cend(), frame.rawBuffer.begin() + pos);
         } else if (segmentName == "CSI") {
-            frame.csiSegment.fromBuffer(buffer + pos, segmentLength + 4);
+            frame.csiSegment = CSISegment(buffer + pos, segmentLength + 4);
             if (interpolateCSI) {
                 frame.csiSegment.getCSI().removeCSDAndInterpolateCSI();
             }
-            if (!frame.csiSegment.isSuccessfullyDecoded())
-                return {};
         } else if (segmentName == "PilotCSI") {
-            frame.pilotCSISegment = CSISegment::createByBuffer(buffer + pos, segmentLength + 4);
-            if (!frame.pilotCSISegment->isSuccessfullyDecoded())
-                return {};
+            frame.pilotCSISegment = CSISegment(buffer + pos, segmentLength + 4);
         } else if (segmentName == "LegacyCSI") {
-            frame.legacyCSISegment = CSISegment::createByBuffer(buffer + pos, segmentLength + 4);
+            frame.legacyCSISegment = CSISegment(buffer + pos, segmentLength + 4);
             if (interpolateCSI) {
                 frame.legacyCSISegment->getCSI().removeCSDAndInterpolateCSI();
             }
-            if (!frame.legacyCSISegment->isSuccessfullyDecoded())
-                return {};
         } else if (segmentName == "BasebandSignal") {
-            frame.basebandSignalSegment = BasebandSignalSegment::createByBuffer(buffer + pos, segmentLength + 4);
+            frame.basebandSignalSegment = BasebandSignalSegment(buffer + pos, segmentLength + 4);
         } else if (segmentName == "PreEQSymbols") {
-            frame.preEQSymbolsSegment = PreEQSymbolsSegment::createByBuffer(buffer + pos, segmentLength + 4);
+            frame.preEQSymbolsSegment = PreEQSymbolsSegment(buffer + pos, segmentLength + 4);
         } else {
             frame.rxUnknownSegmentMap.emplace(segmentName, Uint8Vector(buffer + pos, buffer + pos + segmentLength + 4));
         }
@@ -242,13 +236,13 @@ std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::fromBuffer(con
         for (auto i = 0; i < frame.PicoScenesHeader->numSegments; i++) {
             auto [segmentName, segmentLength, versionId, offset] = AbstractPicoScenesFrameSegment::extractSegmentMetaData(buffer + pos, bufferLength);
             if (segmentName == "ExtraInfo") {
-                frame.txExtraInfoSegment = ExtraInfoSegment::createByBuffer(buffer + pos, segmentLength + 4);
+                frame.txExtraInfoSegment = ExtraInfoSegment(buffer + pos, segmentLength + 4);
             } else if (segmentName == "DPASRequest") {
-                frame.dpasRequestSegment = DPASRequestSegment::createByBuffer(buffer + pos, segmentLength + 4);
+                frame.dpasRequestSegment = DPASRequestSegment(buffer + pos, segmentLength + 4);
             } else if (segmentName == "Payload") {
-                frame.payloadSegments.emplace_back(PayloadSegment::createByBuffer(buffer + pos, segmentLength + 4));
+                frame.payloadSegments.emplace_back(PayloadSegment(buffer + pos, segmentLength + 4));
             } else if (segmentName == "Cargo") {
-                frame.cargoSegment = CargoSegment::createByBuffer(buffer + pos, segmentLength + 4);
+                frame.cargoSegment = CargoSegment(buffer + pos, segmentLength + 4);
             } else {
                 frame.txUnknownSegmentMap.emplace(segmentName, Uint8Vector(buffer + pos, buffer + pos + segmentLength + 4));
             }
@@ -340,13 +334,13 @@ std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::concatenateFra
     while (pos < mergedPayload.size()) {
         auto [segmentName, segmentLength, versionId, contentOffset] = AbstractPicoScenesFrameSegment::extractSegmentMetaData(mergedPayload.data() + pos, mergedPayload.size() - pos);
         if (segmentName == "ExtraInfo") {
-            baseFrame.txExtraInfoSegment = ExtraInfoSegment::createByBuffer(mergedPayload.data() + pos, segmentLength + 4);
+            baseFrame.txExtraInfoSegment = ExtraInfoSegment(mergedPayload.data() + pos, segmentLength + 4);
         } else if (segmentName == "DPASRequest") {
-            baseFrame.dpasRequestSegment = DPASRequestSegment::createByBuffer(mergedPayload.data() + pos, segmentLength + 4);
+            baseFrame.dpasRequestSegment = DPASRequestSegment(mergedPayload.data() + pos, segmentLength + 4);
         } else if (segmentName == "Payload") {
-            baseFrame.payloadSegments.emplace_back(PayloadSegment::createByBuffer(mergedPayload.data() + pos, segmentLength + 4));
+            baseFrame.payloadSegments.emplace_back(PayloadSegment(mergedPayload.data() + pos, segmentLength + 4));
         } else if (segmentName == "Cargo") {
-            baseFrame.cargoSegment = CargoSegment::createByBuffer(mergedPayload.data() + pos, segmentLength + 4);
+            baseFrame.cargoSegment = CargoSegment(mergedPayload.data() + pos, segmentLength + 4);
         } else {
             baseFrame.txUnknownSegmentMap.emplace(segmentName, Uint8Vector(mergedPayload.data() + pos, mergedPayload.data() + pos + segmentLength + 4));
         }
@@ -523,7 +517,7 @@ int ModularPicoScenesTxFrame::toBuffer(uint8_t *buffer, uint32_t bufferLength) c
         memcpy(buffer + sizeof(ieee80211_mac_frame_header), &frameHeader, sizeof(PicoScenesFrameHeader));
         pos += sizeof(PicoScenesFrameHeader);
         for (const auto &segment: segments) {
-            segment->toBuffer(true, buffer + pos);
+            segment->toBuffer(buffer + pos);
             pos += segment->totalLength() + 4;
         }
     }
@@ -546,7 +540,7 @@ std::vector<ModularPicoScenesTxFrame> ModularPicoScenesTxFrame::autoSplit(int16_
     auto pos = 0;
     Uint8Vector allSegmentBuffer(segmentsLength);
     for (const auto &segment: segments) {
-        segment->toBuffer(true, allSegmentBuffer.data() + pos);
+        segment->toBuffer(allSegmentBuffer.data() + pos);
         pos += segment->totalLength() + 4;
     }
 

@@ -34,15 +34,11 @@ public:
 
     explicit CargoSegment(const PayloadCargo &cargo);
 
+    CargoSegment(const uint8_t *buffer, uint32_t bufferLength);
+
     [[nodiscard]] const PayloadCargo &getCargo() const;
 
     void setCargo(const PayloadCargo &cargo);
-
-    [[nodiscard]] std::vector<uint8_t> toBuffer() const override;
-
-    static CargoSegment createByBuffer(const uint8_t *buffer, uint32_t bufferLength);
-
-    void fromBuffer(const uint8_t *buffer, uint32_t bufferLength) override;
 
     [[nodiscard]] std::string toString() const override;
 

@@ -10,19 +10,15 @@
 #include "AbstractPicoScenesFrameSegment.hxx"
 #include "PicoScenesCommons.hxx"
 
-class BasebandSignalSegment : AbstractPicoScenesFrameSegment {
+class BasebandSignalSegment : public AbstractPicoScenesFrameSegment {
 public:
     BasebandSignalSegment();
+
+    BasebandSignalSegment(const uint8_t *buffer, uint32_t bufferLength);
 
     [[maybe_unused]] [[nodiscard]] const SignalMatrix<std::complex<double>> &getSignalMatrix() const;
 
     void setSignalMatrix(const SignalMatrix<std::complex<double>> &bbsignalsV);
-
-    static BasebandSignalSegment createByBuffer(const uint8_t *buffer, uint32_t bufferLength);
-
-    void fromBuffer(const uint8_t *buffer, uint32_t bufferLength) override;
-
-    [[nodiscard]] std::vector<uint8_t> toBuffer() const override;
 
     [[nodiscard]] std::string toString() const override;
 

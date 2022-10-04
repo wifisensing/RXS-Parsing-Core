@@ -82,7 +82,7 @@ PayloadSegment::PayloadSegment(const std::string &description, const std::vector
     PayloadData payloadData{.dataType = payloadType.value_or(PayloadDataType::RawData),
             .payloadDescription = description,
             .payloadData = payload};
-    setPayload(payloadData);
+    setPayloadData(payloadData);
 }
 
 PayloadSegment::PayloadSegment(const std::string &description, const uint8_t *payloadBuffer, size_t bufferLength, std::optional<PayloadDataType> payloadType) : PayloadSegment() {
@@ -90,7 +90,7 @@ PayloadSegment::PayloadSegment(const std::string &description, const uint8_t *pa
     PayloadData payloadData{.dataType = payloadType.value_or(PayloadDataType::RawData),
             .payloadDescription = description,
             .payloadData = payload};
-    setPayload(payloadData);
+    setPayloadData(payloadData);
 }
 
 PayloadSegment::PayloadSegment(const std::string &description, const std::string &stringPayload, std::optional<PayloadDataType> payloadType) : PayloadSegment() {
@@ -98,49 +98,31 @@ PayloadSegment::PayloadSegment(const std::string &description, const std::string
     PayloadData payloadData{.dataType = payloadType.value_or(PayloadDataType::RawData),
             .payloadDescription = description,
             .payloadData = payload};
-    setPayload(payloadData);
+    setPayloadData(payloadData);
 }
 
-std::vector<uint8_t> PayloadSegment::toBuffer() const {
-    return AbstractPicoScenesFrameSegment::toBuffer(true);
-}
-
-void PayloadSegment::fromBuffer(const uint8_t *buffer, uint32_t bufferLength) {
-    auto [segmentName, segmentLength, versionId, offset] = extractSegmentMetaData(buffer, bufferLength);
+PayloadSegment::PayloadSegment(const uint8_t *buffer, uint32_t bufferLength) : AbstractPicoScenesFrameSegment(buffer, bufferLength) {
     if (segmentName != "Payload")
         throw std::runtime_error("PayloadSegment cannot parse the segment named " + segmentName + ".");
-    if (segmentLength + 4 > bufferLength)
-        throw std::underflow_error("PayloadSegment cannot parse the segment with less than " + std::to_string(segmentLength + 4) + "B.");
-    if (!versionedSolutionMap.count(versionId)) {
-        throw std::runtime_error("PayloadSegment cannot parse the segment with version v" + std::to_string(versionId) + ".");
-    }
+    if (!versionedSolutionMap.count(segmentVersionId))
+        throw std::runtime_error("PayloadSegment cannot parse the segment with version v" + std::to_string(segmentVersionId) + ".");
 
-    payload = versionedSolutionMap.at(versionId)(buffer + offset, bufferLength - offset);
-    std::copy(buffer, buffer + bufferLength, std::back_inserter(rawBuffer));
-    this->segmentLength = segmentLength;
-    successfullyDecoded = true;
+    payloadData = versionedSolutionMap.at(segmentVersionId)(segmentPayload.data(), segmentPayload.size());
 }
 
-PayloadSegment PayloadSegment::createByBuffer(const uint8_t *buffer, uint32_t bufferLength) {
-    PayloadSegment payloadSegment;
-    payloadSegment.fromBuffer(buffer, bufferLength);
-    return payloadSegment;
+const PayloadData &PayloadSegment::getPayloadData() const {
+    return payloadData;
 }
 
-const PayloadData &PayloadSegment::getPayload() const {
-    return payload;
-}
-
-void PayloadSegment::setPayload(const PayloadData &payloadV) {
-    payload = payloadV;
-    clearFieldCache();
-    addField("core", payload.toBuffer());
+void PayloadSegment::setPayloadData(const PayloadData &payloadV) {
+    payloadData = payloadV;
+    setSegmentPayload(payloadData.toBuffer());
 }
 
 std::string PayloadSegment::toString() const {
     std::stringstream ss;
     ss << segmentName + ":[";
-    ss << "Type=" << payload.dataType << ", Description=" << payload.payloadDescription << ", length=" << std::to_string(payload.payloadData.size()) + "B]";
+    ss << "Type=" << payloadData.dataType << ", Description=" << payloadData.payloadDescription << ", length=" << std::to_string(payloadData.payloadData.size()) + "B]";
     auto temp = ss.str();
     temp.erase(temp.end() - 2, temp.end());
     temp.append("]");

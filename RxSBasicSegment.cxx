@@ -272,30 +272,14 @@ std::vector<uint8_t> RxSBasic::toBuffer() {
 
 RxSBasicSegment::RxSBasicSegment() : AbstractPicoScenesFrameSegment("RxSBasic", 0x4U) {}
 
-void RxSBasicSegment::fromBuffer(const uint8_t *buffer, uint32_t bufferLength) {
-    auto [segmentName, segmentLength, versionId, offset] = extractSegmentMetaData(buffer, bufferLength);
+RxSBasicSegment::RxSBasicSegment(const uint8_t *buffer, uint32_t bufferLength) : AbstractPicoScenesFrameSegment(buffer, bufferLength) {
     if (segmentName != "RxSBasic")
         throw std::runtime_error("RxSBasicSegment cannot parse the segment named " + segmentName + ".");
-    if (segmentLength + 4 > bufferLength)
-        throw std::underflow_error("RxSBasicSegment cannot parse the segment with less than " + std::to_string(segmentLength + 4) + "B.");
-    if (!versionedSolutionMap.count(versionId)) {
-        throw std::runtime_error("RxSBasicSegment cannot parse the segment with version v" + std::to_string(versionId) + ".");
+    if (!versionedSolutionMap.count(segmentVersionId)) {
+        throw std::runtime_error("RxSBasicSegment cannot parse the segment with version v" + std::to_string(segmentVersionId) + ".");
     }
 
-    basic = versionedSolutionMap.at(versionId)(buffer + offset, bufferLength - offset);
-    std::copy(buffer, buffer + bufferLength, std::back_inserter(rawBuffer));
-    this->segmentLength = segmentLength;
-    successfullyDecoded = true;
-}
-
-RxSBasicSegment RxSBasicSegment::createByBuffer(const uint8_t *buffer, uint32_t bufferLength) {
-    RxSBasicSegment rxSBasicSegment;
-    rxSBasicSegment.fromBuffer(buffer, bufferLength);
-    return rxSBasicSegment;
-}
-
-std::vector<uint8_t> RxSBasicSegment::toBuffer() const {
-    return AbstractPicoScenesFrameSegment::toBuffer(true);
+    basic = versionedSolutionMap.at(segmentVersionId)(segmentPayload.data(), segmentPayload.size());
 }
 
 const RxSBasic &RxSBasicSegment::getBasic() const {
@@ -304,8 +288,7 @@ const RxSBasic &RxSBasicSegment::getBasic() const {
 
 void RxSBasicSegment::setBasic(const RxSBasic &basicV) {
     basic = basicV;
-    clearFieldCache();
-    addField("core", basic.toBuffer());
+    setSegmentPayload(basic.toBuffer());
 }
 
 std::ostream &operator<<(std::ostream &os, const RxSBasic &rxSBasic) {

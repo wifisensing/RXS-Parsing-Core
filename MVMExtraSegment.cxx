@@ -74,9 +74,9 @@ bool IntelMVMParsedCSIHeader::hasNamedField(const std::string &fieldName) const 
     return IntelMVMCSIHeaderDefinition::getCurrentFieldMapping().contains(fieldName);
 }
 
-static auto v1Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> IntelMVMExtrta {
+static auto v1Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> IntelMVMExtraInfo {
     uint32_t pos = 0;
-    auto extra = IntelMVMExtrta();
+    auto extra = IntelMVMExtraInfo();
     extra.CSIHeaderLength = *(uint16_t *) (buffer + pos);
     pos += 2;
     if (bufferLength - pos < extra.CSIHeaderLength)
@@ -97,10 +97,17 @@ static auto v1Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> Intel
     return extra;
 };
 
-std::map<uint16_t, std::function<IntelMVMExtrta(const uint8_t *, uint32_t)>> MVMExtraSegment::versionedSolutionMap = initializeSolutionMap();
+std::vector<uint8_t> IntelMVMExtraInfo::toBuffer() const {
+    auto buffer = std::vector<uint8_t>();
+    std::copy((uint8_t *) &CSIHeaderLength, (uint8_t *) &CSIHeaderLength + sizeof(CSIHeaderLength), std::back_inserter(buffer));
+    std::copy(CSIHeader.cbegin(), CSIHeader.cend(), std::back_inserter(buffer));
+    return buffer;
+}
 
-std::map<uint16_t, std::function<IntelMVMExtrta(const uint8_t *, uint32_t)>> MVMExtraSegment::initializeSolutionMap() noexcept {
-    std::map<uint16_t, std::function<IntelMVMExtrta(const uint8_t *, uint32_t)>> map;
+std::map<uint16_t, std::function<IntelMVMExtraInfo(const uint8_t *, uint32_t)>> MVMExtraSegment::versionedSolutionMap = initializeSolutionMap();
+
+std::map<uint16_t, std::function<IntelMVMExtraInfo(const uint8_t *, uint32_t)>> MVMExtraSegment::initializeSolutionMap() noexcept {
+    std::map<uint16_t, std::function<IntelMVMExtraInfo(const uint8_t *, uint32_t)>> map;
     map.emplace(0x1U, v1Parser);
     return map;
 }
@@ -109,39 +116,14 @@ std::function<void(IntelMVMParsedCSIHeader &)> MVMExtraSegment::headerManipulato
 
 MVMExtraSegment::MVMExtraSegment() : AbstractPicoScenesFrameSegment("MVMExtra", 0x1U) {}
 
-void MVMExtraSegment::fromBuffer(const uint8_t *buffer, uint32_t bufferLength) {
-    auto [segmentName, segmentLength, versionId, offset] = extractSegmentMetaData(buffer, bufferLength);
+MVMExtraSegment::MVMExtraSegment(const uint8_t *buffer, uint32_t bufferLength) : AbstractPicoScenesFrameSegment(buffer, bufferLength) {
     if (segmentName != "MVMExtra")
         throw std::runtime_error("MVMExtraSegment cannot parse the segment named " + segmentName + ".");
-    if (segmentLength + 4 > bufferLength)
-        throw std::underflow_error("MVMExtraSegment cannot parse the segment with less than " + std::to_string(segmentLength + 4) + "B.");
-    if (!versionedSolutionMap.count(versionId)) {
-        throw std::runtime_error("MVMExtraSegment cannot parse the segment with version v" + std::to_string(versionId) + ".");
-    }
+    if (!versionedSolutionMap.count(segmentVersionId))
+        throw std::runtime_error("MVMExtraSegment cannot parse the segment with version v" + std::to_string(segmentVersionId) + ".");
 
-    mvmExtra = versionedSolutionMap.at(versionId)(buffer + offset, bufferLength - offset);
-    rawBuffer.reserve(bufferLength);
-    std::copy(buffer, buffer + offset, std::back_inserter(rawBuffer));
-    std::copy((uint8_t *) &mvmExtra.CSIHeaderLength, (uint8_t *) &mvmExtra.CSIHeaderLength + sizeof(mvmExtra.CSIHeaderLength), std::back_inserter(rawBuffer));
-    std::copy(mvmExtra.CSIHeader.cbegin(), mvmExtra.CSIHeader.cend(), std::back_inserter(rawBuffer));
-    this->segmentLength = segmentLength;
-    successfullyDecoded = true;
-}
-
-MVMExtraSegment MVMExtraSegment::createByBuffer(const uint8_t *buffer, uint32_t bufferLength) {
-    MVMExtraSegment mvmExtraSegment;
-    mvmExtraSegment.fromBuffer(buffer, bufferLength);
-    return mvmExtraSegment;
-}
-
-std::vector<uint8_t> MVMExtraSegment::toBuffer() const {
-    auto buffer = AbstractPicoScenesFrameSegment::toBuffer(true);
-    if (false) {
-        auto extraSeg = createByBuffer(buffer.data(), buffer.size());
-        std::cout << extraSeg << std::endl;
-    }
-
-    return buffer;
+    mvmExtra = versionedSolutionMap.at(segmentVersionId)(segmentPayload.data(), segmentPayload.size());
+    setMvmExtra(mvmExtra);
 }
 
 std::string MVMExtraSegment::toString() const {
@@ -157,7 +139,7 @@ std::ostream &operator<<(std::ostream &os, const MVMExtraSegment &mvmSegment) {
     return os;
 }
 
-const IntelMVMExtrta &MVMExtraSegment::getMvmExtra() const {
+const IntelMVMExtraInfo &MVMExtraSegment::getMvmExtra() const {
     return mvmExtra;
 }
 
@@ -171,4 +153,10 @@ void MVMExtraSegment::setHeaderManipulator(const std::function<void(IntelMVMPars
     std::call_once(flag, [&] {
         headerManipulator = headerManipulatorV == nullptr ? headerManipulator : headerManipulatorV; // this property can only be set once during the start
     });
+}
+
+void MVMExtraSegment::setMvmExtra(const IntelMVMExtraInfo &mvmExtra) {
+    MVMExtraSegment::mvmExtra = mvmExtra;
+    auto buffer = mvmExtra.toBuffer();
+    setSegmentPayload(buffer);
 }

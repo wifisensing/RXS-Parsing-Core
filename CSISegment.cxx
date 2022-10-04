@@ -595,48 +595,19 @@ std::map<uint16_t, std::function<std::optional<CSI>(const uint8_t *, uint32_t)>>
                                                                                             {0x4U, v4Parser}};
 }
 
-CSISegment::CSISegment() : AbstractPicoScenesFrameSegment("CSI", 0x4U) {
+CSISegment::CSISegment() : AbstractPicoScenesFrameSegment("CSI", 0x4U) {}
 
-}
-
-void CSISegment::fromBuffer(const uint8_t *buffer, uint32_t bufferLength) {
-    auto [segmentName, segmentLength, versionId, offset] = extractSegmentMetaData(buffer, bufferLength);
+CSISegment::CSISegment(const uint8_t *buffer, uint32_t bufferLength) : AbstractPicoScenesFrameSegment(buffer, bufferLength) {
     if (segmentName != "CSI" && segmentName != "LegacyCSI" && segmentName != "PilotCSI")
         throw std::runtime_error("CSISegment cannot parse the segment named " + segmentName + ".");
-    if (segmentLength + 4 > bufferLength)
-        throw std::underflow_error("CSISegment cannot parse the segment with less than " + std::to_string(segmentLength + 4) + "B.");
-    if (!versionedSolutionMap.count(versionId)) {
-        throw std::runtime_error("CSISegment cannot parse the segment with version v" + std::to_string(versionId) + ".");
-    }
+    if (!versionedSolutionMap.count(segmentVersionId))
+        throw std::runtime_error("CSISegment cannot parse the segment with version v" + std::to_string(segmentVersionId) + ".");
 
-    if (auto parsedCSI = versionedSolutionMap.at(versionId)(buffer + offset, bufferLength - offset)) {
+    if (auto parsedCSI = versionedSolutionMap.at(segmentVersionId)(segmentPayload.data(), segmentPayload.size())) {
         csi = *parsedCSI;
-        std::copy(buffer, buffer + bufferLength, std::back_inserter(rawBuffer));
-        this->segmentLength = segmentLength;
-        this->segmentName = segmentName;
-        successfullyDecoded = true;
+    } else {
+        //TODO error branch of csi decoding
     }
-}
-
-CSISegment CSISegment::createByBuffer(const uint8_t *buffer, uint32_t bufferLength) {
-    CSISegment csiSegment;
-    csiSegment.fromBuffer(buffer, bufferLength);
-    return csiSegment;
-}
-
-std::string CSISegment::toString() const {
-    std::stringstream ss;
-    ss << segmentName + ":[";
-    ss << "(device=" << csi.deviceType << ", format=" << csi.packetFormat << ", CBW=" << csi.cbw << ", cf=" << std::to_string((double) csi.carrierFreq / 1e6) << " MHz" << ", sf=" << std::to_string((double) csi.samplingRate / 1e6) << " MHz" ", subcarrierBW=" << std::to_string((double) csi.subcarrierBandwidth / 1e3) << " kHz"
-       << ", dim(nTones,nSTS,nESS,nRx,nCSI)=(" + std::to_string(csi.dimensions.numTones) + "," + std::to_string(csi.dimensions.numTx) + "," + std::to_string(csi.dimensions.numESS) + "," + std::to_string(csi.dimensions.numRx) + "," + std::to_string(csi.dimensions.numCSI) + "), raw=" + std::to_string(csi.rawCSIData.size()) + "B)]";
-    auto temp = ss.str();
-    temp.erase(temp.end() - 2, temp.end());
-    temp.append("]");
-    return temp;
-}
-
-std::vector<uint8_t> CSISegment::toBuffer() const {
-    return AbstractPicoScenesFrameSegment::toBuffer(true);
 }
 
 const CSI &CSISegment::getCSI() const {
@@ -649,9 +620,20 @@ CSI &CSISegment::getCSI() {
 
 void CSISegment::setCSI(const CSI &csiV) {
     csi = csiV;
-    clearFieldCache();
-    addField("core", csi.toBuffer());
+    setSegmentPayload(csi.toBuffer());
 }
+
+std::string CSISegment::toString() const {
+    std::stringstream ss;
+    ss << segmentName + ":[";
+    ss << "device=" << csi.deviceType << ", format=" << csi.packetFormat << ", CBW=" << csi.cbw << ", cf=" << std::to_string((double) csi.carrierFreq / 1e6) << " MHz" << ", sf=" << std::to_string((double) csi.samplingRate / 1e6) << " MHz" ", subcarrierBW=" << std::to_string((double) csi.subcarrierBandwidth / 1e3) << " kHz"
+       << ", dim(nTones,nSTS,nESS,nRx,nCSI)=(" + std::to_string(csi.dimensions.numTones) + "," + std::to_string(csi.dimensions.numTx) + "," + std::to_string(csi.dimensions.numESS) + "," + std::to_string(csi.dimensions.numRx) + "," + std::to_string(csi.dimensions.numCSI) + "), raw=" + std::to_string(csi.rawCSIData.size()) + "B]";
+    auto temp = ss.str();
+    temp.erase(temp.end() - 2, temp.end());
+    temp.append("]");
+    return temp;
+}
+
 
 std::ostream &operator<<(std::ostream &os, const CSISegment &csiSegment) {
     os << csiSegment.toString();

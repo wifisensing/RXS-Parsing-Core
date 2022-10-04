@@ -50,11 +50,7 @@ class RxSBasicSegment : public AbstractPicoScenesFrameSegment {
 public:
     RxSBasicSegment();
 
-    static RxSBasicSegment createByBuffer(const uint8_t *buffer, uint32_t bufferLength);
-
-    void fromBuffer(const uint8_t *buffer, uint32_t bufferLength) override;
-
-    std::vector<uint8_t> toBuffer() const override;
+    RxSBasicSegment(const uint8_t *buffer, uint32_t bufferLength);
 
     const RxSBasic &getBasic() const;
 

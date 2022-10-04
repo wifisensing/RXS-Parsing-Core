@@ -17,39 +17,22 @@ std::map<uint16_t, std::function<SignalMatrix<std::complex<double>>(const uint8_
 
 PreEQSymbolsSegment::PreEQSymbolsSegment() : AbstractPicoScenesFrameSegment("PreEQSymbols", 0x1U) {}
 
+PreEQSymbolsSegment::PreEQSymbolsSegment(const uint8_t *buffer, uint32_t bufferLength) : AbstractPicoScenesFrameSegment(buffer, bufferLength) {
+    if (segmentName != "PreEQSymbols")
+        throw std::runtime_error("PreEQSymbolsSegment cannot parse the segment named " + segmentName + ".");
+    if (!versionedSolutionMap.count(segmentVersionId))
+        throw std::runtime_error("PreEQSymbolsSegment cannot parse the segment with version v" + std::to_string(segmentVersionId) + ".");
+
+    preEQSymbols = versionedSolutionMap.at(segmentVersionId)(segmentPayload.data(), segmentPayload.size());
+}
+
 const SignalMatrix<std::complex<double>> &PreEQSymbolsSegment::getPreEqSymbols() const {
     return preEQSymbols;
 }
 
 void PreEQSymbolsSegment::setPreEqSymbols(const SignalMatrix<std::complex<double>> &preEqSymbolsV) {
     preEQSymbols = preEqSymbolsV;
-    addField("core", preEQSymbols.toBuffer());
-}
-
-std::vector<uint8_t> PreEQSymbolsSegment::toBuffer() const {
-    return AbstractPicoScenesFrameSegment::toBuffer(true);
-}
-
-PreEQSymbolsSegment PreEQSymbolsSegment::createByBuffer(const uint8_t *buffer, uint32_t bufferLength) {
-    PreEQSymbolsSegment preEqSymbolsSegment;
-    preEqSymbolsSegment.fromBuffer(buffer, bufferLength);
-    return preEqSymbolsSegment;
-}
-
-void PreEQSymbolsSegment::fromBuffer(const uint8_t *buffer, uint32_t bufferLength) {
-    auto[segmentName, segmentLength, versionId, offset] = extractSegmentMetaData(buffer, bufferLength);
-    if (segmentName != "PreEQSymbols")
-        throw std::runtime_error("PreEQSymbolsSegment cannot parse the segment named " + segmentName + ".");
-    if (segmentLength + 4 > bufferLength)
-        throw std::underflow_error("PreEQSymbolsSegment cannot parse the segment with less than " + std::to_string(segmentLength + 4) + "B.");
-    if (!versionedSolutionMap.count(versionId)) {
-        throw std::runtime_error("PreEQSymbolsSegment cannot parse the segment with version v" + std::to_string(versionId) + ".");
-    }
-
-    preEQSymbols = versionedSolutionMap.at(versionId)(buffer + offset, bufferLength - offset);
-    std::copy(buffer, buffer + bufferLength, std::back_inserter(rawBuffer));
-    this->segmentLength = segmentLength;
-    successfullyDecoded = true;
+    setSegmentPayload(preEQSymbols.toBuffer());
 }
 
 std::string PreEQSymbolsSegment::toString() const {

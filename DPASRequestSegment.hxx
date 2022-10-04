@@ -10,9 +10,9 @@
 #include "PicoScenesCommons.hxx"
 
 struct DPASRequest {
-    uint8_t  requestMode;
+    uint8_t requestMode;
     uint16_t batchId;
-    uint8_t  stage;
+    uint8_t stage;
     uint32_t batchLength;
     uint32_t sequenceId;
     uint32_t intervalTime;
@@ -32,15 +32,11 @@ public:
 
     explicit DPASRequestSegment(const DPASRequest &syncRequest);
 
-    static DPASRequestSegment createByBuffer(const uint8_t *buffer, uint32_t bufferLength);
+    DPASRequestSegment(const uint8_t *buffer, uint32_t bufferLength);
 
     DPASRequest getRequest() const;
 
     void setRequest(const DPASRequest &requestV);
-
-    [[nodiscard]] std::vector<uint8_t> toBuffer() const override;
-
-    void fromBuffer(const uint8_t *buffer, uint32_t bufferLength) override;
 
     [[nodiscard]] std::string toString() const override;
 
