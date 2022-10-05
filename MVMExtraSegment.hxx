@@ -40,7 +40,7 @@ public:
 
     bool operator!=(const IntelMVMParsedCSIHeader &rhs) const;
 
-    static DynamicContentType makeDefaultDynamicInterpretation();
+    static void registerDefaultMVMHeaderInterpretation();
 
 } __attribute__ ((__packed__));
 

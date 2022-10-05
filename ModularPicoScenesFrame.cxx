@@ -490,7 +490,7 @@ void ModularPicoScenesTxFrame::prebuildMPDU() {
 
 Uint8Vector ModularPicoScenesTxFrame::toBuffer() const {
     if (txParameters.NDPFrame)
-        return Uint8Vector();
+        return {};
 
     auto bufferLength = totalLength();
     Uint8Vector buffer(bufferLength);

@@ -21,7 +21,7 @@ IntelRateNFlag IntelMVMParsedCSIHeader::getRateNFlagInterpretation() const {
     return IntelRateNFlag(rateNflag);
 }
 
-DynamicContentType IntelMVMParsedCSIHeader::makeDefaultDynamicInterpretation() {
+void IntelMVMParsedCSIHeader::registerDefaultMVMHeaderInterpretation() {
     auto fields = std::vector<DynamicContentField>{
             DynamicContentField{
                     .fieldName = "IQDataSize",
@@ -48,7 +48,7 @@ DynamicContentType IntelMVMParsedCSIHeader::makeDefaultDynamicInterpretation() {
                     .arraySize = 1,
             },
     };
-    return DynamicContentType{"MVMExtra", 1, fields};
+    DynamicContentTypeDictionary::getInstance()->registerType(DynamicContentType{"MVMExtra", 1, fields});
 }
 
 static auto v1Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> IntelMVMExtraInfo {
