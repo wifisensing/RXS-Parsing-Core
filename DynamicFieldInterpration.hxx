@@ -29,6 +29,7 @@ struct DynamicContentField {
     std::string fieldName;
     DynamicContentFieldPrimitiveType fieldType;
     int32_t fieldOffset;
+    int32_t arraySize{1};
 
     bool operator==(const DynamicContentField &rhs) const {
         return std::tie(fieldName, fieldType, fieldOffset) == std::tie(rhs.fieldName, rhs.fieldType, rhs.fieldOffset);
@@ -83,6 +84,15 @@ public:
     OutputType getField(const std::string &fieldName) {
         if (auto queryResult = queryField(fieldName)) {
             return *(OutputType *) (content + queryResult->fieldOffset);
+        } else
+            throw std::invalid_argument("Field not existent: " + fieldName);
+    }
+
+    template<typename OutputType>
+    std::vector<OutputType> getArray(const std::string &fieldName) {
+        if (auto queryResult = queryField(fieldName)) {
+            auto numElement = queryResult->arraySize;
+            return std::vector<OutputType>((OutputType *) (content + queryResult->fieldOffset), (OutputType *) (content + queryResult->fieldOffset) + numElement);
         } else
             throw std::invalid_argument("Field not existent: " + fieldName);
     }
