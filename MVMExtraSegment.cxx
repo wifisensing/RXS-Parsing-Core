@@ -4,55 +4,6 @@
 
 #include "MVMExtraSegment.hxx"
 
-std::map<std::string, std::tuple<std::string, size_t, size_t, bool>> IntelMVMCSIHeaderDefinition::fieldMapping;
-std::vector<std::pair<std::string, std::tuple<std::string, size_t, size_t, bool>>> IntelMVMCSIHeaderDefinition::fieldList;
-std::unordered_map<std::type_index, std::string> IntelMVMCSIHeaderDefinition::typeNames;
-
-void IntelMVMCSIHeaderDefinition::ensureTypeNameMapReady() {
-    if (typeNames.empty()) {
-        typeNames[std::type_index(typeid(int8_t))] = "int8";
-        typeNames[std::type_index(typeid(uint8_t))] = "uint8";
-        typeNames[std::type_index(typeid(int16_t))] = "int16";
-        typeNames[std::type_index(typeid(uint16_t))] = "uint16";
-        typeNames[std::type_index(typeid(int32_t))] = "int32";
-        typeNames[std::type_index(typeid(uint32_t))] = "uint32";
-        typeNames[std::type_index(typeid(int64_t))] = "int64";
-        typeNames[std::type_index(typeid(uint64_t))] = "uint64";
-    }
-}
-
-void IntelMVMCSIHeaderDefinition::buildDefaultFieldMapping() {
-    ensureTypeNameMapReady();
-    fieldList.clear();
-    fieldMapping.clear();
-    fieldList.emplace_back(makeField<uint32_t, 0, 1>("IQDataSize", false));
-    fieldList.emplace_back(makeField<uint32_t, 8, 1>("FTMClock", true));
-    fieldList.emplace_back(makeField<uint32_t, 12 + 10 * 4, 1>("NumTone", false));
-    std::copy(fieldList.cbegin(), fieldList.cend(), std::inserter(fieldMapping, fieldMapping.begin()));
-}
-
-const std::map<std::string, std::tuple<std::string, size_t, size_t, bool>> &IntelMVMCSIHeaderDefinition::getCurrentFieldMapping() {
-    if (fieldMapping.empty()) [[unlikely]] {
-        buildDefaultFieldMapping();
-    }
-
-    return fieldMapping;
-}
-
-const std::vector<std::pair<std::string, std::tuple<std::string, size_t, size_t, bool>>> &IntelMVMCSIHeaderDefinition::getCurrentFields() {
-    if (fieldList.empty()) [[unlikely]] {
-        buildDefaultFieldMapping();
-    }
-
-    return fieldList;
-}
-
-void IntelMVMCSIHeaderDefinition::setNewFieldMapping(const std::vector<std::pair<std::string, std::tuple<std::string, size_t, size_t, bool>>> &newFields) {
-    fieldList.clear();
-    fieldMapping.clear();
-    std::copy(newFields.cbegin(), newFields.cend(), std::back_inserter(fieldList));
-    std::copy(newFields.cbegin(), newFields.cend(), std::inserter(fieldMapping, fieldMapping.begin()));
-}
 
 IntelMVMParsedCSIHeader::IntelMVMParsedCSIHeader() {
     memset(this, 0, sizeof(IntelMVMParsedCSIHeader));
@@ -70,8 +21,34 @@ IntelRateNFlag IntelMVMParsedCSIHeader::getRateNFlagInterpretation() const {
     return IntelRateNFlag(rateNflag);
 }
 
-bool IntelMVMParsedCSIHeader::hasNamedField(const std::string &fieldName) const noexcept {
-    return IntelMVMCSIHeaderDefinition::getCurrentFieldMapping().contains(fieldName);
+DynamicContentType IntelMVMParsedCSIHeader::makeDefaultDynamicInterpretation() {
+    auto fields = std::vector<DynamicContentField>{
+            DynamicContentField{
+                    .fieldName = "IQDataSize",
+                    .fieldType = DynamicContentFieldPrimitiveType::Uint32,
+                    .fieldOffset = 0,
+                    .arraySize = 1,
+            },
+            DynamicContentField{
+                    .fieldName = "FTMClock",
+                    .fieldType = DynamicContentFieldPrimitiveType::Uint32,
+                    .fieldOffset = 8,
+                    .arraySize = 1,
+            },
+            DynamicContentField{
+                    .fieldName = "NumTones",
+                    .fieldType = DynamicContentFieldPrimitiveType::Uint32,
+                    .fieldOffset = 52,
+                    .arraySize = 1,
+            },
+            DynamicContentField{
+                    .fieldName = "RateNFlags",
+                    .fieldType = DynamicContentFieldPrimitiveType::Uint32,
+                    .fieldOffset = 92,
+                    .arraySize = 1,
+            },
+    };
+    return DynamicContentType{"MVMExtra", 1, fields};
 }
 
 static auto v1Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> IntelMVMExtraInfo {

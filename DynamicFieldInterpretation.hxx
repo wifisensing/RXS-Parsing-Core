@@ -2,8 +2,8 @@
 // Created by Zhiping Jiang on 10/4/22.
 //
 
-#ifndef PICOSCENES_PLATFORM_DYNAMICFIELDINTERPRATION_HXX
-#define PICOSCENES_PLATFORM_DYNAMICFIELDINTERPRATION_HXX
+#ifndef PICOSCENES_PLATFORM_DYNAMICFIELDINTERPRETATION_HXX
+#define PICOSCENES_PLATFORM_DYNAMICFIELDINTERPRETATION_HXX
 
 #include <map>
 #include <vector>
@@ -46,6 +46,8 @@ public:
     uint16_t version{0};
     std::vector<DynamicContentField> fields;
 
+    DynamicContentType(const std::string &name, uint16_t version, const std::vector<DynamicContentField> &fields);
+
     std::optional<DynamicContentField> queryFieldOffset(const std::string &fieldName);
 
     bool operator==(const DynamicContentType &rhs) const {
@@ -64,7 +66,7 @@ class DynamicContentTypeDictionary {
 public:
     static std::shared_ptr<DynamicContentTypeDictionary> getInstance();
 
-    void registerType(const std::string &name, uint16_t version, const DynamicContentType &type);
+    void registerType(const DynamicContentType &type);
 
     std::shared_ptr<DynamicContentType> queryType(const std::string &name, uint16_t version);
 
@@ -76,12 +78,16 @@ private:
 
 class DynamicFieldInterpreter {
 public:
+    DynamicFieldInterpreter() = default;
+
     DynamicFieldInterpreter(const std::string &typeName, uint16_t version, const uint8_t *content) : typeName(typeName), version(version), content(content) {}
 
     std::optional<DynamicContentField> queryField(const std::string &fieldName);
 
+    std::optional<DynamicContentField> queryField(const std::string &fieldName) const;
+
     template<typename OutputType>
-    OutputType getField(const std::string &fieldName) {
+    OutputType getField(const std::string &fieldName) const {
         if (auto queryResult = queryField(fieldName)) {
             return *(OutputType *) (content + queryResult->fieldOffset);
         } else
@@ -89,7 +95,7 @@ public:
     }
 
     template<typename OutputType>
-    std::vector<OutputType> getArray(const std::string &fieldName) {
+    std::vector<OutputType> getArray(const std::string &fieldName) const {
         if (auto queryResult = queryField(fieldName)) {
             auto numElement = queryResult->arraySize;
             return std::vector<OutputType>((OutputType *) (content + queryResult->fieldOffset), (OutputType *) (content + queryResult->fieldOffset) + numElement);
@@ -106,4 +112,4 @@ private:
 };
 
 
-#endif //PICOSCENES_PLATFORM_DYNAMICFIELDINTERPRATION_HXX
+#endif //PICOSCENES_PLATFORM_DYNAMICFIELDINTERPRETATION_HXX

@@ -14,7 +14,7 @@
 #include <tuple>
 #include <memory>
 #include <cstring>
-#include "DynamicFieldInterpration.hxx"
+#include "DynamicFieldInterpretation.hxx"
 
 /**
  * @brief PicoScenes Frame Segment is a typed, versioned and named data structure used to carrier various of data from the Tx end, PicoScenes driver or SDR baseband to the PicoScenes Platform.
@@ -43,7 +43,7 @@ public:
      */
     void setSegmentPayload(const std::vector<uint8_t> &payload);
 
-    DynamicFieldInterpreter getDynamicInterpreter() const;
+    const DynamicFieldInterpreter &getDynamicInterpreter() const;
 
     /**
      * @brief Return the total length of the segment buffer
@@ -77,6 +77,8 @@ public:
     virtual ~AbstractPicoScenesFrameSegment() {};
 
 protected:
+    DynamicFieldInterpreter interpreter;
+
     void rebuildBuffer();
 };
 

@@ -6,7 +6,7 @@
 
 #include "AbstractPicoScenesFrameSegment.hxx"
 
-AbstractPicoScenesFrameSegment::AbstractPicoScenesFrameSegment(std::string segmentName, uint16_t segmentVersionId) : segmentName(std::move(segmentName)), segmentVersionId(segmentVersionId) {}
+AbstractPicoScenesFrameSegment::AbstractPicoScenesFrameSegment(std::string segmentName, uint16_t segmentVersionId) : segmentName(segmentName), segmentVersionId(segmentVersionId), interpreter(segmentName, segmentVersionId, nullptr) {}
 
 AbstractPicoScenesFrameSegment::AbstractPicoScenesFrameSegment(const uint8_t *buffer, size_t bufferLength) {
     auto [segmentNameV, segmentLengthV, versionIdV, offset] = extractSegmentMetaData(buffer, bufferLength);
@@ -17,6 +17,7 @@ AbstractPicoScenesFrameSegment::AbstractPicoScenesFrameSegment(const uint8_t *bu
     segmentVersionId = versionIdV;
     std::copy(buffer, buffer + bufferLength, std::back_inserter(rawBuffer));
     std::copy(buffer + offset, buffer + bufferLength, std::back_inserter(segmentPayload));
+    interpreter = DynamicFieldInterpreter(segmentName, segmentVersionId, segmentPayload.data());
 }
 
 uint32_t AbstractPicoScenesFrameSegment::totalLength() const {
@@ -87,8 +88,9 @@ void AbstractPicoScenesFrameSegment::rebuildBuffer() {
     std::copy((uint8_t *) segmentName.data(), (uint8_t *) (segmentName.data() + segmentName.size() + 1), std::back_inserter(rawBuffer));
     std::copy((uint8_t *) &segmentVersionId, (uint8_t *) &segmentVersionId + sizeof(segmentVersionId), std::back_inserter(rawBuffer));
     std::copy(segmentPayload.cbegin(), segmentPayload.cend(), std::back_inserter(rawBuffer));
+    interpreter = DynamicFieldInterpreter(segmentName, segmentVersionId, segmentPayload.data());
 }
 
-DynamicFieldInterpreter AbstractPicoScenesFrameSegment::getDynamicInterpreter() const {
-    return DynamicFieldInterpreter{segmentName, segmentVersionId, segmentPayload.data()};
+const DynamicFieldInterpreter &AbstractPicoScenesFrameSegment::getDynamicInterpreter() const {
+    return interpreter;
 }
