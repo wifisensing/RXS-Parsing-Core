@@ -88,3 +88,7 @@ void AbstractPicoScenesFrameSegment::rebuildBuffer() {
     std::copy((uint8_t *) &segmentVersionId, (uint8_t *) &segmentVersionId + sizeof(segmentVersionId), std::back_inserter(rawBuffer));
     std::copy(segmentPayload.cbegin(), segmentPayload.cend(), std::back_inserter(rawBuffer));
 }
+
+DynamicFieldInterpreter AbstractPicoScenesFrameSegment::getDynamicInterpreter() const {
+    return DynamicFieldInterpreter{segmentName, segmentVersionId, segmentPayload.data()};
+}
