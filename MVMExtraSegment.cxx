@@ -48,6 +48,11 @@ DynamicContentType IntelMVMParsedCSIHeader::makeDefaultDynamicInterpretation() {
                     .arraySize = 1,
             },
     };
+
+    /// Compensate for the leading 2-byte header length
+    for(auto & field: fields)
+        field.fieldOffset += 2;
+
     return DynamicContentType{"MVMExtra", 1, fields};
 }
 
