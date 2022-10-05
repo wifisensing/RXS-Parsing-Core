@@ -43,7 +43,7 @@ public:
      */
     void setSegmentPayload(const std::vector<uint8_t> &payload);
 
-    const DynamicFieldInterpreter &getDynamicInterpreter() const;
+    DynamicFieldInterpreter getDynamicInterpreter() const;
 
     /**
      * @brief Return the total length of the segment buffer
@@ -77,8 +77,6 @@ public:
     virtual ~AbstractPicoScenesFrameSegment() {};
 
 protected:
-    DynamicFieldInterpreter interpreter;
-
     void rebuildBuffer();
 };
 
