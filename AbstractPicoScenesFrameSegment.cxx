@@ -48,7 +48,7 @@ uint32_t AbstractPicoScenesFrameSegment::toBuffer(uint8_t *buffer, std::optional
 }
 
 std::string AbstractPicoScenesFrameSegment::toString() const {
-    return "";
+    return segmentName + ":" + std::to_string(rawBuffer.size()) + "B";
 }
 
 std::tuple<std::string, uint32_t, uint16_t, uint32_t> AbstractPicoScenesFrameSegment::extractSegmentMetaData(const uint8_t *buffer, uint32_t bufferLength) {
@@ -93,4 +93,9 @@ void AbstractPicoScenesFrameSegment::rebuildBuffer() {
 
 const DynamicFieldInterpreter &AbstractPicoScenesFrameSegment::getDynamicInterpreter() const {
     return interpreter;
+}
+
+std::ostream &operator<<(std::ostream &os, const AbstractPicoScenesFrameSegment &segment) {
+    os << segment.toString();
+    return os;
 }

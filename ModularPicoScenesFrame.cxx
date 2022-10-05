@@ -310,7 +310,7 @@ std::string ModularPicoScenesRxFrame::toString() const {
         std::stringstream segss;
         segss << "TxSegments:(";
         for (const auto &segment: txUnkownSegments) {
-            segss << segment.segmentName << ":" << segment.totalLengthIncludingLeading4ByteLength() << "B, ";
+            segss << segment << ", ";
         }
         auto temp = segss.str();
         temp.erase(temp.end() - 2, temp.end());
@@ -745,7 +745,7 @@ std::string ModularPicoScenesTxFrame::toString() const {
         std::stringstream segss;
         segss << "Segments:(";
         for (const auto &segment: segments) {
-            segss << segment->segmentName << ":" << segment->totalLength() << "B, ";
+            segss << segment << ", ";
         }
         auto temp = segss.str();
         temp.erase(temp.end() - 2, temp.end());

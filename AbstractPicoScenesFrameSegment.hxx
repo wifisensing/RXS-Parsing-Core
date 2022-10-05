@@ -82,5 +82,7 @@ protected:
     void rebuildBuffer();
 };
 
+std::ostream &operator<<(std::ostream &os, const AbstractPicoScenesFrameSegment &segment);
+
 
 #endif //PICOSCENES_PLATFORM_ABSTRACTPICOSCENESFRAMESEGMENT_HXX
