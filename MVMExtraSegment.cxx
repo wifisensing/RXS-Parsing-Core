@@ -48,6 +48,11 @@ void IntelMVMParsedCSIHeader::registerDefaultMVMHeaderInterpretation() {
                     .arraySize = 1,
             },
     };
+
+    /// Compensate for the leading 2-byte header length
+    for(auto & field: fields)
+        field.fieldOffset += 2;
+
     DynamicContentTypeDictionary::getInstance()->registerType(DynamicContentType{"MVMExtra", 1, fields});
 }
 
