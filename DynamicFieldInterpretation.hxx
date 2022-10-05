@@ -87,11 +87,16 @@ public:
     std::optional<DynamicContentField> queryField(const std::string &fieldName) const;
 
     template<typename OutputType>
-    OutputType getField(const std::string &fieldName) const {
+    const OutputType *getFieldPointer(const std::string &fieldName) const {
         if (auto queryResult = queryField(fieldName)) {
-            return *(OutputType *) (content + queryResult->fieldOffset);
+            return (OutputType *) (content + queryResult->fieldOffset);
         } else
             throw std::invalid_argument("Field not existent: " + fieldName);
+    }
+
+    template<typename OutputType>
+    OutputType getField(const std::string &fieldName) const {
+        return *getFieldPointer<OutputType>(fieldName);
     }
 
     template<typename OutputType>
