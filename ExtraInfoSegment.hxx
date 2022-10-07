@@ -14,14 +14,9 @@ class ExtraInfoSegment : public AbstractPicoScenesFrameSegment {
 public:
     ExtraInfoSegment();
 
-    explicit ExtraInfoSegment(const ExtraInfo & extraInfo);
+    explicit ExtraInfoSegment(const ExtraInfo &extraInfo);
 
-
-    static ExtraInfoSegment createByBuffer(const uint8_t *buffer, uint32_t bufferLength);
-
-    void fromBuffer(const uint8_t *buffer, uint32_t bufferLength) override;
-
-    std::vector<uint8_t> toBuffer() const override;
+    ExtraInfoSegment(const uint8_t *buffer, uint32_t bufferLength);
 
     const ExtraInfo &getExtraInfo() const;
 

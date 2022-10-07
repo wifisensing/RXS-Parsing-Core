@@ -221,41 +221,22 @@ DPASRequestSegment::DPASRequestSegment(const DPASRequest &request) : DPASRequest
     setRequest(request);
 }
 
+DPASRequestSegment::DPASRequestSegment(const uint8_t *buffer, uint32_t bufferLength) : AbstractPicoScenesFrameSegment(buffer, bufferLength) {
+    if (segmentName != "DPASRequest")
+        throw std::runtime_error("DPASRequestSegment cannot parse the segment named " + segmentName + ".");
+    if (!versionedSolutionMap.count(segmentVersionId))
+        throw std::runtime_error("DPASRequestSegment cannot parse the segment with version v" + std::to_string(segmentVersionId) + ".");
+
+    dpasRequest = versionedSolutionMap.at(segmentVersionId)(segmentPayload.data(), segmentPayload.size());
+}
+
 DPASRequest DPASRequestSegment::getRequest() const {
     return dpasRequest;
 }
 
 void DPASRequestSegment::setRequest(const DPASRequest &requestv) {
     dpasRequest = requestv;
-    clearFieldCache();
-    addField("req", dpasRequest.toBuffer());
-}
-
-std::vector<uint8_t> DPASRequestSegment::toBuffer() const {
-    return AbstractPicoScenesFrameSegment::toBuffer(true);
-}
-
-void DPASRequestSegment::fromBuffer(const uint8_t *buffer, uint32_t bufferLength) {
-    auto[segmentName, segmentLength, versionId, offset] = extractSegmentMetaData(buffer, bufferLength);
-    if (segmentName != "DPASRequest")
-        throw std::runtime_error("DPASRequestSegment cannot parse the segment named " + segmentName + ".");
-    if (segmentLength + 4 > bufferLength)
-        throw std::underflow_error("DPASRequestSegment cannot parse the segment with less than " + std::to_string(segmentLength + 4) + "B.");
-    if (!versionedSolutionMap.count(versionId)) {
-        throw std::runtime_error("DPASRequestSegment cannot parse the segment with version v" + std::to_string(versionId) + ".");
-    }
-
-    dpasRequest = versionedSolutionMap.at(versionId)(buffer + offset, bufferLength - offset);
-    rawBuffer.resize(bufferLength);
-    std::copy(buffer, buffer + bufferLength, rawBuffer.begin());
-    this->segmentLength = rawBuffer.size() - 4;
-    successfullyDecoded = true;
-}
-
-DPASRequestSegment DPASRequestSegment::createByBuffer(const uint8_t *buffer, uint32_t bufferLength) {
-    auto seg = DPASRequestSegment();
-    seg.fromBuffer(buffer, bufferLength);
-    return seg;
+    setSegmentPayload(dpasRequest.toBuffer());
 }
 
 std::string DPASRequestSegment::toString() const {

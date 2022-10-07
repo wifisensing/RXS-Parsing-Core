@@ -25,33 +25,16 @@ ExtraInfoSegment::ExtraInfoSegment() : AbstractPicoScenesFrameSegment("ExtraInfo
 
 ExtraInfoSegment::ExtraInfoSegment(const ExtraInfo &extraInfoV) : ExtraInfoSegment() {
     extraInfo = extraInfoV;
-    addField("EI", extraInfoV.toBuffer());
+    setSegmentPayload(extraInfoV.toBuffer());
 }
 
-void ExtraInfoSegment::fromBuffer(const uint8_t *buffer, uint32_t bufferLength) {
-    auto[segmentName, segmentLength, versionId, offset] = extractSegmentMetaData(buffer, bufferLength);
+ExtraInfoSegment::ExtraInfoSegment(const uint8_t *buffer, uint32_t bufferLength) : AbstractPicoScenesFrameSegment(buffer, bufferLength) {
     if (segmentName != "ExtraInfo")
         throw std::runtime_error("ExtraInfoSegment cannot parse the segment named " + segmentName + ".");
-    if (segmentLength + 4 > bufferLength)
-        throw std::underflow_error("ExtraInfoSegment cannot parse the segment with less than " + std::to_string(segmentLength + 4) + "B.");
-    if (!versionedSolutionMap.count(versionId)) {
-        throw std::runtime_error("ExtraInfoSegment cannot parse the segment with version v" + std::to_string(versionId) + ".");
-    }
+    if (!versionedSolutionMap.count(segmentVersionId))
+        throw std::runtime_error("ExtraInfoSegment cannot parse the segment with version v" + std::to_string(segmentVersionId) + ".");
 
-    extraInfo = versionedSolutionMap.at(versionId)(buffer + offset, bufferLength - offset);
-    std::copy(buffer, buffer + bufferLength, std::back_inserter(rawBuffer));
-    this->segmentLength = segmentLength;
-    successfullyDecoded = true;
-}
-
-ExtraInfoSegment ExtraInfoSegment::createByBuffer(const uint8_t *buffer, uint32_t bufferLength) {
-    ExtraInfoSegment extraInfoSegment;
-    extraInfoSegment.fromBuffer(buffer, bufferLength);
-    return extraInfoSegment;
-}
-
-std::vector<uint8_t> ExtraInfoSegment::toBuffer() const {
-    return AbstractPicoScenesFrameSegment::toBuffer(true);
+    extraInfo = versionedSolutionMap.at(segmentVersionId)(segmentPayload.data(), segmentPayload.size());
 }
 
 const ExtraInfo &ExtraInfoSegment::getExtraInfo() const {
@@ -60,6 +43,5 @@ const ExtraInfo &ExtraInfoSegment::getExtraInfo() const {
 
 void ExtraInfoSegment::setExtraInfo(const ExtraInfo &extraInfo) {
     ExtraInfoSegment::extraInfo = extraInfo;
-    clearFieldCache();
-    addField("core", extraInfo.toBuffer());
+    setSegmentPayload(extraInfo.toBuffer());
 }

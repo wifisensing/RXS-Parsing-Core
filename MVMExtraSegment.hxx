@@ -11,35 +11,6 @@
 #include "PicoScenesCommons.hxx"
 #include "IntelRateNFlag.hxx"
 
-class IntelMVMCSIHeaderDefinition {
-public:
-    IntelMVMCSIHeaderDefinition() = delete;
-
-    static const std::vector<std::pair<std::string, std::tuple<std::string, size_t, size_t, bool>>> &getCurrentFields();
-
-    static void setNewFieldMapping(const std::vector<std::pair<std::string, std::tuple<std::string, size_t, size_t, bool>>> &newFields);
-
-    static const std::map<std::string, std::tuple<std::string, size_t, size_t, bool>> &getCurrentFieldMapping();
-
-private:
-
-    static std::vector<std::pair<std::string, std::tuple<std::string, size_t, size_t, bool>>> fieldList;
-
-    static std::map<std::string, std::tuple<std::string, size_t, size_t, bool>> fieldMapping;
-
-    static std::unordered_map<std::type_index, std::string> typeNames;
-
-    template<typename FieldType, size_t fieldPosition, size_t numFieldElements = 1>
-    static std::pair<std::string, std::tuple<std::string, size_t, size_t, bool>> makeField(std::string fieldName, bool display) {
-        ensureTypeNameMapReady();
-        return std::make_pair(fieldName, std::make_tuple(typeNames[std::type_index(typeid(FieldType))], fieldPosition, sizeof(FieldType) * numFieldElements, display));
-    }
-
-    static void ensureTypeNameMapReady();
-
-    static void buildDefaultFieldMapping();
-};
-
 class IntelMVMParsedCSIHeader {
 public:
     union {
@@ -63,36 +34,23 @@ public:
 
     IntelMVMParsedCSIHeader();
 
-    template<typename OutputType>
-    OutputType accessField(const std::string &fieldName) const noexcept {
-        static std::unordered_map<std::string, size_t> quickMap;
-        if (quickMap.contains(fieldName))
-            return *(OutputType *) (headerBytes + quickMap[fieldName]);
-
-        if (IntelMVMCSIHeaderDefinition::getCurrentFieldMapping().contains(fieldName)) {
-            auto pos = std::get<1>(IntelMVMCSIHeaderDefinition::getCurrentFieldMapping().at(fieldName));
-            quickMap[fieldName] = pos;
-            return *(OutputType *) (headerBytes + pos);
-        }
-
-        return OutputType{};
-    }
-
-    [[maybe_unused]] bool hasNamedField(const std::string &fieldName) const noexcept;
-
-    IntelRateNFlag getRateNFlagInterpretation() const;
+    [[nodiscard]] IntelRateNFlag getRateNFlagInterpretation() const;
 
     bool operator==(const IntelMVMParsedCSIHeader &rhs) const;
 
     bool operator!=(const IntelMVMParsedCSIHeader &rhs) const;
 
+    static void registerDefaultMVMHeaderInterpretation();
+
 } __attribute__ ((__packed__));
 
-class IntelMVMExtrta {
+class IntelMVMExtraInfo {
 public:
     uint16_t CSIHeaderLength;
     std::vector<uint8_t> CSIHeader;
     IntelMVMParsedCSIHeader parsedHeader;
+
+    [[nodiscard]] std::vector<uint8_t> toBuffer() const;
 };
 
 
@@ -100,28 +58,26 @@ class MVMExtraSegment : public AbstractPicoScenesFrameSegment {
 public:
     MVMExtraSegment();
 
-    static MVMExtraSegment createByBuffer(const uint8_t *buffer, uint32_t bufferLength);
+    MVMExtraSegment(const uint8_t *buffer, uint32_t bufferLength);
 
     static void manipulateHeader(IntelMVMParsedCSIHeader &header);
 
     static void setHeaderManipulator(const std::function<void(IntelMVMParsedCSIHeader &)> &headerManipulator);
 
-    void fromBuffer(const uint8_t *buffer, uint32_t bufferLength) override;
-
-    std::vector<uint8_t> toBuffer() const override;
-
     [[nodiscard]] std::string toString() const override;
 
-    const IntelMVMExtrta &getMvmExtra() const;
+    [[nodiscard]] const IntelMVMExtraInfo &getMvmExtra() const;
+
+    void setMvmExtra(const IntelMVMExtraInfo &mvmExtra);
 
 private:
-    static std::map<uint16_t, std::function<IntelMVMExtrta(const uint8_t *, uint32_t)>> versionedSolutionMap;
+    static std::map<uint16_t, std::function<IntelMVMExtraInfo(const uint8_t *, uint32_t)>> versionedSolutionMap;
 
-    static std::map<uint16_t, std::function<IntelMVMExtrta(const uint8_t *, uint32_t)>> initializeSolutionMap() noexcept;
+    static std::map<uint16_t, std::function<IntelMVMExtraInfo(const uint8_t *, uint32_t)>> initializeSolutionMap() noexcept;
 
     static std::function<void(IntelMVMParsedCSIHeader &)> headerManipulator;
 
-    IntelMVMExtrta mvmExtra;
+    IntelMVMExtraInfo mvmExtra;
 };
 
 std::ostream &operator<<(std::ostream &os, const MVMExtraSegment &mvmSegment);

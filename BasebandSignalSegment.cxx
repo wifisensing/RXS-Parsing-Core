@@ -19,30 +19,13 @@ std::map<uint16_t, std::function<SignalMatrix<std::complex<double>>(const uint8_
 
 BasebandSignalSegment::BasebandSignalSegment() : AbstractPicoScenesFrameSegment("BasebandSignal", 0x1U) {}
 
-BasebandSignalSegment BasebandSignalSegment::createByBuffer(const uint8_t *buffer, uint32_t bufferLength) {
-    BasebandSignalSegment basebandSignalSegment;
-    basebandSignalSegment.fromBuffer(buffer, bufferLength);
-    return basebandSignalSegment;
-}
-
-void BasebandSignalSegment::fromBuffer(const uint8_t *buffer, uint32_t bufferLength) {
-    auto[segmentName, segmentLength, versionId, offset] = extractSegmentMetaData(buffer, bufferLength);
+BasebandSignalSegment::BasebandSignalSegment(const uint8_t *buffer, uint32_t bufferLength) : AbstractPicoScenesFrameSegment(buffer, bufferLength) {
     if (segmentName != "BasebandSignal")
         throw std::runtime_error("BasebandSignalSegment cannot parse the segment named " + segmentName + ".");
-    if (segmentLength + 4 > bufferLength)
-        throw std::underflow_error("BasebandSignalSegment cannot parse the segment with less than " + std::to_string(segmentLength + 4) + "B.");
-    if (!versionedSolutionMap.count(versionId)) {
-        throw std::runtime_error("BasebandSignalSegment cannot parse the segment with version v" + std::to_string(versionId) + ".");
-    }
+    if (!versionedSolutionMap.count(segmentVersionId))
+        throw std::runtime_error("BasebandSignalSegment cannot parse the segment with version v" + std::to_string(segmentVersionId) + ".");
 
-    bbsignals = versionedSolutionMap.at(versionId)(buffer + offset, bufferLength - offset);
-    std::copy(buffer, buffer + bufferLength, std::back_inserter(rawBuffer));
-    this->segmentLength = segmentLength;
-    successfullyDecoded = true;
-}
-
-std::vector<uint8_t> BasebandSignalSegment::toBuffer() const {
-    return AbstractPicoScenesFrameSegment::toBuffer(true);
+    bbsignals = versionedSolutionMap.at(segmentVersionId)(segmentPayload.data(), segmentPayload.size());
 }
 
 [[maybe_unused]] const SignalMatrix<std::complex<double>> &BasebandSignalSegment::getSignalMatrix() const {
@@ -51,12 +34,12 @@ std::vector<uint8_t> BasebandSignalSegment::toBuffer() const {
 
 void BasebandSignalSegment::setSignalMatrix(const SignalMatrix<std::complex<double>> &bbsignalsV) {
     bbsignals = bbsignalsV;
-    addField("core", bbsignals.toBuffer());
+    setSegmentPayload(bbsignals.toBuffer());
 }
 
 std::string BasebandSignalSegment::toString() const {
     std::stringstream ss;
-    ss << segmentName+":[" + std::to_string(bbsignals.dimensions[0]) + "x" + std::to_string(bbsignals.dimensions[1])  + "]";
+    ss << segmentName + ":[" + std::to_string(bbsignals.dimensions[0]) + "x" + std::to_string(bbsignals.dimensions[1]) + "]";
     auto temp = ss.str();
     return temp;
 }
