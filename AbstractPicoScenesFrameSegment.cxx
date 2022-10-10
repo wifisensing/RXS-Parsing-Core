@@ -39,7 +39,7 @@ uint32_t AbstractPicoScenesFrameSegment::toBuffer(uint8_t *buffer, std::optional
     if (rawBuffer.size() != totalLengthIncludingLeading4ByteLength())
         throw std::runtime_error("Segment toBuffer failed");
 
-    if (bufferLength.has_value() && rawBuffer.size() <= bufferLength)
+    if (bufferLength.has_value() && rawBuffer.size() > *bufferLength)
         throw std::underflow_error("bufferLength not long enough");
 
     std::copy(rawBuffer.cbegin(), rawBuffer.cend(), buffer);
