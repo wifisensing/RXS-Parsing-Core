@@ -9,6 +9,7 @@
 #include <vector>
 #include <memory>
 #include <optional>
+#include <string>
 
 class DynamicContentTypeDictionary;
 
