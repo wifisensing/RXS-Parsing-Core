@@ -191,66 +191,71 @@ std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::fromBuffer(con
     pos += sizeof(ModularPicoScenesRxFrameHeader);
 
     auto frame = ModularPicoScenesRxFrame();
-    std::copy(constBuffer, constBuffer + bufferLength, std::back_inserter(frame.rawBuffer));
-    auto *buffer = frame.rawBuffer.data();
-    frame.rxFrameHeader = rxFrameHeader;
-    for (auto i = 0; i < frame.rxFrameHeader.numRxSegments; i++) {
-        auto [segmentName, segmentLength, versionId, offset] = AbstractPicoScenesFrameSegment::extractSegmentMetaData(buffer + pos, bufferLength - pos);
-        if (segmentName == "RxSBasic") {
-            frame.rxSBasicSegment = RxSBasicSegment(buffer + pos, segmentLength + 4);
-        } else if (segmentName == "ExtraInfo") {
-            frame.rxExtraInfoSegment = ExtraInfoSegment(buffer + pos, segmentLength + 4);
-        } else if (segmentName == "MVMExtra") {
-            frame.mvmExtraSegment = MVMExtraSegment(buffer + pos, segmentLength + 4);
-            std::copy(frame.mvmExtraSegment->rawBuffer.cbegin(), frame.mvmExtraSegment->rawBuffer.cend(), frame.rawBuffer.begin() + pos);
-        } else if (segmentName == "CSI") {
-            frame.csiSegment = CSISegment(buffer + pos, segmentLength + 4);
-            if (interpolateCSI) {
-                frame.csiSegment.getCSI().removeCSDAndInterpolateCSI();
-            }
-        } else if (segmentName == "PilotCSI") {
-            frame.pilotCSISegment = CSISegment(buffer + pos, segmentLength + 4);
-        } else if (segmentName == "LegacyCSI") {
-            frame.legacyCSISegment = CSISegment(buffer + pos, segmentLength + 4);
-            if (interpolateCSI) {
-                frame.legacyCSISegment->getCSI().removeCSDAndInterpolateCSI();
-            }
-        } else if (segmentName == "BasebandSignal") {
-            frame.basebandSignalSegment = BasebandSignalSegment(buffer + pos, segmentLength + 4);
-        } else if (segmentName == "PreEQSymbols") {
-            frame.preEQSymbolsSegment = PreEQSymbolsSegment(buffer + pos, segmentLength + 4);
-        } else {
-            frame.rxUnkownSegments.emplace_back(AbstractPicoScenesFrameSegment(buffer + pos, segmentLength + 4));
-        }
-        pos += (segmentLength + 4);
-    }
-
-    auto mpduPos = pos;
-    frame.standardHeader = ieee80211_mac_frame_header::createFromBuffer(buffer + pos, bufferLength - pos);
-    pos += sizeof(ieee80211_mac_frame_header); // TODO this is somewhat dangerous.
-
-    if (auto PSHeader = PicoScenesFrameHeader::fromBuffer(buffer + pos)) {
-        frame.PicoScenesHeader = PSHeader;
-        pos += sizeof(PicoScenesFrameHeader);
-
-        for (auto i = 0; i < frame.PicoScenesHeader->numSegments; i++) {
-            auto [segmentName, segmentLength, versionId, offset] = AbstractPicoScenesFrameSegment::extractSegmentMetaData(buffer + pos, bufferLength);
-            if (segmentName == "ExtraInfo") {
-                frame.txExtraInfoSegment = ExtraInfoSegment(buffer + pos, segmentLength + 4);
-            } else if (segmentName == "DPASRequest") {
-                frame.dpasRequestSegment = DPASRequestSegment(buffer + pos, segmentLength + 4);
-            } else if (segmentName == "Payload") {
-                frame.payloadSegments.emplace_back(PayloadSegment(buffer + pos, segmentLength + 4));
-            } else if (segmentName == "Cargo") {
-                frame.cargoSegment = CargoSegment(buffer + pos, segmentLength + 4);
+    try {
+        std::copy(constBuffer, constBuffer + bufferLength, std::back_inserter(frame.rawBuffer));
+        auto *buffer = frame.rawBuffer.data();
+        frame.rxFrameHeader = rxFrameHeader;
+        for (auto i = 0; i < frame.rxFrameHeader.numRxSegments; i++) {
+            auto [segmentName, segmentLength, versionId, offset] = AbstractPicoScenesFrameSegment::extractSegmentMetaData(buffer + pos, bufferLength - pos);
+            if (segmentName == "RxSBasic") {
+                frame.rxSBasicSegment = RxSBasicSegment(buffer + pos, segmentLength + 4);
+            } else if (segmentName == "ExtraInfo") {
+                frame.rxExtraInfoSegment = ExtraInfoSegment(buffer + pos, segmentLength + 4);
+            } else if (segmentName == "MVMExtra") {
+                frame.mvmExtraSegment = MVMExtraSegment(buffer + pos, segmentLength + 4);
+                std::copy(frame.mvmExtraSegment->rawBuffer.cbegin(), frame.mvmExtraSegment->rawBuffer.cend(), frame.rawBuffer.begin() + pos);
+            } else if (segmentName == "CSI") {
+                frame.csiSegment = CSISegment(buffer + pos, segmentLength + 4);
+                if (interpolateCSI) {
+                    frame.csiSegment.getCSI().removeCSDAndInterpolateCSI();
+                }
+            } else if (segmentName == "PilotCSI") {
+                frame.pilotCSISegment = CSISegment(buffer + pos, segmentLength + 4);
+            } else if (segmentName == "LegacyCSI") {
+                frame.legacyCSISegment = CSISegment(buffer + pos, segmentLength + 4);
+                if (interpolateCSI) {
+                    frame.legacyCSISegment->getCSI().removeCSDAndInterpolateCSI();
+                }
+            } else if (segmentName == "BasebandSignal") {
+                frame.basebandSignalSegment = BasebandSignalSegment(buffer + pos, segmentLength + 4);
+            } else if (segmentName == "PreEQSymbols") {
+                frame.preEQSymbolsSegment = PreEQSymbolsSegment(buffer + pos, segmentLength + 4);
             } else {
-                frame.txUnkownSegments.emplace_back(AbstractPicoScenesFrameSegment(buffer + pos, segmentLength + 4));
+                frame.rxUnkownSegments.emplace_back(AbstractPicoScenesFrameSegment(buffer + pos, segmentLength + 4));
             }
-            pos += segmentLength + 4;
+            pos += (segmentLength + 4);
         }
-    }
 
-    std::copy(buffer + mpduPos, buffer + bufferLength, std::back_inserter(frame.mpdu));
+        auto mpduPos = pos;
+        frame.standardHeader = ieee80211_mac_frame_header::createFromBuffer(buffer + pos, bufferLength - pos);
+        pos += sizeof(ieee80211_mac_frame_header); // TODO this is somewhat dangerous.
+
+        if (auto PSHeader = PicoScenesFrameHeader::fromBuffer(buffer + pos)) {
+            frame.PicoScenesHeader = PSHeader;
+            pos += sizeof(PicoScenesFrameHeader);
+
+            for (auto i = 0; i < frame.PicoScenesHeader->numSegments; i++) {
+                auto [segmentName, segmentLength, versionId, offset] = AbstractPicoScenesFrameSegment::extractSegmentMetaData(buffer + pos, bufferLength);
+                if (segmentName == "ExtraInfo") {
+                    frame.txExtraInfoSegment = ExtraInfoSegment(buffer + pos, segmentLength + 4);
+                } else if (segmentName == "DPASRequest") {
+                    frame.dpasRequestSegment = DPASRequestSegment(buffer + pos, segmentLength + 4);
+                } else if (segmentName == "Payload") {
+                    frame.payloadSegments.emplace_back(PayloadSegment(buffer + pos, segmentLength + 4));
+                } else if (segmentName == "Cargo") {
+                    frame.cargoSegment = CargoSegment(buffer + pos, segmentLength + 4);
+                } else {
+                    frame.txUnkownSegments.emplace_back(AbstractPicoScenesFrameSegment(buffer + pos, segmentLength + 4));
+                }
+                pos += segmentLength + 4;
+            }
+        }
+
+        std::copy(buffer + mpduPos, buffer + bufferLength, std::back_inserter(frame.mpdu));
+    } catch (const std::exception &exception) {
+        std::cout << "Error occurs during Rx frame parsing:" << exception.what() << ". Error skipped" << std::endl;
+        return {};
+    }
 
     return frame;
 }

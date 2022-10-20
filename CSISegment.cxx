@@ -141,7 +141,8 @@ std::optional<CSI> CSI::fromIWLMVM(const uint8_t *buffer, uint32_t bufferLength,
             std::stringstream ss;
             ss << int(numTx) << " " << int(numRx) << " " << int(numTones) << " " << int(format) << " " << int(cbw) << " " << rxIndex << " " << stsIndex << " " << numTonesNew << " " << newIndex << std::endl;
             std::cout << ss.str() << std::endl;
-            throw std::runtime_error("Firmware data size inconsistent bug encountered: " + ss.str());
+            std::cout << "Firmware data size inconsistent bug encountered: " + ss.str() + ". This data is skipped." << std::endl;
+            return {};
         }
         CSIArray.at(newIndex) = std::complex<double>(*real, *imag);
     }
@@ -472,7 +473,7 @@ static auto v3Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> std::
         csi.subcarrierBandwidth = subcarrierBandwidth;
         return csi;
     } else if (deviceType == PicoScenesDeviceType::IWLMVM_AX200 || deviceType == PicoScenesDeviceType::IWLMVM_AX210) {
-        if (auto csi = CSI::fromIWLMVM(buffer + pos, CSIBufferLength, 67, numSTS, numRx, numTone, packetFormat, cbw, subcarrierIndexOffset, true)) {
+        if (auto csi = CSI::fromIWLMVM(buffer + pos, CSIBufferLength, 68, numSTS, numRx, numTone, packetFormat, cbw, subcarrierIndexOffset, true)) {
             csi->deviceType = deviceType;
             csi->carrierFreq = carrierFreq;
             csi->samplingRate = samplingRate;
@@ -606,7 +607,7 @@ CSISegment::CSISegment(const uint8_t *buffer, uint32_t bufferLength) : AbstractP
     if (auto parsedCSI = versionedSolutionMap.at(segmentVersionId)(segmentPayload.data(), segmentPayload.size())) {
         csi = *parsedCSI;
     } else {
-        //TODO error branch of csi decoding
+        throw std::runtime_error("Error occurs during the CSI segment parsing.");
     }
 }
 
