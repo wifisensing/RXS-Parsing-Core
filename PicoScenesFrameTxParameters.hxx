@@ -47,7 +47,7 @@ public:
     double txIQAmplitudeImbalance_dB;
     double txIQPhaseImbalance_rad;
     bool maxPowerScaleTo1;
-    double actualSamplingRate;
+    double hardwareSamplingRate;
     double samplingRateOffset;
     double carrierFrequencyOffset;
     double resampleRatio;
@@ -85,7 +85,7 @@ public:
         txIQAmplitudeImbalance_dB = 0;
         txIQPhaseImbalance_rad = 0;
         maxPowerScaleTo1 = true;
-        actualSamplingRate = 20e6;
+        hardwareSamplingRate = 20e6;
         samplingRateOffset = 0;
         carrierFrequencyOffset = 0;
         resampleRatio = 1.0;
@@ -115,91 +115,91 @@ public:
 
         switch (preset) {
             case FrontEndModePreset::TX_CBW_160_HESU:
-                actualSamplingRate = 200e6;
+                hardwareSamplingRate = 200e6;
                 cbw = ChannelBandwidthEnum::CBW_160;
                 frameType = PacketFormatEnum::PacketFormat_HESU;
                 coding = std::vector<ChannelCodingEnum>(1, ChannelCodingEnum::LDPC);
                 resampleRatio = 1.25;
                 break;
             case FrontEndModePreset::TX_CBW_160_VHT_LDPC:
-                actualSamplingRate = 200e6;
+                hardwareSamplingRate = 200e6;
                 cbw = ChannelBandwidthEnum::CBW_160;
                 frameType = PacketFormatEnum::PacketFormat_VHT;
                 coding = std::vector<ChannelCodingEnum>(1, ChannelCodingEnum::LDPC);
                 resampleRatio = 1.25;
                 break;
             case FrontEndModePreset::TX_CBW_160_VHT:
-                actualSamplingRate = 200e6;
+                hardwareSamplingRate = 200e6;
                 cbw = ChannelBandwidthEnum::CBW_160;
                 frameType = PacketFormatEnum::PacketFormat_VHT;
                 coding = std::vector<ChannelCodingEnum>(1, ChannelCodingEnum::BCC);
                 resampleRatio = 1.25;
                 break;
             case FrontEndModePreset::TX_CBW_80_HESU:
-                actualSamplingRate = 100e6;
+                hardwareSamplingRate = 100e6;
                 cbw = ChannelBandwidthEnum::CBW_80;
                 frameType = PacketFormatEnum::PacketFormat_HESU;
                 coding = std::vector<ChannelCodingEnum>(1, ChannelCodingEnum::LDPC);
                 resampleRatio = 1.25;
                 break;
             case FrontEndModePreset::TX_CBW_80_VHT:
-                actualSamplingRate = 100e6;
+                hardwareSamplingRate = 100e6;
                 cbw = ChannelBandwidthEnum::CBW_80;
                 frameType = PacketFormatEnum::PacketFormat_VHT;
                 coding = std::vector<ChannelCodingEnum>(1, ChannelCodingEnum::BCC);
                 resampleRatio = 1.25;
                 break;
             case FrontEndModePreset::TX_CBW_80_VHT_LDPC:
-                actualSamplingRate = 100e6;
+                hardwareSamplingRate = 100e6;
                 cbw = ChannelBandwidthEnum::CBW_80;
                 frameType = PacketFormatEnum::PacketFormat_VHT;
                 coding = std::vector<ChannelCodingEnum>(1, ChannelCodingEnum::LDPC);
                 resampleRatio = 1.25;
                 break;
             case FrontEndModePreset::TX_CBW_40_RESAMPLE_HESU:
-                actualSamplingRate = 50e6;
+                hardwareSamplingRate = 50e6;
                 cbw = ChannelBandwidthEnum::CBW_40;
                 frameType = PacketFormatEnum::PacketFormat_HESU;
                 coding = std::vector<ChannelCodingEnum>(1, ChannelCodingEnum::LDPC);
                 resampleRatio = 1.25;
                 break;
             case FrontEndModePreset::TX_CBW_40_RESAMPLE_VHT:
-                actualSamplingRate = 50e6;
+                hardwareSamplingRate = 50e6;
                 cbw = ChannelBandwidthEnum::CBW_40;
                 frameType = PacketFormatEnum::PacketFormat_VHT;
                 coding = std::vector<ChannelCodingEnum>(1, ChannelCodingEnum::BCC);
                 resampleRatio = 1.25;
                 break;
             case FrontEndModePreset::TX_CBW_40_RESAMPLE_VHT_LDPC:
-                actualSamplingRate = 50e6;
+                hardwareSamplingRate = 50e6;
                 cbw = ChannelBandwidthEnum::CBW_40;
                 frameType = PacketFormatEnum::PacketFormat_VHT;
                 coding = std::vector<ChannelCodingEnum>(1, ChannelCodingEnum::LDPC);
                 resampleRatio = 1.25;
                 break;
             case FrontEndModePreset::TX_CBW_40_RESAMPLE_HT:
-                actualSamplingRate = 50e6;
+                hardwareSamplingRate = 50e6;
                 cbw = ChannelBandwidthEnum::CBW_40;
                 frameType = PacketFormatEnum::PacketFormat_HT;
                 coding = std::vector<ChannelCodingEnum>(1, ChannelCodingEnum::BCC);
                 resampleRatio = 1.25;
                 break;
             case FrontEndModePreset::TX_CBW_40_HESU:
-                actualSamplingRate = 40e6;
+                hardwareSamplingRate = 40e6;
                 cbw = ChannelBandwidthEnum::CBW_40;
                 frameType = PacketFormatEnum::PacketFormat_HESU;
                 coding = std::vector<ChannelCodingEnum>(1, ChannelCodingEnum::LDPC);
                 resampleRatio = 1.0;
                 break;
             case FrontEndModePreset::TX_CBW_40_VHT:
-                actualSamplingRate = 40e6;
+                hardwareSamplingRate = 40e6;
                 cbw = ChannelBandwidthEnum::CBW_40;
                 frameType = PacketFormatEnum::PacketFormat_VHT;
                 coding = std::vector<ChannelCodingEnum>(1, ChannelCodingEnum::BCC);
                 resampleRatio = 1.0;
                 break;
             case FrontEndModePreset::TX_CBW_40_VHT_LDPC:
-                actualSamplingRate = 40e6;
+                hardwareSamplingRate = 40e6;
                 cbw = ChannelBandwidthEnum::CBW_40;
                 frameType = PacketFormatEnum::PacketFormat_VHT;
                 coding = std::vector<ChannelCodingEnum>(1, ChannelCodingEnum::LDPC);
