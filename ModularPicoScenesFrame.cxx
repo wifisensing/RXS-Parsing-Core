@@ -204,6 +204,8 @@ std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::fromBuffer(con
             } else if (segmentName == "MVMExtra") {
                 frame.mvmExtraSegment = MVMExtraSegment(buffer + pos, segmentLength + 4);
                 std::copy(frame.mvmExtraSegment->rawBuffer.cbegin(), frame.mvmExtraSegment->rawBuffer.cend(), frame.rawBuffer.begin() + pos);
+            } else if (segmentName == "SDRExtra") {
+                frame.sdrExtraSegment = SDRExtraSegment(buffer + pos, segmentLength + 4);
             } else if (segmentName == "CSI") {
                 frame.csiSegment = CSISegment(buffer + pos, segmentLength + 4);
                 if (interpolateCSI) {
@@ -267,6 +269,8 @@ std::string ModularPicoScenesRxFrame::toString() const {
     ss << ", Rx" << rxExtraInfoSegment.getExtraInfo();
     if (mvmExtraSegment)
         ss << ", " << *mvmExtraSegment;
+    if (sdrExtraSegment)
+        ss << ", " << *sdrExtraSegment;
     ss << ", " << "(" << PacketFormat2String(csiSegment.getCSI().packetFormat) << ")" << csiSegment;
     if (pilotCSISegment)
         ss << ", " << *pilotCSISegment;
@@ -374,14 +378,20 @@ Uint8Vector ModularPicoScenesRxFrame::toBuffer() const {
     auto rxsExtraInfoBuffer = rxExtraInfoSegment.toBuffer();
     std::copy(rxsExtraInfoBuffer.cbegin(), rxsExtraInfoBuffer.cend(), std::back_inserter(rxSegmentBuffer));
 
+    auto csiBuffer = csiSegment.toBuffer();
+    std::copy(csiBuffer.cbegin(), csiBuffer.cend(), std::back_inserter(rxSegmentBuffer));
+
     if (mvmExtraSegment) {
         auto buffer = mvmExtraSegment->toBuffer();
         std::copy(buffer.cbegin(), buffer.cend(), std::back_inserter(rxSegmentBuffer));
         modularFrameHeader.numRxSegments++;
     }
 
-    auto csiBuffer = csiSegment.toBuffer();
-    std::copy(csiBuffer.cbegin(), csiBuffer.cend(), std::back_inserter(rxSegmentBuffer));
+    if (sdrExtraSegment) {
+        auto buffer = sdrExtraSegment->toBuffer();
+        std::copy(buffer.cbegin(), buffer.cend(), std::back_inserter(rxSegmentBuffer));
+        modularFrameHeader.numRxSegments++;
+    }
 
     if (pilotCSISegment) {
         auto pilotCSIBuffer = pilotCSISegment->toBuffer();
