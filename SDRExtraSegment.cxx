@@ -24,6 +24,7 @@ struct SDRExtraV1 {
     double CFO;
     int8_t scramblerInit;
     uint64_t packetStartInternal;
+    double lastTxTime;
 } __attribute__ ((__packed__));
 
 static auto v1Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> SDRExtra {
@@ -39,6 +40,8 @@ static auto v1Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> SDREx
     pos += sizeof(int8_t);
     r.packetStartInternal = *(uint64_t *) (buffer + pos);
     pos += sizeof(uint64_t);
+    r.lastTxTime = *(double *) (buffer + pos);
+    pos += sizeof(double);
 
     if (pos != bufferLength)
         throw std::runtime_error("SDRExtra v1Parser cannot parse the segment with mismatched buffer length.");
@@ -82,7 +85,7 @@ void SDRExtraSegment::setSdrExtra(const SDRExtra &sdrExtraV) {
 std::string SDRExtraSegment::toString() const {
     std::stringstream ss;
     ss << segmentName + ":[";
-    ss << "CFO=" + std::to_string(sdrExtra.CFO / 1e3) + " kHz, scrambler=" + std::to_string(sdrExtra.scramblerInit) + ", packetStartInternal=" + std::to_string(sdrExtra.packetStartInternal) + "]";
+    ss << "CFO=" + std::to_string(sdrExtra.CFO / 1e3) + " kHz, scrambler=" + std::to_string(sdrExtra.scramblerInit) + ", packetStartInternal=" + std::to_string(sdrExtra.packetStartInternal) + ", lastTxTime=" + std::to_string(sdrExtra.lastTxTime) + "]";
     auto temp = ss.str();
     return temp;
 }
