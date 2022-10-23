@@ -760,7 +760,7 @@ std::string ModularPicoScenesTxFrame::toString() const {
         std::stringstream segss;
         segss << "Segments:(";
         for (const auto &segment: segments) {
-            segss << segment << ", ";
+            segss << *segment << ", ";
         }
         auto temp = segss.str();
         temp.erase(temp.end() - 2, temp.end());
