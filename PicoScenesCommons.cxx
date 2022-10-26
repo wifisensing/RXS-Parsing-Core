@@ -92,9 +92,15 @@ std::string PacketFormat2String(PacketFormatEnum format) {
             return "HE-SU";
         case PacketFormatEnum::PacketFormat_HEMU:
             return "HE-MU";
-        default:
-            throw std::runtime_error("unrecognized packet format.");
+        case PacketFormatEnum::PacketFormat_HETB:
+            return "HE-TB";
+        case PacketFormatEnum::PacketFormat_EHT:
+            return "EHT";
+        case PacketFormatEnum::PacketFormat_Unknown:
+            return "Unknown";
     }
+
+    throw std::runtime_error("Unsupported packet format.");
 }
 
 std::string ChannelBandwidth2String(ChannelBandwidthEnum cbw) {
@@ -107,8 +113,10 @@ std::string ChannelBandwidth2String(ChannelBandwidthEnum cbw) {
             return "80";
         case ChannelBandwidthEnum::CBW_160:
             return "160";
+        case ChannelBandwidthEnum::CBW_320:
+            return "320";
         default:
-            throw std::runtime_error("Unsupported ChannelBandwidthEnum...");
+            return "Unknown Channel Bandwidth (CBW)";
     }
 }
 
