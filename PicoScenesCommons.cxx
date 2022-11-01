@@ -213,6 +213,8 @@ std::string FrontEndModePreset2String(FrontEndModePreset preset) {
             return "TX_CBW_40_RESAMPLE_VHT";
         case FrontEndModePreset::TX_CBW_40_RESAMPLE_VHT_LDPC:
             return "TX_CBW_40_RESAMPLE_VHT_LDPC";
+        case FrontEndModePreset::TX_CBW_40_RESAMPLE_HT_LDPC:
+            return "TX_CBW_40_RESAMPLE_HT_LDPC";
         case FrontEndModePreset::TX_CBW_40_RESAMPLE_HT:
             return "TX_CBW_40_RESAMPLE_HT";
         case FrontEndModePreset::TX_CBW_40_HESU:
@@ -221,6 +223,10 @@ std::string FrontEndModePreset2String(FrontEndModePreset preset) {
             return "TX_CBW_40_VHT";
         case FrontEndModePreset::TX_CBW_40_VHT_LDPC:
             return "TX_CBW_40_VHT_LDPC";
+        case FrontEndModePreset::TX_CBW_40_HT:
+            return "TX_CBW_40_HT";
+        case FrontEndModePreset::TX_CBW_40_HT_LDPC:
+            return "TX_CBW_40_HT_LDPC";
         case FrontEndModePreset::RX_CBW_160:
             return "RX_CBW_160";
         case FrontEndModePreset::RX_CBW_80:
@@ -257,15 +263,21 @@ std::string FrontEndModePreset2DescriptiveString(FrontEndModePreset preset) {
         case FrontEndModePreset::TX_CBW_40_RESAMPLE_VHT:
             return FrontEndModePreset2String(preset) + ": [Tx, 40 MHz CBW, 50 MHz actual Tx sampling rate, 1.25 Tx resample ratio, VHT format, and BCC coding]";
         case FrontEndModePreset::TX_CBW_40_RESAMPLE_VHT_LDPC:
-            return FrontEndModePreset2String(preset) + ": [Tx, 40 MHz CBW, 50 MHz actual Tx sampling rate, 1.25 Tx resample ratio, HESU format, and LDPC coding]";
+            return FrontEndModePreset2String(preset) + ": [Tx, 40 MHz CBW, 50 MHz actual Tx sampling rate, 1.25 Tx resample ratio, VHT format, and LDPC coding]";
         case FrontEndModePreset::TX_CBW_40_RESAMPLE_HT:
             return FrontEndModePreset2String(preset) + ": [Tx, 40 MHz CBW, 50 MHz actual Tx sampling rate, 1.25 Tx resample ratio, HT format, and BCC coding]";
+        case FrontEndModePreset::TX_CBW_40_RESAMPLE_HT_LDPC:
+            return FrontEndModePreset2String(preset) + ": [Tx, 40 MHz CBW, 50 MHz actual Tx sampling rate, 1.25 Tx resample ratio, HT format, and LDPC coding]";
         case FrontEndModePreset::TX_CBW_40_HESU:
             return FrontEndModePreset2String(preset) + ": [Tx, 40 MHz CBW, 40 MHz actual Tx sampling rate, 1.0 Tx resample ratio, HESU format, and LDPC coding]";
         case FrontEndModePreset::TX_CBW_40_VHT:
             return FrontEndModePreset2String(preset) + ": [Tx, 40 MHz CBW, 40 MHz actual Tx sampling rate, 1.0 Tx resample ratio, VHT format, and BCC coding]";
         case FrontEndModePreset::TX_CBW_40_VHT_LDPC:
             return FrontEndModePreset2String(preset) + ": [Tx, 40 MHz CBW, 40 MHz actual Tx sampling rate, 1.0 Tx resample ratio, VHT format, and LDPC coding]";
+        case FrontEndModePreset::TX_CBW_40_HT:
+            return FrontEndModePreset2String(preset) + ": [Tx, 40 MHz CBW, 40 MHz actual Tx sampling rate, 1.0 Tx resample ratio, HT format, and BCC coding]";
+        case FrontEndModePreset::TX_CBW_40_HT_LDPC:
+            return FrontEndModePreset2String(preset) + ": [Tx, 40 MHz CBW, 40 MHz actual Tx sampling rate, 1.0 Tx resample ratio, HT format, and LDPC coding]";
         case FrontEndModePreset::RX_CBW_160:
             return FrontEndModePreset2String(preset) + ": [Rx, 160 MHz Rx CBW, 200 MHz actual Rx sampling rate, 0.8 Rx resample ratio]";
         case FrontEndModePreset::RX_CBW_80:
@@ -312,9 +324,12 @@ const std::vector<FrontEndModePreset> &getAllFrontEndModePresets() {
             FrontEndModePreset::TX_CBW_40_RESAMPLE_VHT,
             FrontEndModePreset::TX_CBW_40_RESAMPLE_VHT_LDPC,
             FrontEndModePreset::TX_CBW_40_RESAMPLE_HT,
+            FrontEndModePreset::TX_CBW_40_RESAMPLE_HT_LDPC,
             FrontEndModePreset::TX_CBW_40_HESU,
             FrontEndModePreset::TX_CBW_40_VHT,
             FrontEndModePreset::TX_CBW_40_VHT_LDPC,
+            FrontEndModePreset::TX_CBW_40_HT,
+            FrontEndModePreset::TX_CBW_40_HT_LDPC,
             FrontEndModePreset::RX_CBW_160,
             FrontEndModePreset::RX_CBW_80,
             FrontEndModePreset::RX_CBW_40_RESAMPLE,

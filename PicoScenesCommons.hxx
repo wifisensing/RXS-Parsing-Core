@@ -191,10 +191,13 @@ enum class FrontEndModePreset : uint8_t {
     TX_CBW_40_RESAMPLE_HESU, ///< 40 MHz CBW, 50 MHz actual Tx sampling rate, 1.25 Tx resample ratio, HESU format, LDPC coding
     TX_CBW_40_RESAMPLE_VHT, ///< 40 MHz CBW, 50 MHz actual Tx sampling rate, 1.25 Tx resample ratio, VHT format, BCC coding
     TX_CBW_40_RESAMPLE_VHT_LDPC, ///< 40 MHz CBW, 50 MHz actual Tx sampling rate, 1.25 Tx resample ratio, VHT format, LDPC coding
+    TX_CBW_40_RESAMPLE_HT_LDPC, ///< 40 MHz CBW, 50 MHz actual Tx sampling rate, 1.25 Tx resample ratio, HT format, LDPC coding
     TX_CBW_40_RESAMPLE_HT, ///< 40 MHz CBW, 50 MHz actual Tx sampling rate, 1.25 Tx resample ratio, HT format, BCC coding
     TX_CBW_40_HESU, ///< 40 MHz CBW, 40 MHz actual Tx sampling rate, 1.0 Tx resample ratio, HESU format, LDPC coding
     TX_CBW_40_VHT, ///< 40 MHz CBW, 40 MHz actual Tx sampling rate, 1.0 Tx resample ratio, VHT format, BCC coding
     TX_CBW_40_VHT_LDPC, ///< 40 MHz CBW, 40 MHz actual Tx sampling rate, 1.0 Tx resample ratio, VHT format, LDPC coding
+    TX_CBW_40_HT, ///< 40 MHz CBW, 40 MHz actual Tx sampling rate, 1.0 Tx resample ratio, HT format, BCC coding
+    TX_CBW_40_HT_LDPC, ///< 40 MHz CBW, 40 MHz actual Tx sampling rate, 1.0 Tx resample ratio, HT format, LDPC coding
 
     RX_CBW_160, ///< 160 MHz Rx CBW, 200 MHz actual Rx sampling rate, 0.8 Rx resample ratio
     RX_CBW_80,  //< 80 MHz Rx CBW, 100 MHz actual Rx sampling rate, 0.8 Rx resample ratio
