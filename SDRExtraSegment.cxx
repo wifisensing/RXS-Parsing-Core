@@ -21,7 +21,6 @@ std::ostream &operator<<(std::ostream &os, const SDRExtra &sdrExtra) {
 }
 
 struct SDRExtraV1 {
-    double CFO;
     int8_t scramblerInit;
     uint64_t packetStartInternal;
     double lastTxTime;
