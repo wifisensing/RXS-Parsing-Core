@@ -11,7 +11,7 @@ std::vector<uint8_t> SDRExtra::toBuffer() {
 
 std::string SDRExtra::toString() const {
     std::stringstream ss;
-    ss << "SDRExtra:[CFO=" + std::to_string(CFO / 1e3) + " kHz, scrambler=" + std::to_string(scramblerInit) + ", packetStartInternal=" + std::to_string(packetStartInternal) + "]";
+    ss << "SDRExtra:[scrambler=" + std::to_string(scramblerInit) + ", packetStartInternal=" + std::to_string(packetStartInternal) + ", lastTxTime=" + std::to_string(lastTxTime) + "]";
     return ss.str();
 }
 
@@ -34,8 +34,6 @@ static auto v1Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> SDREx
 
     auto r = SDRExtra();
     std::memset(&r, 0, sizeof(r));
-    r.CFO = *(double *) (buffer + pos);
-    pos += sizeof(double);
     r.scramblerInit = *(int8_t *) (buffer + pos);
     pos += sizeof(int8_t);
     r.packetStartInternal = *(int64_t *) (buffer + pos);
@@ -83,9 +81,5 @@ void SDRExtraSegment::setSdrExtra(const SDRExtra &sdrExtraV) {
 }
 
 std::string SDRExtraSegment::toString() const {
-    std::stringstream ss;
-    ss << segmentName + ":[";
-    ss << "CFO=" + std::to_string(sdrExtra.CFO / 1e3) + " kHz, scrambler=" + std::to_string(sdrExtra.scramblerInit) + ", packetStartInternal=" + std::to_string(sdrExtra.packetStartInternal) + ", lastTxTime=" + std::to_string(sdrExtra.lastTxTime) + "]";
-    auto temp = ss.str();
-    return temp;
+    return sdrExtra.toString();
 }

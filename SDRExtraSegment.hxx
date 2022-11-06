@@ -11,7 +11,6 @@
 #include "PicoScenesCommons.hxx"
 
 struct SDRExtra {
-    double CFO;
     int8_t scramblerInit;
     int64_t packetStartInternal;
     double lastTxTime;
