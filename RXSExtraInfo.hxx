@@ -108,8 +108,8 @@ struct ExtraInfo {
     uint8_t rxChainMask;
     uint8_t txpower;
     uint64_t cf;
-    uint32_t txTSF;
-    uint32_t lastHwTxTSF;
+    uint64_t txTSF;
+    uint64_t lastHwTxTSF;
     uint16_t channelFlags;
     uint8_t tx_ness;
     AtherosCFTuningPolicy tuningPolicy;

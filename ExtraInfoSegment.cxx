@@ -4,7 +4,7 @@
 
 #include "ExtraInfoSegment.hxx"
 
-static auto v1Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> ExtraInfo {
+static auto parserWrapper = [](const uint8_t *buffer, uint32_t bufferLength) -> ExtraInfo {
     if (auto eiOpt = ExtraInfo::fromBuffer(buffer, 0)) {
         auto calculatedLength = eiOpt->calculateBufferLength();
         if (calculatedLength != bufferLength - 4)
@@ -18,10 +18,11 @@ static auto v1Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> Extra
 std::map<uint16_t, std::function<ExtraInfo(const uint8_t *, uint32_t)>> ExtraInfoSegment::versionedSolutionMap = initializeSolutionMap();
 
 std::map<uint16_t, std::function<ExtraInfo(const uint8_t *, uint32_t)>> ExtraInfoSegment::initializeSolutionMap() noexcept {
-    return std::map<uint16_t, std::function<ExtraInfo(const uint8_t *, uint32_t)>>{{0x1U, v1Parser}};
+    return std::map<uint16_t, std::function<ExtraInfo(const uint8_t *, uint32_t)>>{{0x1U, parserWrapper},
+                                                                                   {0x2U, parserWrapper}};
 }
 
-ExtraInfoSegment::ExtraInfoSegment() : AbstractPicoScenesFrameSegment("ExtraInfo", 0x1U) {}
+ExtraInfoSegment::ExtraInfoSegment() : AbstractPicoScenesFrameSegment("ExtraInfo", 0x2U) {}
 
 ExtraInfoSegment::ExtraInfoSegment(const ExtraInfo &extraInfoV) : ExtraInfoSegment() {
     extraInfo = extraInfoV;

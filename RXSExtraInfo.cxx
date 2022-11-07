@@ -89,7 +89,7 @@ void inplaceAddRxExtraInfo(uint8_t *inBytes, uint32_t featureCode, uint8_t *valu
 ExtraInfo::ExtraInfo() {
     memset(this, 0, sizeof(ExtraInfo));
     setLength(2);
-    setVersion(0x20210517);
+    setVersion(0x20221107);
 }
 
 int ExtraInfo::fromBinary(const uint8_t *extraInfoPtr, struct ExtraInfo *extraInfo, uint32_t suppliedFeatureCode) {
@@ -118,8 +118,19 @@ int ExtraInfo::fromBinary(const uint8_t *extraInfoPtr, struct ExtraInfo *extraIn
     GETVALUE(hasRxChainMask, rxChainMask)
     GETVALUE(hasTxpower, txpower)
     GETVALUE(hasCF, cf)
-    GETVALUE(hasTxTSF, txTSF)
-    GETVALUE(hasLastHWTxTSF, lastHwTxTSF)
+    if (extraInfo->version == 0x20221107) {
+        GETVALUE(hasTxTSF, txTSF)
+        GETVALUE(hasLastHWTxTSF, lastHwTxTSF)
+    } else if (extraInfo->version == 0x20210517) {
+        if (extraInfo->hasTxTSF) {
+            extraInfo->txTSF = *(uint32_t *) (extraInfoPtr + pos);
+            pos += 4;
+        }
+        if (extraInfo->hasLastHWTxTSF) {
+            extraInfo->lastHwTxTSF = *(uint32_t *) (extraInfoPtr + pos);
+            pos += 4;
+        }
+    }
     GETVALUE(hasChannelFlags, channelFlags)
     GETVALUE(hasTxNess, tx_ness)
     GETVALUE(hasTuningPolicy, tuningPolicy)
