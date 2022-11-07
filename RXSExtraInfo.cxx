@@ -89,7 +89,7 @@ void inplaceAddRxExtraInfo(uint8_t *inBytes, uint32_t featureCode, uint8_t *valu
 ExtraInfo::ExtraInfo() {
     memset(this, 0, sizeof(ExtraInfo));
     setLength(2);
-    setVersion(0x20221107);
+    setVersion(2);
 }
 
 int ExtraInfo::fromBinary(const uint8_t *extraInfoPtr, struct ExtraInfo *extraInfo, uint32_t suppliedFeatureCode) {
@@ -118,10 +118,7 @@ int ExtraInfo::fromBinary(const uint8_t *extraInfoPtr, struct ExtraInfo *extraIn
     GETVALUE(hasRxChainMask, rxChainMask)
     GETVALUE(hasTxpower, txpower)
     GETVALUE(hasCF, cf)
-    if (extraInfo->version == 0x20221107) {
-        GETVALUE(hasTxTSF, txTSF)
-        GETVALUE(hasLastHWTxTSF, lastHwTxTSF)
-    } else if (extraInfo->version == 0x20210517) {
+    if (extraInfo->version != 2) {
         if (extraInfo->hasTxTSF) {
             extraInfo->txTSF = *(uint32_t *) (extraInfoPtr + pos);
             pos += 4;
@@ -130,6 +127,9 @@ int ExtraInfo::fromBinary(const uint8_t *extraInfoPtr, struct ExtraInfo *extraIn
             extraInfo->lastHwTxTSF = *(uint32_t *) (extraInfoPtr + pos);
             pos += 4;
         }
+    } else {
+        GETVALUE(hasTxTSF, txTSF)
+        GETVALUE(hasLastHWTxTSF, lastHwTxTSF)
     }
     GETVALUE(hasChannelFlags, channelFlags)
     GETVALUE(hasTxNess, tx_ness)
@@ -181,8 +181,13 @@ uint16_t ExtraInfo::calculateBufferLength() const {
     ADDLENGTH(hasTxpower, txpower)
     ADDLENGTH(hasCF, cf)
     ADDLENGTH(hasTxTSF, txTSF)
-    ADDLENGTH(hasLastHWTxTSF, lastHwTxTSF)
-    ADDLENGTH(hasChannelFlags, channelFlags)
+    if (this->version != 2) {
+        pos += this->hasTxTSF ? 4 : 0;
+        pos += this->hasLastHWTxTSF ? 4 : 0;
+    } else {
+        ADDLENGTH(hasLastHWTxTSF, lastHwTxTSF)
+        ADDLENGTH(hasChannelFlags, channelFlags)
+    }
     ADDLENGTH(hasTxNess, tx_ness)
     ADDLENGTH(hasTuningPolicy, tuningPolicy)
     ADDLENGTH(hasPLLRate, pll_rate)
@@ -317,14 +322,14 @@ void ExtraInfo::setCf(uint64_t cfV) {
     updateLength();
 }
 
-void ExtraInfo::setTxTsf(uint32_t txTsfV) {
+void ExtraInfo::setTxTsf(uint64_t txTsfV) {
     hasTxTSF = true;
     featureCode |= PICOSCENES_EXTRAINFO_HASTXTSF;
     txTSF = txTsfV;
     updateLength();
 }
 
-void ExtraInfo::setLastHwTxTsf(uint32_t lastHwTxTsfV) {
+void ExtraInfo::setLastHwTxTsf(uint64_t lastHwTxTsfV) {
     hasLastHWTxTSF = true;
     featureCode |= PICOSCENES_EXTRAINFO_HASLASTHWTXTSF;
     lastHwTxTSF = lastHwTxTsfV;

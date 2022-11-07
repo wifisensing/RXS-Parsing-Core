@@ -157,9 +157,9 @@ struct ExtraInfo {
 
     void setCf(uint64_t cf);
 
-    void setTxTsf(uint32_t txTsf);
+    void setTxTsf(uint64_t txTsf);
 
-    void setLastHwTxTsf(uint32_t lastHwTxTsf);
+    void setLastHwTxTsf(uint64_t lastHwTxTsf);
 
     void setChannelFlags(uint16_t channelFlags);
 
