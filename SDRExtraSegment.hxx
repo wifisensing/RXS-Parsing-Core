@@ -11,10 +11,10 @@
 #include "PicoScenesCommons.hxx"
 
 struct SDRExtra {
-    int8_t scramblerInit;
-    int64_t packetStartInternal;
-    double preciseRxTime;
-    double lastTxTime;
+    int8_t scramblerInit{0};
+    int64_t packetStartInternal{0};
+    double preciseRxTime{0};
+    double lastTxTime{0};
 
     [[nodiscard]] std::string toString() const;
 

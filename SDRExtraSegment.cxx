@@ -44,6 +44,7 @@ static auto v1Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> SDREx
     pos += sizeof(int8_t);
     r.packetStartInternal = *(int64_t *) (buffer + pos);
     pos += sizeof(int64_t);
+    r.preciseRxTime = 0;
     r.lastTxTime = *(double *) (buffer + pos);
     pos += sizeof(double);
 
