@@ -79,10 +79,8 @@ static auto v2Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> SDREx
 std::map<uint16_t, std::function<SDRExtra(const uint8_t *, uint32_t)>> SDRExtraSegment::versionedSolutionMap = initializeSolutionMap();
 
 std::map<uint16_t, std::function<SDRExtra(const uint8_t *, uint32_t)>> SDRExtraSegment::initializeSolutionMap() noexcept {
-    std::map<uint16_t, std::function<SDRExtra(const uint8_t *, uint32_t)>> map;
-    map.emplace(0x1U, v1Parser);
-    map.emplace(0x2U, v1Parser);
-    return map;
+    return std::map<uint16_t, std::function<SDRExtra(const uint8_t *, uint32_t)>>{{0x1U, v1Parser},
+                                                                                  {0x2U, v2Parser}};
 }
 
 SDRExtraSegment::SDRExtraSegment() : AbstractPicoScenesFrameSegment("SDRExtra", 0x2U) {}
