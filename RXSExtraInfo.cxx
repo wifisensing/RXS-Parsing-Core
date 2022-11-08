@@ -180,14 +180,14 @@ uint16_t ExtraInfo::calculateBufferLength() const {
     ADDLENGTH(hasRxChainMask, rxChainMask)
     ADDLENGTH(hasTxpower, txpower)
     ADDLENGTH(hasCF, cf)
-    ADDLENGTH(hasTxTSF, txTSF)
     if (this->version != 2) {
         pos += this->hasTxTSF ? 4 : 0;
         pos += this->hasLastHWTxTSF ? 4 : 0;
     } else {
+        ADDLENGTH(hasTxTSF, txTSF)
         ADDLENGTH(hasLastHWTxTSF, lastHwTxTSF)
-        ADDLENGTH(hasChannelFlags, channelFlags)
     }
+    ADDLENGTH(hasChannelFlags, channelFlags)
     ADDLENGTH(hasTxNess, tx_ness)
     ADDLENGTH(hasTuningPolicy, tuningPolicy)
     ADDLENGTH(hasPLLRate, pll_rate)
