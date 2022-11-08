@@ -11,7 +11,7 @@ std::vector<uint8_t> SDRExtra::toBuffer() {
 
 std::string SDRExtra::toString() const {
     std::stringstream ss;
-    ss << "SDRExtra:[scrambler=" + std::to_string(scramblerInit) + ", packetStartInternal=" + std::to_string(packetStartInternal) + ", lastTxTime=" + std::to_string(lastTxTime) + "]";
+    ss << "SDRExtra:[scrambler=" + std::to_string(scramblerInit) + ", packetStartInternal=" + std::to_string(packetStartInternal) + ", rxTime=" + std::to_string(preciseRxTime) + ", lastTxTime=" + std::to_string(lastTxTime) + "]";
     return ss.str();
 }
 
@@ -23,6 +23,13 @@ std::ostream &operator<<(std::ostream &os, const SDRExtra &sdrExtra) {
 struct SDRExtraV1 {
     int8_t scramblerInit;
     uint64_t packetStartInternal;
+    double lastTxTime;
+} __attribute__ ((__packed__));
+
+struct SDRExtraV2 {
+    int8_t scramblerInit;
+    uint64_t packetStartInternal;
+    double preciseRxTime;
     double lastTxTime;
 } __attribute__ ((__packed__));
 
@@ -46,15 +53,38 @@ static auto v1Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> SDREx
     return r;
 };
 
+static auto v2Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> SDRExtra {
+    uint32_t pos = 0;
+    if (bufferLength < sizeof(SDRExtraV2))
+        throw std::runtime_error("SDRExtra v2Parser cannot parse the segment with insufficient buffer length.");
+
+    auto r = SDRExtra();
+    std::memset(&r, 0, sizeof(r));
+    r.scramblerInit = *(int8_t *) (buffer + pos);
+    pos += sizeof(int8_t);
+    r.packetStartInternal = *(int64_t *) (buffer + pos);
+    pos += sizeof(int64_t);
+    r.preciseRxTime = *(double *) (buffer + pos);
+    pos += sizeof(double);
+    r.lastTxTime = *(double *) (buffer + pos);
+    pos += sizeof(double);
+
+    if (pos != bufferLength)
+        throw std::runtime_error("SDRExtra v2Parser cannot parse the segment with mismatched buffer length.");
+
+    return r;
+};
+
 std::map<uint16_t, std::function<SDRExtra(const uint8_t *, uint32_t)>> SDRExtraSegment::versionedSolutionMap = initializeSolutionMap();
 
 std::map<uint16_t, std::function<SDRExtra(const uint8_t *, uint32_t)>> SDRExtraSegment::initializeSolutionMap() noexcept {
     std::map<uint16_t, std::function<SDRExtra(const uint8_t *, uint32_t)>> map;
     map.emplace(0x1U, v1Parser);
+    map.emplace(0x2U, v1Parser);
     return map;
 }
 
-SDRExtraSegment::SDRExtraSegment() : AbstractPicoScenesFrameSegment("SDRExtra", 0x1U) {}
+SDRExtraSegment::SDRExtraSegment() : AbstractPicoScenesFrameSegment("SDRExtra", 0x2U) {}
 
 SDRExtraSegment::SDRExtraSegment(const uint8_t *buffer, uint32_t bufferLength) : AbstractPicoScenesFrameSegment(buffer, bufferLength) {
     if (segmentName != "SDRExtra")

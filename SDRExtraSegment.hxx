@@ -13,6 +13,7 @@
 struct SDRExtra {
     int8_t scramblerInit;
     int64_t packetStartInternal;
+    double preciseRxTime;
     double lastTxTime;
 
     [[nodiscard]] std::string toString() const;
