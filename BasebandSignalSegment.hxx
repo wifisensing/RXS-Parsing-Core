@@ -18,6 +18,8 @@ public:
 
     [[maybe_unused]] [[nodiscard]] const SignalMatrix<std::complex<double>> &getSignalMatrix() const;
 
+    [[maybe_unused]] [[nodiscard]] const SignalMatrix<std::complex<float>> &getFloat32SignalMatrix() const;
+
     void setSignalMatrix(const SignalMatrix<std::complex<double>> &bbsignalsV);
 
     void setSignalMatrix(const SignalMatrix<std::complex<float>> &bbsignalsV);

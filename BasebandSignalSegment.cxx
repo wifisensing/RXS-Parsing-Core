@@ -31,6 +31,10 @@ BasebandSignalSegment::BasebandSignalSegment(const uint8_t *buffer, uint32_t buf
     return bbsignals;
 }
 
+[[maybe_unused]] const SignalMatrix<std::complex<float>> &BasebandSignalSegment::getFloat32SignalMatrix() const {
+    return bbsignalsFloat32;
+}
+
 void BasebandSignalSegment::setSignalMatrix(const SignalMatrix<std::complex<double>> &bbsignalsV) {
     bbsignals = bbsignalsV;
     setSegmentPayload(bbsignals.toBuffer());
