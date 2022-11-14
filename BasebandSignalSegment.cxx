@@ -22,7 +22,7 @@ BasebandSignalSegment::BasebandSignalSegment(const uint8_t *buffer, uint32_t buf
         throw std::runtime_error("BasebandSignalSegment cannot parse the segment with version v" + std::to_string(segmentVersionId) + ".");
 
     if (segmentVersionId == 0x1U)
-        v2Parser(segmentPayload.data(), segmentPayload.size(), (void *) &bbsignals);
+        v1Parser(segmentPayload.data(), segmentPayload.size(), (void *) &bbsignals);
     else if (segmentVersionId == 0x2U)
         v2Parser(segmentPayload.data(), segmentPayload.size(), (void *) &bbsignalsFloat32);
 }
