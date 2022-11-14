@@ -18,7 +18,7 @@ BasebandSignalSegment::BasebandSignalSegment() : AbstractPicoScenesFrameSegment(
 BasebandSignalSegment::BasebandSignalSegment(const uint8_t *buffer, uint32_t bufferLength) : AbstractPicoScenesFrameSegment(buffer, bufferLength) {
     if (segmentName != "BasebandSignal")
         throw std::runtime_error("BasebandSignalSegment cannot parse the segment named " + segmentName + ".");
-    if ((segmentVersionId != 0x1U) || (segmentVersionId != 0x2U))
+    if (segmentVersionId != 1 && segmentVersionId != 2)
         throw std::runtime_error("BasebandSignalSegment cannot parse the segment with version v" + std::to_string(segmentVersionId) + ".");
 
     if (segmentVersionId == 0x1U)
