@@ -20,14 +20,14 @@ public:
 
     void setSignalMatrix(const SignalMatrix<std::complex<double>> &bbsignalsV);
 
+    void setSignalMatrix(const SignalMatrix<std::complex<float>> &bbsignalsV);
+
     [[nodiscard]] std::string toString() const override;
 
 private:
-    static std::map<uint16_t, std::function<SignalMatrix<std::complex<double>>(const uint8_t *, uint32_t)>> versionedSolutionMap;
-
-    static std::map<uint16_t, std::function<SignalMatrix<std::complex<double>>(const uint8_t *, uint32_t)>> initializeSolutionMap() noexcept;
-
     SignalMatrix<std::complex<double>> bbsignals;
+
+    SignalMatrix<std::complex<float>> bbsignalsFloat32;
 };
 
 std::ostream &operator<<(std::ostream &os, const BasebandSignalSegment &csiSegment);
