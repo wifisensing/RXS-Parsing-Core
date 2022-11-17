@@ -223,7 +223,7 @@ std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::fromBuffer(con
             } else if (segmentName == "PreEQSymbols") {
                 frame.preEQSymbolsSegment = PreEQSymbolsSegment(buffer + pos, segmentLength + 4);
             } else {
-                frame.rxUnknownSegments.emplace_back(AbstractPicoScenesFrameSegment(buffer + pos, segmentLength + 4));
+                frame.rxUnknownSegments.emplace(segmentName, AbstractPicoScenesFrameSegment(buffer + pos, segmentLength + 4));
             }
             pos += (segmentLength + 4);
         }
@@ -245,7 +245,7 @@ std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::fromBuffer(con
                 } else if (segmentName == "Cargo") {
                     frame.cargoSegment = CargoSegment(buffer + pos, segmentLength + 4);
                 } else {
-                    frame.txUnknownSegments.emplace_back(AbstractPicoScenesFrameSegment(buffer + pos, segmentLength + 4));
+                    frame.txUnknownSegments.emplace(segmentName, AbstractPicoScenesFrameSegment(buffer + pos, segmentLength + 4));
                 }
                 pos += segmentLength + 4;
             }
@@ -282,7 +282,7 @@ std::string ModularPicoScenesRxFrame::toString() const {
         std::stringstream segss;
         segss << "RxSegments:(";
         for (const auto &segment: rxUnknownSegments) {
-            segss << segment.segmentName << ":" << segment.totalLengthIncludingLeading4ByteLength() << "B, ";
+            segss << segment.first << ":" << segment.second.totalLengthIncludingLeading4ByteLength() << "B, ";
         }
         auto temp = segss.str();
         temp.erase(temp.end() - 2, temp.end());
@@ -315,7 +315,7 @@ std::string ModularPicoScenesRxFrame::toString() const {
         std::stringstream segss;
         segss << "TxSegments:(";
         for (const auto &segment: txUnknownSegments) {
-            segss << segment << ", ";
+            segss << segment.second << ", ";
         }
         auto temp = segss.str();
         temp.erase(temp.end() - 2, temp.end());
@@ -345,7 +345,7 @@ std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::concatenateFra
         } else if (segmentName == "Cargo") {
             baseFrame.cargoSegment = CargoSegment(mergedPayload.data() + pos, segmentLength + 4);
         } else {
-            baseFrame.txUnknownSegments.emplace_back(AbstractPicoScenesFrameSegment(mergedPayload.data() + pos, segmentLength + 4));
+            baseFrame.txUnknownSegments.emplace(segmentName, AbstractPicoScenesFrameSegment(mergedPayload.data() + pos, segmentLength + 4));
         }
         pos += segmentLength + 4;
         numSegment++;
@@ -447,7 +447,7 @@ void ModularPicoScenesRxFrame::rebuildRawBuffer() {
             std::copy(buffer.cbegin(), buffer.cend(), std::back_inserter(mpdu));
         }
         for (const auto &unknownSegment: txUnknownSegments) {
-            auto buffer = unknownSegment.toBuffer();
+            auto buffer = unknownSegment.second.toBuffer();
             std::copy(buffer.cbegin(), buffer.cend(), std::back_inserter(mpdu));
         }
     }
