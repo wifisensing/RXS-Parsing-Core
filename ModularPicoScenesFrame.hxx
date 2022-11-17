@@ -115,8 +115,8 @@ public:
     std::vector<PayloadSegment> payloadSegments;
     std::optional<CargoSegment> cargoSegment;
 
-    std::vector<AbstractPicoScenesFrameSegment> rxUnkownSegments;
-    std::vector<AbstractPicoScenesFrameSegment> txUnkownSegments;
+    std::vector<AbstractPicoScenesFrameSegment> rxUnknownSegments;
+    std::vector<AbstractPicoScenesFrameSegment> txUnknownSegments;
     Uint8Vector mpdu;
 
     static std::optional<ModularPicoScenesRxFrame> fromBuffer(const uint8_t *buffer, uint32_t bufferLength, bool interpolateCSI = false);
