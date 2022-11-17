@@ -240,8 +240,6 @@ std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::fromBuffer(con
                 auto [segmentName, segmentLength, versionId, offset] = AbstractPicoScenesFrameSegment::extractSegmentMetaData(buffer + pos, bufferLength);
                 if (segmentName == "ExtraInfo") {
                     frame.txExtraInfoSegment = ExtraInfoSegment(buffer + pos, segmentLength + 4);
-                } else if (segmentName == "DPASRequest") {
-                    frame.dpasRequestSegment = DPASRequestSegment(buffer + pos, segmentLength + 4);
                 } else if (segmentName == "Payload") {
                     frame.payloadSegments.emplace_back(PayloadSegment(buffer + pos, segmentLength + 4));
                 } else if (segmentName == "Cargo") {
@@ -300,8 +298,6 @@ std::string ModularPicoScenesRxFrame::toString() const {
         ss << ", " << *PicoScenesHeader;
     if (txExtraInfoSegment)
         ss << ", Tx" << txExtraInfoSegment->getExtraInfo();
-    if (dpasRequestSegment)
-        ss << ", " << *dpasRequestSegment;
     if (!payloadSegments.empty()) {
         std::stringstream segss;
         segss << "Payloads:(";
@@ -344,8 +340,6 @@ std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::concatenateFra
         auto [segmentName, segmentLength, versionId, contentOffset] = AbstractPicoScenesFrameSegment::extractSegmentMetaData(mergedPayload.data() + pos, mergedPayload.size() - pos);
         if (segmentName == "ExtraInfo") {
             baseFrame.txExtraInfoSegment = ExtraInfoSegment(mergedPayload.data() + pos, segmentLength + 4);
-        } else if (segmentName == "DPASRequest") {
-            baseFrame.dpasRequestSegment = DPASRequestSegment(mergedPayload.data() + pos, segmentLength + 4);
         } else if (segmentName == "Payload") {
             baseFrame.payloadSegments.emplace_back(PayloadSegment(mergedPayload.data() + pos, segmentLength + 4));
         } else if (segmentName == "Cargo") {
@@ -442,10 +436,6 @@ void ModularPicoScenesRxFrame::rebuildRawBuffer() {
 
         if (txExtraInfoSegment) {
             const auto &buffer = txExtraInfoSegment->toBuffer();
-            std::copy(buffer.cbegin(), buffer.cend(), std::back_inserter(mpdu));
-        }
-        if (dpasRequestSegment) {
-            const auto &buffer = dpasRequestSegment->toBuffer();
             std::copy(buffer.cbegin(), buffer.cend(), std::back_inserter(mpdu));
         }
         for (const auto &payloadSegment: payloadSegments) {

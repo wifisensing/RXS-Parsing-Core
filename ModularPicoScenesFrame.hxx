@@ -12,7 +12,6 @@
 #include "ExtraInfoSegment.hxx"
 #include "MVMExtraSegment.hxx"
 #include "SDRExtraSegment.hxx"
-#include "DPASRequestSegment.hxx"
 #include "BasebandSignalSegment.hxx"
 #include "PayloadSegment.hxx"
 #include "PreEQSymbolsSegment.hxx"
@@ -113,7 +112,6 @@ public:
     ieee80211_mac_frame_header standardHeader;
     std::optional<PicoScenesFrameHeader> PicoScenesHeader;
     std::optional<ExtraInfoSegment> txExtraInfoSegment;
-    std::optional<DPASRequestSegment> dpasRequestSegment;
     std::vector<PayloadSegment> payloadSegments;
     std::optional<CargoSegment> cargoSegment;
 
