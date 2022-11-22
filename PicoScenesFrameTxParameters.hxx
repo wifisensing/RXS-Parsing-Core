@@ -205,6 +205,20 @@ public:
                 coding = std::vector<ChannelCodingEnum>(1, ChannelCodingEnum::LDPC);
                 resampleRatio = 1.0;
                 break;
+            case FrontEndModePreset::TX_CBW_40_HT:
+                hardwareSamplingRate = 40e6;
+                cbw = ChannelBandwidthEnum::CBW_40;
+                frameType = PacketFormatEnum::PacketFormat_HT;
+                coding = std::vector<ChannelCodingEnum>(1, ChannelCodingEnum::BCC);
+                resampleRatio = 1.0;
+                break;
+            case FrontEndModePreset::TX_CBW_40_HT_LDPC:
+                hardwareSamplingRate = 40e6;
+                cbw = ChannelBandwidthEnum::CBW_40;
+                frameType = PacketFormatEnum::PacketFormat_HT;
+                coding = std::vector<ChannelCodingEnum>(1, ChannelCodingEnum::LDPC);
+                resampleRatio = 1.0;
+                break;
             default:
                 break;
         }
