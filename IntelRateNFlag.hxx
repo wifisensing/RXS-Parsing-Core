@@ -46,7 +46,7 @@ public:
                         return PacketFormatEnum::PacketFormat_HETB;
                 }
             case 5:
-                return PacketFormatEnum::PacketFormat_EHT;
+                return PacketFormatEnum::PacketFormat_EHTMU;
         }
         return PacketFormatEnum::PacketFormat_NonHT;
     }

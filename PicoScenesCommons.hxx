@@ -111,10 +111,11 @@ enum class PacketFormatEnum : int8_t {
     PacketFormat_NonHT = 0, ///< 11a or 11g
     PacketFormat_HT = 1, ///< 11n or Wi-Fi 4
     PacketFormat_VHT = 2, ///< 11ac or Wi-Fi 5
-    PacketFormat_HESU = 3, ///< 11ax Single-User, or Wi-Fi 6
-    PacketFormat_HEMU = 4, ///< 11ax Multi-User, or Wi-Fi 6
+    PacketFormat_HESU = 3, ///< 11ax Single-User
+    PacketFormat_HEMU = 4, ///< 11ax Multi-User
     PacketFormat_HETB = 5, ///< 11ax Trigger-Based
-    PacketFormat_EHT = 6, ///< 11be
+    PacketFormat_EHTMU = 6, ///< 11be Multi-User
+    PacketFormat_EHTTB = 7, ///< 11be Trigger-Based
     PacketFormat_Unknown = -1
 };
 

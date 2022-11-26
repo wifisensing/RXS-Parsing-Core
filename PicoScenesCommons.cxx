@@ -94,8 +94,10 @@ std::string PacketFormat2String(PacketFormatEnum format) {
             return "HE-MU";
         case PacketFormatEnum::PacketFormat_HETB:
             return "HE-TB";
-        case PacketFormatEnum::PacketFormat_EHT:
-            return "EHT";
+        case PacketFormatEnum::PacketFormat_EHTMU:
+            return "EHT-MU";
+        case PacketFormatEnum::PacketFormat_EHTTB:
+            return "EHT-TB";
         case PacketFormatEnum::PacketFormat_Unknown:
             return "Unknown";
     }
