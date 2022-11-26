@@ -277,45 +277,45 @@ std::string FrontEndModePreset2String(FrontEndModePreset preset) {
 std::string FrontEndModePreset2DescriptiveString(FrontEndModePreset preset) {
     switch (preset) {
         case FrontEndModePreset::TX_CBW_160_HESU:
-            return FrontEndModePreset2String(preset) + ": [Tx, 160 MHz CBW, 200 MHz actual Tx sampling rate, 1.25 Tx resample ratio, HESU format, and LDPC coding]";
+            return FrontEndModePreset2String(preset) + ": [Transmission in 160 MHz CBW w/ 200 MHz hardware Tx super-sampling, 1.25 up-sampling ratio, HESU format, and LDPC coding. Identical to \"--rate 200e6 --tx-resample-ratio 1.25 --cbw 160 --format hesu --coding ldpc\"]";
         case FrontEndModePreset::TX_CBW_160_VHT:
-            return FrontEndModePreset2String(preset) + ": [Tx, 160 MHz CBW, 200 MHz actual Tx sampling rate, 1.25 Tx resample ratio, VHT format, and BCC coding]";
+            return FrontEndModePreset2String(preset) + ": [Transmission in 160 MHz CBW w/ 200 MHz hardware Tx super-sampling, 1.25 up-sampling ratio, VHT format, and BCC coding. Identical to \"--rate 200e6 --tx-resample-ratio 1.25 --cbw 160 --format vht --coding bcc\"]";
         case FrontEndModePreset::TX_CBW_160_VHT_LDPC:
-            return FrontEndModePreset2String(preset) + ": [Tx, 160 MHz CBW, 200 MHz actual Tx sampling rate, 1.25 Tx resample ratio, VHT format, and LDPC coding]";
+            return FrontEndModePreset2String(preset) + ": [Transmission in 160 MHz CBW w/ 200 MHz hardware Tx super-sampling, 1.25 up-sampling ratio, VHT format, and LDPC coding. Identical to \"--rate 200e6 --tx-resample-ratio 1.25 --cbw 160 --format vht --coding ldpc\"]";
         case FrontEndModePreset::TX_CBW_80_HESU:
-            return FrontEndModePreset2String(preset) + ": [Tx, 80 MHz CBW, 100 MHz actual Tx sampling rate, 1.25 Tx resample ratio, HESU format, and LDPC coding]";
+            return FrontEndModePreset2String(preset) + ": [Transmission in 80 MHz CBW w/ 100 MHz hardware Tx super-sampling, 1.25 up-sampling ratio, HESU format, and LDPC coding. Identical to \"--rate 100e6 --tx-resample-ratio 1.25 --cbw 80 --format hesu --coding ldpc\"]";
         case FrontEndModePreset::TX_CBW_80_VHT:
-            return FrontEndModePreset2String(preset) + ": [Tx, 80 MHz CBW, 100 MHz actual Tx sampling rate, 1.25 Tx resample ratio, VHT format, and BCC coding]";
+            return FrontEndModePreset2String(preset) + ": [Transmission in 80 MHz CBW w/ 100 MHz hardware Tx super-sampling, 1.25 up-sampling ratio, VHT format, and BCC coding. Identical to \"--rate 100e6 --tx-resample-ratio 1.25 --cbw 80 --format hesu --coding ldpc\"]";
         case FrontEndModePreset::TX_CBW_80_VHT_LDPC:
-            return FrontEndModePreset2String(preset) + ": [Tx, 80 MHz CBW, 100 MHz actual Tx sampling rate, 1.25 Tx resample ratio, VHT format, and LDPC coding]";
+            return FrontEndModePreset2String(preset) + ": [Transmission in 80 MHz CBW w/ 100 MHz hardware Tx super-sampling, 1.25 up-sampling ratio, VHT format, and LDPC coding. Identical to \"--rate 100e6 --tx-resample-ratio 1.25 --cbw 80 --format hesu --coding ldpc\"]";
         case FrontEndModePreset::TX_CBW_40_RESAMPLE_HESU:
-            return FrontEndModePreset2String(preset) + ": [Tx, 40 MHz CBW, 50 MHz actual Tx sampling rate, 1.25 Tx resample ratio, HESU format, and LDPC coding]";
+            return FrontEndModePreset2String(preset) + ": [Transmission in 40 MHz CBW w/ 50 MHz hardware Tx super-sampling, 1.25 up-sampling ratio, HESU format, and LDPC coding. Identical to \"--rate 50e6 --tx-resample-ratio 1.25 --cbw 40 --format hesu --coding ldpc\"]";
         case FrontEndModePreset::TX_CBW_40_RESAMPLE_VHT:
-            return FrontEndModePreset2String(preset) + ": [Tx, 40 MHz CBW, 50 MHz actual Tx sampling rate, 1.25 Tx resample ratio, VHT format, and BCC coding]";
+            return FrontEndModePreset2String(preset) + ": [Transmission in 40 MHz CBW w/ 50 MHz hardware Tx super-sampling, 1.25 up-sampling ratio, VHT format, and BCC coding. Identical to \"--rate 50e6 --tx-resample-ratio 1.25 --cbw 40 --format vht --coding bcc\"]";
         case FrontEndModePreset::TX_CBW_40_RESAMPLE_VHT_LDPC:
-            return FrontEndModePreset2String(preset) + ": [Tx, 40 MHz CBW, 50 MHz actual Tx sampling rate, 1.25 Tx resample ratio, VHT format, and LDPC coding]";
+            return FrontEndModePreset2String(preset) + ": [Transmission in 40 MHz CBW w/ 50 MHz hardware Tx super-sampling, 1.25 up-sampling ratio, VHT format, and LDPC coding. Identical to \"--rate 50e6 --tx-resample-ratio 1.25 --cbw 40 --format vht --coding ldpc\"]";
         case FrontEndModePreset::TX_CBW_40_RESAMPLE_HT:
-            return FrontEndModePreset2String(preset) + ": [Tx, 40 MHz CBW, 50 MHz actual Tx sampling rate, 1.25 Tx resample ratio, HT format, and BCC coding]";
+            return FrontEndModePreset2String(preset) + ": [Transmission in 40 MHz CBW w/ 50 MHz hardware Tx super-sampling, 1.25 up-sampling ratio, HT format, and BCC coding. Identical to \"--rate 50e6 --tx-resample-ratio 1.25 --cbw 40 --format ht --coding bcc\"]";
         case FrontEndModePreset::TX_CBW_40_RESAMPLE_HT_LDPC:
-            return FrontEndModePreset2String(preset) + ": [Tx, 40 MHz CBW, 50 MHz actual Tx sampling rate, 1.25 Tx resample ratio, HT format, and LDPC coding]";
+            return FrontEndModePreset2String(preset) + ": [Transmission in 40 MHz CBW w/ 50 MHz hardware Tx super-sampling, 1.25 up-sampling ratio, HT format, and LDPC coding. Identical to \"--rate 50e6 --tx-resample-ratio 1.25 --cbw 40 --format ht --coding ldpc\"]";
         case FrontEndModePreset::TX_CBW_40_HESU:
-            return FrontEndModePreset2String(preset) + ": [Tx, 40 MHz CBW, 40 MHz actual Tx sampling rate, 1.0 Tx resample ratio, HESU format, and LDPC coding]";
+            return FrontEndModePreset2String(preset) + ": [Transmission in 40 MHz CBW w/ 40 MHz hardware Tx sampling rate, 1.0 Tx resample ratio, HESU format, and LDPC coding. Identical to \"--rate 40e6 --tx-resample-ratio 1.0 --cbw 40 --format hesu --coding ldpc\"]";
         case FrontEndModePreset::TX_CBW_40_VHT:
-            return FrontEndModePreset2String(preset) + ": [Tx, 40 MHz CBW, 40 MHz actual Tx sampling rate, 1.0 Tx resample ratio, VHT format, and BCC coding]";
+            return FrontEndModePreset2String(preset) + ": [Transmission in 40 MHz CBW w/ 40 MHz hardware Tx sampling rate, 1.0 Tx resample ratio, VHT format, and BCC coding. Identical to \"--rate 40e6 --tx-resample-ratio 1.0 --cbw 40 --format vht --coding bcc\"]";
         case FrontEndModePreset::TX_CBW_40_VHT_LDPC:
-            return FrontEndModePreset2String(preset) + ": [Tx, 40 MHz CBW, 40 MHz actual Tx sampling rate, 1.0 Tx resample ratio, VHT format, and LDPC coding]";
+            return FrontEndModePreset2String(preset) + ": [Transmission in 40 MHz CBW w/ 40 MHz hardware Tx sampling rate, 1.0 Tx resample ratio, VHT format, and LDPC coding. Identical to \"--rate 40e6 --tx-resample-ratio 1.0 --cbw 40 --format vht --coding ldpc\"]";
         case FrontEndModePreset::TX_CBW_40_HT:
-            return FrontEndModePreset2String(preset) + ": [Tx, 40 MHz CBW, 40 MHz actual Tx sampling rate, 1.0 Tx resample ratio, HT format, and BCC coding]";
+            return FrontEndModePreset2String(preset) + ": [Transmission in 40 MHz CBW w/ 40 MHz hardware Tx sampling rate, 1.0 Tx resample ratio, HT format, and BCC coding. Identical to \"--rate 40e6 --tx-resample-ratio 1.0 --cbw 40 --format ht --coding bcc\"]";
         case FrontEndModePreset::TX_CBW_40_HT_LDPC:
-            return FrontEndModePreset2String(preset) + ": [Tx, 40 MHz CBW, 40 MHz actual Tx sampling rate, 1.0 Tx resample ratio, HT format, and LDPC coding]";
+            return FrontEndModePreset2String(preset) + ": [Transmission in 40 MHz CBW w/ 40 MHz hardware Tx sampling rate, 1.0 Tx resample ratio, HT format, and LDPC coding. Identical to \"--rate 40e6 --tx-resample-ratio 1.0 --cbw 40 --format ht --coding ldpc\"]";
         case FrontEndModePreset::RX_CBW_160:
-            return FrontEndModePreset2String(preset) + ": [Rx, 160 MHz Rx CBW, 200 MHz actual Rx sampling rate, 0.8 Rx resample ratio]";
+            return FrontEndModePreset2String(preset) + ": [Reception in 160 MHz CBW w/ 200 MHz hardware Rx super-sampling, 0.8 Rx down-sampling ratio. Identical to \"--rate 200e6 --rx-resample-ratio 0.8 --rx-cbw 160\"]";
         case FrontEndModePreset::RX_CBW_80:
-            return FrontEndModePreset2String(preset) + ": [Rx, 80 MHz Rx CBW, 100 MHz actual Rx sampling rate, 0.8 Rx resample ratio]";
+            return FrontEndModePreset2String(preset) + ": [Reception in 80 MHz CBW w/ 100 MHz hardware Rx super-sampling, 0.8 Rx down-sampling ratio. Identical to \"--rate 100e6 --rx-resample-ratio 0.8 --rx-cbw 80\"]";
         case FrontEndModePreset::RX_CBW_40_RESAMPLE:
-            return FrontEndModePreset2String(preset) + ": [Rx, 40 MHz Rx CBW, 50 MHz actual Rx sampling rate, 0.8 Rx resample ratio]";
+            return FrontEndModePreset2String(preset) + ": [Reception in 40 MHz CBW w/ 50 MHz hardware Rx super-sampling, 0.8 Rx down-sampling ratio. Identical to \"--rate 50e6 --rx-resample-ratio 0.8 --rx-cbw 40\"]";
         case FrontEndModePreset::RX_CBW_40:
-            return FrontEndModePreset2String(preset) + ": [Rx, 40 MHz Rx CBW, 40 MHz actual Rx sampling rate, 1.0 Rx resample ratio]";
+            return FrontEndModePreset2String(preset) + ": [Reception in 40 MHz CBW w/ 40 MHz hardware Rx sampling rate, 1.0 Rx resample ratio. Identical to \"--rate 40e6 --rx-resample-ratio 1.0 --rx-cbw 40\"]";
         case FrontEndModePreset::TR_CBW_160_HESU:
             return FrontEndModePreset2String(preset) + ": [TX_CBW_160_HESU + RX_CBW_160]";
         case FrontEndModePreset::TR_CBW_160_VHT:
