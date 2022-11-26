@@ -420,7 +420,7 @@ const std::vector<FrontEndModePreset> &getAllFrontEndModePresets() {
 
 std::string printHelpContentForFrontEndModePreset() {
     std::stringstream ss;
-    ss << "\n\nPicoScenes supports the following SDR frontend mode presets:\n";
+    ss << "\n\nPicoScenes supports the following COTS NIC/SDR frontend mode presets:\n";
     ss << "-------------------------------------------------------------------------------------\n";
     for (const auto &preset: getAllFrontEndModePresets())
         ss << FrontEndModePreset2DescriptiveString(preset) << "\n";
