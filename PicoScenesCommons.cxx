@@ -277,45 +277,45 @@ std::string FrontEndModePreset2String(FrontEndModePreset preset) {
 std::string FrontEndModePreset2DescriptiveString(FrontEndModePreset preset) {
     switch (preset) {
         case FrontEndModePreset::TX_CBW_160_HESU:
-            return FrontEndModePreset2String(preset) + ": [Transmission in 160 MHz CBW w/ 200 MHz hardware Tx super-sampling, 1.25 up-sampling ratio, HESU format, and LDPC coding. Equivalent to \"--rate 200e6 --tx-resample-ratio 1.25 --cbw 160 --format hesu --coding ldpc\"]";
+            return FrontEndModePreset2String(preset) + ": [Transmitting packets in 160 MHz Channel Bandwidth (CBW) w/ 200 MHz hardware Tx super-sampling, 1.25x baseband signal up-sampling ratio, HE-SU (Wi-Fi 6 Single User) format, and LDPC coding. Equivalent to \"--rate 200e6 --tx-resample-ratio 1.25 --cbw 160 --format hesu --coding ldpc\"]";
         case FrontEndModePreset::TX_CBW_160_VHT:
-            return FrontEndModePreset2String(preset) + ": [Transmission in 160 MHz CBW w/ 200 MHz hardware Tx super-sampling, 1.25 up-sampling ratio, VHT format, and BCC coding. Equivalent to \"--rate 200e6 --tx-resample-ratio 1.25 --cbw 160 --format vht --coding bcc\"]";
+            return FrontEndModePreset2String(preset) + ": [Transmitting packets in 160 MHz Channel Bandwidth (CBW) w/ 200 MHz hardware Tx super-sampling, 1.25x baseband signal up-sampling ratio, VHT (Wi-Fi 5 Single User) format, and BCC coding. Equivalent to \"--rate 200e6 --tx-resample-ratio 1.25 --cbw 160 --format vht --coding bcc\"]";
         case FrontEndModePreset::TX_CBW_160_VHT_LDPC:
-            return FrontEndModePreset2String(preset) + ": [Transmission in 160 MHz CBW w/ 200 MHz hardware Tx super-sampling, 1.25 up-sampling ratio, VHT format, and LDPC coding. Equivalent to \"--rate 200e6 --tx-resample-ratio 1.25 --cbw 160 --format vht --coding ldpc\"]";
+            return FrontEndModePreset2String(preset) + ": [Transmitting packets in 160 MHz Channel Bandwidth (CBW) w/ 200 MHz hardware Tx super-sampling, 1.25x baseband signal up-sampling ratio, VHT (Wi-Fi 5 Single User) format, and LDPC coding. Equivalent to \"--rate 200e6 --tx-resample-ratio 1.25 --cbw 160 --format vht --coding ldpc\"]";
         case FrontEndModePreset::TX_CBW_80_HESU:
-            return FrontEndModePreset2String(preset) + ": [Transmission in 80 MHz CBW w/ 100 MHz hardware Tx super-sampling, 1.25 up-sampling ratio, HESU format, and LDPC coding. Equivalent to \"--rate 100e6 --tx-resample-ratio 1.25 --cbw 80 --format hesu --coding ldpc\"]";
+            return FrontEndModePreset2String(preset) + ": [Transmitting packets in 80 MHz Channel Bandwidth (CBW) w/ 100 MHz hardware Tx super-sampling, 1.25x baseband signal up-sampling ratio, HE-SU (Wi-Fi 6 Single User) format, and LDPC coding. Equivalent to \"--rate 100e6 --tx-resample-ratio 1.25 --cbw 80 --format hesu --coding ldpc\"]";
         case FrontEndModePreset::TX_CBW_80_VHT:
-            return FrontEndModePreset2String(preset) + ": [Transmission in 80 MHz CBW w/ 100 MHz hardware Tx super-sampling, 1.25 up-sampling ratio, VHT format, and BCC coding. Equivalent to \"--rate 100e6 --tx-resample-ratio 1.25 --cbw 80 --format hesu --coding ldpc\"]";
+            return FrontEndModePreset2String(preset) + ": [Transmitting packets in 80 MHz Channel Bandwidth (CBW) w/ 100 MHz hardware Tx super-sampling, 1.25x baseband signal up-sampling ratio, VHT (Wi-Fi 5 Single User) format, and BCC coding. Equivalent to \"--rate 100e6 --tx-resample-ratio 1.25 --cbw 80 --format hesu --coding ldpc\"]";
         case FrontEndModePreset::TX_CBW_80_VHT_LDPC:
-            return FrontEndModePreset2String(preset) + ": [Transmission in 80 MHz CBW w/ 100 MHz hardware Tx super-sampling, 1.25 up-sampling ratio, VHT format, and LDPC coding. Equivalent to \"--rate 100e6 --tx-resample-ratio 1.25 --cbw 80 --format hesu --coding ldpc\"]";
+            return FrontEndModePreset2String(preset) + ": [Transmitting packets in 80 MHz Channel Bandwidth (CBW) w/ 100 MHz hardware Tx super-sampling, 1.25x baseband signal up-sampling ratio, VHT (Wi-Fi 5 Single User) format, and LDPC coding. Equivalent to \"--rate 100e6 --tx-resample-ratio 1.25 --cbw 80 --format hesu --coding ldpc\"]";
         case FrontEndModePreset::TX_CBW_40_RESAMPLE_HESU:
-            return FrontEndModePreset2String(preset) + ": [Transmission in 40 MHz CBW w/ 50 MHz hardware Tx super-sampling, 1.25 up-sampling ratio, HESU format, and LDPC coding. Equivalent to \"--rate 50e6 --tx-resample-ratio 1.25 --cbw 40 --format hesu --coding ldpc\"]";
+            return FrontEndModePreset2String(preset) + ": [Transmitting packets in 40 MHz Channel Bandwidth (CBW) w/ 50 MHz hardware Tx super-sampling, 1.25x baseband signal up-sampling ratio, HE-SU (Wi-Fi 6 Single User) format, and LDPC coding. Equivalent to \"--rate 50e6 --tx-resample-ratio 1.25 --cbw 40 --format hesu --coding ldpc\"]";
         case FrontEndModePreset::TX_CBW_40_RESAMPLE_VHT:
-            return FrontEndModePreset2String(preset) + ": [Transmission in 40 MHz CBW w/ 50 MHz hardware Tx super-sampling, 1.25 up-sampling ratio, VHT format, and BCC coding. Equivalent to \"--rate 50e6 --tx-resample-ratio 1.25 --cbw 40 --format vht --coding bcc\"]";
+            return FrontEndModePreset2String(preset) + ": [Transmitting packets in 40 MHz Channel Bandwidth (CBW) w/ 50 MHz hardware Tx super-sampling, 1.25x baseband signal up-sampling ratio, VHT (Wi-Fi 5 Single User) format, and BCC coding. Equivalent to \"--rate 50e6 --tx-resample-ratio 1.25 --cbw 40 --format vht --coding bcc\"]";
         case FrontEndModePreset::TX_CBW_40_RESAMPLE_VHT_LDPC:
-            return FrontEndModePreset2String(preset) + ": [Transmission in 40 MHz CBW w/ 50 MHz hardware Tx super-sampling, 1.25 up-sampling ratio, VHT format, and LDPC coding. Equivalent to \"--rate 50e6 --tx-resample-ratio 1.25 --cbw 40 --format vht --coding ldpc\"]";
+            return FrontEndModePreset2String(preset) + ": [Transmitting packets in 40 MHz Channel Bandwidth (CBW) w/ 50 MHz hardware Tx super-sampling, 1.25x baseband signal up-sampling ratio, VHT (Wi-Fi 5 Single User) format, and LDPC coding. Equivalent to \"--rate 50e6 --tx-resample-ratio 1.25 --cbw 40 --format vht --coding ldpc\"]";
         case FrontEndModePreset::TX_CBW_40_RESAMPLE_HT:
-            return FrontEndModePreset2String(preset) + ": [Transmission in 40 MHz CBW w/ 50 MHz hardware Tx super-sampling, 1.25 up-sampling ratio, HT format, and BCC coding. Equivalent to \"--rate 50e6 --tx-resample-ratio 1.25 --cbw 40 --format ht --coding bcc\"]";
+            return FrontEndModePreset2String(preset) + ": [Transmitting packets in 40 MHz Channel Bandwidth (CBW) w/ 50 MHz hardware Tx super-sampling, 1.25x baseband signal up-sampling ratio, HT (Wi-Fi 4) format, and BCC coding. Equivalent to \"--rate 50e6 --tx-resample-ratio 1.25 --cbw 40 --format ht --coding bcc\"]";
         case FrontEndModePreset::TX_CBW_40_RESAMPLE_HT_LDPC:
-            return FrontEndModePreset2String(preset) + ": [Transmission in 40 MHz CBW w/ 50 MHz hardware Tx super-sampling, 1.25 up-sampling ratio, HT format, and LDPC coding. Equivalent to \"--rate 50e6 --tx-resample-ratio 1.25 --cbw 40 --format ht --coding ldpc\"]";
+            return FrontEndModePreset2String(preset) + ": [Transmitting packets in 40 MHz Channel Bandwidth (CBW) w/ 50 MHz hardware Tx super-sampling, 1.25x baseband signal up-sampling ratio, HT (Wi-Fi 4) format, and LDPC coding. Equivalent to \"--rate 50e6 --tx-resample-ratio 1.25 --cbw 40 --format ht --coding ldpc\"]";
         case FrontEndModePreset::TX_CBW_40_HESU:
-            return FrontEndModePreset2String(preset) + ": [Transmission in 40 MHz CBW w/ 40 MHz hardware Tx sampling rate, 1.0 Tx resample ratio, HESU format, and LDPC coding. Equivalent to \"--rate 40e6 --tx-resample-ratio 1.0 --cbw 40 --format hesu --coding ldpc\"]";
+            return FrontEndModePreset2String(preset) + ": [Transmitting packets in 40 MHz Channel Bandwidth (CBW) w/ 40 MHz hardware Tx sampling rate, 1.0x baseband signal resampling ratio, HE-SU (Wi-Fi 6 Single User) format, and LDPC coding. Equivalent to \"--rate 40e6 --tx-resample-ratio 1.0 --cbw 40 --format hesu --coding ldpc\"]";
         case FrontEndModePreset::TX_CBW_40_VHT:
-            return FrontEndModePreset2String(preset) + ": [Transmission in 40 MHz CBW w/ 40 MHz hardware Tx sampling rate, 1.0 Tx resample ratio, VHT format, and BCC coding. Equivalent to \"--rate 40e6 --tx-resample-ratio 1.0 --cbw 40 --format vht --coding bcc\"]";
+            return FrontEndModePreset2String(preset) + ": [Transmitting packets in 40 MHz Channel Bandwidth (CBW) w/ 40 MHz hardware Tx sampling rate, 1.0x baseband signal resampling ratio, VHT (Wi-Fi 5 Single User) format, and BCC coding. Equivalent to \"--rate 40e6 --tx-resample-ratio 1.0 --cbw 40 --format vht --coding bcc\"]";
         case FrontEndModePreset::TX_CBW_40_VHT_LDPC:
-            return FrontEndModePreset2String(preset) + ": [Transmission in 40 MHz CBW w/ 40 MHz hardware Tx sampling rate, 1.0 Tx resample ratio, VHT format, and LDPC coding. Equivalent to \"--rate 40e6 --tx-resample-ratio 1.0 --cbw 40 --format vht --coding ldpc\"]";
+            return FrontEndModePreset2String(preset) + ": [Transmitting packets in 40 MHz Channel Bandwidth (CBW) w/ 40 MHz hardware Tx sampling rate, 1.0x baseband signal resampling ratio, VHT (Wi-Fi 5 Single User) format, and LDPC coding. Equivalent to \"--rate 40e6 --tx-resample-ratio 1.0 --cbw 40 --format vht --coding ldpc\"]";
         case FrontEndModePreset::TX_CBW_40_HT:
-            return FrontEndModePreset2String(preset) + ": [Transmission in 40 MHz CBW w/ 40 MHz hardware Tx sampling rate, 1.0 Tx resample ratio, HT format, and BCC coding. Equivalent to \"--rate 40e6 --tx-resample-ratio 1.0 --cbw 40 --format ht --coding bcc\"]";
+            return FrontEndModePreset2String(preset) + ": [Transmitting packets in 40 MHz Channel Bandwidth (CBW) w/ 40 MHz hardware Tx sampling rate, 1.0x baseband signal resampling ratio, HT (Wi-Fi 4) format, and BCC coding. Equivalent to \"--rate 40e6 --tx-resample-ratio 1.0 --cbw 40 --format ht --coding bcc\"]";
         case FrontEndModePreset::TX_CBW_40_HT_LDPC:
-            return FrontEndModePreset2String(preset) + ": [Transmission in 40 MHz CBW w/ 40 MHz hardware Tx sampling rate, 1.0 Tx resample ratio, HT format, and LDPC coding. Equivalent to \"--rate 40e6 --tx-resample-ratio 1.0 --cbw 40 --format ht --coding ldpc\"]";
+            return FrontEndModePreset2String(preset) + ": [Transmitting packets in 40 MHz Channel Bandwidth (CBW) w/ 40 MHz hardware Tx sampling rate, 1.0x baseband signal resampling ratio, HT (Wi-Fi 4) format, and LDPC coding. Equivalent to \"--rate 40e6 --tx-resample-ratio 1.0 --cbw 40 --format ht --coding ldpc\"]";
         case FrontEndModePreset::RX_CBW_160:
-            return FrontEndModePreset2String(preset) + ": [Reception in 160 MHz CBW w/ 200 MHz hardware Rx super-sampling, 0.8 Rx down-sampling ratio. Equivalent to \"--rate 200e6 --rx-resample-ratio 0.8 --rx-cbw 160\"]";
+            return FrontEndModePreset2String(preset) + ": [Receiving 160 MHz Channel Bandwidth (CBW) packets w/ 200 MHz hardware Rx super-sampling, 0.8x baseband signal down-sampling ratio. Equivalent to \"--rate 200e6 --rx-resample-ratio 0.8 --rx-cbw 160\"]";
         case FrontEndModePreset::RX_CBW_80:
-            return FrontEndModePreset2String(preset) + ": [Reception in 80 MHz CBW w/ 100 MHz hardware Rx super-sampling, 0.8 Rx down-sampling ratio. Equivalent to \"--rate 100e6 --rx-resample-ratio 0.8 --rx-cbw 80\"]";
+            return FrontEndModePreset2String(preset) + ": [Receiving 80 MHz Channel Bandwidth (CBW) packets w/ 100 MHz hardware Rx super-sampling, 0.8x baseband signal down-sampling ratio. Equivalent to \"--rate 100e6 --rx-resample-ratio 0.8 --rx-cbw 80\"]";
         case FrontEndModePreset::RX_CBW_40_RESAMPLE:
-            return FrontEndModePreset2String(preset) + ": [Reception in 40 MHz CBW w/ 50 MHz hardware Rx super-sampling, 0.8 Rx down-sampling ratio. Equivalent to \"--rate 50e6 --rx-resample-ratio 0.8 --rx-cbw 40\"]";
+            return FrontEndModePreset2String(preset) + ": [Receiving 40 MHz Channel Bandwidth (CBW) packets w/ 50 MHz hardware Rx super-sampling, 0.8x baseband signal down-sampling ratio. Equivalent to \"--rate 50e6 --rx-resample-ratio 0.8 --rx-cbw 40\"]";
         case FrontEndModePreset::RX_CBW_40:
-            return FrontEndModePreset2String(preset) + ": [Reception in 40 MHz CBW w/ 40 MHz hardware Rx sampling rate, 1.0 Rx resample ratio. Equivalent to \"--rate 40e6 --rx-resample-ratio 1.0 --rx-cbw 40\"]";
+            return FrontEndModePreset2String(preset) + ": [Receiving 40 MHz Channel Bandwidth (CBW) packets w/ 40 MHz hardware Rx sampling rate, 1.0x baseband signal resampling ratio. Equivalent to \"--rate 40e6 --rx-resample-ratio 1.0 --rx-cbw 40\"]";
         case FrontEndModePreset::TR_CBW_160_HESU:
             return FrontEndModePreset2String(preset) + ": [TX_CBW_160_HESU + RX_CBW_160]";
         case FrontEndModePreset::TR_CBW_160_VHT:
