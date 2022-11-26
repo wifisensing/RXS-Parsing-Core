@@ -349,7 +349,7 @@ std::string FrontEndModePreset2DescriptiveString(FrontEndModePreset preset) {
         case FrontEndModePreset::TR_CBW_40_HT_LDPC:
             return FrontEndModePreset2String(preset) + ": [TX_CBW_40_HT_LDPC + RX_CBW_40]";
         case FrontEndModePreset::Customized:
-            return "Customized: [arbitrary Tx profile]";
+            return "Customized: [arbitrary Tx/Rx profile]";
         default:
             throw std::invalid_argument("Unknown Frontend mode preset");
     }
