@@ -272,7 +272,7 @@ std::string FrontEndModePreset2String(FrontEndModePreset preset) {
         case FrontEndModePreset::Customized:
             return "Customized";
         default:
-            throw std::invalid_argument("Unknown Tx parameter reset");
+            throw std::invalid_argument("Unknown Preset: " + std::to_string(int(preset)));
 
     }
 }
