@@ -237,12 +237,40 @@ std::string FrontEndModePreset2String(FrontEndModePreset preset) {
             return "RX_CBW_40_RESAMPLE";
         case FrontEndModePreset::RX_CBW_40:
             return "RX_CBW_40";
-        case FrontEndModePreset::Customized:
-            return "Customized";
-
+        case FrontEndModePreset::TR_CBW_160_HESU:
+            return "TR_CBW_160_HESU";
+        case FrontEndModePreset::TR_CBW_160_VHT:
+            return "TR_CBW_160_VHT";
+        case FrontEndModePreset::TR_CBW_160_VHT_LDPC:
+            return "TR_CBW_160_VHT_LDPC";
+        case FrontEndModePreset::TR_CBW_80_HESU:
+            return "TR_CBW_80_HESU";
+        case FrontEndModePreset::TR_CBW_80_VHT:
+            return "TR_CBW_80_VHT";
+        case FrontEndModePreset::TR_CBW_80_VHT_LDPC:
+            return "TR_CBW_80_VHT_LDPC";
+        case FrontEndModePreset::TR_CBW_40_RESAMPLE_HESU:
+            return "TR_CBW_40_RESAMPLE_HESU";
+        case FrontEndModePreset::TR_CBW_40_RESAMPLE_VHT:
+            return "TR_CBW_40_RESAMPLE_VHT";
+        case FrontEndModePreset::TR_CBW_40_RESAMPLE_VHT_LDPC:
+            return "TR_CBW_40_RESAMPLE_VHT_LDPC";
+        case FrontEndModePreset::TR_CBW_40_RESAMPLE_HT:
+            return "TR_CBW_40_RESAMPLE_HT";
+        case FrontEndModePreset::TR_CBW_40_RESAMPLE_HT_LDPC:
+            return "TR_CBW_40_RESAMPLE_HT_LDPC";
+        case FrontEndModePreset::TR_CBW_40_HESU:
+            return "TR_CBW_40_HESU";
+        case FrontEndModePreset::TR_CBW_40_VHT:
+            return "TR_CBW_40_VHT";
+        case FrontEndModePreset::TR_CBW_40_VHT_LDPC:
+            return "TR_CBW_40_VHT_LDPC";
+        case FrontEndModePreset::TR_CBW_40_HT:
+            return "TR_CBW_40_HT";
+        case FrontEndModePreset::TR_CBW_40_HT_LDPC:
+            return "TR_CBW_40_HT_LDPC";
         default:
             throw std::invalid_argument("Unknown Tx parameter reset");
-
     }
 }
 
@@ -288,14 +316,43 @@ std::string FrontEndModePreset2DescriptiveString(FrontEndModePreset preset) {
             return FrontEndModePreset2String(preset) + ": [Rx, 40 MHz Rx CBW, 50 MHz actual Rx sampling rate, 0.8 Rx resample ratio]";
         case FrontEndModePreset::RX_CBW_40:
             return FrontEndModePreset2String(preset) + ": [Rx, 40 MHz Rx CBW, 40 MHz actual Rx sampling rate, 1.0 Rx resample ratio]";
+        case FrontEndModePreset::TR_CBW_160_HESU:
+            return FrontEndModePreset2String(preset) + ": [TX_CBW_160_HESU + RX_CBW_160]";
+        case FrontEndModePreset::TR_CBW_160_VHT:
+            return FrontEndModePreset2String(preset) + ": [TX_CBW_160_VHT + RX_CBW_160]";
+        case FrontEndModePreset::TR_CBW_160_VHT_LDPC:
+            return FrontEndModePreset2String(preset) + ": [TX_CBW_160_VHT_LDPC + RX_CBW_160]";
+        case FrontEndModePreset::TR_CBW_80_HESU:
+            return FrontEndModePreset2String(preset) + ": [TX_CBW_80_HESU + RX_CBW_80]";
+        case FrontEndModePreset::TR_CBW_80_VHT:
+            return FrontEndModePreset2String(preset) + ": [TX_CBW_80_VHT + RX_CBW_80]";
+        case FrontEndModePreset::TR_CBW_80_VHT_LDPC:
+            return FrontEndModePreset2String(preset) + ": [TX_CBW_80_VHT_LDPC + RX_CBW_80]";
+        case FrontEndModePreset::TR_CBW_40_RESAMPLE_HESU:
+            return FrontEndModePreset2String(preset) + ": [TX_CBW_40_RESAMPLE_HESU + RX_CBW_40_RESAMPLE]";
+        case FrontEndModePreset::TR_CBW_40_RESAMPLE_VHT:
+            return FrontEndModePreset2String(preset) + ": [TX_CBW_40_RESAMPLE_VHT + RX_CBW_40_RESAMPLE]";
+        case FrontEndModePreset::TR_CBW_40_RESAMPLE_VHT_LDPC:
+            return FrontEndModePreset2String(preset) + ": [TX_CBW_40_RESAMPLE_VHT_LDPC + RX_CBW_40_RESAMPLE]";
+        case FrontEndModePreset::TR_CBW_40_RESAMPLE_HT:
+            return FrontEndModePreset2String(preset) + ": [TX_CBW_40_RESAMPLE_HT + RX_CBW_40_RESAMPLE]";
+        case FrontEndModePreset::TR_CBW_40_RESAMPLE_HT_LDPC:
+            return FrontEndModePreset2String(preset) + ": [TX_CBW_40_RESAMPLE_HT_LDPC + RX_CBW_40_RESAMPLE]";
+        case FrontEndModePreset::TR_CBW_40_HESU:
+            return FrontEndModePreset2String(preset) + ": [TX_CBW_40_HESU + RX_CBW_40]";
+        case FrontEndModePreset::TR_CBW_40_VHT:
+            return FrontEndModePreset2String(preset) + ": [TX_CBW_40_VHT + RX_CBW_40]";
+        case FrontEndModePreset::TR_CBW_40_VHT_LDPC:
+            return FrontEndModePreset2String(preset) + ": [TX_CBW_40_VHT_LDPC + RX_CBW_40]";
+        case FrontEndModePreset::TR_CBW_40_HT:
+            return FrontEndModePreset2String(preset) + ": [TX_CBW_40_HT + RX_CBW_40]";
+        case FrontEndModePreset::TR_CBW_40_HT_LDPC:
+            return FrontEndModePreset2String(preset) + ": [TX_CBW_40_HT_LDPC + RX_CBW_40]";
         case FrontEndModePreset::Customized:
             return "Customized: [arbitrary Tx profile]";
-
         default:
-            throw std::invalid_argument("Unknown Tx parameter reset");
-
+            throw std::invalid_argument("Unknown Frontend mode preset");
     }
-
 }
 
 std::ostream &operator<<(std::ostream &os, const FrontEndModePreset &preset) {
@@ -332,10 +389,29 @@ const std::vector<FrontEndModePreset> &getAllFrontEndModePresets() {
             FrontEndModePreset::TX_CBW_40_VHT_LDPC,
             FrontEndModePreset::TX_CBW_40_HT,
             FrontEndModePreset::TX_CBW_40_HT_LDPC,
+
             FrontEndModePreset::RX_CBW_160,
             FrontEndModePreset::RX_CBW_80,
             FrontEndModePreset::RX_CBW_40_RESAMPLE,
             FrontEndModePreset::RX_CBW_40,
+
+            FrontEndModePreset::TR_CBW_160_HESU,
+            FrontEndModePreset::TR_CBW_160_VHT,
+            FrontEndModePreset::TR_CBW_160_VHT_LDPC,
+            FrontEndModePreset::TR_CBW_80_HESU,
+            FrontEndModePreset::TR_CBW_80_VHT,
+            FrontEndModePreset::TR_CBW_80_VHT_LDPC,
+            FrontEndModePreset::TR_CBW_40_RESAMPLE_HESU,
+            FrontEndModePreset::TR_CBW_40_RESAMPLE_VHT,
+            FrontEndModePreset::TR_CBW_40_RESAMPLE_VHT_LDPC,
+            FrontEndModePreset::TR_CBW_40_RESAMPLE_HT,
+            FrontEndModePreset::TR_CBW_40_RESAMPLE_HT_LDPC,
+            FrontEndModePreset::TR_CBW_40_HESU,
+            FrontEndModePreset::TR_CBW_40_VHT,
+            FrontEndModePreset::TR_CBW_40_VHT_LDPC,
+            FrontEndModePreset::TR_CBW_40_HT,
+            FrontEndModePreset::TR_CBW_40_HT_LDPC,
+
             FrontEndModePreset::Customized,
     };
 
@@ -351,4 +427,23 @@ std::string printHelpContentForFrontEndModePreset() {
     ss << "-------------------------------------------------------------------------------------\n\n";
 
     return ss.str();
+}
+
+const std::map<std::string, FrontEndModePreset> &getFrontEndModePresetsMap() {
+    static auto presetMap = std::map<std::string, FrontEndModePreset>();
+    static std::once_flag flag;
+    std::call_once(flag, [&] {
+        for (const auto &preset: getAllFrontEndModePresets()) {
+            presetMap.emplace(FrontEndModePreset2String(preset), preset);
+        }
+    });
+
+    return presetMap;
+}
+
+std::optional<FrontEndModePreset> frontEndModePresetFromString(const std::string &presetStringInUpperCase) {
+    if (getFrontEndModePresetsMap().contains(presetStringInUpperCase))
+        return getFrontEndModePresetsMap().at(presetStringInUpperCase);
+
+    return std::nullopt;
 }

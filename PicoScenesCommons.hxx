@@ -192,8 +192,8 @@ enum class FrontEndModePreset : uint8_t {
     TX_CBW_40_RESAMPLE_HESU, ///< 40 MHz CBW, 50 MHz actual Tx sampling rate, 1.25 Tx resample ratio, HESU format, LDPC coding
     TX_CBW_40_RESAMPLE_VHT, ///< 40 MHz CBW, 50 MHz actual Tx sampling rate, 1.25 Tx resample ratio, VHT format, BCC coding
     TX_CBW_40_RESAMPLE_VHT_LDPC, ///< 40 MHz CBW, 50 MHz actual Tx sampling rate, 1.25 Tx resample ratio, VHT format, LDPC coding
-    TX_CBW_40_RESAMPLE_HT_LDPC, ///< 40 MHz CBW, 50 MHz actual Tx sampling rate, 1.25 Tx resample ratio, HT format, LDPC coding
     TX_CBW_40_RESAMPLE_HT, ///< 40 MHz CBW, 50 MHz actual Tx sampling rate, 1.25 Tx resample ratio, HT format, BCC coding
+    TX_CBW_40_RESAMPLE_HT_LDPC, ///< 40 MHz CBW, 50 MHz actual Tx sampling rate, 1.25 Tx resample ratio, HT format, LDPC coding
     TX_CBW_40_HESU, ///< 40 MHz CBW, 40 MHz actual Tx sampling rate, 1.0 Tx resample ratio, HESU format, LDPC coding
     TX_CBW_40_VHT, ///< 40 MHz CBW, 40 MHz actual Tx sampling rate, 1.0 Tx resample ratio, VHT format, BCC coding
     TX_CBW_40_VHT_LDPC, ///< 40 MHz CBW, 40 MHz actual Tx sampling rate, 1.0 Tx resample ratio, VHT format, LDPC coding
@@ -204,6 +204,23 @@ enum class FrontEndModePreset : uint8_t {
     RX_CBW_80,  //< 80 MHz Rx CBW, 100 MHz actual Rx sampling rate, 0.8 Rx resample ratio
     RX_CBW_40_RESAMPLE, //< 40 MHz Rx CBW, 50 MHz actual Rx sampling rate, 0.8 Rx resample ratio
     RX_CBW_40,  //< 40 MHz Rx CBW, 40 MHz actual Rx sampling rate, 1.0 Rx resample ratio
+
+    TR_CBW_160_HESU, ///< TX_CBW_160_HESU + RX_CBW_160
+    TR_CBW_160_VHT, ///< TX_CBW_160_VHT + RX_CBW_160
+    TR_CBW_160_VHT_LDPC, ///< TX_CBW_160_VHT_LDPC + RX_CBW_160
+    TR_CBW_80_HESU, ///< TX_CBW_80_HESU + RX_CBW_80
+    TR_CBW_80_VHT, ///< TX_CBW_80_VHT + RX_CBW_80
+    TR_CBW_80_VHT_LDPC, ///< TX_CBW_80_VHT_LDPC + RX_CBW_80
+    TR_CBW_40_RESAMPLE_HESU, ///< TX_CBW_40_RESAMPLE_HESU + RX_CBW_40_RESAMPLE
+    TR_CBW_40_RESAMPLE_VHT, ///< TX_CBW_40_RESAMPLE_VHT + RX_CBW_40_RESAMPLE
+    TR_CBW_40_RESAMPLE_VHT_LDPC, ///< TX_CBW_40_RESAMPLE_VHT_LDPC + RX_CBW_40_RESAMPLE
+    TR_CBW_40_RESAMPLE_HT, ///< TX_CBW_40_RESAMPLE_HT + RX_CBW_40_RESAMPLE
+    TR_CBW_40_RESAMPLE_HT_LDPC, ///< TX_CBW_40_RESAMPLE_HT_LDPC + RX_CBW_40_RESAMPLE
+    TR_CBW_40_HESU, ///< TX_CBW_40_HESU + RX_CBW_40
+    TR_CBW_40_VHT, ///< TX_CBW_40_VHT + RX_CBW_40
+    TR_CBW_40_VHT_LDPC, ///< TX_CBW_40_VHT_LDPC + RX_CBW_40
+    TR_CBW_40_HT, ///< TX_CBW_40_HT + RX_CBW_40
+    TR_CBW_40_HT_LDPC, ///< TX_CBW_40_HT_LDPC + RX_CBW_40
 
     Customized,
 };
@@ -219,5 +236,9 @@ std::ostream &operator<<(std::ostream &os, const FrontEndModePreset &preset);
 const std::vector<std::string> &FrontEndModePreset2Strings();
 
 const std::vector<FrontEndModePreset> &getAllFrontEndModePresets();
+
+const std::map<std::string, FrontEndModePreset> &getFrontEndModePresetsMap();
+
+std::optional<FrontEndModePreset> frontEndModePresetFromString(const std::string &presetStringInUpperCase);
 
 #endif //PICOSCENES_PLATFORM_PICOSCENESCOMMONS_HXX
