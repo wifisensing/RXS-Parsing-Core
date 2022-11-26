@@ -270,7 +270,7 @@ std::string FrontEndModePreset2String(FrontEndModePreset preset) {
         case FrontEndModePreset::TR_CBW_40_HT_LDPC:
             return "TR_CBW_40_HT_LDPC";
         case FrontEndModePreset::Customized:
-            break;
+            return "Customized";
         default:
             throw std::invalid_argument("Unknown Tx parameter reset");
 
