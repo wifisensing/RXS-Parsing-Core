@@ -3,6 +3,7 @@
 //
 
 #include "PicoScenesCommons.hxx"
+#include "SDRResamplingPreset.hxx"
 
 bool isIntelMVMTypeNIC(PicoScenesDeviceType psdt) {
     return psdt == PicoScenesDeviceType::IWLMVM_AX200 || psdt == PicoScenesDeviceType::IWLMVM_AX210;
