@@ -5,7 +5,10 @@
 #ifndef PICOSCENES_PLATFORM_PICOSCENESFRAMETXPARAMETERS_HXX
 #define PICOSCENES_PLATFORM_PICOSCENESFRAMETXPARAMETERS_HXX
 
+#include <memory>
 #include "PicoScenesCommons.hxx"
+#include "FrontEndModePreset.hxx"
+#include "SDRResamplingPreset.hxx"
 
 class TxPrecodingParameters {
 public:
@@ -27,7 +30,7 @@ public:
 
 class PicoScenesFrameTxParameters {
 public:
-    FrontEndModePreset preset = FrontEndModePreset::Customized;
+    std::shared_ptr<FrontEndModePreset> preset = FrontEndModePreset::Customized;
     std::optional<double> preciseTxTime = std::nullopt;
     bool NDPFrame;
     PacketFormatEnum frameType;
@@ -101,166 +104,18 @@ public:
     }
 
     void applyPreset(const std::string &presetName) {
-        const auto &names = FrontEndModePreset2Strings();
-        if (auto found = std::find(names.cbegin(), names.cend(), presetName); found != names.cend()) {
-            auto presetIndex = std::distance(names.cbegin(), found);
-            auto preset = getAllFrontEndModePresets().at(presetIndex);
-            applyPreset(preset);
-        } else
-            throw std::invalid_argument("invalid frontend mode preset name: " + presetName + "\n" + printHelpContentForFrontEndModePreset());
+        if (!FrontEndModePreset::getPresetMap().contains(presetName))
+            throw std::invalid_argument("invalid frontend mode preset name: " + presetName + "\n" + FrontEndModePreset::printHelpContentForFrontEndModePreset());
+        applyPreset(FrontEndModePreset::getPresetMap().at(presetName));
     }
 
-    void applyPreset(FrontEndModePreset presetV) {
+    void applyPreset(const std::shared_ptr<FrontEndModePreset> &presetV) {
         preset = presetV;
-
-        switch (preset) {
-            case FrontEndModePreset::TR_CBW_160_HESU:
-                [[fallthrough]];
-            case FrontEndModePreset::TX_CBW_160_HESU:
-                hardwareSamplingRate = 200e6;
-                cbw = ChannelBandwidthEnum::CBW_160;
-                frameType = PacketFormatEnum::PacketFormat_HESU;
-                coding = std::vector<ChannelCodingEnum>(1, ChannelCodingEnum::LDPC);
-                resampleRatio = 1.25;
-                break;
-            case FrontEndModePreset::TR_CBW_160_VHT_LDPC:
-                [[fallthrough]];
-            case FrontEndModePreset::TX_CBW_160_VHT_LDPC:
-                hardwareSamplingRate = 200e6;
-                cbw = ChannelBandwidthEnum::CBW_160;
-                frameType = PacketFormatEnum::PacketFormat_VHT;
-                coding = std::vector<ChannelCodingEnum>(1, ChannelCodingEnum::LDPC);
-                resampleRatio = 1.25;
-                break;
-            case FrontEndModePreset::TR_CBW_160_VHT:
-                [[fallthrough]];
-            case FrontEndModePreset::TX_CBW_160_VHT:
-                hardwareSamplingRate = 200e6;
-                cbw = ChannelBandwidthEnum::CBW_160;
-                frameType = PacketFormatEnum::PacketFormat_VHT;
-                coding = std::vector<ChannelCodingEnum>(1, ChannelCodingEnum::BCC);
-                resampleRatio = 1.25;
-                break;
-            case FrontEndModePreset::TR_CBW_80_HESU:
-                [[fallthrough]];
-            case FrontEndModePreset::TX_CBW_80_HESU:
-                hardwareSamplingRate = 100e6;
-                cbw = ChannelBandwidthEnum::CBW_80;
-                frameType = PacketFormatEnum::PacketFormat_HESU;
-                coding = std::vector<ChannelCodingEnum>(1, ChannelCodingEnum::LDPC);
-                resampleRatio = 1.25;
-                break;
-            case FrontEndModePreset::TR_CBW_80_VHT:
-                [[fallthrough]];
-            case FrontEndModePreset::TX_CBW_80_VHT:
-                hardwareSamplingRate = 100e6;
-                cbw = ChannelBandwidthEnum::CBW_80;
-                frameType = PacketFormatEnum::PacketFormat_VHT;
-                coding = std::vector<ChannelCodingEnum>(1, ChannelCodingEnum::BCC);
-                resampleRatio = 1.25;
-                break;
-            case FrontEndModePreset::TR_CBW_80_VHT_LDPC:
-                [[fallthrough]];
-            case FrontEndModePreset::TX_CBW_80_VHT_LDPC:
-                hardwareSamplingRate = 100e6;
-                cbw = ChannelBandwidthEnum::CBW_80;
-                frameType = PacketFormatEnum::PacketFormat_VHT;
-                coding = std::vector<ChannelCodingEnum>(1, ChannelCodingEnum::LDPC);
-                resampleRatio = 1.25;
-                break;
-            case FrontEndModePreset::TR_CBW_40_RESAMPLE_HESU:
-                [[fallthrough]];
-            case FrontEndModePreset::TX_CBW_40_RESAMPLE_HESU:
-                hardwareSamplingRate = 50e6;
-                cbw = ChannelBandwidthEnum::CBW_40;
-                frameType = PacketFormatEnum::PacketFormat_HESU;
-                coding = std::vector<ChannelCodingEnum>(1, ChannelCodingEnum::LDPC);
-                resampleRatio = 1.25;
-                break;
-            case FrontEndModePreset::TR_CBW_40_RESAMPLE_VHT:
-                [[fallthrough]];
-            case FrontEndModePreset::TX_CBW_40_RESAMPLE_VHT:
-                hardwareSamplingRate = 50e6;
-                cbw = ChannelBandwidthEnum::CBW_40;
-                frameType = PacketFormatEnum::PacketFormat_VHT;
-                coding = std::vector<ChannelCodingEnum>(1, ChannelCodingEnum::BCC);
-                resampleRatio = 1.25;
-                break;
-            case FrontEndModePreset::TR_CBW_40_RESAMPLE_VHT_LDPC:
-                [[fallthrough]];
-            case FrontEndModePreset::TX_CBW_40_RESAMPLE_VHT_LDPC:
-                hardwareSamplingRate = 50e6;
-                cbw = ChannelBandwidthEnum::CBW_40;
-                frameType = PacketFormatEnum::PacketFormat_VHT;
-                coding = std::vector<ChannelCodingEnum>(1, ChannelCodingEnum::LDPC);
-                resampleRatio = 1.25;
-                break;
-            case FrontEndModePreset::TR_CBW_40_RESAMPLE_HT:
-                [[fallthrough]];
-            case FrontEndModePreset::TX_CBW_40_RESAMPLE_HT:
-                hardwareSamplingRate = 50e6;
-                cbw = ChannelBandwidthEnum::CBW_40;
-                frameType = PacketFormatEnum::PacketFormat_HT;
-                coding = std::vector<ChannelCodingEnum>(1, ChannelCodingEnum::BCC);
-                resampleRatio = 1.25;
-                break;
-            case FrontEndModePreset::TR_CBW_40_RESAMPLE_HT_LDPC:
-                [[fallthrough]];
-            case FrontEndModePreset::TX_CBW_40_RESAMPLE_HT_LDPC:
-                hardwareSamplingRate = 50e6;
-                cbw = ChannelBandwidthEnum::CBW_40;
-                frameType = PacketFormatEnum::PacketFormat_HT;
-                coding = std::vector<ChannelCodingEnum>(1, ChannelCodingEnum::LDPC);
-                resampleRatio = 1.25;
-                break;
-            case FrontEndModePreset::TR_CBW_40_HESU:
-                [[fallthrough]];
-            case FrontEndModePreset::TX_CBW_40_HESU:
-                hardwareSamplingRate = 40e6;
-                cbw = ChannelBandwidthEnum::CBW_40;
-                frameType = PacketFormatEnum::PacketFormat_HESU;
-                coding = std::vector<ChannelCodingEnum>(1, ChannelCodingEnum::LDPC);
-                resampleRatio = 1.0;
-                break;
-            case FrontEndModePreset::TR_CBW_40_VHT:
-                [[fallthrough]];
-            case FrontEndModePreset::TX_CBW_40_VHT:
-                hardwareSamplingRate = 40e6;
-                cbw = ChannelBandwidthEnum::CBW_40;
-                frameType = PacketFormatEnum::PacketFormat_VHT;
-                coding = std::vector<ChannelCodingEnum>(1, ChannelCodingEnum::BCC);
-                resampleRatio = 1.0;
-                break;
-            case FrontEndModePreset::TR_CBW_40_VHT_LDPC:
-                [[fallthrough]];
-            case FrontEndModePreset::TX_CBW_40_VHT_LDPC:
-                hardwareSamplingRate = 40e6;
-                cbw = ChannelBandwidthEnum::CBW_40;
-                frameType = PacketFormatEnum::PacketFormat_VHT;
-                coding = std::vector<ChannelCodingEnum>(1, ChannelCodingEnum::LDPC);
-                resampleRatio = 1.0;
-                break;
-            case FrontEndModePreset::TR_CBW_40_HT:
-                [[fallthrough]];
-            case FrontEndModePreset::TX_CBW_40_HT:
-                hardwareSamplingRate = 40e6;
-                cbw = ChannelBandwidthEnum::CBW_40;
-                frameType = PacketFormatEnum::PacketFormat_HT;
-                coding = std::vector<ChannelCodingEnum>(1, ChannelCodingEnum::BCC);
-                resampleRatio = 1.0;
-                break;
-            case FrontEndModePreset::TR_CBW_40_HT_LDPC:
-                [[fallthrough]];
-            case FrontEndModePreset::TX_CBW_40_HT_LDPC:
-                hardwareSamplingRate = 40e6;
-                cbw = ChannelBandwidthEnum::CBW_40;
-                frameType = PacketFormatEnum::PacketFormat_HT;
-                coding = std::vector<ChannelCodingEnum>(1, ChannelCodingEnum::LDPC);
-                resampleRatio = 1.0;
-                break;
-            default:
-                break;
-        }
+        hardwareSamplingRate = preset->txSamplingRate.value();
+        cbw = ChannelBandwidthEnum(preset->txCBW.value());
+        frameType = preset->format;
+        coding = std::vector<ChannelCodingEnum>{preset->coding};
+        resampleRatio = preset->txResampleRatio.value();
     }
 
     void validate() const;
