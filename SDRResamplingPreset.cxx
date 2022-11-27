@@ -48,7 +48,12 @@ SDRResamplingPreset SDRResamplingPreset::Preset_TR_80_100 = SDRResamplingPreset(
 SDRResamplingPreset SDRResamplingPreset::Preset_TR_80_200 = SDRResamplingPreset("TR_80_200", 80, 200, 80, 200, "Equivalent to \"--rate 200e6 --tx-resample-ratio 2.5 --rx-resample-ratio 0.4\"");
 SDRResamplingPreset SDRResamplingPreset::Preset_TR_160_200 = SDRResamplingPreset("TR_160_200", 160, 200, 160, 200, "Equivalent to \"--rate 200e6 --tx-resample-ratio 1.25 --rx-resample-ratio 0.8\"");
 
-SDRResamplingPreset::SDRResamplingPreset(std::string presetName, const std::optional<double> &txCbw, const std::optional<double> &txSamplingRate, const std::optional<double> &rxCbw, const std::optional<double> &rxSamplingRate, std::string description) : presetName(std::move(presetName)), txCBW(txCbw), txSamplingRate(txSamplingRate), rxCBW(rxCbw), rxSamplingRate(rxSamplingRate), description(description) {}
+SDRResamplingPreset::SDRResamplingPreset(std::string presetName, const std::optional<double> &txCbw,
+                                         const std::optional<double> &txSamplingRate, const std::optional<double> &rxCbw,
+                                         const std::optional<double> &rxSamplingRate, std::string description) : presetName(std::move(presetName)), txCBW(txCbw), txSamplingRate(txSamplingRate), rxCBW(rxCbw),
+                                                                                                                 rxSamplingRate(rxSamplingRate), description(std::move(description)),
+                                                                                                                 txResampleRatio(txCBW && txSamplingRate ? std::make_optional(*txSamplingRate / *txCBW) : std::nullopt),
+                                                                                                                 rxResampleRatio(rxCBW && rxSamplingRate ? std::make_optional(*rxCBW / *rxSamplingRate) : std::nullopt) {}
 
 bool SDRResamplingPreset::operator==(const SDRResamplingPreset &rhs) const {
     return std::tie(presetName, txCBW, txSamplingRate, rxCBW, rxSamplingRate) == std::tie(rhs.presetName, rhs.txCBW, rhs.txSamplingRate, rhs.rxCBW, rhs.rxSamplingRate);

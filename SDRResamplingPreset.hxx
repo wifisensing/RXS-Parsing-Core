@@ -11,9 +11,7 @@
 #include <map>
 #include <vector>
 
-class SDRResamplingPreset {
-public:
-
+struct SDRResamplingPreset {
     static SDRResamplingPreset Preset_TX_20_20;
     static SDRResamplingPreset Preset_TX_20_25;
     static SDRResamplingPreset Preset_TX_20_40;
@@ -68,7 +66,6 @@ public:
 
     static std::string printHelpContentForSDRResamplingPreset();
 
-private:
     explicit SDRResamplingPreset(std::string presetName, const std::optional<double> &txCbw = std::nullopt, const std::optional<double> &txSamplingRate = std::nullopt, const std::optional<double> &rxCbw = std::nullopt, const std::optional<double> &rxSamplingRate = std::nullopt, std::string description = "");
 
     const std::string presetName{};
@@ -77,6 +74,8 @@ private:
     const std::optional<double> rxCBW{std::nullopt};
     const std::optional<double> rxSamplingRate{std::nullopt};
     const std::string description{};
+    const std::optional<double> txResampleRatio{std::nullopt};
+    const std::optional<double> rxResampleRatio{std::nullopt};
 };
 
 

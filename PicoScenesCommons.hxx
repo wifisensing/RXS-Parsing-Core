@@ -14,6 +14,7 @@
 #include <numeric>
 #include <mutex>
 #include "SignalMatrix.hxx"
+#include "SDRResamplingPreset.hxx"
 
 #ifdef BUILD_WITH_MEX
 #include "mex.h"
