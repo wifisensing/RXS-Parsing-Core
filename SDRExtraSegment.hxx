@@ -1,11 +1,10 @@
 //
-// Created by csi on 10/23/22.
+// Created by  Zhiping Jiang on 10/23/22.
 //
 
 #ifndef PICOSCENES_PLATFORM_SDREXTRASEGMENT_HXX
 #define PICOSCENES_PLATFORM_SDREXTRASEGMENT_HXX
 
-#include <typeindex>
 #include <unordered_map>
 #include "AbstractPicoScenesFrameSegment.hxx"
 #include "PicoScenesCommons.hxx"
@@ -13,6 +12,7 @@
 struct SDRExtra {
     int8_t scramblerInit{0};
     int64_t packetStartInternal{0};
+    int64_t hardwareRxSamplingIndex{0};
     double preciseRxTime{0};
     double lastTxTime{0};
 
