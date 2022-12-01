@@ -111,11 +111,13 @@ public:
 
     void applyPreset(const std::shared_ptr<FrontEndModePreset> &presetV) {
         preset = presetV;
-        hardwareSamplingRate = preset->txSamplingRate.value();
-        cbw = ChannelBandwidthEnum(preset->txCBW.value());
-        frameType = preset->format;
-        coding = std::vector<ChannelCodingEnum>{preset->coding};
-        resampleRatio = preset->txResampleRatio.value();
+        if (preset->txSamplingRate && preset->txResampleRatio && preset->txCBW) {
+            hardwareSamplingRate = preset->txSamplingRate.value();
+            cbw = ChannelBandwidthEnum(preset->txCBW.value());
+            frameType = preset->format;
+            coding = std::vector<ChannelCodingEnum>{preset->coding};
+            resampleRatio = preset->txResampleRatio.value();
+        }
     }
 
     void validate() const;
