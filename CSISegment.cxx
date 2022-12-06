@@ -1,10 +1,7 @@
 //
-// Created by 蒋志平 on 2020/11/5.
+// Created by Zhiping Jiang on 2020/11/5.
 //
 
-#include <algorithm>
-#include <utility>
-#include <deque>
 #include "CSISegment.hxx"
 #include "preprocess/generated/CSIPreprocessor.h"
 

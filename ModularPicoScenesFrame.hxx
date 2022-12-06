@@ -1,12 +1,13 @@
 //
-// Created by 蒋志平 on 2020/11/6.
+// Created by Zhiping Jiang on 2020/11/6.
 //
 
 #ifndef PICOSCENES_PLATFORM_MODULARPICOSCENESFRAME_HXX
 #define PICOSCENES_PLATFORM_MODULARPICOSCENESFRAME_HXX
 
-#include "AbstractPicoScenesFrameSegment.hxx"
 #include "PicoScenesCommons.hxx"
+#include "PicoScenesFrameTxParameters.hxx"
+#include "AbstractPicoScenesFrameSegment.hxx"
 #include "CSISegment.hxx"
 #include "RxSBasicSegment.hxx"
 #include "ExtraInfoSegment.hxx"
@@ -16,7 +17,6 @@
 #include "PayloadSegment.hxx"
 #include "PreEQSymbolsSegment.hxx"
 #include "CargoSegment.hxx"
-#include "PicoScenesFrameTxParameters.hxx"
 
 struct ieee80211_mac_frame_header_frame_control_field {
     uint16_t version: 2,

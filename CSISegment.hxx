@@ -1,14 +1,12 @@
 //
-// Created by 蒋志平 on 2020/11/5.
+// Created by Zhiping Jiang on 2020/11/5.
 //
 
 #ifndef PICOSCENES_PLATFORM_CSISEGMENT_HXX
 #define PICOSCENES_PLATFORM_CSISEGMENT_HXX
 
-#include <functional>
 #include "AbstractPicoScenesFrameSegment.hxx"
 #include "PicoScenesCommons.hxx"
-
 
 template<typename Iterator>
 void parseQCA9300CSIData(Iterator outputArray, const uint8_t *csiData, int nSTS, int nRx, int nTones) {

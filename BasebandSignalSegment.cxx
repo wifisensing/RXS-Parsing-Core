@@ -1,9 +1,8 @@
 //
-// Created by 蒋志平 on 2020/11/6.
+// Created by Zhiping Jiang on 2020/11/6.
 //
 
 #include "BasebandSignalSegment.hxx"
-
 
 static auto v1Parser = [](const uint8_t *buffer, uint32_t bufferLength, void *bbsignal) {
     *(SignalMatrix<std::complex<double>> *) bbsignal = SignalMatrix<std::complex<double>>::fromBuffer(buffer, buffer + bufferLength, SignalMatrixStorageMajority::ColumnMajor);

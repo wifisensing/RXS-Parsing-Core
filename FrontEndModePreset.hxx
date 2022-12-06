@@ -5,12 +5,6 @@
 #ifndef PICOSCENES_PLATFORM_FRONTENDMODEPRESET_HXX
 #define PICOSCENES_PLATFORM_FRONTENDMODEPRESET_HXX
 
-
-#include <optional>
-#include <iostream>
-#include <map>
-#include <vector>
-#include <memory>
 #include "PicoScenesCommons.hxx"
 
 class FrontEndModePreset {

@@ -1,9 +1,8 @@
 //
-// Created by 蒋志平 on 12/13/20.
+// Created by Zhiping Jiang on 12/13/20.
 //
 
 #include "PayloadSegment.hxx"
-
 
 std::ostream &operator<<(std::ostream &os, const PayloadDataType &payloadDataType) {
     switch (payloadDataType) {

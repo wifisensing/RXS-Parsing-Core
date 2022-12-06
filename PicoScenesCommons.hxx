@@ -13,6 +13,8 @@
 #include <complex>
 #include <numeric>
 #include <mutex>
+#include <bitset>
+#include <iomanip>
 #include "SignalMatrix.hxx"
 #include "SDRResamplingPreset.hxx"
 

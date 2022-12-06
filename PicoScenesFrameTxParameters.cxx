@@ -1,9 +1,8 @@
 //
-// Created by 蒋志平 on 2020/11/6.
+// Created by Zhiping Jiang on 2020/11/6.
 //
 
 #include "PicoScenesFrameTxParameters.hxx"
-
 
 std::string PicoScenesFrameTxParameters::toString() const {
     std::stringstream ss;

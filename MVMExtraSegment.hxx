@@ -1,12 +1,10 @@
 //
-// Created by 蒋志平 on 9/9/21.
+// Created by Zhiping Jiang on 9/9/21.
 //
 
 #ifndef PICOSCENES_PLATFORM_MVMEXTRASEGMENT_HXX
 #define PICOSCENES_PLATFORM_MVMEXTRASEGMENT_HXX
 
-#include <typeindex>
-#include <unordered_map>
 #include "AbstractPicoScenesFrameSegment.hxx"
 #include "PicoScenesCommons.hxx"
 #include "IntelRateNFlag.hxx"

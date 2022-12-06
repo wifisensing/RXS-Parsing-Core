@@ -31,7 +31,7 @@ public:
 
     SDRExtraSegment(const uint8_t *buffer, uint32_t bufferLength);
 
-    SDRExtraSegment(const SDRExtra &sdrExtra);
+    explicit SDRExtraSegment(const SDRExtra &sdrExtra);
 
     const SDRExtra &getSdrExtra() const;
 

@@ -2,9 +2,6 @@
 // Created by Zhiping Jiang on 11/27/22.
 //
 
-#include <utility>
-#include <iomanip>
-
 #include "FrontEndModePreset.hxx"
 
 const std::shared_ptr<FrontEndModePreset> FrontEndModePreset::TX_CBW_160_HESU = std::shared_ptr<FrontEndModePreset>(new FrontEndModePreset("TX_CBW_160_HESU", PacketFormatEnum::PacketFormat_HESU, ChannelCodingEnum::LDPC, 160, 200, std::nullopt, std::nullopt, "Equivalent to \"--format hesu --coding ldpc --rate 200e6 --tx-resample-ratio 1.25 --cbw 160\""));

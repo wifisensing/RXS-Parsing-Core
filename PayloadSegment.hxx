@@ -1,11 +1,10 @@
 //
-// Created by 蒋志平 on 12/13/20.
+// Created by Zhiping Jiang on 12/13/20.
 //
 
 #ifndef PICOSCENES_PLATFORM_PAYLOADSEGMENT_HXX
 #define PICOSCENES_PLATFORM_PAYLOADSEGMENT_HXX
 
-#include <functional>
 #include "AbstractPicoScenesFrameSegment.hxx"
 #include "PicoScenesCommons.hxx"
 

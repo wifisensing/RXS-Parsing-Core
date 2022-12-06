@@ -5,7 +5,6 @@
 #ifndef PICOSCENES_PLATFORM_SDRRESAMPLINGPRESET_HXX
 #define PICOSCENES_PLATFORM_SDRRESAMPLINGPRESET_HXX
 
-
 #include <optional>
 #include <iostream>
 #include <map>
@@ -64,24 +63,25 @@ public:
 
     static const std::vector<std::shared_ptr<SDRResamplingPreset>> &getPresetList();
 
-    static const std::map<std::string, std::shared_ptr<SDRResamplingPreset>> & getPresetMap();
+    static const std::map<std::string, std::shared_ptr<SDRResamplingPreset>> &getPresetMap();
 
     static std::string printHelpContentForSDRResamplingPreset();
 
+    SDRResamplingPreset() = delete;
+
     const std::string presetName{};
+    const std::string description{};
+    
     const std::optional<double> txCBW{std::nullopt};
     const std::optional<double> txSamplingRate{std::nullopt};
+    const std::optional<double> txResampleRatio{std::nullopt};
+
     const std::optional<double> rxCBW{std::nullopt};
     const std::optional<double> rxSamplingRate{std::nullopt};
-    const std::string description{};
-    const std::optional<double> txResampleRatio{std::nullopt};
     const std::optional<double> rxResampleRatio{std::nullopt};
 
 private:
-    SDRResamplingPreset() = delete;
-
     explicit SDRResamplingPreset(std::string presetName, const std::optional<double> &txCbw = std::nullopt, const std::optional<double> &txSamplingRate = std::nullopt, const std::optional<double> &rxCbw = std::nullopt, const std::optional<double> &rxSamplingRate = std::nullopt, std::string description = "");
-
 };
 
 

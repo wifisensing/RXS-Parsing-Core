@@ -1,11 +1,10 @@
 //
-// Created by 蒋志平 on 2020/11/6.
+// Created by Zhiping Jiang on 2020/11/6.
 //
 
-#include "ModularPicoScenesFrame.hxx"
 #include <random>
-#include <iomanip>
 #include <cassert>
+#include "ModularPicoScenesFrame.hxx"
 
 std::string ieee80211_mac_frame_header_frame_control_field::getTypeString() const {
     if (type == 0) {

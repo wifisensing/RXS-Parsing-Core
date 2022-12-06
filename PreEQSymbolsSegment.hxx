@@ -1,11 +1,10 @@
 //
-// Created by 蒋志平 on 2020/12/19.
+// Created by Zhiping Jiang on 2020/12/19.
 //
 
 #ifndef PICOSCENES_PLATFORM_PREEQSYMBOLSSEGMENT_HXX
 #define PICOSCENES_PLATFORM_PREEQSYMBOLSSEGMENT_HXX
 
-#include <functional>
 #include "AbstractPicoScenesFrameSegment.hxx"
 #include "PicoScenesCommons.hxx"
 

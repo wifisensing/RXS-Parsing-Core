@@ -1,26 +1,11 @@
 //
-// Created by 蒋志平 on 2018/11/10.
+// Created by Zhiping Jiang on 2018/11/10.
 //
 
 #ifndef PICOSCENES_PLATFROM_RXSEXTRAINFO_H
 #define PICOSCENES_PLATFROM_RXSEXTRAINFO_H
 
 #include "PicoScenesCommons.hxx"
-#include <cstdlib>
-#include <cstdio>
-#include <vector>
-#include <complex>
-#include <bitset>
-#include <optional>
-#include <cstring>
-
-#ifdef __GNUC__
-#define PACK(__Declaration__) __Declaration__ __attribute__((__packed__))
-#endif
-
-#ifdef _MSC_VER
-#define PACK( __Declaration__ ) __pragma( pack(push, 1) ) __Declaration__ __pragma( pack(pop))
-#endif
 
 enum AtherosCFTuningPolicy : uint8_t {
     CFTuningByChansel = 30,

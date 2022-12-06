@@ -1,8 +1,7 @@
 //
-// Created by 蒋志平 on 2018/11/10.
+// Created by Zhiping Jiang on 2018/11/10.
 //
 
-#include <iomanip>
 #include "RXSExtraInfo.hxx"
 
 void featureCodeInterpretation(uint32_t featureCode, struct ExtraInfo *extraInfo) {

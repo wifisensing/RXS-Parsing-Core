@@ -1,11 +1,10 @@
 //
-// Created by 蒋志平 on 2020/11/6.
+// Created by Zhiping Jiang on 2020/11/6.
 //
 
 #ifndef PICOSCENES_PLATFORM_PICOSCENESFRAMETXPARAMETERS_HXX
 #define PICOSCENES_PLATFORM_PICOSCENESFRAMETXPARAMETERS_HXX
 
-#include <memory>
 #include "PicoScenesCommons.hxx"
 #include "FrontEndModePreset.hxx"
 #include "SDRResamplingPreset.hxx"

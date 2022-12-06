@@ -1,11 +1,10 @@
 //
-// Created by csi on 4/20/22.
+// Created by Zhiping Jiang on 4/20/22.
 //
 
 #ifndef PICOSCENES_PLATFORM_CARGOSEGMENT_HXX
 #define PICOSCENES_PLATFORM_CARGOSEGMENT_HXX
 
-#include <functional>
 #include "AbstractPicoScenesFrameSegment.hxx"
 #include "PicoScenesCommons.hxx"
 

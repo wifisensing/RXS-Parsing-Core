@@ -1,19 +1,11 @@
 //
-// Created by 蒋志平 on 2020/11/5.
+// Created by Zhiping Jiang on 2020/11/5.
 //
 
 #ifndef PICOSCENES_PLATFORM_ABSTRACTPICOSCENESFRAMESEGMENT_HXX
 #define PICOSCENES_PLATFORM_ABSTRACTPICOSCENESFRAMESEGMENT_HXX
 
-#include <algorithm>
-#include <iostream>
-#include <vector>
-#include <map>
-#include <string>
-#include <type_traits>
-#include <tuple>
-#include <memory>
-#include <cstring>
+#include "PicoScenesCommons.hxx"
 #include "DynamicFieldInterpretation.hxx"
 
 /**

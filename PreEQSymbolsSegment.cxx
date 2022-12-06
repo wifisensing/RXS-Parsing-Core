@@ -1,5 +1,5 @@
 //
-// Created by 蒋志平 on 2020/12/19.
+// Created by Zhiping Jiang on 2020/12/19.
 //
 
 #include "PreEQSymbolsSegment.hxx"
