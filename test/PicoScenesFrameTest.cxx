@@ -1,5 +1,5 @@
 //
-// Created by 蒋志平 on 2019/12/18.
+// Created by Zhiping Jiang on 2019/12/18.
 //
 #define BOOST_TEST_MODULE Suite_example
 
