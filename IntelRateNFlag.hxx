@@ -112,9 +112,9 @@ public:
                     return GuardIntervalEnum::GI_3200;
             }
         }
-    }
 
-    return GuardIntervalEnum::GI_800;
+        return GuardIntervalEnum::GI_800;
+    }
 };
 
 
