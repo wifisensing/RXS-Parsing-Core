@@ -113,6 +113,8 @@ public:
             }
         }
     }
+
+    return GuardIntervalEnum::GI_800;
 };
 
 
