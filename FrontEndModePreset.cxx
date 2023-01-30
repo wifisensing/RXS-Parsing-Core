@@ -44,7 +44,7 @@ const std::shared_ptr<FrontEndModePreset> FrontEndModePreset::TR_CBW_20_VHT_LDPC
 const std::shared_ptr<FrontEndModePreset> FrontEndModePreset::TR_CBW_20_HT = std::shared_ptr<FrontEndModePreset>(new FrontEndModePreset("TR_CBW_20_HT", PacketFormatEnum::PacketFormat_HT, ChannelCodingEnum::BCC, 20, 20, 20, 20, "Equivalent to \"--format ht --coding bcc --rate 20e6 --tx-resample-ratio 1.0 --cbw 20 --rx-resample-ratio 1.0 --rx-cbw 20\""));
 const std::shared_ptr<FrontEndModePreset> FrontEndModePreset::TR_CBW_20_HT_LDPC = std::shared_ptr<FrontEndModePreset>(new FrontEndModePreset("TR_CBW_20_HT_LDPC", PacketFormatEnum::PacketFormat_HT, ChannelCodingEnum::LDPC, 20, 20, 20, 20, "Equivalent to \"--format ht --coding ldpc --rate 20e6 --tx-resample-ratio 1.0 --cbw 20 --rx-resample-ratio 1.0 --rx-cbw 20\""));
 const std::shared_ptr<FrontEndModePreset> FrontEndModePreset::TR_CBW_20_NonHT = std::shared_ptr<FrontEndModePreset>(new FrontEndModePreset("TR_CBW_20_NonHT", PacketFormatEnum::PacketFormat_NonHT, ChannelCodingEnum::BCC, 20, 20, 20, 20, "Equivalent to \"--format nonht --coding bcc --rate 20e6 --tx-resample-ratio 1.0 --cbw 20 --rx-resample-ratio 1.0 --rx-cbw 20\""));
-const std::shared_ptr<FrontEndModePreset> FrontEndModePreset::Customized = std::shared_ptr<FrontEndModePreset>(new FrontEndModePreset("Customized", PacketFormatEnum::PacketFormat_Unknown, ChannelCodingEnum::BCC, std::nullopt, std::nullopt, std::nullopt, std::nullopt, "Customized Profile"));
+const std::shared_ptr<FrontEndModePreset> FrontEndModePreset::Unspecified = std::shared_ptr<FrontEndModePreset>(new FrontEndModePreset("Unspecified", PacketFormatEnum::PacketFormat_Unknown, ChannelCodingEnum::BCC, std::nullopt, std::nullopt, std::nullopt, std::nullopt, "Unspecified"));
 
 const std::vector<std::shared_ptr<FrontEndModePreset>> &FrontEndModePreset::getPresetList() {
     static std::vector<std::shared_ptr<FrontEndModePreset>> list{
@@ -88,7 +88,7 @@ const std::vector<std::shared_ptr<FrontEndModePreset>> &FrontEndModePreset::getP
             TR_CBW_20_HT,
             TR_CBW_20_HT_LDPC,
             TR_CBW_20_NonHT,
-            Customized,
+            Unspecified,
     };
 
     return list;

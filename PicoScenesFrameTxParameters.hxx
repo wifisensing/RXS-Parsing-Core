@@ -29,7 +29,7 @@ public:
 
 class PicoScenesFrameTxParameters {
 public:
-    std::shared_ptr<FrontEndModePreset> preset = FrontEndModePreset::Customized;
+    std::shared_ptr<FrontEndModePreset> preset = FrontEndModePreset::Unspecified;
     std::optional<double> preciseTxTime = std::nullopt;
     bool NDPFrame;
     PacketFormatEnum frameType;
