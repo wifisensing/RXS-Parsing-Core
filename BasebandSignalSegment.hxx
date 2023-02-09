@@ -22,12 +22,16 @@ public:
 
     void setSignalMatrix(const SignalMatrix<std::complex<float>> &bbsignalsV);
 
+    void setSignalMatrix(const SignalMatrix<std::complex<int32_t>> &bbsignalsV);
+
     [[nodiscard]] std::string toString() const override;
 
 private:
     SignalMatrix<std::complex<double>> bbsignals;
 
     SignalMatrix<std::complex<float>> bbsignalsFloat32;
+
+    SignalMatrix<std::complex<int32_t>> bbsignalsInt32;
 };
 
 std::ostream &operator<<(std::ostream &os, const BasebandSignalSegment &csiSegment);

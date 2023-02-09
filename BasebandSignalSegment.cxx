@@ -44,6 +44,11 @@ void BasebandSignalSegment::setSignalMatrix(const SignalMatrix<std::complex<floa
     setSegmentPayload(bbsignalsFloat32.toBuffer());
 }
 
+void BasebandSignalSegment::setSignalMatrix(const SignalMatrix<std::complex<int32_t>> &bbsignalsV) {
+    bbsignalsInt32 = bbsignalsV;
+    setSegmentPayload(bbsignalsInt32.toBuffer());
+}
+
 std::string BasebandSignalSegment::toString() const {
     std::stringstream ss;
     if (!bbsignals.empty())
@@ -53,6 +58,8 @@ std::string BasebandSignalSegment::toString() const {
     auto temp = ss.str();
     return temp;
 }
+
+
 
 std::ostream &operator<<(std::ostream &os, const BasebandSignalSegment &basebandSignalSegment) {
     os << basebandSignalSegment.toString();
