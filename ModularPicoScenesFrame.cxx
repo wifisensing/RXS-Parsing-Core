@@ -410,6 +410,12 @@ Uint8Vector ModularPicoScenesRxFrame::toBuffer() const {
         modularFrameHeader.numRxSegments++;
     }
 
+    for (const auto &segment: rxUnknownSegments) {
+        auto buffer = segment.second.toBuffer();
+        std::copy(buffer.cbegin(), buffer.cend(), std::back_inserter(rxSegmentBuffer));
+        modularFrameHeader.numRxSegments++;
+    }
+
     // Assembly the full buffer
     Uint8Vector frameBuffer;
     modularFrameHeader.frameLength = sizeof(modularFrameHeader) + rxSegmentBuffer.size() + mpdu.size() - 4;
