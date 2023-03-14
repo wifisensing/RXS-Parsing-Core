@@ -118,6 +118,7 @@ public:
     std::map<std::string, AbstractPicoScenesFrameSegment> rxUnknownSegments;
     std::map<std::string, AbstractPicoScenesFrameSegment> txUnknownSegments;
     Uint8Vector mpdu;
+    bool isNDP{false};
 
     static std::optional<ModularPicoScenesRxFrame> fromBuffer(const uint8_t *buffer, uint32_t bufferLength, bool interpolateCSI = false);
 
