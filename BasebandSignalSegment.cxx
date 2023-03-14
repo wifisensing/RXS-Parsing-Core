@@ -55,6 +55,8 @@ std::string BasebandSignalSegment::toString() const {
         ss << segmentName + ":[(double) " + std::to_string(bbsignals.dimensions[0]) + "x" + std::to_string(bbsignals.dimensions[1]) + "]";
     else if (!bbsignalsFloat32.empty())
         ss << segmentName + ":[(float) " + std::to_string(bbsignalsFloat32.dimensions[0]) + "x" + std::to_string(bbsignalsFloat32.dimensions[1]) + "]";
+    else if (!bbsignalsInt16.empty())
+        ss << segmentName + ":[(int16) " + std::to_string(bbsignalsInt16.dimensions[0]) + "x" + std::to_string(bbsignalsInt16.dimensions[1]) + "]";
     auto temp = ss.str();
     return temp;
 }
