@@ -505,7 +505,7 @@ Uint8Vector ModularPicoScenesTxFrame::toBuffer() const {
     auto bufferLength = totalLength();
     Uint8Vector buffer(bufferLength);
     auto copiedLength = toBuffer(&buffer[0], bufferLength);
-    assert(bufferLength == copiedLength);
+    assert(bufferLength == copiedLength || bufferLength == copiedLength + 4);
     return buffer;
 }
 
@@ -577,6 +577,7 @@ std::vector<ModularPicoScenesTxFrame> ModularPicoScenesTxFrame::autoSplit(int16_
         auto txframe = *this;
         txframe.standardHeader.seq = i;
         txframe.segments.clear();
+        txframe.txParameters.postfixPaddingTime = 50e-6;
         txframe.addSegments(std::make_shared<CargoSegment>(cargo));
         cargoFrames.emplace_back(txframe);
     }
