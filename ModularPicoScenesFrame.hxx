@@ -146,8 +146,8 @@ public:
     std::vector<ModularPicoScenesTxFrame> AMPDUFrames;
 
     Uint8Vector prebuiltMPDU;
-    std::vector<std::vector<std::complex<int8_t>>> prebuiltCS8Signals;
-    std::vector<std::vector<std::complex<int16_t>>> prebuiltCS16Signals;
+    uint8_t transferFormat{16};
+    std::vector<std::vector<uint8_t>> prebuiltSignals;
 
     void appendAMPDUFrames(const ModularPicoScenesTxFrame &frame);
 

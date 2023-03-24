@@ -590,8 +590,8 @@ void ModularPicoScenesTxFrame::reset() {
     txParameters = PicoScenesFrameTxParameters();
     arbitraryMPDUContent.clear();
     AMPDUFrames.clear();
-    prebuiltCS8Signals.clear();
-    prebuiltCS16Signals.clear();
+    prebuiltSignals.clear();
+    transferFormat = 16;
     segments.clear();
 }
 
