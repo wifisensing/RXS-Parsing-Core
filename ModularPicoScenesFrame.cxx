@@ -591,7 +591,6 @@ void ModularPicoScenesTxFrame::reset() {
     arbitraryMPDUContent.clear();
     AMPDUFrames.clear();
     prebuiltSignals.clear();
-    transferFormat = 16;
     segments.clear();
 }
 
