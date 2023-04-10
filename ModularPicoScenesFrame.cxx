@@ -578,6 +578,7 @@ std::vector<ModularPicoScenesTxFrame> ModularPicoScenesTxFrame::autoSplit(int16_
         txframe.standardHeader.seq = i;
         txframe.segments.clear();
         txframe.txParameters.postfixPaddingTime = 500e-6;
+        txframe.frameHeader = this->frameHeader;
         txframe.addSegments(std::make_shared<CargoSegment>(cargo));
         cargoFrames.emplace_back(txframe);
     }
