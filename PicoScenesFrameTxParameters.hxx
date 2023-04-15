@@ -103,7 +103,7 @@ public:
     }
 
     void applyPreset(const std::string &presetName) {
-        if (!FrontEndModePreset::getPresetMap().contains(presetName))
+        if (FrontEndModePreset::getPresetMap().find(presetName) == FrontEndModePreset::getPresetMap().cend())
             throw std::invalid_argument("invalid frontend mode preset name: " + presetName + "\n" + FrontEndModePreset::printHelpContentForFrontEndModePreset());
         applyPreset(FrontEndModePreset::getPresetMap().at(presetName));
     }
