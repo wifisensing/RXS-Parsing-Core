@@ -72,6 +72,11 @@ Uint8Vector PayloadCargo::mergeAndValidateCargo(const std::vector<PayloadCargo> 
         throw std::runtime_error("incorrect cargo length");
     }
 
+    if (CargoCompression::decompressor) {
+        auto decompressed = CargoCompression::decompressor.value()(mergedPayload.data(), mergedPayload.size()).value_or(Uint8Vector());
+        return decompressed;
+    }
+
     return mergedPayload;
 }
 

@@ -8,6 +8,11 @@
 #include "AbstractPicoScenesFrameSegment.hxx"
 #include "PicoScenesCommons.hxx"
 
+namespace CargoCompression {
+    static std::optional<std::function<std::optional<std::vector<uint8_t>>(const uint8_t *, size_t)>> compressor;
+    static std::optional<std::function<std::optional<std::vector<uint8_t>>(const uint8_t *, size_t)>> decompressor;
+}
+
 class PayloadCargo {
 public:
     uint16_t taskId{0};

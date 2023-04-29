@@ -555,6 +555,9 @@ std::vector<ModularPicoScenesTxFrame> ModularPicoScenesTxFrame::autoSplit(int16_
         pos += segment->totalLength() + 4;
     }
 
+    auto compressed = CargoCompression::compressor.value()(allSegmentBuffer.data(), allSegmentBuffer.size());
+    segmentsLength = compressed->size();
+
     pos = 0;
     uint8_t sequence = 0;
     uint8_t numCargos = std::ceil(1.0 * segmentsLength / maxSegmentBuffersLength);
@@ -566,7 +569,7 @@ std::vector<ModularPicoScenesTxFrame> ModularPicoScenesTxFrame::autoSplit(int16_
                 .numSegments = frameHeader->numSegments,
                 .sequence = sequence++,
                 .totalParts = numCargos,
-                .payloadData = Uint8Vector(allSegmentBuffer.data() + pos, allSegmentBuffer.data() + pos + stepLength),
+                .payloadData = Uint8Vector(compressed->data() + pos, compressed->data() + pos + stepLength),
         });
         pos += stepLength;
     }
