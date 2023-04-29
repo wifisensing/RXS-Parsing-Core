@@ -8,10 +8,33 @@
 #include "AbstractPicoScenesFrameSegment.hxx"
 #include "PicoScenesCommons.hxx"
 
-namespace CargoCompression {
-    static std::optional<std::function<std::optional<std::vector<uint8_t>>(const uint8_t *, size_t)>> compressor;
-    static std::optional<std::function<std::optional<std::vector<uint8_t>>(const uint8_t *, size_t)>> decompressor;
-}
+class CargoCompression {
+public:
+    static bool isAlgorithmRegistered() {
+        return compressor && decompressor;
+    }
+
+    static void registerAlgorithm(const std::function<std::optional<std::vector<uint8_t>>(const uint8_t *, size_t)> &compressorV,
+                                  const std::function<std::optional<std::vector<uint8_t>>(const uint8_t *, size_t)> &decompressorV) {
+        static std::once_flag onceFlag;
+        std::call_once(onceFlag, [&] {
+            compressor = compressorV;
+            decompressor = decompressorV;
+        });
+    }
+
+    static const std::function<std::optional<std::vector<uint8_t>>(const uint8_t *, size_t)> &getCompressor() {
+        return compressor;
+    }
+
+    static const std::function<std::optional<std::vector<uint8_t>>(const uint8_t *, size_t)> &getDecompressor() {
+        return decompressor;
+    }
+
+private:
+    static std::function<std::optional<std::vector<uint8_t>>(const uint8_t *, size_t)> compressor;
+    static std::function<std::optional<std::vector<uint8_t>>(const uint8_t *, size_t)> decompressor;
+};
 
 class PayloadCargo {
 public:
@@ -19,6 +42,8 @@ public:
     uint8_t numSegments{0};
     uint8_t sequence{0};
     uint8_t totalParts{0};
+    bool compressed{false};
+    uint32_t payloadLength{0};
     std::vector<uint8_t> payloadData;
 
     [[nodiscard]] size_t totalLength() const;

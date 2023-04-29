@@ -549,27 +549,42 @@ std::vector<ModularPicoScenesTxFrame> ModularPicoScenesTxFrame::autoSplit(int16_
         return std::vector<ModularPicoScenesTxFrame>{1, *this};
 
     auto pos = 0;
-    Uint8Vector allSegmentBuffer(segmentsLength);
+    Uint8Vector allSegmentBuffer(segmentsLength), compressedBuffer;
     for (const auto &segment: segments) {
         segment->toBuffer(allSegmentBuffer.data() + pos);
         pos += segment->totalLength() + 4;
     }
 
-    auto compressed = CargoCompression::compressor.value()(allSegmentBuffer.data(), allSegmentBuffer.size());
-    segmentsLength = compressed->size();
+    Uint8Vector *bufferPtr;
+    size_t bufferLength{0};
+    bool usingCompression{false};
+    if (CargoCompression::isAlgorithmRegistered()) {
+        compressedBuffer = CargoCompression::getCompressor()(allSegmentBuffer.data(), allSegmentBuffer.size()).value_or(Uint8Vector());
+        bufferLength = compressedBuffer.size();
+        bufferPtr = &compressedBuffer;
+        usingCompression = true;
+
+        auto decompressedPayload = CargoCompression::getDecompressor()(compressedBuffer.data(), compressedBuffer.size()).value_or(Uint8Vector());
+        std::cout << "identical:" << (decompressedPayload == compressedBuffer) << std::endl;
+    } else {
+        bufferPtr = &allSegmentBuffer;
+        bufferLength = allSegmentBuffer.size();
+    }
 
     pos = 0;
     uint8_t sequence = 0;
-    uint8_t numCargos = std::ceil(1.0 * segmentsLength / maxSegmentBuffersLength);
+    uint8_t numCargos = std::ceil(1.0 * bufferLength / maxSegmentBuffersLength);
     auto cargos = std::vector<PayloadCargo>();
-    while (pos < segmentsLength) {
-        auto stepLength = pos + maxSegmentBuffersLength < segmentsLength ? maxSegmentBuffersLength : segmentsLength - pos;
+    while (pos < bufferLength) {
+        auto stepLength = pos + maxSegmentBuffersLength < bufferLength ? maxSegmentBuffersLength : bufferLength - pos;
         cargos.emplace_back(PayloadCargo{
                 .taskId = frameHeader->taskId,
                 .numSegments = frameHeader->numSegments,
                 .sequence = sequence++,
                 .totalParts = numCargos,
-                .payloadData = Uint8Vector(compressed->data() + pos, compressed->data() + pos + stepLength),
+                .compressed = usingCompression,
+                .payloadLength = static_cast<uint32_t>(bufferLength),
+                .payloadData = Uint8Vector(bufferPtr->data() + pos, bufferPtr->data() + pos + stepLength),
         });
         pos += stepLength;
     }
