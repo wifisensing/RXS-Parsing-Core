@@ -564,8 +564,8 @@ std::vector<ModularPicoScenesTxFrame> ModularPicoScenesTxFrame::autoSplit(int16_
         bufferPtr = &compressedBuffer;
         usingCompression = true;
 
-        auto decompressedPayload = CargoCompression::getDecompressor()(compressedBuffer.data(), compressedBuffer.size()).value_or(Uint8Vector());
-        std::cout << "identical:" << (decompressedPayload == compressedBuffer) << std::endl;
+//        auto decompressedPayload = CargoCompression::getDecompressor()(compressedBuffer.data(), compressedBuffer.size()).value_or(Uint8Vector());
+//        std::cout << "identical:" << (decompressedPayload == allSegmentBuffer) << std::endl;
     } else {
         bufferPtr = &allSegmentBuffer;
         bufferLength = allSegmentBuffer.size();
