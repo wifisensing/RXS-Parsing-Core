@@ -27,8 +27,7 @@ public:
     }
 };
 
-class PicoScenesFrameTxParameters {
-public:
+struct PicoScenesFrameTxParameters {
     std::shared_ptr<FrontEndModePreset> preset = FrontEndModePreset::DEFAULT;
     std::optional<double> preciseTxTime = std::nullopt;
     bool NDPFrame;
@@ -40,6 +39,7 @@ public:
     ChannelBandwidthEnum cbw;
     GuardIntervalEnum guardInterval;
     std::vector<ChannelCodingEnum> coding;
+    bool preferAMPDU;
     double numExtraSounding;
     bool forceSounding;
     double prefixPaddingTime;
@@ -78,6 +78,7 @@ public:
         cbw = ChannelBandwidthEnum::CBW_20;
         guardInterval = GuardIntervalEnum::GI_800;
         coding = std::vector<ChannelCodingEnum>(1, ChannelCodingEnum::BCC);
+        preferAMPDU = false;
         numExtraSounding = 0;
         forceSounding = true;
         prefixPaddingTime = 4e-6;

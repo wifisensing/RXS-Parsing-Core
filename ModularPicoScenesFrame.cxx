@@ -771,7 +771,7 @@ std::string ModularPicoScenesTxFrame::toString() const {
     }
 
     if (!AMPDUFrames.empty()) {
-        ss << ", AMPDU:" << std::to_string(AMPDUFrames.size()) << " Pkts}";
+        ss << ", AMPDU:" << std::to_string(AMPDUFrames.size() + 1) << " Pkts}";
         return ss.str();
     }
 
