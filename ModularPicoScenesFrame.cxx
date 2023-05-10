@@ -333,6 +333,8 @@ std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::concatenateFra
         cargos.emplace_back(frame.cargoSegment->getCargo());
     });
     auto mergedPayload = PayloadCargo::mergeAndValidateCargo(cargos);
+    if (mergedPayload.empty()) // in case of decompression failure
+        return std::nullopt;
 
     auto pos = 0, numSegment = 0;
     while (pos < mergedPayload.size()) {
@@ -574,9 +576,10 @@ std::vector<ModularPicoScenesTxFrame> ModularPicoScenesTxFrame::autoSplit(int16_
     pos = 0;
     uint8_t sequence = 0;
     uint8_t numCargos = std::ceil(1.0 * bufferLength / maxSegmentBuffersLength);
+    auto avgStepLength = size_t(std::ceil(1.0 * bufferLength / numCargos));
     auto cargos = std::vector<PayloadCargo>();
     while (pos < bufferLength) {
-        auto stepLength = pos + maxSegmentBuffersLength < bufferLength ? maxSegmentBuffersLength : bufferLength - pos;
+        auto stepLength = pos + avgStepLength < bufferLength ? avgStepLength : bufferLength - pos;
         cargos.emplace_back(PayloadCargo{
                 .taskId = frameHeader->taskId,
                 .numSegments = frameHeader->numSegments,
