@@ -17,6 +17,7 @@ struct SDRExtra {
     double lastTxTime{0};
     double signalInputSystemTime{0};
     double signalDecodeSystemTime{0};
+    double sigEVM{0};
 
     [[nodiscard]] inline double decodingDelay() const {
         return signalDecodeSystemTime - signalInputSystemTime;
