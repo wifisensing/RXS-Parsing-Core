@@ -100,7 +100,7 @@ struct PicoScenesFrameTxParameters {
         heMidamblePeriodicity = 10;
         heLTFType = 4;
         hePreHESpatialMapping = false;
-        additiveNoiseVarianceDb = -45;
+        additiveNoiseVarianceDb = 0;
     }
 
     void applyPreset(const std::string &presetName) {
