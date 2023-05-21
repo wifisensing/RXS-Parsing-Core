@@ -81,7 +81,7 @@ struct PicoScenesFrameTxParameters {
         preferAMPDU = false;
         numExtraSounding = 0;
         forceSounding = true;
-        prefixPaddingTime = 4e-6;
+        prefixPaddingTime = 8e-6; // should not less than 6us for SDR Frontend
         idleTime = 4e-6;
         postfixPaddingTime = 0;
         scramblerState = 39;
