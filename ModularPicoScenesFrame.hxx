@@ -170,7 +170,7 @@ public:
 
     void prebuildMPDU();
 
-    std::vector<ModularPicoScenesTxFrame> autoSplit(int16_t maxSegmentBuffersLength = 1400) const;
+    std::vector<ModularPicoScenesTxFrame> autoSplit(int16_t maxSegmentBuffersLength = 1400, std::optional<uint16_t> firstSegmentCappingLength = std::nullopt) const;
 
     ModularPicoScenesTxFrame &setMoreFrags();
 

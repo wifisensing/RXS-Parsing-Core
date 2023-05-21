@@ -538,7 +538,7 @@ int ModularPicoScenesTxFrame::toBuffer(uint8_t *buffer, uint32_t bufferLength) c
     return pos;
 }
 
-std::vector<ModularPicoScenesTxFrame> ModularPicoScenesTxFrame::autoSplit(int16_t maxSegmentBuffersLength) const {
+std::vector<ModularPicoScenesTxFrame> ModularPicoScenesTxFrame::autoSplit(int16_t maxSegmentBuffersLength, std::optional<uint16_t> firstSegmentCappingLength) const {
     if (!frameHeader)
         return std::vector<ModularPicoScenesTxFrame>{1, *this};
 
@@ -573,13 +573,20 @@ std::vector<ModularPicoScenesTxFrame> ModularPicoScenesTxFrame::autoSplit(int16_
         bufferLength = allSegmentBuffer.size();
     }
 
-    pos = 0;
-    uint8_t sequence = 0;
     uint8_t numCargos = std::ceil(1.0 * bufferLength / maxSegmentBuffersLength);
+    if (firstSegmentCappingLength) {
+        auto remainLength = bufferLength - firstSegmentCappingLength.value();
+        numCargos = std::ceil(1.0 * remainLength / maxSegmentBuffersLength) + 1;
+    }
     auto avgStepLength = size_t(std::ceil(1.0 * bufferLength / numCargos));
     auto cargos = std::vector<PayloadCargo>();
+
+    pos = 0;
+    uint8_t sequence = 0;
     while (pos < bufferLength) {
         auto stepLength = pos + avgStepLength < bufferLength ? avgStepLength : bufferLength - pos;
+        if (pos == 0 && firstSegmentCappingLength)
+            stepLength = pos + *firstSegmentCappingLength < bufferLength ? *firstSegmentCappingLength : bufferLength - pos;
         cargos.emplace_back(PayloadCargo{
                 .taskId = frameHeader->taskId,
                 .numSegments = frameHeader->numSegments,
@@ -598,7 +605,7 @@ std::vector<ModularPicoScenesTxFrame> ModularPicoScenesTxFrame::autoSplit(int16_
         auto txframe = *this;
         txframe.standardHeader.seq = i;
         txframe.segments.clear();
-        txframe.txParameters.postfixPaddingTime = 1e-3;
+        txframe.txParameters.postfixPaddingTime = 2e-3;
         txframe.frameHeader = this->frameHeader;
         txframe.addSegments(std::make_shared<CargoSegment>(cargo));
         cargoFrames.emplace_back(txframe);
