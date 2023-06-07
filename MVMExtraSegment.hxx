@@ -12,7 +12,7 @@
 class IntelMVMParsedCSIHeader {
 public:
     union {
-        uint8_t headerBytes[272]  __attribute__ ((__packed__));;
+        uint8_t headerBytes[272]  __attribute__ ((__packed__));
         struct {
             uint32_t iqDataSize{};
             union {
