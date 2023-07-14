@@ -221,6 +221,10 @@ std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::fromBuffer(con
                 frame.basebandSignalSegment = BasebandSignalSegment(buffer + pos, segmentLength + 4);
             } else if (segmentName == "PreEQSymbols") {
                 frame.preEQSymbolsSegment = PreEQSymbolsSegment(buffer + pos, segmentLength + 4);
+            } else if (segmentName == "RawLegacyCSI") {
+                frame.rawLegacyCSISegment = CSISegment(buffer + pos, segmentLength + 4);
+            } else if (segmentName == "RawCSI") {
+                frame.rawCSISegment = CSISegment(buffer + pos, segmentLength + 4);
             } else {
                 frame.rxUnknownSegments.emplace(segmentName, AbstractPicoScenesFrameSegment(buffer + pos, segmentLength + 4));
             }
@@ -277,6 +281,10 @@ std::string ModularPicoScenesRxFrame::toString() const {
         ss << ", " << *basebandSignalSegment;
     if (preEQSymbolsSegment)
         ss << ", " << *preEQSymbolsSegment;
+    if (rawLegacyCSISegment)
+        ss << ", " << *rawLegacyCSISegment;
+    if (rawCSISegment)
+        ss << ", " << *rawCSISegment;
     if (!rxUnknownSegments.empty()) {
         std::stringstream segss;
         segss << "RxSegments:(";
@@ -408,6 +416,18 @@ Uint8Vector ModularPicoScenesRxFrame::toBuffer() const {
 
     if (preEQSymbolsSegment) {
         auto segmentBuffer = preEQSymbolsSegment->toBuffer();
+        std::copy(segmentBuffer.cbegin(), segmentBuffer.cend(), std::back_inserter(rxSegmentBuffer));
+        modularFrameHeader.numRxSegments++;
+    }
+
+    if (rawLegacyCSISegment) {
+        auto segmentBuffer = rawLegacyCSISegment->toBuffer();
+        std::copy(segmentBuffer.cbegin(), segmentBuffer.cend(), std::back_inserter(rxSegmentBuffer));
+        modularFrameHeader.numRxSegments++;
+    }
+
+    if (rawCSISegment) {
+        auto segmentBuffer = rawCSISegment->toBuffer();
         std::copy(segmentBuffer.cbegin(), segmentBuffer.cend(), std::back_inserter(rxSegmentBuffer));
         modularFrameHeader.numRxSegments++;
     }

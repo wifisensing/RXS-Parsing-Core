@@ -107,6 +107,8 @@ public:
     std::optional<CSISegment> legacyCSISegment;
     std::optional<BasebandSignalSegment> basebandSignalSegment;
     std::optional<PreEQSymbolsSegment> preEQSymbolsSegment;
+    std::optional<CSISegment> rawCSISegment;
+    std::optional<CSISegment> rawLegacyCSISegment;
 
     // Tx side header and segments
     ieee80211_mac_frame_header standardHeader;
