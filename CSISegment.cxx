@@ -596,7 +596,7 @@ std::map<uint16_t, std::function<std::optional<CSI>(const uint8_t *, uint32_t)>>
 CSISegment::CSISegment() : AbstractPicoScenesFrameSegment("CSI", 0x4U) {}
 
 CSISegment::CSISegment(const uint8_t *buffer, uint32_t bufferLength) : AbstractPicoScenesFrameSegment(buffer, bufferLength) {
-    if (segmentName != "CSI" && segmentName != "LegacyCSI" && segmentName != "PilotCSI")
+    if (!segmentName.ends_with("CSI"))
         throw std::runtime_error("CSISegment cannot parse the segment named " + segmentName + ".");
     if (!versionedSolutionMap.count(segmentVersionId))
         throw std::runtime_error("CSISegment cannot parse the segment with version v" + std::to_string(segmentVersionId) + ".");
