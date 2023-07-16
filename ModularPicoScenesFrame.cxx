@@ -223,8 +223,14 @@ std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::fromBuffer(con
                 frame.preEQSymbolsSegment = PreEQSymbolsSegment(buffer + pos, segmentLength + 4);
             } else if (segmentName == "RawLegacyCSI") {
                 frame.rawLegacyCSISegment = CSISegment(buffer + pos, segmentLength + 4);
+                if (interpolateCSI) {
+                    frame.rawLegacyCSISegment->getCSI().removeCSDAndInterpolateCSI();
+                }
             } else if (segmentName == "RawCSI") {
                 frame.rawCSISegment = CSISegment(buffer + pos, segmentLength + 4);
+                if (interpolateCSI) {
+                    frame.rawCSISegment->getCSI().removeCSDAndInterpolateCSI();
+                }
             } else {
                 frame.rxUnknownSegments.emplace(segmentName, AbstractPicoScenesFrameSegment(buffer + pos, segmentLength + 4));
             }
