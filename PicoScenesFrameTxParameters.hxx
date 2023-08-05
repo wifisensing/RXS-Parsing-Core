@@ -54,6 +54,7 @@ struct PicoScenesFrameTxParameters {
     double carrierFrequencyOffset;
     double resampleRatio;
     double simulateTxDistance;
+    bool splitHighLow;
     double vhtGroupId;
     std::vector<uint8_t> heAllocationIndex;
     bool txHEExtendedRange;
@@ -92,6 +93,7 @@ struct PicoScenesFrameTxParameters {
         carrierFrequencyOffset = 0;
         resampleRatio = 1.0;
         simulateTxDistance = 0;
+        splitHighLow = false;
         vhtGroupId = 0;
         heAllocationIndex = std::vector<uint8_t>(1, 0);
         txHEExtendedRange = false;
