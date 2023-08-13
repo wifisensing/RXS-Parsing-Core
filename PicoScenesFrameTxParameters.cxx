@@ -87,6 +87,16 @@ void PicoScenesFrameTxParameters::validate() const {
 
         if (heHighDoppler && heMidamblePeriodicity != 10 && heMidamblePeriodicity != 20)
             throw std::invalid_argument("Invalid TX mid amble periodicity: " + std::to_string(heMidamblePeriodicity) + " for HE-SU frame. Must be 10 or 20.");
+
+        if (guardInterval == GuardIntervalEnum::GI_400)
+            throw std::invalid_argument("Invalid GI " + std::to_string(uint16_t (guardInterval)) + " for HE-SU frame. Must be 800, 1600 or 3200ns.");
+
+        if (heLTFType == 4 && guardInterval == GuardIntervalEnum::GI_1600)
+            throw std::invalid_argument("Invalid GI " + std::to_string(uint16_t (guardInterval)) + " for HE-SU HE-LTF compression mode 4. Must be 800 or 3200ns.");
+
+        if ((heLTFType == 2 || heLTFType == 1) && guardInterval == GuardIntervalEnum::GI_3200)
+            throw std::invalid_argument("Invalid GI " + std::to_string(uint16_t (guardInterval)) + " for HE-SU HE-LTF compression mode 1 or 2. Must be 800 or 1600ns.");
+
     } else if (frameType == PacketFormatEnum::PacketFormat_HEMU) {
         // TODO add this section
     }

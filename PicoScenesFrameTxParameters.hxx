@@ -117,6 +117,9 @@ struct PicoScenesFrameTxParameters {
             frameType = preset->format;
             coding = std::vector<ChannelCodingEnum>{preset->coding};
             resampleRatio = preset->txResampleRatio.value();
+            if (frameType == PacketFormatEnum::PacketFormat_HESU) {
+                guardInterval = GuardIntervalEnum::GI_3200; // default to 3.2us GI for higher robustness
+            }
         }
     }
 
