@@ -4,7 +4,7 @@
 
 #include "RxSBasicSegment.hxx"
 
-struct QCA9300RxsBasicContentV1 {
+struct RxsBasicContentV1 {
     uint16_t deviceType;  /* device type code */
     uint64_t tstamp;      /* h/w assigned timestamp */
     uint16_t channelFreq;     /* receiving channel frequency */
@@ -23,7 +23,7 @@ struct QCA9300RxsBasicContentV1 {
 } __attribute__((packed));
 
 // compared to V1, add numUser and userIndex
-struct QCA9300RxsBasicContentV2 {
+struct RxsBasicContentV2 {
     uint16_t deviceType;  /* device type code */
     uint64_t tstamp;      /* h/w assigned timestamp */
     uint16_t channelFreq;     /* receiving channel frequency */
@@ -44,7 +44,7 @@ struct QCA9300RxsBasicContentV2 {
 } __attribute__((packed));
 
 // compared to V2, add controlFreq, add pkt_cbw, and rename channelFreq to centerFreq
-struct QCA9300RxsBasicContentV3 {
+struct RxsBasicContentV3 {
     uint16_t deviceType;    /* device type code */
     uint64_t tstamp;        /* h/w assigned timestamp */
     int16_t centerFreq;     /* receiving channel frequency */
@@ -67,7 +67,7 @@ struct QCA9300RxsBasicContentV3 {
 } __attribute__((packed));
 
 // compared to V3, add systemTime
-struct QCA9300RxsBasicContentV4 {
+struct RxsBasicContentV4 {
     uint16_t deviceType;    /* device type code */
     uint64_t tstamp;        /* h/w assigned timestamp */
     uint64_t systemTime;    /* system nanosecond time via ktime_get_real() */
@@ -90,9 +90,39 @@ struct QCA9300RxsBasicContentV4 {
     int8_t rssi_ctl2;   /* rx frame RSSI [ctl, chain 2] */
 } __attribute__((packed));
 
+// compared to V4, add centerFreq2 and 5 additional rss values
+struct RxsBasicContentV5 {
+    uint16_t deviceType;    /* device type code */
+    uint64_t tstamp;        /* h/w assigned timestamp */
+    uint64_t systemTime;    /* system nanosecond time via ktime_get_real() */
+    int16_t centerFreq;     /* primary RF center frequency */
+    int16_t centerFreq2;    /* second RF center frequency, mainly used for multi-channel splitting, e.g., 80 + 80 mode */
+    int16_t controlFreq;    /* control channel frequency */
+    uint16_t cbw;           /* channel bandwidth [20, 40, 80, 160, 320] */
+    uint8_t packetFormat;   /* 0 for NonHT, 1 for HT, 2 for VHT, 3 for HE-SU, 4 for HE-MU, 5 for EHT-MU */
+    uint16_t pkt_cbw;       /* packet CBW [20, 40, 80, 160, 320] */
+    uint16_t guardInterval; /* 400/800/1600/3200ns */
+    uint8_t mcs;
+    uint8_t numSTS;         /* number of Space-Time Stream */
+    uint8_t numESS;         /* number of Extra Spatial Sounding (an 802.11n only feature) */
+    uint8_t numRx;          /* number of Rx antenna */
+    uint8_t numUser;
+    uint8_t userIndex;
+    int8_t noiseFloor;   /* noise floor */
+    int8_t rssi;        /* rx frame RSSI */
+    int8_t rssi_ctl0;   /* rx frame RSSI [ctl, chain 0] */
+    int8_t rssi_ctl1;   /* rx frame RSSI [ctl, chain 1] */
+    int8_t rssi_ctl2;   /* rx frame RSSI [ctl, chain 2] */
+    int8_t rssi_ctl3;   /* rx frame RSSI [ctl, chain 3] */
+    int8_t rssi_ctl4;   /* rx frame RSSI [ctl, chain 4] */
+    int8_t rssi_ctl5;   /* rx frame RSSI [ctl, chain 5] */
+    int8_t rssi_ctl6;   /* rx frame RSSI [ctl, chain 6] */
+    int8_t rssi_ctl7;   /* rx frame RSSI [ctl, chain 7] */
+} __attribute__((packed));
+
 static auto v1Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> RxSBasic {
     uint32_t pos = 0;
-    if (bufferLength < sizeof(QCA9300RxsBasicContentV1))
+    if (bufferLength < sizeof(RxsBasicContentV1))
         throw std::runtime_error("RxSBasicSegment v1Parser cannot parse the segment with insufficient buffer length.");
 
     auto r = RxSBasic();
@@ -103,6 +133,7 @@ static auto v1Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> RxSBa
     r.systemTime = 0;
     r.centerFreq = *(int16_t *) (buffer + pos);
     pos += 2;
+    r.centerFreq2 = r.centerFreq;
     r.controlFreq = r.centerFreq;
     r.packetFormat = *(uint8_t *) (buffer + pos++);
     r.cbw = *(uint16_t *) (buffer + pos);
@@ -130,7 +161,7 @@ static auto v1Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> RxSBa
 
 static auto v2Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> RxSBasic {
     uint32_t pos = 0;
-    if (bufferLength < sizeof(QCA9300RxsBasicContentV2))
+    if (bufferLength < sizeof(RxsBasicContentV2))
         throw std::runtime_error("RxSBasicSegment v2Parser cannot parse the segment with insufficient buffer length.");
 
     auto r = RxSBasic();
@@ -141,6 +172,7 @@ static auto v2Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> RxSBa
     r.systemTime = 0;
     r.centerFreq = *(int16_t *) (buffer + pos);
     pos += 2;
+    r.centerFreq2 = r.centerFreq;
     r.controlFreq = r.centerFreq;
     r.packetFormat = *(uint8_t *) (buffer + pos++);
     r.cbw = *(uint16_t *) (buffer + pos);
@@ -168,7 +200,7 @@ static auto v2Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> RxSBa
 
 static auto v3Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> RxSBasic {
     uint32_t pos = 0;
-    if (bufferLength < sizeof(QCA9300RxsBasicContentV3))
+    if (bufferLength < sizeof(RxsBasicContentV3))
         throw std::runtime_error("RxSBasicSegment v3Parser cannot parse the segment with insufficient buffer length.");
 
     auto r = RxSBasic();
@@ -208,7 +240,7 @@ static auto v3Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> RxSBa
 
 static auto v4Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> RxSBasic {
     uint32_t pos = 0;
-    if (bufferLength < sizeof(QCA9300RxsBasicContentV4))
+    if (bufferLength < sizeof(RxsBasicContentV4))
         throw std::runtime_error("RxSBasicSegment v4Parser cannot parse the segment with insufficient buffer length.");
 
     auto r = RxSBasic();
@@ -219,6 +251,51 @@ static auto v4Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> RxSBa
     r.systemTime = *(uint64_t *) (buffer + pos);
     pos += 8;
     r.centerFreq = *(int16_t *) (buffer + pos);
+    pos += 2;
+    r.centerFreq2 = r.centerFreq;
+    r.controlFreq = *(int16_t *) (buffer + pos);
+    pos += 2;
+    r.cbw = *(int16_t *) (buffer + pos);
+    pos += 2;
+    r.packetFormat = *(uint8_t *) (buffer + pos++);
+    r.pkt_cbw = *(uint16_t *) (buffer + pos);
+    pos += 2;
+    r.guardInterval = *(uint16_t *) (buffer + pos);
+    pos += 2;
+    r.mcs = *(uint8_t *) (buffer + pos++);
+    r.numSTS = *(uint8_t *) (buffer + pos++);
+    r.numESS = *(uint8_t *) (buffer + pos++);
+    r.numRx = *(uint8_t *) (buffer + pos++);
+    r.numUser = *(uint8_t *) (buffer + pos++);
+    r.userIndex = *(uint8_t *) (buffer + pos++);
+    r.noiseFloor = *(int8_t *) (buffer + pos++);
+    r.rssi = *(int8_t *) (buffer + pos++);
+    std::memset(r.rssAntenna, 0, sizeof(r.rssAntenna));
+    r.rssi_ctl0 = *(int8_t *) (buffer + pos++);
+    r.rssi_ctl1 = *(int8_t *) (buffer + pos++);
+    r.rssi_ctl2 = *(int8_t *) (buffer + pos++);
+
+    if (pos != bufferLength)
+        throw std::runtime_error("RxSBasicSegment v4Parser cannot parse the segment with mismatched buffer length.");
+
+    return r;
+};
+
+static auto v5Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> RxSBasic {
+    uint32_t pos = 0;
+    if (bufferLength < sizeof(RxsBasicContentV5))
+        throw std::runtime_error("RxSBasicSegment v5Parser cannot parse the segment with insufficient buffer length.");
+
+    auto r = RxSBasic();
+    r.deviceType = *(uint16_t *) (buffer + pos);
+    pos += 2;
+    r.tstamp = *(uint64_t *) (buffer + pos);
+    pos += 8;
+    r.systemTime = *(uint64_t *) (buffer + pos);
+    pos += 8;
+    r.centerFreq = *(int16_t *) (buffer + pos);
+    pos += 2;
+    r.centerFreq2 = *(int16_t *) (buffer + pos);
     pos += 2;
     r.controlFreq = *(int16_t *) (buffer + pos);
     pos += 2;
@@ -240,9 +317,14 @@ static auto v4Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> RxSBa
     r.rssi_ctl0 = *(int8_t *) (buffer + pos++);
     r.rssi_ctl1 = *(int8_t *) (buffer + pos++);
     r.rssi_ctl2 = *(int8_t *) (buffer + pos++);
+    r.rssi_ctl3 = *(int8_t *) (buffer + pos++);
+    r.rssi_ctl4 = *(int8_t *) (buffer + pos++);
+    r.rssi_ctl5 = *(int8_t *) (buffer + pos++);
+    r.rssi_ctl6 = *(int8_t *) (buffer + pos++);
+    r.rssi_ctl7 = *(int8_t *) (buffer + pos++);
 
     if (pos != bufferLength)
-        throw std::runtime_error("RxSBasicSegment v4Parser cannot parse the segment with mismatched buffer length.");
+        throw std::runtime_error("RxSBasicSegment v5Parser cannot parse the segment with mismatched buffer length.");
 
     return r;
 };
@@ -255,12 +337,13 @@ std::map<uint16_t, std::function<RxSBasic(const uint8_t *, uint32_t)>> RxSBasicS
     map.emplace(0x2U, v2Parser);
     map.emplace(0x3U, v3Parser);
     map.emplace(0x4U, v4Parser);
+    map.emplace(0x5U, v5Parser);
     return map;
 }
 
 std::string RxSBasic::toString() const {
     std::stringstream ss;
-    ss << "RxSBasic:[device=" + DeviceType2String((PicoScenesDeviceType(deviceType))) + ", center=" + std::to_string(centerFreq) + ", control=" + std::to_string(controlFreq) + ", CBW=" + std::to_string(cbw) + ", format=" + PacketFormat2String(static_cast<PacketFormatEnum>(packetFormat)) + ", Pkt_CBW=" + std::to_string(pkt_cbw) + ", MCS=" + std::to_string(mcs) + ", numSTS=" + std::to_string(numSTS) + ", GI=" + GuardInterval2String(GuardIntervalEnum(guardInterval))
+    ss << "RxSBasic:[device=" + DeviceType2String((PicoScenesDeviceType(deviceType))) + ", center=" + std::to_string(centerFreq) + (centerFreq != centerFreq2 ? (", center2=" + std::to_string(centerFreq2)) : "") + ", control=" + std::to_string(controlFreq) + ", CBW=" + std::to_string(cbw) + ", format=" + PacketFormat2String(static_cast<PacketFormatEnum>(packetFormat)) + ", Pkt_CBW=" + std::to_string(pkt_cbw) + ", MCS=" + std::to_string(mcs) + ", numSTS=" + std::to_string(numSTS) + ", GI=" + GuardInterval2String(GuardIntervalEnum(guardInterval))
           + ", UsrIdx/NUsr=(" + std::to_string(userIndex) + "/" + std::to_string(numUser) + ")" + ", timestamp=" + std::to_string(tstamp) + ", system_ns=" + std::to_string(systemTime) + ", NF=" +
           std::to_string(noiseFloor) + ", RSS=" + std::to_string(rssi) + "]";
     return ss.str();
@@ -270,7 +353,7 @@ std::vector<uint8_t> RxSBasic::toBuffer() {
     return std::vector<uint8_t>{(uint8_t *) this, (uint8_t *) this + sizeof(RxSBasic)};
 }
 
-RxSBasicSegment::RxSBasicSegment() : AbstractPicoScenesFrameSegment("RxSBasic", 0x4U) {}
+RxSBasicSegment::RxSBasicSegment() : AbstractPicoScenesFrameSegment("RxSBasic", 0x5U) {}
 
 RxSBasicSegment::RxSBasicSegment(const uint8_t *buffer, uint32_t bufferLength) : AbstractPicoScenesFrameSegment(buffer, bufferLength) {
     if (segmentName != "RxSBasic")
