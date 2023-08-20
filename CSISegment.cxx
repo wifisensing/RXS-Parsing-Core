@@ -229,6 +229,8 @@ std::vector<uint8_t> CSI::toBuffer() {
     std::copy((uint8_t *) &packetFormat, (uint8_t *) &packetFormat + sizeof(packetFormat), std::back_inserter(buffer));
     std::copy((uint8_t *) &cbw, (uint8_t *) &cbw + sizeof(cbw), std::back_inserter(buffer));
     std::copy((uint8_t *) &carrierFreq, (uint8_t *) &carrierFreq + sizeof(carrierFreq), std::back_inserter(buffer));
+    std::copy((uint8_t *) &carrierFreq2, (uint8_t *) &carrierFreq2 + sizeof(carrierFreq2), std::back_inserter(buffer));
+    std::copy((uint8_t *) &isMerged, (uint8_t *) &isMerged + sizeof(isMerged), std::back_inserter(buffer));
     std::copy((uint8_t *) &samplingRate, (uint8_t *) &samplingRate + sizeof(samplingRate), std::back_inserter(buffer));
     std::copy((uint8_t *) &subcarrierBandwidth, (uint8_t *) &subcarrierBandwidth + sizeof(subcarrierBandwidth), std::back_inserter(buffer));
     std::copy((uint8_t *) &dimensions.numTones, (uint8_t *) &dimensions.numTones + sizeof(dimensions.numTones), std::back_inserter(buffer));
