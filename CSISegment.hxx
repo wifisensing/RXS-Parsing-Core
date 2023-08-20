@@ -153,7 +153,9 @@ public:
     PacketFormatEnum packetFormat; ///< The packet format of this frame
     ChannelBandwidthEnum cbw; ///< The channel bandwidth (CBW) parameter of this frame
     uint64_t carrierFreq; ///< The actual carrier frequency
-    uint64_t samplingRate; ///< The actual hardware sampling rate
+    uint64_t carrierFreq2; ///< The second RF center frequency, mainly used for dual-channel splitting, e.g., 80 + 80 mode
+    bool isMerged; ///< If high/low dual-channel merged, true, else false
+    uint64_t samplingRate; ///< The actual hardware sampling rate; if isMerged is true, this value is the combined rate, e.g., 80 + 80 mode gives 160 MHz sampling rate
     uint32_t subcarrierBandwidth; ///< The bandwidth of OFDM subcarriers, usually 312.5e3 for 802.11/a/g/n/ac and 78.125e3 for 802.11ax
     CSIDimension dimensions; ///< The dimension information of the CSI data
     uint8_t antSel; ///< The antenna selection (antenna permutation) information, only used for IWL5300 NIC
