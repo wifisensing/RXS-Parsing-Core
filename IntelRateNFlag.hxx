@@ -42,8 +42,6 @@ public:
                         return PacketFormatEnum::PacketFormat_HESU;
                     case 2:
                         return PacketFormatEnum::PacketFormat_HEMU;
-                    case 3:
-                        return PacketFormatEnum::PacketFormat_HETB;
                 }
             case 5:
                 return PacketFormatEnum::PacketFormat_EHTMU;
@@ -99,17 +97,6 @@ public:
                     return GuardIntervalEnum::GI_3200;
                 case 4:
                     return GuardIntervalEnum::GI_800;
-            }
-        }
-
-        if (format == PacketFormatEnum::PacketFormat_HETB) {
-            switch (rateNFlag >> 20 & 7U) {
-                case 0:
-                    [[fallthrough]];
-                case 1:
-                    return GuardIntervalEnum::GI_1600;
-                case 2:
-                    return GuardIntervalEnum::GI_3200;
             }
         }
 
