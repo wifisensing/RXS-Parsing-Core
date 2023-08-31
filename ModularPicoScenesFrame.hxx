@@ -15,7 +15,6 @@
 #include "SDRExtraSegment.hxx"
 #include "BasebandSignalSegment.hxx"
 #include "PayloadSegment.hxx"
-#include "PreEQSymbolsSegment.hxx"
 #include "CargoSegment.hxx"
 
 struct ieee80211_mac_frame_header_frame_control_field {
@@ -103,10 +102,8 @@ public:
     CSISegment csiSegment;
     std::optional<MVMExtraSegment> mvmExtraSegment;
     std::optional<SDRExtraSegment> sdrExtraSegment;
-    std::optional<CSISegment> pilotCSISegment;
     std::optional<CSISegment> legacyCSISegment;
     std::optional<BasebandSignalSegment> basebandSignalSegment;
-    std::optional<PreEQSymbolsSegment> preEQSymbolsSegment;
     std::optional<CSISegment> rawCSISegment;
     std::optional<CSISegment> rawLegacyCSISegment;
 

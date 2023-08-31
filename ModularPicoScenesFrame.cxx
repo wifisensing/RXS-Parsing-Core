@@ -210,8 +210,6 @@ std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::fromBuffer(con
                 if (interpolateCSI) {
                     frame.csiSegment.getCSI().removeCSDAndInterpolateCSI();
                 }
-            } else if (segmentName == "PilotCSI") {
-                frame.pilotCSISegment = CSISegment(buffer + pos, segmentLength + 4);
             } else if (segmentName == "LegacyCSI") {
                 frame.legacyCSISegment = CSISegment(buffer + pos, segmentLength + 4);
                 if (interpolateCSI) {
@@ -219,8 +217,6 @@ std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::fromBuffer(con
                 }
             } else if (segmentName == "BasebandSignal") {
                 frame.basebandSignalSegment = BasebandSignalSegment(buffer + pos, segmentLength + 4);
-            } else if (segmentName == "PreEQSymbols") {
-                frame.preEQSymbolsSegment = PreEQSymbolsSegment(buffer + pos, segmentLength + 4);
             } else if (segmentName == "RawLegacyCSI") {
                 frame.rawLegacyCSISegment = CSISegment(buffer + pos, segmentLength + 4);
                 if (interpolateCSI) {
@@ -231,6 +227,9 @@ std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::fromBuffer(con
                 if (interpolateCSI) {
                     frame.rawCSISegment->getCSI().removeCSDAndInterpolateCSI();
                 }
+            } else if (segmentName == "PreEQSymbols" || segmentName == "PilotCSI") {
+                // Do nothing for compatibility
+//                frame.preEQSymbolsSegment = PreEQSymbolsSegment(buffer + pos, segmentLength + 4);
             } else {
                 frame.rxUnknownSegments.emplace(segmentName, AbstractPicoScenesFrameSegment(buffer + pos, segmentLength + 4));
             }
@@ -279,14 +278,10 @@ std::string ModularPicoScenesRxFrame::toString() const {
     if (sdrExtraSegment)
         ss << ", " << *sdrExtraSegment;
     ss << ", " << "(" << PacketFormat2String(csiSegment.getCSI().packetFormat) << ")" << csiSegment;
-    if (pilotCSISegment)
-        ss << ", " << *pilotCSISegment;
     if (legacyCSISegment)
         ss << ", " << *legacyCSISegment;
     if (basebandSignalSegment)
         ss << ", " << *basebandSignalSegment;
-    if (preEQSymbolsSegment)
-        ss << ", " << *preEQSymbolsSegment;
     if (rawLegacyCSISegment)
         ss << ", " << *rawLegacyCSISegment;
     if (rawCSISegment)
@@ -402,12 +397,6 @@ Uint8Vector ModularPicoScenesRxFrame::toBuffer() const {
         modularFrameHeader.numRxSegments++;
     }
 
-    if (pilotCSISegment) {
-        auto pilotCSIBuffer = pilotCSISegment->toBuffer();
-        std::copy(pilotCSIBuffer.cbegin(), pilotCSIBuffer.cend(), std::back_inserter(rxSegmentBuffer));
-        modularFrameHeader.numRxSegments++;
-    }
-
     if (legacyCSISegment) {
         auto legacyCSIBuffer = legacyCSISegment->toBuffer();
         std::copy(legacyCSIBuffer.cbegin(), legacyCSIBuffer.cend(), std::back_inserter(rxSegmentBuffer));
@@ -416,12 +405,6 @@ Uint8Vector ModularPicoScenesRxFrame::toBuffer() const {
 
     if (basebandSignalSegment) {
         auto segmentBuffer = basebandSignalSegment->toBuffer();
-        std::copy(segmentBuffer.cbegin(), segmentBuffer.cend(), std::back_inserter(rxSegmentBuffer));
-        modularFrameHeader.numRxSegments++;
-    }
-
-    if (preEQSymbolsSegment) {
-        auto segmentBuffer = preEQSymbolsSegment->toBuffer();
         std::copy(segmentBuffer.cbegin(), segmentBuffer.cend(), std::back_inserter(rxSegmentBuffer));
         modularFrameHeader.numRxSegments++;
     }
