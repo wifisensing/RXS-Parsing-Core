@@ -4,17 +4,22 @@
 
 #include "FrontEndModePreset.hxx"
 
+const std::shared_ptr<FrontEndModePreset> FrontEndModePreset::TX_CBW_160_EHTSU = std::shared_ptr<FrontEndModePreset>(new FrontEndModePreset("TX_CBW_160_EHTSU", PacketFormatEnum::PacketFormat_EHTSU, ChannelCodingEnum::LDPC, 160, 200, std::nullopt, std::nullopt, "Equivalent to \"--format ehtsu --coding ldpc --rate 200e6 --tx-resample-ratio 1.25 --cbw 160\""));
 const std::shared_ptr<FrontEndModePreset> FrontEndModePreset::TX_CBW_160_HESU = std::shared_ptr<FrontEndModePreset>(new FrontEndModePreset("TX_CBW_160_HESU", PacketFormatEnum::PacketFormat_HESU, ChannelCodingEnum::LDPC, 160, 200, std::nullopt, std::nullopt, "Equivalent to \"--format hesu --coding ldpc --rate 200e6 --tx-resample-ratio 1.25 --cbw 160\""));
 const std::shared_ptr<FrontEndModePreset> FrontEndModePreset::TX_CBW_160_VHT = std::shared_ptr<FrontEndModePreset>(new FrontEndModePreset("TX_CBW_160_VHT", PacketFormatEnum::PacketFormat_VHT, ChannelCodingEnum::BCC, 160, 200, std::nullopt, std::nullopt, "Equivalent to \"--format vht --coding bcc --rate 200e6 --tx-resample-ratio 1.25 --cbw 160\""));
 const std::shared_ptr<FrontEndModePreset> FrontEndModePreset::TX_CBW_160_VHT_LDPC = std::shared_ptr<FrontEndModePreset>(new FrontEndModePreset("TX_CBW_160_VHT_LDPC", PacketFormatEnum::PacketFormat_VHT, ChannelCodingEnum::LDPC, 160, 200, std::nullopt, std::nullopt, "Equivalent to \"--format vht --coding ldpc --rate 200e6 --tx-resample-ratio 1.25 --cbw 160\""));
+const std::shared_ptr<FrontEndModePreset> FrontEndModePreset::TX_CBW_80_EHTSU = std::shared_ptr<FrontEndModePreset>(new FrontEndModePreset("TX_CBW_80_EHTSU", PacketFormatEnum::PacketFormat_EHTSU, ChannelCodingEnum::LDPC, 80, 100, std::nullopt, std::nullopt, "Equivalent to \"--format ehtsu --coding ldpc --rate 100e6 --tx-resample-ratio 1.25 --cbw 80\""));
 const std::shared_ptr<FrontEndModePreset> FrontEndModePreset::TX_CBW_80_HESU = std::shared_ptr<FrontEndModePreset>(new FrontEndModePreset("TX_CBW_80_HESU", PacketFormatEnum::PacketFormat_HESU, ChannelCodingEnum::LDPC, 80, 100, std::nullopt, std::nullopt, "Equivalent to \"--format hesu --coding ldpc --rate 100e6 --tx-resample-ratio 1.25 --cbw 80\""));
 const std::shared_ptr<FrontEndModePreset> FrontEndModePreset::TX_CBW_80_VHT = std::shared_ptr<FrontEndModePreset>(new FrontEndModePreset("TX_CBW_80_VHT", PacketFormatEnum::PacketFormat_VHT, ChannelCodingEnum::BCC, 80, 100, std::nullopt, std::nullopt, "Equivalent to \"--format vht --coding bcc --rate 100e6 --tx-resample-ratio 1.25 --cbw 80\""));
 const std::shared_ptr<FrontEndModePreset> FrontEndModePreset::TX_CBW_80_VHT_LDPC = std::shared_ptr<FrontEndModePreset>(new FrontEndModePreset("TX_CBW_80_VHT_LDPC", PacketFormatEnum::PacketFormat_VHT, ChannelCodingEnum::LDPC, 80, 100, std::nullopt, std::nullopt, "Equivalent to \"--format vht --coding ldpc --rate 100e6 --tx-resample-ratio 1.25 --cbw 80\""));
+const std::shared_ptr<FrontEndModePreset> FrontEndModePreset::TX_CBW_40_EHTSU = std::shared_ptr<FrontEndModePreset>(new FrontEndModePreset("TX_CBW_40_EHTSU", PacketFormatEnum::PacketFormat_EHTSU, ChannelCodingEnum::LDPC, 40, 40, std::nullopt, std::nullopt, "Equivalent to \"--format ehtsu --coding ldpc --rate 40e6 --tx-resample-ratio 1.0 --cbw 40\""));
 const std::shared_ptr<FrontEndModePreset> FrontEndModePreset::TX_CBW_40_HESU = std::shared_ptr<FrontEndModePreset>(new FrontEndModePreset("TX_CBW_40_HESU", PacketFormatEnum::PacketFormat_HESU, ChannelCodingEnum::LDPC, 40, 40, std::nullopt, std::nullopt, "Equivalent to \"--format hesu --coding ldpc --rate 40e6 --tx-resample-ratio 1.0 --cbw 40\""));
 const std::shared_ptr<FrontEndModePreset> FrontEndModePreset::TX_CBW_40_VHT = std::shared_ptr<FrontEndModePreset>(new FrontEndModePreset("TX_CBW_40_VHT", PacketFormatEnum::PacketFormat_VHT, ChannelCodingEnum::BCC, 40, 40, std::nullopt, std::nullopt, "Equivalent to \"--format vht --coding bcc --rate 40e6 --tx-resample-ratio 1.0 --cbw 40\""));
 const std::shared_ptr<FrontEndModePreset> FrontEndModePreset::TX_CBW_40_VHT_LDPC = std::shared_ptr<FrontEndModePreset>(new FrontEndModePreset("TX_CBW_40_VHT_LDPC", PacketFormatEnum::PacketFormat_VHT, ChannelCodingEnum::LDPC, 40, 40, std::nullopt, std::nullopt, "Equivalent to \"--format vht --coding ldpc --rate 40e6 --tx-resample-ratio 1.0 --cbw 40\""));
 const std::shared_ptr<FrontEndModePreset> FrontEndModePreset::TX_CBW_40_HT = std::shared_ptr<FrontEndModePreset>(new FrontEndModePreset("TX_CBW_40_HT", PacketFormatEnum::PacketFormat_HT, ChannelCodingEnum::BCC, 40, 40, std::nullopt, std::nullopt, "Equivalent to \"--format ht --coding bcc --rate 40e6 --tx-resample-ratio 1.0 --cbw 40\""));
 const std::shared_ptr<FrontEndModePreset> FrontEndModePreset::TX_CBW_40_HT_LDPC = std::shared_ptr<FrontEndModePreset>(new FrontEndModePreset("TX_CBW_40_HT_LDPC", PacketFormatEnum::PacketFormat_HT, ChannelCodingEnum::LDPC, 40, 40, std::nullopt, std::nullopt, "Equivalent to \"--format ht --coding ldpc --rate 40e6 --tx-resample-ratio 1.0 --cbw 40\""));
+const std::shared_ptr<FrontEndModePreset> FrontEndModePreset::TX_CBW_20_EHTSU = std::shared_ptr<FrontEndModePreset>(new FrontEndModePreset("TX_CBW_20_EHTSU", PacketFormatEnum::PacketFormat_EHTSU, ChannelCodingEnum::BCC, 20, 20, std::nullopt, std::nullopt, "Equivalent to \"--format ehtsu --coding ldpc --rate 20e6 --tx-resample-ratio 1.0 --cbw 20\""));
+const std::shared_ptr<FrontEndModePreset> FrontEndModePreset::TX_CBW_20_EHTSU_LDPC = std::shared_ptr<FrontEndModePreset>(new FrontEndModePreset("TX_CBW_20_EHTSU_LDPC", PacketFormatEnum::PacketFormat_EHTSU, ChannelCodingEnum::LDPC, 20, 20, std::nullopt, std::nullopt, "Equivalent to \"--format ehtsu --coding ldpc --rate 20e6 --tx-resample-ratio 1.0 --cbw 20\""));
 const std::shared_ptr<FrontEndModePreset> FrontEndModePreset::TX_CBW_20_HESU = std::shared_ptr<FrontEndModePreset>(new FrontEndModePreset("TX_CBW_20_HESU", PacketFormatEnum::PacketFormat_HESU, ChannelCodingEnum::BCC, 20, 20, std::nullopt, std::nullopt, "Equivalent to \"--format hesu --coding ldpc --rate 20e6 --tx-resample-ratio 1.0 --cbw 20\""));
 const std::shared_ptr<FrontEndModePreset> FrontEndModePreset::TX_CBW_20_HESU_LDPC = std::shared_ptr<FrontEndModePreset>(new FrontEndModePreset("TX_CBW_20_HESU_LDPC", PacketFormatEnum::PacketFormat_HESU, ChannelCodingEnum::LDPC, 20, 20, std::nullopt, std::nullopt, "Equivalent to \"--format hesu --coding ldpc --rate 20e6 --tx-resample-ratio 1.0 --cbw 20\""));
 const std::shared_ptr<FrontEndModePreset> FrontEndModePreset::TX_CBW_20_VHT = std::shared_ptr<FrontEndModePreset>(new FrontEndModePreset("TX_CBW_20_VHT", PacketFormatEnum::PacketFormat_VHT, ChannelCodingEnum::BCC, 20, 20, std::nullopt, std::nullopt, "Equivalent to \"--format vht --coding bcc --rate 20e6 --tx-resample-ratio 1.0 --cbw 20\""));
@@ -26,17 +31,22 @@ const std::shared_ptr<FrontEndModePreset> FrontEndModePreset::RX_CBW_160 = std::
 const std::shared_ptr<FrontEndModePreset> FrontEndModePreset::RX_CBW_80 = std::shared_ptr<FrontEndModePreset>(new FrontEndModePreset("RX_CBW_80", PacketFormatEnum::PacketFormat_Unknown, ChannelCodingEnum::BCC, std::nullopt, std::nullopt, 80, 100, "Equivalent to \"--rate 100e6 --rx-resample-ratio 0.8 --rx-cbw 80\""));
 const std::shared_ptr<FrontEndModePreset> FrontEndModePreset::RX_CBW_40 = std::shared_ptr<FrontEndModePreset>(new FrontEndModePreset("RX_CBW_40", PacketFormatEnum::PacketFormat_Unknown, ChannelCodingEnum::BCC, std::nullopt, std::nullopt, 40, 40, "Equivalent to \"--rate 40e6 --rx-resample-ratio 1.0 --rx-cbw 40\""));
 const std::shared_ptr<FrontEndModePreset> FrontEndModePreset::RX_CBW_20 = std::shared_ptr<FrontEndModePreset>(new FrontEndModePreset("RX_CBW_20", PacketFormatEnum::PacketFormat_Unknown, ChannelCodingEnum::BCC, std::nullopt, std::nullopt, 20, 20, "Equivalent to \"--rate 20e6 --rx-resample-ratio 1.0 --rx-cbw 20\""));
+const std::shared_ptr<FrontEndModePreset> FrontEndModePreset::TR_CBW_160_EHTSU = std::shared_ptr<FrontEndModePreset>(new FrontEndModePreset("TR_CBW_160_EHTSU", PacketFormatEnum::PacketFormat_EHTSU, ChannelCodingEnum::LDPC, 160, 200, 160, 200, "Equivalent to \"--format ehtsu --coding ldpc --rate 200e6 --tx-resample-ratio 1.25 --cbw 160 --rx-resample-ratio 0.8 --rx-cbw 160\""));
 const std::shared_ptr<FrontEndModePreset> FrontEndModePreset::TR_CBW_160_HESU = std::shared_ptr<FrontEndModePreset>(new FrontEndModePreset("TR_CBW_160_HESU", PacketFormatEnum::PacketFormat_HESU, ChannelCodingEnum::LDPC, 160, 200, 160, 200, "Equivalent to \"--format hesu --coding ldpc --rate 200e6 --tx-resample-ratio 1.25 --cbw 160 --rx-resample-ratio 0.8 --rx-cbw 160\""));
 const std::shared_ptr<FrontEndModePreset> FrontEndModePreset::TR_CBW_160_VHT = std::shared_ptr<FrontEndModePreset>(new FrontEndModePreset("TR_CBW_160_VHT", PacketFormatEnum::PacketFormat_VHT, ChannelCodingEnum::BCC, 160, 200, 160, 200, "Equivalent to \"--format vht --coding bcc --rate 200e6 --tx-resample-ratio 1.25 --cbw 160 --rx-resample-ratio 0.8 --rx-cbw 160\""));
 const std::shared_ptr<FrontEndModePreset> FrontEndModePreset::TR_CBW_160_VHT_LDPC = std::shared_ptr<FrontEndModePreset>(new FrontEndModePreset("TR_CBW_160_VHT_LDPC", PacketFormatEnum::PacketFormat_VHT, ChannelCodingEnum::LDPC, 160, 200, 160, 200, "Equivalent to \"--format vht --coding ldpc --rate 200e6 --tx-resample-ratio 1.25 --cbw 160 --rx-resample-ratio 0.8 --rx-cbw 160\""));
+const std::shared_ptr<FrontEndModePreset> FrontEndModePreset::TR_CBW_80_EHTSU = std::shared_ptr<FrontEndModePreset>(new FrontEndModePreset("TR_CBW_80_EHTSU", PacketFormatEnum::PacketFormat_EHTSU, ChannelCodingEnum::LDPC, 80, 100, 80, 100, "Equivalent to \"--format ehtsu --coding ldpc --rate 100e6 --tx-resample-ratio 1.25 --cbw 80 --rx-resample-ratio 0.8 --rx-cbw 80\""));
 const std::shared_ptr<FrontEndModePreset> FrontEndModePreset::TR_CBW_80_HESU = std::shared_ptr<FrontEndModePreset>(new FrontEndModePreset("TR_CBW_80_HESU", PacketFormatEnum::PacketFormat_HESU, ChannelCodingEnum::LDPC, 80, 100, 80, 100, "Equivalent to \"--format hesu --coding ldpc --rate 100e6 --tx-resample-ratio 1.25 --cbw 80 --rx-resample-ratio 0.8 --rx-cbw 80\""));
 const std::shared_ptr<FrontEndModePreset> FrontEndModePreset::TR_CBW_80_VHT = std::shared_ptr<FrontEndModePreset>(new FrontEndModePreset("TR_CBW_80_VHT", PacketFormatEnum::PacketFormat_VHT, ChannelCodingEnum::BCC, 80, 100, 80, 100, "Equivalent to \"--format vht --coding bcc --rate 100e6 --tx-resample-ratio 1.25 --cbw 80 --rx-resample-ratio 0.8 --rx-cbw 80\""));
 const std::shared_ptr<FrontEndModePreset> FrontEndModePreset::TR_CBW_80_VHT_LDPC = std::shared_ptr<FrontEndModePreset>(new FrontEndModePreset("TR_CBW_80_VHT_LDPC", PacketFormatEnum::PacketFormat_VHT, ChannelCodingEnum::LDPC, 80, 100, 80, 100, "Equivalent to \"--format vht --coding ldpc --rate 100e6 --tx-resample-ratio 1.25 --cbw 80 --rx-resample-ratio 0.8 --rx-cbw 80\""));
+const std::shared_ptr<FrontEndModePreset> FrontEndModePreset::TR_CBW_40_EHTSU = std::shared_ptr<FrontEndModePreset>(new FrontEndModePreset("TR_CBW_40_EHTSU", PacketFormatEnum::PacketFormat_EHTSU, ChannelCodingEnum::LDPC, 40, 40, 40, 40, "Equivalent to \"--format ehtsu --coding ldpc --rate 40e6 --tx-resample-ratio 1.0 --cbw 40 --rx-resample-ratio 1.0 --rx-cbw 40\""));
 const std::shared_ptr<FrontEndModePreset> FrontEndModePreset::TR_CBW_40_HESU = std::shared_ptr<FrontEndModePreset>(new FrontEndModePreset("TR_CBW_40_HESU", PacketFormatEnum::PacketFormat_HESU, ChannelCodingEnum::LDPC, 40, 40, 40, 40, "Equivalent to \"--format hesu --coding ldpc --rate 40e6 --tx-resample-ratio 1.0 --cbw 40 --rx-resample-ratio 1.0 --rx-cbw 40\""));
 const std::shared_ptr<FrontEndModePreset> FrontEndModePreset::TR_CBW_40_VHT = std::shared_ptr<FrontEndModePreset>(new FrontEndModePreset("TR_CBW_40_VHT", PacketFormatEnum::PacketFormat_VHT, ChannelCodingEnum::BCC, 40, 40, 40, 40, "Equivalent to \"--format vht --coding bcc --rate 40e6 --tx-resample-ratio 1.0 --cbw 40 --rx-resample-ratio 1.0 --rx-cbw 40\""));
 const std::shared_ptr<FrontEndModePreset> FrontEndModePreset::TR_CBW_40_VHT_LDPC = std::shared_ptr<FrontEndModePreset>(new FrontEndModePreset("TR_CBW_40_VHT_LDPC", PacketFormatEnum::PacketFormat_VHT, ChannelCodingEnum::LDPC, 40, 40, 40, 40, "Equivalent to \"--format vht --coding ldpc --rate 40e6 --tx-resample-ratio 1.0 --cbw 40 --rx-resample-ratio 1.0 --rx-cbw 40\""));
 const std::shared_ptr<FrontEndModePreset> FrontEndModePreset::TR_CBW_40_HT = std::shared_ptr<FrontEndModePreset>(new FrontEndModePreset("TR_CBW_40_HT", PacketFormatEnum::PacketFormat_HT, ChannelCodingEnum::BCC, 40, 40, 40, 40, "Equivalent to \"--format ht --coding bcc --rate 40e6 --tx-resample-ratio 1.0 --cbw 40 --rx-resample-ratio 1.0 --rx-cbw 40\""));
 const std::shared_ptr<FrontEndModePreset> FrontEndModePreset::TR_CBW_40_HT_LDPC = std::shared_ptr<FrontEndModePreset>(new FrontEndModePreset("TR_CBW_40_HT_LDPC", PacketFormatEnum::PacketFormat_HT, ChannelCodingEnum::LDPC, 40, 40, 40, 40, "Equivalent to \"--format ht --coding ldpc --rate 40e6 --tx-resample-ratio 1.0 --cbw 40 --rx-resample-ratio 1.0 --rx-cbw 40\""));
+const std::shared_ptr<FrontEndModePreset> FrontEndModePreset::TR_CBW_20_EHTSU= std::shared_ptr<FrontEndModePreset>(new FrontEndModePreset("TR_CBW_20_EHTSU", PacketFormatEnum::PacketFormat_EHTSU, ChannelCodingEnum::BCC, 20, 20, 20, 20, "Equivalent to \"--format ehtsu --coding ldpc --rate 20e6 --tx-resample-ratio 1.0 --cbw 20 --rx-resample-ratio 1.0 --rx-cbw 20\""));
+const std::shared_ptr<FrontEndModePreset> FrontEndModePreset::TR_CBW_20_EHTSU_LDPC = std::shared_ptr<FrontEndModePreset>(new FrontEndModePreset("TR_CBW_20_EHTSU_LDPC", PacketFormatEnum::PacketFormat_EHTSU, ChannelCodingEnum::LDPC, 20, 20, 20, 20, "Equivalent to \"--format ehtsu --coding ldpc --rate 20e6 --tx-resample-ratio 1.0 --cbw 20 --rx-resample-ratio 1.0 --rx-cbw 20\""));
 const std::shared_ptr<FrontEndModePreset> FrontEndModePreset::TR_CBW_20_HESU = std::shared_ptr<FrontEndModePreset>(new FrontEndModePreset("TR_CBW_20_HESU", PacketFormatEnum::PacketFormat_HESU, ChannelCodingEnum::BCC, 20, 20, 20, 20, "Equivalent to \"--format hesu --coding ldpc --rate 20e6 --tx-resample-ratio 1.0 --cbw 20 --rx-resample-ratio 1.0 --rx-cbw 20\""));
 const std::shared_ptr<FrontEndModePreset> FrontEndModePreset::TR_CBW_20_HESU_LDPC = std::shared_ptr<FrontEndModePreset>(new FrontEndModePreset("TR_CBW_20_HESU_LDPC", PacketFormatEnum::PacketFormat_HESU, ChannelCodingEnum::LDPC, 20, 20, 20, 20, "Equivalent to \"--format hesu --coding ldpc --rate 20e6 --tx-resample-ratio 1.0 --cbw 20 --rx-resample-ratio 1.0 --rx-cbw 20\""));
 const std::shared_ptr<FrontEndModePreset> FrontEndModePreset::TR_CBW_20_VHT = std::shared_ptr<FrontEndModePreset>(new FrontEndModePreset("TR_CBW_20_VHT", PacketFormatEnum::PacketFormat_VHT, ChannelCodingEnum::BCC, 20, 20, 20, 20, "Equivalent to \"--format vht --coding bcc --rate 20e6 --tx-resample-ratio 1.0 --cbw 20 --rx-resample-ratio 1.0 --rx-cbw 20\""));
@@ -48,17 +58,22 @@ const std::shared_ptr<FrontEndModePreset> FrontEndModePreset::DEFAULT = std::sha
 
 const std::vector<std::shared_ptr<FrontEndModePreset>> &FrontEndModePreset::getPresetList() {
     static std::vector<std::shared_ptr<FrontEndModePreset>> list{
+            TX_CBW_160_EHTSU,
             TX_CBW_160_HESU,
             TX_CBW_160_VHT,
             TX_CBW_160_VHT_LDPC,
+            TX_CBW_80_EHTSU,
             TX_CBW_80_HESU,
             TX_CBW_80_VHT,
             TX_CBW_80_VHT_LDPC,
+            TX_CBW_40_EHTSU,
             TX_CBW_40_HESU,
             TX_CBW_40_VHT,
             TX_CBW_40_VHT_LDPC,
             TX_CBW_40_HT,
             TX_CBW_40_HT_LDPC,
+            TX_CBW_20_EHTSU,
+            TX_CBW_20_EHTSU_LDPC,
             TX_CBW_20_HESU,
             TX_CBW_20_HESU_LDPC,
             TX_CBW_20_VHT,
@@ -70,17 +85,22 @@ const std::vector<std::shared_ptr<FrontEndModePreset>> &FrontEndModePreset::getP
             RX_CBW_80,
             RX_CBW_40,
             RX_CBW_20,
+            TR_CBW_160_EHTSU,
             TR_CBW_160_HESU,
             TR_CBW_160_VHT,
             TR_CBW_160_VHT_LDPC,
+            TR_CBW_80_EHTSU,
             TR_CBW_80_HESU,
             TR_CBW_80_VHT,
             TR_CBW_80_VHT_LDPC,
+            TR_CBW_40_EHTSU,
             TR_CBW_40_HESU,
             TR_CBW_40_VHT,
             TR_CBW_40_VHT_LDPC,
             TR_CBW_40_HT,
             TR_CBW_40_HT_LDPC,
+            TR_CBW_20_EHTSU,
+            TR_CBW_20_EHTSU_LDPC,
             TR_CBW_20_HESU,
             TR_CBW_20_HESU_LDPC,
             TR_CBW_20_VHT,
