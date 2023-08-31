@@ -249,7 +249,7 @@ std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::fromBuffer(con
                 if (segmentName == "ExtraInfo") {
                     frame.txExtraInfoSegment = ExtraInfoSegment(buffer + pos, segmentLength + 4);
                 } else if (segmentName == "Payload") {
-                    frame.payloadSegments.emplace_back(PayloadSegment(buffer + pos, segmentLength + 4));
+                    frame.payloadSegments.emplace_back(buffer + pos, segmentLength + 4);
                 } else if (segmentName == "Cargo") {
                     frame.cargoSegment = CargoSegment(buffer + pos, segmentLength + 4);
                 } else {
