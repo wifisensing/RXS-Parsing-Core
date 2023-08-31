@@ -61,6 +61,8 @@ struct PicoScenesFrameTxParameters {
     bool heHighDoppler;
     double heMidamblePeriodicity;
     double heLTFType;
+    bool ehtDupMode;
+    double ehtLTFType;
     bool hePreHESpatialMapping;
     TxPrecodingParameters precodingParameters;
 
@@ -101,6 +103,8 @@ struct PicoScenesFrameTxParameters {
         heMidamblePeriodicity = 10;
         heLTFType = 4;
         hePreHESpatialMapping = false;
+        ehtDupMode = false;
+        ehtLTFType = 4;
     }
 
     void applyPreset(const std::string &presetName) {
