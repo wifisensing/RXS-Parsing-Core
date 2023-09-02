@@ -217,17 +217,7 @@ std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::fromBuffer(con
                 }
             } else if (segmentName == "BasebandSignal") {
                 frame.basebandSignalSegment = BasebandSignalSegment(buffer + pos, segmentLength + 4);
-            } else if (segmentName == "RawLegacyCSI") {
-                frame.rawLegacyCSISegment = CSISegment(buffer + pos, segmentLength + 4);
-                if (interpolateCSI) {
-                    frame.rawLegacyCSISegment->getCSI().removeCSDAndInterpolateCSI();
-                }
-            } else if (segmentName == "RawCSI") {
-                frame.rawCSISegment = CSISegment(buffer + pos, segmentLength + 4);
-                if (interpolateCSI) {
-                    frame.rawCSISegment->getCSI().removeCSDAndInterpolateCSI();
-                }
-            } else if (segmentName == "PreEQSymbols" || segmentName == "PilotCSI") {
+            } else if (segmentName == "PreEQSymbols" || segmentName == "PilotCSI" || segmentName == "RawCSI" || segmentName == "RawLegacyCSI") {
                 // Do nothing for compatibility
 //                frame.preEQSymbolsSegment = PreEQSymbolsSegment(buffer + pos, segmentLength + 4);
             } else {
@@ -282,10 +272,6 @@ std::string ModularPicoScenesRxFrame::toString() const {
         ss << ", " << *legacyCSISegment;
     if (basebandSignalSegment)
         ss << ", " << *basebandSignalSegment;
-    if (rawLegacyCSISegment)
-        ss << ", " << *rawLegacyCSISegment;
-    if (rawCSISegment)
-        ss << ", " << *rawCSISegment;
     if (!rxUnknownSegments.empty()) {
         std::stringstream segss;
         segss << "RxSegments:(";
@@ -405,18 +391,6 @@ Uint8Vector ModularPicoScenesRxFrame::toBuffer() const {
 
     if (basebandSignalSegment) {
         auto segmentBuffer = basebandSignalSegment->toBuffer();
-        std::copy(segmentBuffer.cbegin(), segmentBuffer.cend(), std::back_inserter(rxSegmentBuffer));
-        modularFrameHeader.numRxSegments++;
-    }
-
-    if (rawLegacyCSISegment) {
-        auto segmentBuffer = rawLegacyCSISegment->toBuffer();
-        std::copy(segmentBuffer.cbegin(), segmentBuffer.cend(), std::back_inserter(rxSegmentBuffer));
-        modularFrameHeader.numRxSegments++;
-    }
-
-    if (rawCSISegment) {
-        auto segmentBuffer = rawCSISegment->toBuffer();
         std::copy(segmentBuffer.cbegin(), segmentBuffer.cend(), std::back_inserter(rxSegmentBuffer));
         modularFrameHeader.numRxSegments++;
     }
