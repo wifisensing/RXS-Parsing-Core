@@ -353,7 +353,7 @@ std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::concatenateFra
         if (segmentName == "ExtraInfo") {
             baseFrame.txExtraInfoSegment = ExtraInfoSegment(mergedPayload.data() + pos, segmentLength + 4);
         } else if (segmentName == "Payload") {
-            baseFrame.payloadSegments.emplace_back(PayloadSegment(mergedPayload.data() + pos, segmentLength + 4));
+            baseFrame.payloadSegments.emplace_back(mergedPayload.data() + pos, segmentLength + 4);
         } else if (segmentName == "Cargo") {
             baseFrame.cargoSegment = CargoSegment(mergedPayload.data() + pos, segmentLength + 4);
         } else {
