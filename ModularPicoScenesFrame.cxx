@@ -187,7 +187,8 @@ std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::fromBuffer(con
     }
 
     if (rxFrameHeader.frameVersion == 1) { // for compatibility
-        pos = sizeof(ModularPicoScenesRxFrameHeader) - sizeof(ModularPicoScenesRxFrameHeader::numMPDU);
+        pos = sizeof(ModularPicoScenesRxFrameHeader) - sizeof(typeof(ModularPicoScenesRxFrameHeader::numMPDU));
+        rxFrameHeader.numMPDU = 1;
     } else {
         pos += sizeof(ModularPicoScenesRxFrameHeader);
     }
@@ -237,13 +238,13 @@ std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::fromBuffer(con
             pos = currentMPDUStart + currentMPDULength;
 
             if (mpduIndex == 0 && currentMPDULength >= sizeof(ieee80211_mac_frame_header)) {
-                frame.standardHeader = ieee80211_mac_frame_header::createFromBuffer(frame.mpdus[mpduIndex].data(), currentMPDULength);
+                const auto *mpduBuffer = frame.mpdus[mpduIndex].data();
+                frame.standardHeader = ieee80211_mac_frame_header::createFromBuffer(mpduBuffer, currentMPDULength);
 
-                if (frame.mpdus[mpduIndex].size() > sizeof(ieee80211_mac_frame_header) + sizeof(PicoScenesFrameHeader)) {
-                    if (auto PSHeader = PicoScenesFrameHeader::fromBuffer(frame.mpdus[mpduIndex].data())) {
-                        const auto *mpduBuffer = frame.mpdus[mpduIndex].data();
+                if (currentMPDULength >= sizeof(ieee80211_mac_frame_header) + sizeof(PicoScenesFrameHeader)) {
+                    if (auto PSHeader = PicoScenesFrameHeader::fromBuffer(frame.mpdus[mpduIndex].data() + sizeof(ieee80211_mac_frame_header))) {
                         frame.PicoScenesHeader = PSHeader;
-                        uint32_t mpduPos = sizeof(PicoScenesFrameHeader);
+                        uint32_t mpduPos = sizeof(ieee80211_mac_frame_header) + sizeof(PicoScenesFrameHeader);
 
                         for (auto segmentIndex = 0; segmentIndex < frame.PicoScenesHeader->numSegments; segmentIndex++) {
                             auto [segmentName, segmentLength, versionId, offset] = AbstractPicoScenesFrameSegment::extractSegmentMetaData(mpduBuffer + mpduPos, frame.mpdus[mpduIndex].size() - mpduPos);
