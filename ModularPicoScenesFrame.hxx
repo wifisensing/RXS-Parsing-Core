@@ -82,12 +82,15 @@ class ModularPicoScenesRxFrameHeader {
 public:
     uint32_t frameLength = 0;
     uint32_t magicWord = 0x20150315;
-    uint16_t frameVersion = 0x1U;
+    uint16_t frameVersion = 0x2U;
     uint8_t numRxSegments = 0;
+    uint16_t numMPDU = 1; // size of A-MPDU
 
     ModularPicoScenesRxFrameHeader &initialize2Default() {
         magicWord = 0x20150315;
-        frameVersion = 0x1U;
+        frameVersion = 0x2U;
+        numRxSegments = 0;
+        numMPDU = 1;
         return *this;
     }
 
@@ -114,7 +117,7 @@ public:
 
     std::map<std::string, AbstractPicoScenesFrameSegment> rxUnknownSegments;
     std::map<std::string, AbstractPicoScenesFrameSegment> txUnknownSegments;
-    Uint8Vector mpdu;
+    std::vector<Uint8Vector> mpdus; // unified single-MPDU and A-MPDU
     bool isNDP{false};
 
     static std::optional<ModularPicoScenesRxFrame> fromBuffer(const uint8_t *buffer, uint32_t bufferLength, bool interpolateCSI = false);
