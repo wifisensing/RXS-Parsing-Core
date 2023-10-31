@@ -237,28 +237,28 @@ std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::fromBuffer(con
             std::copy(buffer + currentMPDUStart, buffer + currentMPDUStart + currentMPDULength, std::back_inserter(frame.mpdus[mpduIndex]));
             pos = currentMPDUStart + currentMPDULength;
 
+            const auto *mpduBuffer = frame.mpdus[mpduIndex].data();
             if (mpduIndex == 0 && currentMPDULength >= sizeof(ieee80211_mac_frame_header)) {
-                const auto *mpduBuffer = frame.mpdus[mpduIndex].data();
                 frame.standardHeader = ieee80211_mac_frame_header::createFromBuffer(mpduBuffer, currentMPDULength);
+            }
 
-                if (currentMPDULength >= sizeof(ieee80211_mac_frame_header) + sizeof(PicoScenesFrameHeader)) {
-                    if (auto PSHeader = PicoScenesFrameHeader::fromBuffer(frame.mpdus[mpduIndex].data() + sizeof(ieee80211_mac_frame_header))) {
-                        frame.PicoScenesHeader = PSHeader;
-                        uint32_t mpduPos = sizeof(ieee80211_mac_frame_header) + sizeof(PicoScenesFrameHeader);
+            if (currentMPDULength >= sizeof(ieee80211_mac_frame_header) + sizeof(PicoScenesFrameHeader)) {
+                if (auto PSHeader = PicoScenesFrameHeader::fromBuffer(frame.mpdus[mpduIndex].data() + sizeof(ieee80211_mac_frame_header))) {
+                    frame.PicoScenesHeader = PSHeader;
+                    uint32_t mpduPos = sizeof(ieee80211_mac_frame_header) + sizeof(PicoScenesFrameHeader);
 
-                        for (auto segmentIndex = 0; segmentIndex < frame.PicoScenesHeader->numSegments; segmentIndex++) {
-                            auto [segmentName, segmentLength, versionId, offset] = AbstractPicoScenesFrameSegment::extractSegmentMetaData(mpduBuffer + mpduPos, frame.mpdus[mpduIndex].size() - mpduPos);
-                            if (segmentName == "ExtraInfo") {
-                                frame.txExtraInfoSegment = ExtraInfoSegment(mpduBuffer + mpduPos, segmentLength + 4);
-                            } else if (segmentName == "Payload") {
-                                frame.payloadSegments.emplace_back(mpduBuffer + mpduPos, segmentLength + 4);
-                            } else if (segmentName == "Cargo") {
-                                frame.cargoSegment = CargoSegment(mpduBuffer + mpduPos, segmentLength + 4);
-                            } else {
-                                frame.txUnknownSegments.emplace(segmentName, AbstractPicoScenesFrameSegment(mpduBuffer + mpduPos, segmentLength + 4));
-                            }
-                            mpduPos += segmentLength + 4;
+                    for (auto segmentIndex = 0; segmentIndex < frame.PicoScenesHeader->numSegments; segmentIndex++) {
+                        auto [segmentName, segmentLength, versionId, offset] = AbstractPicoScenesFrameSegment::extractSegmentMetaData(mpduBuffer + mpduPos, frame.mpdus[mpduIndex].size() - mpduPos);
+                        if (segmentName == "ExtraInfo") {
+                            frame.txExtraInfoSegment = ExtraInfoSegment(mpduBuffer + mpduPos, segmentLength + 4);
+                        } else if (segmentName == "Payload") {
+                            frame.payloadSegments.emplace_back(mpduBuffer + mpduPos, segmentLength + 4);
+                        } else if (segmentName == "Cargo") {
+                            frame.cargoSegments.emplace_back(mpduBuffer + mpduPos, segmentLength + 4);
+                        } else {
+                            frame.txUnknownSegments.emplace(segmentName, AbstractPicoScenesFrameSegment(mpduBuffer + mpduPos, segmentLength + 4));
                         }
+                        mpduPos += segmentLength + 4;
                     }
                 }
             }
@@ -316,8 +316,8 @@ std::string ModularPicoScenesRxFrame::toString() const {
         temp.append(")");
         ss << ", " << temp;
     }
-    if (cargoSegment)
-        ss << ", " << *cargoSegment;
+    if (!cargoSegments.empty())
+        ss << ", " << cargoSegments[0]; // TODO better display for cargo
     if (!txUnknownSegments.empty()) {
         std::stringstream segss;
         segss << "TxSegments:(";
@@ -340,9 +340,9 @@ std::string ModularPicoScenesRxFrame::toString() const {
 std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::concatenateFragmentedPicoScenesRxFrames(const std::vector<ModularPicoScenesRxFrame> &frameQueue) {
     ModularPicoScenesRxFrame baseFrame = frameQueue.front();
     std::vector<PayloadCargo> cargos;
-    std::for_each(frameQueue.cbegin(), frameQueue.cend(), [&](const ModularPicoScenesRxFrame &frame) {
-        cargos.emplace_back(frame.cargoSegment->getCargo());
-    });
+    for (const auto &frame: frameQueue)
+        for (const auto &segment: frame.cargoSegments)
+            cargos.emplace_back(segment.getCargo());
     auto mergedPayload = PayloadCargo::mergeAndValidateCargo(cargos);
     if (mergedPayload.empty()) // in case of decompression failure
         return std::nullopt;
@@ -355,14 +355,14 @@ std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::concatenateFra
         } else if (segmentName == "Payload") {
             baseFrame.payloadSegments.emplace_back(mergedPayload.data() + pos, segmentLength + 4);
         } else if (segmentName == "Cargo") {
-            baseFrame.cargoSegment = CargoSegment(mergedPayload.data() + pos, segmentLength + 4);
+            baseFrame.cargoSegments.emplace_back(mergedPayload.data() + pos, segmentLength + 4);
         } else {
             baseFrame.txUnknownSegments.emplace(segmentName, AbstractPicoScenesFrameSegment(mergedPayload.data() + pos, segmentLength + 4));
         }
         pos += segmentLength + 4;
         numSegment++;
     }
-    baseFrame.cargoSegment = std::nullopt;
+    baseFrame.cargoSegments.clear();
     baseFrame.PicoScenesHeader->numSegments = numSegment;
     baseFrame.rebuildRawBuffer();
 

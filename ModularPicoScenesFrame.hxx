@@ -113,7 +113,7 @@ public:
     std::optional<PicoScenesFrameHeader> PicoScenesHeader;
     std::optional<ExtraInfoSegment> txExtraInfoSegment;
     std::vector<PayloadSegment> payloadSegments;
-    std::optional<CargoSegment> cargoSegment;
+    std::vector<CargoSegment> cargoSegments;
 
     std::map<std::string, AbstractPicoScenesFrameSegment> rxUnknownSegments;
     std::map<std::string, AbstractPicoScenesFrameSegment> txUnknownSegments;
