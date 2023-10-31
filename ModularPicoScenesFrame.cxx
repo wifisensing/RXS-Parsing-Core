@@ -443,28 +443,31 @@ Uint8Vector ModularPicoScenesRxFrame::toBuffer() const {
 void ModularPicoScenesRxFrame::rebuildRawBuffer() {
     rawBuffer.clear();
 
-//    if (PicoScenesHeader) {
-//        mpdu.clear();
-//        std::copy((uint8_t *) &standardHeader, (uint8_t *) &standardHeader + sizeof(standardHeader), std::back_inserter(mpdu));
-//        std::copy((uint8_t *) &PicoScenesHeader.value(), (uint8_t *) &PicoScenesHeader.value() + sizeof(PicoScenesFrameHeader), std::back_inserter(mpdu));
-//
-//        if (txExtraInfoSegment) {
-//            const auto &buffer = txExtraInfoSegment->toBuffer();
-//            std::copy(buffer.cbegin(), buffer.cend(), std::back_inserter(mpdu));
-//        }
-//        for (const auto &payloadSegment: payloadSegments) {
-//            const auto &buffer = payloadSegment.toBuffer();
-//            std::copy(buffer.cbegin(), buffer.cend(), std::back_inserter(mpdu));
-//        }
-//        if (cargoSegment) {
-//            const auto &buffer = cargoSegment->toBuffer();
-//            std::copy(buffer.cbegin(), buffer.cend(), std::back_inserter(mpdu));
-//        }
-//        for (const auto &unknownSegment: txUnknownSegments) {
-//            auto buffer = unknownSegment.second.toBuffer();
-//            std::copy(buffer.cbegin(), buffer.cend(), std::back_inserter(mpdu));
-//        }
-//    }
+    if (PicoScenesHeader) {
+        mpdus.assign(1, Uint8Vector{});
+
+        std::copy((uint8_t *) &standardHeader, (uint8_t *) &standardHeader + sizeof(standardHeader), std::back_inserter(mpdus[0]));
+        std::copy((uint8_t *) &PicoScenesHeader.value(), (uint8_t *) &PicoScenesHeader.value() + sizeof(PicoScenesFrameHeader), std::back_inserter(mpdus[0]));
+
+        if (txExtraInfoSegment) {
+            const auto &buffer = txExtraInfoSegment->toBuffer();
+            std::copy(buffer.cbegin(), buffer.cend(), std::back_inserter(mpdus[0]));
+        }
+        for (const auto &payloadSegment: payloadSegments) {
+            const auto &buffer = payloadSegment.toBuffer();
+            std::copy(buffer.cbegin(), buffer.cend(), std::back_inserter(mpdus[0]));
+        }
+
+        for (const auto &cargo: cargoSegments) {
+            const auto &buffer = cargo.toBuffer();
+            std::copy(buffer.cbegin(), buffer.cend(), std::back_inserter(mpdus[0]));
+        }
+
+        for (const auto &unknownSegment: txUnknownSegments) {
+            auto buffer = unknownSegment.second.toBuffer();
+            std::copy(buffer.cbegin(), buffer.cend(), std::back_inserter(mpdus[0]));
+        }
+    }
 
     rawBuffer = toBuffer();
 }
