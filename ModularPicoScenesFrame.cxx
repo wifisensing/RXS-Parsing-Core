@@ -187,7 +187,7 @@ std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::fromBuffer(con
     }
 
     if (rxFrameHeader.frameVersion == 1) { // for compatibility
-        pos = sizeof(ModularPicoScenesRxFrameHeader) - sizeof(typeof(ModularPicoScenesRxFrameHeader::numMPDU));
+        pos = sizeof(ModularPicoScenesRxFrameHeader) - sizeof(ModularPicoScenesRxFrameHeader::numMPDU);
         rxFrameHeader.numMPDU = 1;
     } else {
         pos += sizeof(ModularPicoScenesRxFrameHeader);
