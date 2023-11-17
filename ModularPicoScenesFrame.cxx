@@ -374,12 +374,24 @@ Uint8Vector ModularPicoScenesRxFrame::toBuffer() const {
         return rawBuffer;
 
     // Rx segments
-    Uint8Vector rxSegmentBuffer;
     auto modularFrameHeader = ModularPicoScenesRxFrameHeader().initialize2Default();
     modularFrameHeader.numRxSegments = 3;
     modularFrameHeader.numMPDU = mpdus.size();
 
-    auto rxsBasicBuffer = rxSBasicSegment.toBuffer();
+    auto reservedLength = rxSBasicSegment.totalLengthIncludingLeading4ByteLength();
+    reservedLength += rxExtraInfoSegment.totalLengthIncludingLeading4ByteLength();
+    reservedLength += csiSegment.totalLengthIncludingLeading4ByteLength();
+    reservedLength += mvmExtraSegment ? mvmExtraSegment->totalLengthIncludingLeading4ByteLength() : 0;
+    reservedLength += sdrExtraSegment ? sdrExtraSegment->totalLengthIncludingLeading4ByteLength() : 0;
+    reservedLength += legacyCSISegment ? legacyCSISegment->totalLengthIncludingLeading4ByteLength() : 0;
+    reservedLength += basebandSignalSegment ? basebandSignalSegment->totalLengthIncludingLeading4ByteLength() : 0;
+    for (const auto & [segName, segment]: rxUnknownSegments) {
+        reservedLength += segment.totalLengthIncludingLeading4ByteLength();
+    }
+    Uint8Vector rxSegmentBuffer;
+    rxSegmentBuffer.reserve(reservedLength + 100);
+
+    auto&& rxsBasicBuffer = rxSBasicSegment.toBuffer();
     std::copy(rxsBasicBuffer.cbegin(), rxsBasicBuffer.cend(), std::back_inserter(rxSegmentBuffer));
 
     auto rxsExtraInfoBuffer = rxExtraInfoSegment.toBuffer();
@@ -423,6 +435,7 @@ Uint8Vector ModularPicoScenesRxFrame::toBuffer() const {
     modularFrameHeader.frameLength = sizeof(modularFrameHeader) + rxSegmentBuffer.size() + std::accumulate(mpdus.cbegin(), mpdus.cend(), 0, [](size_t acc, const auto &mpdu) {
         return acc + mpdu.size() + sizeof(uint32_t);
     }) - 4;
+    frameBuffer.reserve(modularFrameHeader.frameLength + 4);
     std::copy((uint8_t *) &modularFrameHeader, (uint8_t *) &modularFrameHeader + sizeof(ModularPicoScenesRxFrameHeader), std::back_inserter(frameBuffer));
     std::copy(rxSegmentBuffer.cbegin(), rxSegmentBuffer.cend(), std::back_inserter(frameBuffer));
     for (const auto &mpdu: mpdus) {
