@@ -80,6 +80,7 @@ void AbstractPicoScenesFrameSegment::rebuildBuffer() {
     uint32_t totalLengthV = totalLength();
     uint8_t segNameLength = segmentName.length() + 1;
     rawBuffer.clear();
+    rawBuffer.reserve(totalLengthV + 50);
     std::copy((uint8_t *) &totalLengthV, (uint8_t *) &totalLengthV + sizeof(totalLengthV), std::back_inserter(rawBuffer));
     std::copy((uint8_t *) &segNameLength, (uint8_t *) &segNameLength + sizeof(segNameLength), std::back_inserter(rawBuffer));
     std::copy((uint8_t *) segmentName.data(), (uint8_t *) (segmentName.data() + segmentName.size() + 1), std::back_inserter(rawBuffer));
