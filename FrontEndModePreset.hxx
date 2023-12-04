@@ -9,6 +9,7 @@
 
 class FrontEndModePreset {
 public:
+    static const std::shared_ptr<FrontEndModePreset> TX_CBW_320_EHTSU; ///< Equivalent to "--format ehtsu --coding ldpc --rate 400e6 --tx-resample-ratio 1.25 --cbw 320"
     static const std::shared_ptr<FrontEndModePreset> TX_CBW_160_EHTSU; ///< Equivalent to "--format ehtsu --coding ldpc --rate 200e6 --tx-resample-ratio 1.25 --cbw 160"
     static const std::shared_ptr<FrontEndModePreset> TX_CBW_160_HESU; ///< Equivalent to "--format hesu --coding ldpc --rate 200e6 --tx-resample-ratio 1.25 --cbw 160"
     static const std::shared_ptr<FrontEndModePreset> TX_CBW_160_VHT; ///< Equivalent to "--format vht --coding bcc --rate 200e6 --tx-resample-ratio 1.25 --cbw 160"
@@ -32,10 +33,12 @@ public:
     static const std::shared_ptr<FrontEndModePreset> TX_CBW_20_HT; ///< Equivalent to "--format ht --coding bcc --rate 20e6 --tx-resample-ratio 1.0 --cbw 20"
     static const std::shared_ptr<FrontEndModePreset> TX_CBW_20_HT_LDPC; ///< Equivalent to "--format ht --coding ldpc --rate 20e6 --tx-resample-ratio 1.0 --cbw 20"
     static const std::shared_ptr<FrontEndModePreset> TX_CBW_20_NonHT; ///< Equivalent to "--format nonht --coding bcc --rate 20e6 --tx-resample-ratio 1.0 --cbw 20"
+    static const std::shared_ptr<FrontEndModePreset> RX_CBW_320; ///< Equivalent to "--rate 200e6 --rx-resample-ratio 0.8 --rx-cbw 320"
     static const std::shared_ptr<FrontEndModePreset> RX_CBW_160; ///< Equivalent to "--rate 200e6 --rx-resample-ratio 0.8 --rx-cbw 160"
     static const std::shared_ptr<FrontEndModePreset> RX_CBW_80; ///< Equivalent to "--rate 100e6 --rx-resample-ratio 0.8 --rx-cbw 80"
     static const std::shared_ptr<FrontEndModePreset> RX_CBW_40; ///< Equivalent to "--rate 40e6 --rx-resample-ratio 1.0 --rx-cbw 40"
     static const std::shared_ptr<FrontEndModePreset> RX_CBW_20; ///< Equivalent to "--rate 20e6 --rx-resample-ratio 1.0 --rx-cbw 20"
+    static const std::shared_ptr<FrontEndModePreset> TR_CBW_320_EHTSU; ///< Equivalent to "--format ehtsu --coding ldpc --rate 400e6 --tx-resample-ratio 1.25 --cbw 320 --rx-resample-ratio 0.8 --rx-cbw 320"
     static const std::shared_ptr<FrontEndModePreset> TR_CBW_160_EHTSU; ///< Equivalent to "--format ehtsu --coding ldpc --rate 200e6 --tx-resample-ratio 1.25 --cbw 160 --rx-resample-ratio 0.8 --rx-cbw 160"
     static const std::shared_ptr<FrontEndModePreset> TR_CBW_160_HESU; ///< Equivalent to "--format hesu --coding ldpc --rate 200e6 --tx-resample-ratio 1.25 --cbw 160 --rx-resample-ratio 0.8 --rx-cbw 160"
     static const std::shared_ptr<FrontEndModePreset> TR_CBW_160_VHT; ///< Equivalent to "--format vht --coding bcc --rate 200e6 --tx-resample-ratio 1.25 --cbw 160 --rx-resample-ratio 0.8 --rx-cbw 160"
