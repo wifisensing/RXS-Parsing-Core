@@ -148,9 +148,9 @@ public:
     Uint8Vector prebuiltMPDU;
     std::vector<std::vector<std::complex<int16_t>>> prebuiltSignals;
 
-    void appendAMPDUFrames(const ModularPicoScenesTxFrame &frame);
+    ModularPicoScenesTxFrame &  appendAMPDUFrames(const ModularPicoScenesTxFrame &frame);
 
-    void addSegments(const std::shared_ptr<AbstractPicoScenesFrameSegment> &segment);
+    ModularPicoScenesTxFrame &  addSegments(const std::shared_ptr<AbstractPicoScenesFrameSegment> &segment);
 
     std::shared_ptr<AbstractPicoScenesFrameSegment> getSegment(const std::string &querySegmentName);
 
@@ -168,13 +168,15 @@ public:
 
     [[nodiscard]] Uint8Vector toBuffer() const;
 
-    void prebuildMPDU();
+    ModularPicoScenesTxFrame & prebuildMPDU();
 
     std::vector<ModularPicoScenesTxFrame> autoSplit(int16_t maxSegmentBuffersLength = 1400, std::optional<uint16_t> firstSegmentCappingLength = std::nullopt) const;
 
     ModularPicoScenesTxFrame &setMoreFrags();
 
     ModularPicoScenesTxFrame &setFragNumber(uint8_t fragNumber);
+
+    ModularPicoScenesTxFrame &setSequenceId(uint16_t sequence);
 
     ModularPicoScenesTxFrame &setRetry();
 
@@ -187,6 +189,8 @@ public:
     ModularPicoScenesTxFrame &setRandomTaskId();
 
     ModularPicoScenesTxFrame &setPicoScenesFrameType(uint8_t frameType);
+
+    ModularPicoScenesTxFrame &setTxParameters(const PicoScenesFrameTxParameters &parameters);
 
     [[maybe_unused]] ModularPicoScenesTxFrame &setFrameFormat(PacketFormatEnum format);
 

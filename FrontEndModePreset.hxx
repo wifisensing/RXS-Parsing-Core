@@ -70,6 +70,8 @@ public:
 
     static std::string printHelpContentForFrontEndModePreset();
 
+    FrontEndModePreset() = delete;
+
     bool operator==(const FrontEndModePreset &rhs) const;
 
     bool operator<(const FrontEndModePreset &rhs) const;
@@ -88,8 +90,6 @@ public:
     const std::optional<double> rxResampleRatio{std::nullopt};
 
 private:
-
-    FrontEndModePreset() = delete;
 
     FrontEndModePreset(std::string presetName, PacketFormatEnum format, ChannelCodingEnum coding, const std::optional<double> &txCbw, const std::optional<double> &txSamplingRate, const std::optional<double> &rxCbw, const std::optional<double> &rxSamplingRate, std::string description);
 };

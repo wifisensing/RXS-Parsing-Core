@@ -490,11 +490,12 @@ std::ostream &operator<<(std::ostream &os, const ModularPicoScenesRxFrame &rxfra
     return os;
 }
 
-void ModularPicoScenesTxFrame::addSegments(const std::shared_ptr<AbstractPicoScenesFrameSegment> &segment) {
+ModularPicoScenesTxFrame &ModularPicoScenesTxFrame::addSegments(const std::shared_ptr<AbstractPicoScenesFrameSegment> &segment) {
     segments.emplace_back(segment);
     if (!frameHeader)
         frameHeader = PicoScenesFrameHeader();
     frameHeader->numSegments = segments.size();
+    return *this;
 }
 
 std::shared_ptr<AbstractPicoScenesFrameSegment> ModularPicoScenesTxFrame::getSegment(const std::string &querySegmentName) {
@@ -519,8 +520,9 @@ uint32_t ModularPicoScenesTxFrame::totalLength() const {
     return length;
 }
 
-void ModularPicoScenesTxFrame::prebuildMPDU() {
+ModularPicoScenesTxFrame &ModularPicoScenesTxFrame::prebuildMPDU() {
     prebuiltMPDU = toBuffer();
+    return *this;
 }
 
 Uint8Vector ModularPicoScenesTxFrame::toBuffer() const {
@@ -646,6 +648,11 @@ void ModularPicoScenesTxFrame::reset() {
     segments.clear();
 }
 
+ModularPicoScenesTxFrame &ModularPicoScenesTxFrame::setSequenceId(uint16_t sequence) {
+    standardHeader.seq = sequence;
+    return *this;
+}
+
 ModularPicoScenesTxFrame &ModularPicoScenesTxFrame::setMoreFrags() {
     standardHeader.fc.moreFrags = 1;
     return *this;
@@ -695,6 +702,11 @@ ModularPicoScenesTxFrame &ModularPicoScenesTxFrame::setPicoScenesFrameType(uint8
     if (!frameHeader)
         frameHeader = PicoScenesFrameHeader();
     frameHeader->frameType = frameType;
+    return *this;
+}
+
+ModularPicoScenesTxFrame &ModularPicoScenesTxFrame::setTxParameters(const PicoScenesFrameTxParameters &parameters) {
+    txParameters = parameters;
     return *this;
 }
 
@@ -823,8 +835,9 @@ std::string ModularPicoScenesTxFrame::toString() const {
     return ss.str();
 }
 
-void ModularPicoScenesTxFrame::appendAMPDUFrames(const ModularPicoScenesTxFrame &frame) {
+ModularPicoScenesTxFrame &ModularPicoScenesTxFrame::appendAMPDUFrames(const ModularPicoScenesTxFrame &frame) {
     AMPDUFrames.emplace_back(frame);
+    return *this;
 }
 
 std::ostream &operator<<(std::ostream &os, const ModularPicoScenesTxFrame &txframe) {

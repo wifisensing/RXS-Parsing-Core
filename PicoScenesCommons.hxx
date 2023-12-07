@@ -30,6 +30,13 @@ using ComplexFloatArray = std::vector<ComplexData>;
 using Uint8Vector = std::vector<uint8_t>;
 
 /**
+ * IWL5300 can measure CSI for this MAC address in monitor mode. A pure magic MAC address
+ */
+static const std::array<uint8_t, 6> MagicIntel123456{0x00, 0x16, 0xea, 0x12, 0x34, 0x56};
+
+static const std::array<uint8_t, 6> BroadcastFFMAC{0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
+
+/**
  * @brief PicoScenes supported device type
  * @see PicoScenesDeviceSubtype
  */
