@@ -11,7 +11,10 @@ std::vector<uint8_t> SDRExtra::toBuffer() {
 
 std::string SDRExtra::toString() const {
     std::stringstream ss;
-    ss << "SDRExtra:[scrambler=" + std::to_string(scramblerInit) + ", packetStartInternal=" + std::to_string(packetStartInternal) + ", rxIndex=" + std::to_string(hardwareRxSamplingIndex) + ", rxTime=" + std::to_string(preciseRxTime) + ", decodingDelay=" + std::to_string(decodingDelay()) + ", lastTxTime=" + std::to_string(lastTxTime) + ", sigEVM=" + std::to_string(sigEVM) + "]";
+    ss << "SDRExtra:[scrambler=" << static_cast<int16_t>(scramblerInit) << ", packetStartInternal="
+       << packetStartInternal << ", rxIndex=" << hardwareRxSamplingIndex
+       << std::setprecision(9) << ", rxTime=" << preciseRxTime << ", decodingDelay=" << decodingDelay()
+       << ", lastTxTime=" << lastTxTime << ", sigEVM=" << std::fixed << std::setprecision(1) << sigEVM << "]";
     return ss.str();
 }
 

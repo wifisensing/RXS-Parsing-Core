@@ -343,9 +343,12 @@ std::map<uint16_t, std::function<RxSBasic(const uint8_t *, uint32_t)>> RxSBasicS
 
 std::string RxSBasic::toString() const {
     std::stringstream ss;
-    ss << "RxSBasic:[device=" + DeviceType2String((PicoScenesDeviceType(deviceType))) + ", center=" + std::to_string(centerFreq) + (centerFreq != centerFreq2 ? (", center2=" + std::to_string(centerFreq2)) : "") + ", control=" + std::to_string(controlFreq) + ", CBW=" + std::to_string(cbw) + ", format=" + PacketFormat2String(static_cast<PacketFormatEnum>(packetFormat)) + ", Pkt_CBW=" + std::to_string(pkt_cbw) + ", MCS=" + std::to_string(mcs) + ", numSTS=" + std::to_string(numSTS) + ", GI=" + GuardInterval2String(GuardIntervalEnum(guardInterval))
-          + ", UsrIdx/NUsr=(" + std::to_string(userIndex) + "/" + std::to_string(numUser) + ")" + ", timestamp=" + std::to_string(tstamp) + ", system_ns=" + std::to_string(systemTime) + ", NF=" +
-          std::to_string(noiseFloor) + ", RSS=" + std::to_string(rssi) + "]";
+    ss << "RxSBasic:[device=" << DeviceType2String((PicoScenesDeviceType(deviceType)))
+            << ", center=" << centerFreq << (centerFreq != centerFreq2 ? (", center2=" + std::to_string(centerFreq2)) : "")
+            << ", control=" << controlFreq << ", CBW=" << cbw << ", format=" << PacketFormat2String(static_cast<PacketFormatEnum>(packetFormat))
+            << ", Pkt_CBW=" << pkt_cbw << ", MCS=" << static_cast<uint16_t>(mcs) << ", numSTS=" << static_cast<uint16_t>(numSTS) << ", GI=" << GuardInterval2String(GuardIntervalEnum(guardInterval))
+            << ", UsrIdx/NUsr=(" << static_cast<uint16_t>(userIndex) << "/" << static_cast<uint16_t>(numUser) << "), timestamp=" << tstamp << ", system_ns=" << systemTime
+            << ", NF=" << static_cast<int16_t>(noiseFloor) << ", RSS=" << static_cast<int16_t>(rssi) << "]";
     return ss.str();
 }
 

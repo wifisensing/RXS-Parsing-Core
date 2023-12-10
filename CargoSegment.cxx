@@ -129,7 +129,12 @@ void CargoSegment::setCargo(const PayloadCargo &cargoV) {
 }
 
 std::string CargoSegment::toString() const {
-    return segmentName + ":[taskId=" + std::to_string(cargo.taskId) + ", numSeg=" + std::to_string(cargo.numSegments) + ", seq=" + std::to_string(cargo.sequence) + ", total_part=" + std::to_string(cargo.totalParts) + ", compressed=" + std::to_string(cargo.compressed) + ", total_length=" + std::to_string(cargo.payloadLength) + ", part_len=" + std::to_string(cargo.payloadData.size()) + "]";
+    std::stringstream ss;
+    ss << segmentName << ":[taskId=" << cargo.taskId << ", numSeg=" << static_cast<uint16_t>(cargo.numSegments)
+       << ", seq=" << static_cast<uint16_t>(cargo.sequence) << ", total_part=" << static_cast<uint16_t>(cargo.totalParts)
+       << ", compressed=" << cargo.compressed << ", total_length=" << cargo.payloadLength
+       << ", part_len=" << cargo.payloadData.size() << "]";
+    return ss.str();
 }
 
 std::ostream &operator<<(std::ostream &os, const CargoSegment &cargoSegment) {

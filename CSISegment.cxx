@@ -731,13 +731,14 @@ void CSISegment::setCSI(const CSI &csiV) {
 
 std::string CSISegment::toString() const {
     std::stringstream ss;
-    ss << segmentName + ":[";
-    ss << "device=" << csi.deviceType << ", format=" << csi.packetFormat << ", CBW=" << csi.cbw << ", cf=" << std::to_string((double) csi.carrierFreq / 1e6) << " MHz" << (csi.isMerged ? ", cf2=" + std::to_string((double) csi.carrierFreq2 / 1e6) + " MHz" : "") << ", sf=" << std::to_string((double) csi.samplingRate / 1e6) << " MHz" ", subcarrierBW=" << std::to_string((double) csi.subcarrierBandwidth / 1e3) << " kHz"
-       << ", dim(nTones,nSTS,nESS,nRx,nCSI)=(" + std::to_string(csi.dimensions.numTones) + "," + std::to_string(csi.dimensions.numTx) + "," + std::to_string(csi.dimensions.numESS) + "," + std::to_string(csi.dimensions.numRx) + "," + std::to_string(csi.dimensions.numCSI) + "), raw=" + std::to_string(csi.rawCSIData.size()) + "B]";
-    auto temp = ss.str();
-    temp.erase(temp.end() - 2, temp.end());
-    temp.append("]");
-    return temp;
+    ss << segmentName << ":[device=" << csi.deviceType << ", format=" << csi.packetFormat << ", CBW=" << csi.cbw
+       << std::fixed << std::setprecision(6) << ", cf=" << (double) csi.carrierFreq / 1e6 << " MHz"
+       << (csi.isMerged ? ", cf2=" + std::to_string((double) csi.carrierFreq2 / 1e6) + " MHz" : "")
+       << ", sf=" << (double) csi.samplingRate / 1e6 << " MHz"
+       << ", subcarrierBW=" << (double) csi.subcarrierBandwidth / 1e3 << " kHz"
+       << ", dim(nTones,nSTS,nESS,nRx,nCSI)=(" << static_cast<uint16_t>(csi.dimensions.numTones) << "," << static_cast<uint16_t>(csi.dimensions.numTx) << "," << static_cast<uint16_t>(csi.dimensions.numESS) << "," << static_cast<uint16_t>(csi.dimensions.numRx) << "," << static_cast<uint16_t>(csi.dimensions.numCSI) << ")"
+       << ", raw=" << csi.rawCSIData.size() << "B]";
+    return ss.str();
 }
 
 

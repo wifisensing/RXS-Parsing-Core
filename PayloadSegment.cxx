@@ -120,12 +120,8 @@ void PayloadSegment::setPayloadData(const PayloadData &payloadV) {
 
 std::string PayloadSegment::toString() const {
     std::stringstream ss;
-    ss << segmentName + ":[";
-    ss << "Type=" << payloadData.dataType << ", Description=" << payloadData.payloadDescription << ", length=" << std::to_string(payloadData.payloadData.size()) + "B]";
-    auto temp = ss.str();
-    temp.erase(temp.end() - 2, temp.end());
-    temp.append("]");
-    return temp;
+    ss << segmentName << ":[Type=" << payloadData.dataType << ", Description=" << payloadData.payloadDescription << ", length=" << payloadData.payloadData.size() << "B]";
+    return ss.str();
 }
 
 std::ostream &operator<<(std::ostream &os, const PayloadSegment &payloadSegment) {
