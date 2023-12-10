@@ -223,7 +223,7 @@ const SDRExtra &SDRExtraSegment::getSdrExtra() const {
 
 void SDRExtraSegment::setSdrExtra(const SDRExtra &sdrExtraV) {
     sdrExtra = sdrExtraV;
-    setSegmentPayload(sdrExtra.toBuffer());
+    setSegmentPayload(std::move(sdrExtra.toBuffer()));
 }
 
 std::string SDRExtraSegment::toString() const {

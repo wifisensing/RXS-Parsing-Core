@@ -24,6 +24,12 @@ public:
 
     void setSignalMatrix(const SignalMatrix<std::complex<int16_t>> &bbsignalsV);
 
+    void setSignalMatrix(SignalMatrix<std::complex<double>> &&bbsignalsV);
+
+    void setSignalMatrix(SignalMatrix<std::complex<float>> &&bbsignalsV);
+
+    void setSignalMatrix(SignalMatrix<std::complex<int16_t>> &&bbsignalsV);
+
     [[nodiscard]] std::string toString() const override;
 
 private:

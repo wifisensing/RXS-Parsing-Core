@@ -19,7 +19,7 @@ public:
 
     const ExtraInfo &getExtraInfo() const;
 
-    void setExtraInfo(const ExtraInfo &extraInfo);
+    void setExtraInfo(const ExtraInfo &extraInfoV);
 
 private:
     static std::map<uint16_t, std::function<ExtraInfo(const uint8_t *, uint32_t)>> versionedSolutionMap;

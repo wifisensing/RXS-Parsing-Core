@@ -703,6 +703,10 @@ std::map<uint16_t, std::function<std::optional<CSI>(const uint8_t *, uint32_t)>>
 
 CSISegment::CSISegment() : AbstractPicoScenesFrameSegment("CSI", 0x5U) {}
 
+CSISegment::CSISegment(CSI &&csi) : AbstractPicoScenesFrameSegment("CSI", 0x5U), csi(std::move(csi)) {
+    setSegmentPayload(std::move(csi.toBuffer()));
+}
+
 CSISegment::CSISegment(const uint8_t *buffer, uint32_t bufferLength) : AbstractPicoScenesFrameSegment(buffer, bufferLength) {
     if (!segmentName.ends_with("CSI"))
         throw std::runtime_error("CSISegment cannot parse the segment named " + segmentName + ".");
@@ -726,7 +730,12 @@ CSI &CSISegment::getCSI() {
 
 void CSISegment::setCSI(const CSI &csiV) {
     csi = csiV;
-    setSegmentPayload(csi.toBuffer());
+    setSegmentPayload(std::move(csi.toBuffer()));
+}
+
+void CSISegment::setCSI(CSI &&csiV) {
+    csi = std::move(csiV);
+    setSegmentPayload(std::move(csiV.toBuffer()));
 }
 
 std::string CSISegment::toString() const {
@@ -740,7 +749,6 @@ std::string CSISegment::toString() const {
        << ", raw=" << csi.rawCSIData.size() << "B]";
     return ss.str();
 }
-
 
 std::ostream &operator<<(std::ostream &os, const CSISegment &csiSegment) {
     os << csiSegment.toString();

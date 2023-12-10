@@ -54,7 +54,18 @@ public:
             throw std::invalid_argument("SignalMatrix creation failed due to the inconsistent dimensions.");
     }
 
-    bool empty() const {
+    template<typename DimensionContainerType>
+    SignalMatrix(std::vector<SignalType> &&array, const DimensionContainerType &dimensionsV, SignalMatrixStorageMajority majority = SignalMatrixStorageMajority::UndefinedMajority) : array(std::move(array)), majority(majority) {
+        for (auto it = std::cbegin(dimensionsV); it != std::cend(dimensionsV); it++) {
+            dimensions.emplace_back(*it);
+        }
+
+        uint64_t sum = std::accumulate(dimensions.cbegin(), dimensions.cend(), 1, std::multiplies<>());
+        if (sum != array.size())
+            throw std::invalid_argument("SignalMatrix creation failed due to the inconsistent dimensions.");
+    }
+
+    [[nodiscard]] bool empty() const {
         return array.empty() || dimensions.empty();
     }
 
@@ -66,19 +77,19 @@ public:
         return array.at(index);
     }
 
-    uint64_t getIndex4Coordinates(std::vector<int64_t> coordinates) const {
+    [[nodiscard]] uint64_t getIndex4Coordinates(const std::vector<int64_t> &coordinates) const {
         return computeIndex4Coordinates(dimensions, majority, coordinates);
     }
 
-    uint64_t getIndex4Coordinates(std::initializer_list<int64_t> coordinates) const {
+    [[nodiscard]] uint64_t getIndex4Coordinates(std::initializer_list<int64_t> coordinates) const {
         return computeIndex4Coordinates(dimensions, majority, coordinates);
     }
 
-    std::vector<int64_t> getCoordinate4Index(uint64_t pos) const {
+    [[nodiscard]] std::vector<int64_t> getCoordinate4Index(uint64_t pos) const {
         return computeCoordinate4Index(dimensions, majority, pos);
     }
 
-    std::vector<uint8_t> toBuffer(SignalMatrixStorageMajority outputMajority = SignalMatrixStorageMajority::UndefinedMajority) const {
+    [[nodiscard]] std::vector<uint8_t> toBuffer(SignalMatrixStorageMajority outputMajority = SignalMatrixStorageMajority::UndefinedMajority) const {
         std::vector<uint8_t> vout;
         vout.reserve(array.size() * sizeof(SignalType) + 50);
         std::string header_version("BBv2");
@@ -105,9 +116,7 @@ public:
         }
 
         if (majority == outputMajority) {
-            for (const auto &value: array) {
-                std::copy((uint8_t *) &value, (uint8_t *) &value + sizeof(SignalType), std::back_inserter(vout));
-            }
+            std::copy(reinterpret_cast<const uint8_t *>(array.data()), reinterpret_cast<const uint8_t *>(array.data()) + array.size() * sizeof(SignalType), std::back_inserter(vout));
         } else {
             for (uint64_t i = 0; i < array.size(); i++) {
                 auto pos = computePositionUnderInversedMajority(i, dimensions);

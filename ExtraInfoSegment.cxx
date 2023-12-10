@@ -26,7 +26,7 @@ ExtraInfoSegment::ExtraInfoSegment() : AbstractPicoScenesFrameSegment("ExtraInfo
 
 ExtraInfoSegment::ExtraInfoSegment(const ExtraInfo &extraInfoV) : ExtraInfoSegment() {
     extraInfo = extraInfoV;
-    setSegmentPayload(extraInfoV.toBuffer());
+    setSegmentPayload(std::move(extraInfoV.toBuffer()));
 }
 
 ExtraInfoSegment::ExtraInfoSegment(const uint8_t *buffer, uint32_t bufferLength) : AbstractPicoScenesFrameSegment(buffer, bufferLength) {
@@ -42,7 +42,7 @@ const ExtraInfo &ExtraInfoSegment::getExtraInfo() const {
     return extraInfo;
 }
 
-void ExtraInfoSegment::setExtraInfo(const ExtraInfo &extraInfo) {
-    ExtraInfoSegment::extraInfo = extraInfo;
-    setSegmentPayload(extraInfo.toBuffer());
+void ExtraInfoSegment::setExtraInfo(const ExtraInfo &extraInfoV) {
+    extraInfo = extraInfoV;
+    setSegmentPayload(std::move(extraInfo.toBuffer()));
 }

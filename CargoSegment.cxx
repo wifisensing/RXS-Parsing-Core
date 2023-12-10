@@ -125,7 +125,7 @@ const PayloadCargo &CargoSegment::getCargo() const {
 
 void CargoSegment::setCargo(const PayloadCargo &cargoV) {
     cargo = cargoV;
-    setSegmentPayload(cargo.toBuffer());
+    setSegmentPayload(std::move(cargo.toBuffer()));
 }
 
 std::string CargoSegment::toString() const {

@@ -294,6 +294,8 @@ public:
 
     CSISegment(const uint8_t *buffer, uint32_t bufferLength);
 
+    CSISegment(CSI &&csi);
+
     [[nodiscard]] std::string toString() const override;
 
     CSI &getCSI();
@@ -301,6 +303,8 @@ public:
     [[nodiscard]] const CSI &getCSI() const;
 
     void setCSI(const CSI &csi);
+
+    void setCSI(CSI &&csiV);
 
 private:
     static std::map<uint16_t, std::function<std::optional<CSI>(const uint8_t *, uint32_t)>> versionedSolutionMap;

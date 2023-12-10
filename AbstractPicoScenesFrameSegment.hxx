@@ -21,7 +21,7 @@ public:
 
     static std::tuple<std::string, uint32_t, uint16_t, uint32_t> extractSegmentMetaData(const uint8_t *buffer, uint32_t bufferLength);
 
-    AbstractPicoScenesFrameSegment(std::string segmentName, uint16_t segmentVersionId);
+    AbstractPicoScenesFrameSegment(std::string &&segmentName, uint16_t segmentVersionId);
 
     AbstractPicoScenesFrameSegment(const uint8_t *buffer, size_t bufferLength);
 
@@ -34,6 +34,8 @@ public:
      * @param payload
      */
     void setSegmentPayload(const std::vector<uint8_t> &payload);
+
+    void setSegmentPayload(std::vector<uint8_t> &&payload);
 
     DynamicFieldInterpreter getDynamicInterpreter() const;
 

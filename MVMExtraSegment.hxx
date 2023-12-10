@@ -66,7 +66,7 @@ public:
 
     [[nodiscard]] const IntelMVMExtraInfo &getMvmExtra() const;
 
-    void setMvmExtra(const IntelMVMExtraInfo &mvmExtra);
+    void setMvmExtra(const IntelMVMExtraInfo &mvmExtraV);
 
 private:
     static std::map<uint16_t, std::function<IntelMVMExtraInfo(const uint8_t *, uint32_t)>> versionedSolutionMap;

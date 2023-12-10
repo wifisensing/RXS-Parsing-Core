@@ -57,7 +57,9 @@ public:
 
     RxSBasicSegment(const uint8_t *buffer, uint32_t bufferLength);
 
-    const RxSBasic &getBasic() const;
+    explicit RxSBasicSegment(const RxSBasic &rvBasic);
+
+    [[nodiscard]] const RxSBasic &getBasic() const;
 
     void setBasic(const RxSBasic &basic);
 

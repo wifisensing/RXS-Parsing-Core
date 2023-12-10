@@ -136,8 +136,7 @@ void MVMExtraSegment::setHeaderManipulator(const std::function<void(IntelMVMPars
     });
 }
 
-void MVMExtraSegment::setMvmExtra(const IntelMVMExtraInfo &mvmExtra) {
-    MVMExtraSegment::mvmExtra = mvmExtra;
-    auto buffer = mvmExtra.toBuffer();
-    setSegmentPayload(buffer);
+void MVMExtraSegment::setMvmExtra(const IntelMVMExtraInfo &mvmExtraV) {
+    mvmExtra = mvmExtraV;
+    setSegmentPayload(std::move(mvmExtra.toBuffer()));
 }

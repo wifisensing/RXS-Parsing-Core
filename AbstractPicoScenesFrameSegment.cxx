@@ -2,17 +2,20 @@
 // Created by Zhiping Jiang on 2020/11/5.
 //
 
+#include <utility>
 #include "AbstractPicoScenesFrameSegment.hxx"
 
-AbstractPicoScenesFrameSegment::AbstractPicoScenesFrameSegment(std::string segmentName, uint16_t segmentVersionId) : segmentName(segmentName), segmentVersionId(segmentVersionId) {}
+AbstractPicoScenesFrameSegment::AbstractPicoScenesFrameSegment(std::string &&segmentName, uint16_t segmentVersionId) : segmentName(std::move(segmentName)), segmentVersionId(segmentVersionId) {}
 
 AbstractPicoScenesFrameSegment::AbstractPicoScenesFrameSegment(const uint8_t *buffer, size_t bufferLength) {
     auto [segmentNameV, segmentLengthV, versionIdV, offset] = extractSegmentMetaData(buffer, bufferLength);
     if (segmentLengthV + 4 > bufferLength)
         throw std::underflow_error("Cannot parse the segment [" + segmentNameV + "] version [" + std::to_string(versionIdV) + "[with less than " + std::to_string(segmentLengthV + 4) + "B.");
 
-    segmentName = segmentNameV;
+    segmentName = std::move(segmentNameV);
     segmentVersionId = versionIdV;
+    rawBuffer.reserve(bufferLength);
+    segmentPayload.reserve(bufferLength - offset + 1);
     std::copy(buffer, buffer + bufferLength, std::back_inserter(rawBuffer));
     std::copy(buffer + offset, buffer + bufferLength, std::back_inserter(segmentPayload));
 }
@@ -23,7 +26,7 @@ uint32_t AbstractPicoScenesFrameSegment::totalLength() const {
      * segmentName.size() + 1B, for segment name and the ending \0
      * 2B of version Id
      */
-    return 2 + segmentName.size() + sizeof(segmentVersionId) + segmentPayload.size();;
+    return 2 + segmentName.size() + sizeof(segmentVersionId) + segmentPayload.size();
 }
 
 std::vector<uint8_t> AbstractPicoScenesFrameSegment::toBuffer() const {
@@ -73,6 +76,11 @@ std::vector<uint8_t> AbstractPicoScenesFrameSegment::getSegmentPayload() {
 
 void AbstractPicoScenesFrameSegment::setSegmentPayload(const std::vector<uint8_t> &payload) {
     segmentPayload = payload;
+    rebuildBuffer();
+}
+
+void AbstractPicoScenesFrameSegment::setSegmentPayload(std::vector<uint8_t> &&payload) {
+    segmentPayload = std::move(payload);
     rebuildBuffer();
 }
 

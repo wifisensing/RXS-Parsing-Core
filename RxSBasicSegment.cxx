@@ -358,6 +358,10 @@ std::vector<uint8_t> RxSBasic::toBuffer() {
 
 RxSBasicSegment::RxSBasicSegment() : AbstractPicoScenesFrameSegment("RxSBasic", 0x5U) {}
 
+RxSBasicSegment::RxSBasicSegment(const RxSBasic &rvBasic) : AbstractPicoScenesFrameSegment("RxSBasic", 0x5U), basic(rvBasic) {
+    setSegmentPayload(std::move(basic.toBuffer()));
+}
+
 RxSBasicSegment::RxSBasicSegment(const uint8_t *buffer, uint32_t bufferLength) : AbstractPicoScenesFrameSegment(buffer, bufferLength) {
     if (segmentName != "RxSBasic")
         throw std::runtime_error("RxSBasicSegment cannot parse the segment named " + segmentName + ".");
@@ -374,7 +378,7 @@ const RxSBasic &RxSBasicSegment::getBasic() const {
 
 void RxSBasicSegment::setBasic(const RxSBasic &basicV) {
     basic = basicV;
-    setSegmentPayload(basic.toBuffer());
+    setSegmentPayload(std::move(basic.toBuffer()));
 }
 
 std::ostream &operator<<(std::ostream &os, const RxSBasic &rxSBasic) {

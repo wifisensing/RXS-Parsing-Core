@@ -36,17 +36,32 @@ BasebandSignalSegment::BasebandSignalSegment(const uint8_t *buffer, uint32_t buf
 
 void BasebandSignalSegment::setSignalMatrix(const SignalMatrix<std::complex<double>> &bbsignalsV) {
     bbsignals = bbsignalsV;
-    setSegmentPayload(bbsignals.toBuffer());
+    setSegmentPayload(std::move(bbsignals.toBuffer()));
 }
 
 void BasebandSignalSegment::setSignalMatrix(const SignalMatrix<std::complex<float>> &bbsignalsV) {
     bbsignalsFloat32 = bbsignalsV;
-    setSegmentPayload(bbsignalsFloat32.toBuffer());
+    setSegmentPayload(std::move(bbsignalsFloat32.toBuffer()));
 }
 
 void BasebandSignalSegment::setSignalMatrix(const SignalMatrix<std::complex<int16_t>> &bbsignalsV) {
     bbsignalsInt16 = bbsignalsV;
-    setSegmentPayload(bbsignalsInt16.toBuffer());
+    setSegmentPayload(std::move(bbsignalsInt16.toBuffer()));
+}
+
+void BasebandSignalSegment::setSignalMatrix(SignalMatrix<std::complex<double>> &&bbsignalsV) {
+    bbsignals = std::move(bbsignalsV);
+    setSegmentPayload(std::move(bbsignals.toBuffer()));
+}
+
+void BasebandSignalSegment::setSignalMatrix(SignalMatrix<std::complex<float>> &&bbsignalsV) {
+    bbsignalsFloat32 = std::move(bbsignalsV);
+    setSegmentPayload(std::move(bbsignalsFloat32.toBuffer()));
+}
+
+void BasebandSignalSegment::setSignalMatrix(SignalMatrix<std::complex<int16_t>> &&bbsignalsV) {
+    bbsignalsInt16 = std::move(bbsignalsV);
+    setSegmentPayload(std::move(bbsignalsInt16.toBuffer()));
 }
 
 std::string BasebandSignalSegment::toString() const {
