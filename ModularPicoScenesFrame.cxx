@@ -490,7 +490,7 @@ std::ostream &operator<<(std::ostream &os, const ModularPicoScenesRxFrame &rxfra
     return os;
 }
 
-ModularPicoScenesTxFrame &ModularPicoScenesTxFrame::addSegments(const std::shared_ptr<AbstractPicoScenesFrameSegment> &segment) {
+ModularPicoScenesTxFrame &ModularPicoScenesTxFrame::addSegment(const std::shared_ptr<AbstractPicoScenesFrameSegment> &segment) {
     segments.emplace_back(segment);
     if (!frameHeader)
         frameHeader = PicoScenesFrameHeader();
@@ -632,7 +632,7 @@ std::vector<ModularPicoScenesTxFrame> ModularPicoScenesTxFrame::autoSplit(int16_
         txframe.segments.clear();
         txframe.txParameters.postfixPaddingTime = 2e-3;
         txframe.frameHeader = this->frameHeader;
-        txframe.addSegments(std::make_shared<CargoSegment>(cargo));
+        txframe.addSegment(std::make_shared<CargoSegment>(cargo));
         cargoFrames.emplace_back(txframe);
     }
     return cargoFrames;
@@ -835,7 +835,7 @@ std::string ModularPicoScenesTxFrame::toString() const {
     return ss.str();
 }
 
-ModularPicoScenesTxFrame &ModularPicoScenesTxFrame::appendAMPDUFrames(const ModularPicoScenesTxFrame &frame) {
+ModularPicoScenesTxFrame &ModularPicoScenesTxFrame::appendAMPDUFrame(const ModularPicoScenesTxFrame &frame) {
     AMPDUFrames.emplace_back(frame);
     return *this;
 }

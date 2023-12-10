@@ -148,9 +148,9 @@ public:
     Uint8Vector prebuiltMPDU;
     std::vector<std::vector<std::complex<int16_t>>> prebuiltSignals;
 
-    ModularPicoScenesTxFrame &  appendAMPDUFrames(const ModularPicoScenesTxFrame &frame);
+    ModularPicoScenesTxFrame &  appendAMPDUFrame(const ModularPicoScenesTxFrame &frame);
 
-    ModularPicoScenesTxFrame &  addSegments(const std::shared_ptr<AbstractPicoScenesFrameSegment> &segment);
+    ModularPicoScenesTxFrame &  addSegment(const std::shared_ptr<AbstractPicoScenesFrameSegment> &segment);
 
     std::shared_ptr<AbstractPicoScenesFrameSegment> getSegment(const std::string &querySegmentName);
 
