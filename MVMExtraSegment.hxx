@@ -78,7 +78,4 @@ private:
     IntelMVMExtraInfo mvmExtra;
 };
 
-std::ostream &operator<<(std::ostream &os, const MVMExtraSegment &mvmSegment);
-
-
 #endif //PICOSCENES_PLATFORM_MVMEXTRASEGMENT_HXX

@@ -248,6 +248,10 @@ std::vector<uint8_t> CSI::toBuffer() {
             std::copy((uint8_t *) &subcarrierIndex, (uint8_t *) &subcarrierIndex + sizeof(subcarrierIndex), std::back_inserter(subcarrierIndicesBuffer));
         }
         auto csiBuffer = CSIArray.toBuffer();
+        if (false) {
+            auto recovered = SignalMatrix<>::fromBuffer(csiBuffer);
+            std::cout << recovered.toBufferMemoryLength() << std::endl;
+        }
 
         uint32_t csiBufferLength = subcarrierIndicesBuffer.size() + csiBuffer.size();
         std::copy((uint8_t *) &csiBufferLength, (uint8_t *) &csiBufferLength + sizeof(csiBufferLength), std::back_inserter(buffer));
@@ -703,7 +707,7 @@ std::map<uint16_t, std::function<std::optional<CSI>(const uint8_t *, uint32_t)>>
 
 CSISegment::CSISegment() : AbstractPicoScenesFrameSegment("CSI", 0x5U) {}
 
-CSISegment::CSISegment(CSI &&csi) : AbstractPicoScenesFrameSegment("CSI", 0x5U), csi(std::move(csi)) {
+CSISegment::CSISegment(CSI &&csiV) : AbstractPicoScenesFrameSegment("CSI", 0x5U), csi(std::move(csiV)) {
     setSegmentPayload(std::move(csi.toBuffer()));
 }
 
@@ -735,7 +739,8 @@ void CSISegment::setCSI(const CSI &csiV) {
 
 void CSISegment::setCSI(CSI &&csiV) {
     csi = std::move(csiV);
-    setSegmentPayload(std::move(csiV.toBuffer()));
+    auto buffer = csi.toBuffer();
+    setSegmentPayload(std::move(buffer));
 }
 
 std::string CSISegment::toString() const {
@@ -749,12 +754,6 @@ std::string CSISegment::toString() const {
        << ", raw=" << csi.rawCSIData.size() << "B]";
     return ss.str();
 }
-
-std::ostream &operator<<(std::ostream &os, const CSISegment &csiSegment) {
-    os << csiSegment.toString();
-    return os;
-}
-
 
 std::vector<int16_t> CSISubcarrierIndex::NonHT20_52Subcarriers_Indices = []() noexcept -> std::vector<int16_t> {
     auto indices = std::vector<int16_t>();

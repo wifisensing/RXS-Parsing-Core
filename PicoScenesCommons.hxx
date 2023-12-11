@@ -53,33 +53,6 @@ enum class PicoScenesDeviceType : uint16_t {
 };
 
 /**
- * Check the specified device type is Intel MVM-based NIC (AX200 or AX210)
- * @return
- */
-bool isIntelMVMTypeNIC(PicoScenesDeviceType psdt);
-
-/**
- * Check the specified device type is COTS Wi-Fi NICS (210/200/9300/5300/802)
- * @return
- */
-bool isCOTSNIC(PicoScenesDeviceType psdt);
-
-/**
- * Check the specified device type is SDR (USRP or SoapySDR)
- * @param psdt
- * @return
- */
-bool isSDR(PicoScenesDeviceType psdt);
-
-/**
- * Return the device type string for the given PicoScenesDeviceType type
- * @return
- */
-std::string DeviceType2String(PicoScenesDeviceType type);
-
-std::ostream &operator<<(std::ostream &os, const PicoScenesDeviceType &deviceType);
-
-/**
  * PicoScenes supported device sub-type
  * @see PicoScenesDeviceType
  * @note Never try to alter the subtype order
@@ -106,15 +79,6 @@ enum class PicoScenesDeviceSubtype : uint16_t {
 };
 
 /**
- * Return the device sub-type string
- * @param subtype
- * @return A string with identical enum name
- */
-std::string DeviceSubtype2String(PicoScenesDeviceSubtype subtype);
-
-std::ostream &operator<<(std::ostream &os, const PicoScenesDeviceSubtype &deviceSubtype);
-
-/**
  * PicoScenes supported packet format
  */
 enum class PacketFormatEnum : int8_t {
@@ -128,11 +92,6 @@ enum class PacketFormatEnum : int8_t {
     PacketFormat_Unknown = -1
 };
 
-
-std::string PacketFormat2String(PacketFormatEnum format);
-
-std::ostream &operator<<(std::ostream &os, const PacketFormatEnum &format);
-
 /**
  * Tx/Rx Channel Bandwidth (CBW) parameter
  * @note CBW doesn't necessarily equals to hardware sampling rate.
@@ -145,10 +104,6 @@ enum class ChannelBandwidthEnum : uint16_t {
     CBW_320 = 320,  ///< 320 MHz
 };
 
-std::string ChannelBandwidth2String(ChannelBandwidthEnum cbw);
-
-std::ostream &operator<<(std::ostream &os, const ChannelBandwidthEnum &cbw);
-
 /**
  * 802.11n Channel Mode
  * @deprecated
@@ -158,10 +113,6 @@ enum class ChannelModeEnum : uint8_t {
     HT40_MINUS = 24,
     HT40_PLUS = 40,
 };
-
-std::string channelModel2String(ChannelModeEnum mode);
-
-std::ostream &operator<<(std::ostream &os, const ChannelModeEnum &channelMode);
 
 /**
  * The guarding interval (ns) between successive OFDM symbols
@@ -173,11 +124,6 @@ enum class GuardIntervalEnum : uint16_t {
     GI_3200 = 3200
 };
 
-
-std::string GuardInterval2String(GuardIntervalEnum gi);
-
-std::ostream &operator<<(std::ostream &os, const GuardIntervalEnum &gi);
-
 /**
  * Wi-Fi Coding schemes, BCC or LDPC
  */
@@ -186,8 +132,206 @@ enum class ChannelCodingEnum : uint8_t {
     LDPC = 1,
 };
 
-std::string ChannelCoding2String(ChannelCodingEnum coding);
+/**
+ * Check the specified device type is Intel MVM-based NIC (AX200 or AX210)
+ * @return
+ */
+inline bool isIntelMVMTypeNIC(PicoScenesDeviceType psdt) {
+    return psdt == PicoScenesDeviceType::IWLMVM_AX200 || psdt == PicoScenesDeviceType::IWLMVM_AX210;
+}
 
-std::ostream &operator<<(std::ostream &os, const ChannelCodingEnum &coding);
+/**
+ * Check the specified device type is COTS Wi-Fi NICS (210/200/9300/5300/802)
+ * @return
+ */
+inline bool isCOTSNIC(PicoScenesDeviceType psdt) {
+    return isIntelMVMTypeNIC(psdt) || psdt == PicoScenesDeviceType::QCA9300 || psdt == PicoScenesDeviceType::IWL5300 || psdt == PicoScenesDeviceType::MAC80211Compatible;
+}
+
+/**
+ * Check the specified device type is SDR (USRP or SoapySDR)
+ * @param psdt
+ * @return
+ */
+inline bool isSDR(PicoScenesDeviceType psdt) {
+    return psdt == PicoScenesDeviceType::USRP || psdt == PicoScenesDeviceType::SoapySDR;
+}
+
+inline std::string DeviceType2String(PicoScenesDeviceType type) {
+    switch (type) {
+        case PicoScenesDeviceType::QCA9300:
+            return "QCA9300";
+        case PicoScenesDeviceType::IWL5300:
+            return "IWL5300";
+        case PicoScenesDeviceType::IWLMVM_AX200:
+            return "AX200";
+        case PicoScenesDeviceType::IWLMVM_AX210:
+            return "AX210";
+        case PicoScenesDeviceType::MAC80211Compatible:
+            return "MAC80211 Compatible NIC";
+        case PicoScenesDeviceType::USRP:
+            return "USRP(SDR)";
+        case PicoScenesDeviceType::VirtualSDR:
+            return "Virtual(SDR)";
+        case PicoScenesDeviceType::SoapySDR:
+            return "SoapySDR Compatible SDR";
+        case PicoScenesDeviceType::Unknown:
+            return "Unknown";
+        default:
+            throw std::runtime_error("unrecognized PicoScenesDeviceType.");
+    }
+}
+
+inline std::string DeviceSubtype2String(PicoScenesDeviceSubtype subtype) {
+    switch (subtype) {
+        case PicoScenesDeviceSubtype::Unknown:
+            return "Unknown";
+        case PicoScenesDeviceSubtype::QCA9300:
+            return "QCA9300";
+        case PicoScenesDeviceSubtype::IWL5300:
+            return "IWL5300";
+        case PicoScenesDeviceSubtype::AX200:
+            return "AX200";
+        case PicoScenesDeviceSubtype::AX210:
+            return "AX210";
+        case PicoScenesDeviceSubtype::AX211:
+            return "AX211";
+        case PicoScenesDeviceSubtype::USRP_N2x0:
+            return "USRP N2x0";
+        case PicoScenesDeviceSubtype::USRP_B2x0:
+            return "USRP B2x0";
+        case PicoScenesDeviceSubtype::USRP_E3x0:
+            return "USRP E3x0";
+        case PicoScenesDeviceSubtype::USRP_N3x0:
+            return "USRP N3x0";
+        case PicoScenesDeviceSubtype::USRP_X3x0:
+            return "USRP X3x0";
+        case PicoScenesDeviceSubtype::USRP_X4x0:
+            return "USRP X4x0";
+        case PicoScenesDeviceSubtype::HackRFOne:
+            return "HackRF One";
+        case PicoScenesDeviceSubtype::LimeSDR:
+            return "LimeSDR";
+        case PicoScenesDeviceSubtype::BladeRF:
+            return "BladeRF";
+        case PicoScenesDeviceSubtype::SOAPYSDR_UHD:
+            return "SoapySDR_UHD";
+        default:
+            throw std::runtime_error("unrecognized PicoScenesDeviceSubtype.");
+    }
+}
+
+inline std::string PacketFormat2String(PacketFormatEnum format) {
+    switch (format) {
+        case PacketFormatEnum::PacketFormat_NonHT:
+            return "NonHT";
+        case PacketFormatEnum::PacketFormat_HT:
+            return "HT";
+        case PacketFormatEnum::PacketFormat_VHT:
+            return "VHT";
+        case PacketFormatEnum::PacketFormat_HESU:
+            return "HE-SU";
+        case PacketFormatEnum::PacketFormat_HEMU:
+            return "HE-MU";
+        case PacketFormatEnum::PacketFormat_EHTSU:
+            return "EHT-SU";
+        case PacketFormatEnum::PacketFormat_EHTMU:
+            return "EHT-MU";
+        case PacketFormatEnum::PacketFormat_Unknown:
+            return "Unknown";
+    }
+
+    throw std::runtime_error("Unsupported packet format.");
+}
+
+inline std::string ChannelBandwidth2String(ChannelBandwidthEnum cbw) {
+    switch (cbw) {
+        case ChannelBandwidthEnum::CBW_20:
+            return "20";
+        case ChannelBandwidthEnum::CBW_40:
+            return "40";
+        case ChannelBandwidthEnum::CBW_80:
+            return "80";
+        case ChannelBandwidthEnum::CBW_160:
+            return "160";
+        case ChannelBandwidthEnum::CBW_320:
+            return "320";
+        default:
+            return "Unknown Channel Bandwidth (CBW)";
+    }
+}
+
+inline std::string channelModel2String(ChannelModeEnum mode) {
+    switch (mode) {
+        case ChannelModeEnum::HT40_PLUS:
+            return "HT40_PLUS";
+        case ChannelModeEnum::HT40_MINUS:
+            return "HT40_MINUS";
+        case ChannelModeEnum::HT20:
+            return "HT20";
+    }
+    return "channel mode error.";
+}
+
+inline std::string GuardInterval2String(GuardIntervalEnum gi) {
+    switch (gi) {
+        case GuardIntervalEnum::GI_400:
+            return "0.4us";
+        case GuardIntervalEnum::GI_800:
+            return "0.8us";
+        case GuardIntervalEnum::GI_1600:
+            return "1.6us";
+        case GuardIntervalEnum::GI_3200:
+            return "3.2us";
+        default:
+            throw std::runtime_error("Unsupported GuardIntervalEnum...");
+    }
+}
+
+inline std::string ChannelCoding2String(ChannelCodingEnum coding) {
+    switch (coding) {
+        case ChannelCodingEnum::LDPC:
+            return "LDPC";
+        case ChannelCodingEnum::BCC:
+            return "BCC";
+        default:
+            return "Unknown";
+    }
+}
+
+inline std::ostream &operator<<(std::ostream &os, const PicoScenesDeviceType &deviceType) {
+    os << DeviceType2String(deviceType);
+    return os;
+}
+
+inline std::ostream &operator<<(std::ostream &os, const PacketFormatEnum &format) {
+    os << PacketFormat2String(format);
+    return os;
+}
+
+inline std::ostream &operator<<(std::ostream &os, const ChannelBandwidthEnum &cbw) {
+    os << ChannelBandwidth2String(cbw);
+    return os;
+}
+
+inline std::ostream &operator<<(std::ostream &os, const ChannelModeEnum &channelMode) {
+    os << channelModel2String(channelMode);
+    return os;
+}
+
+inline std::ostream &operator<<(std::ostream &os, const GuardIntervalEnum &gi) {
+    os << GuardInterval2String(gi);
+    return os;
+}
+
+inline std::ostream &operator<<(std::ostream &os, const ChannelCodingEnum &coding) {
+    os << ChannelCoding2String(coding);
+    return os;
+}
+
+inline std::ostream &operator<<(std::ostream &os, const PicoScenesDeviceSubtype &deviceSubtype) {
+    os << DeviceSubtype2String(deviceSubtype);
+    return os;
+}
 
 #endif //PICOSCENES_PLATFORM_PICOSCENESCOMMONS_HXX

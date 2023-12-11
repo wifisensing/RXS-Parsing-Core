@@ -385,3 +385,7 @@ std::ostream &operator<<(std::ostream &os, const RxSBasic &rxSBasic) {
     os << rxSBasic.toString();
     return os;
 }
+
+std::string RxSBasicSegment::toString() const {
+    return basic.toString();
+}

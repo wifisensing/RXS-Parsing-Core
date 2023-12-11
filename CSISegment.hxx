@@ -122,23 +122,23 @@ public:
      * Return the total number of Tx spatial streams
      * @return numTx + numESS
      */
-    inline uint16_t numTxSpatialStreams() const {
+    [[nodiscard]] inline uint16_t numTxSpatialStreams() const {
         return numTx + numESS;
     }
 
-    inline uint16_t numStreamsPerCSI() const {
+    [[nodiscard]] inline uint16_t numStreamsPerCSI() const {
         return numTxSpatialStreams() * numRx;
     }
 
-    inline uint16_t numTotalSubcarriersPerCSI() const {
+    [[nodiscard]] inline uint16_t numTotalSubcarriersPerCSI() const {
         return numStreamsPerCSI() * numTones;
     }
 
-    inline uint16_t numStreamsAll() const {
+    [[nodiscard]] inline uint16_t numStreamsAll() const {
         return numStreamsPerCSI() * numCSI;
     }
 
-    inline uint16_t numTotalSubcarriersAll() const {
+    [[nodiscard]] inline uint16_t numTotalSubcarriersAll() const {
         return numStreamsAll() * numTones;
     }
 };
@@ -217,7 +217,7 @@ public:
      * @brief get the index of the 0-th subcarrier (DC subcarrier)
      * @return An int index if the measurement contains 0-th subcarrier, else a std::nullopt value.
      */
-    std::optional<int16_t> get0thSubcarrierIndex() const;
+    [[nodiscard]] std::optional<int16_t> get0thSubcarrierIndex() const;
 
     /**
      * Return the CSI data with the specified @param subcarrierIndex, @param stsIndexStartingFrom0, @param rxIndexStartingFrom0, @param csiIndexStartingFrom0
@@ -228,11 +228,11 @@ public:
      * @param csiIndexStartingFrom0
      * @return
      */
-    std::optional<std::complex<double>> getCSI(int16_t subcarrierIndex, uint8_t stsIndexStartingFrom0 = 0, uint8_t rxIndexStartingFrom0 = 0, uint16_t csiIndexStartingFrom0 = 0) const;
+    [[nodiscard]] std::optional<std::complex<double>> getCSI(int16_t subcarrierIndex, uint8_t stsIndexStartingFrom0 = 0, uint8_t rxIndexStartingFrom0 = 0, uint16_t csiIndexStartingFrom0 = 0) const;
 
-    std::optional<double> getMagnitude(int16_t subcarrierIndex, uint8_t stsIndex = 0, uint8_t rxIndex = 0, uint16_t csiIndexStartingFrom0 = 0) const;
+    [[nodiscard]] std::optional<double> getMagnitude(int16_t subcarrierIndex, uint8_t stsIndex = 0, uint8_t rxIndex = 0, uint16_t csiIndexStartingFrom0 = 0) const;
 
-    std::optional<double> getPhase(int16_t subcarrierIndex, uint8_t stsIndex = 0, uint8_t rxIndex = 0, uint16_t csiIndexStartingFrom0 = 0) const;
+    [[nodiscard]] std::optional<double> getPhase(int16_t subcarrierIndex, uint8_t stsIndex = 0, uint8_t rxIndex = 0, uint16_t csiIndexStartingFrom0 = 0) const;
 
     static void setAutoUnperm(bool autoUnperm);
 
@@ -294,7 +294,7 @@ public:
 
     CSISegment(const uint8_t *buffer, uint32_t bufferLength);
 
-    CSISegment(CSI &&csi);
+    explicit CSISegment(CSI &&csi);
 
     [[nodiscard]] std::string toString() const override;
 
@@ -313,7 +313,5 @@ private:
 
     CSI csi;
 };
-
-std::ostream &operator<<(std::ostream &os, const CSISegment &csiSegment);
 
 #endif //PICOSCENES_PLATFORM_CSISEGMENT_HXX

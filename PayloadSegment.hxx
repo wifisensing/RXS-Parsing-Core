@@ -46,11 +46,11 @@ public:
 
     PayloadSegment(const std::string &description, const std::string &stringPayload, std::optional<PayloadDataType> payloadType = std::nullopt);
 
-    const PayloadData &getPayloadData() const;
+    [[nodiscard]] const PayloadData &getPayloadData() const;
 
     void setPayloadData(const PayloadData &payload);
 
-    std::string toString() const override;
+    [[nodiscard]] std::string toString() const override;
 
 private:
 
@@ -60,8 +60,5 @@ private:
 
     PayloadData payloadData;
 };
-
-std::ostream &operator<<(std::ostream &os, const PayloadSegment &payloadSegment);
-
 
 #endif //PICOSCENES_PLATFORM_PAYLOADSEGMENT_HXX

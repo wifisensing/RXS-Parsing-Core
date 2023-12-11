@@ -79,7 +79,4 @@ private:
     PayloadCargo cargo;
 };
 
-std::ostream &operator<<(std::ostream &os, const CargoSegment &cargoSegment);
-
-
 #endif //PICOSCENES_PLATFORM_CARGOSEGMENT_HXX

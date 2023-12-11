@@ -78,26 +78,29 @@ std::map<uint16_t, std::function<PayloadData(const uint8_t *, uint32_t)>> Payloa
 PayloadSegment::PayloadSegment() : AbstractPicoScenesFrameSegment("Payload", 0x1U) {}
 
 PayloadSegment::PayloadSegment(const std::string &description, const std::vector<uint8_t> &payload, std::optional<PayloadDataType> payloadType) : PayloadSegment() {
-    PayloadData payloadData{.dataType = payloadType.value_or(PayloadDataType::RawData),
-            .payloadDescription = description,
-            .payloadData = payload};
-    setPayloadData(payloadData);
+    setPayloadData({
+                           .dataType = payloadType.value_or(PayloadDataType::RawData),
+                           .payloadDescription = description,
+                           .payloadData = payload
+                   });
 }
 
 PayloadSegment::PayloadSegment(const std::string &description, const uint8_t *payloadBuffer, size_t bufferLength, std::optional<PayloadDataType> payloadType) : PayloadSegment() {
     auto payload = std::vector<uint8_t>(payloadBuffer, payloadBuffer + bufferLength);
-    PayloadData payloadData{.dataType = payloadType.value_or(PayloadDataType::RawData),
-            .payloadDescription = description,
-            .payloadData = payload};
-    setPayloadData(payloadData);
+    setPayloadData({
+                           .dataType = payloadType.value_or(PayloadDataType::RawData),
+                           .payloadDescription = description,
+                           .payloadData = payload
+                   });
 }
 
 PayloadSegment::PayloadSegment(const std::string &description, const std::string &stringPayload, std::optional<PayloadDataType> payloadType) : PayloadSegment() {
     auto payload = std::vector<uint8_t>(stringPayload.cbegin(), stringPayload.cend());
-    PayloadData payloadData{.dataType = payloadType.value_or(PayloadDataType::RawData),
-            .payloadDescription = description,
-            .payloadData = payload};
-    setPayloadData(payloadData);
+    setPayloadData({
+                           .dataType = payloadType.value_or(PayloadDataType::RawData),
+                           .payloadDescription = description,
+                           .payloadData = payload
+                   });
 }
 
 PayloadSegment::PayloadSegment(const uint8_t *buffer, uint32_t bufferLength) : AbstractPicoScenesFrameSegment(buffer, bufferLength) {
@@ -123,9 +126,3 @@ std::string PayloadSegment::toString() const {
     ss << segmentName << ":[Type=" << payloadData.dataType << ", Description=" << payloadData.payloadDescription << ", length=" << payloadData.payloadData.size() << "B]";
     return ss.str();
 }
-
-std::ostream &operator<<(std::ostream &os, const PayloadSegment &payloadSegment) {
-    os << payloadSegment.toString();
-    return os;
-}
-

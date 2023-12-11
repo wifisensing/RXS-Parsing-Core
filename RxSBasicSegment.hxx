@@ -63,6 +63,8 @@ public:
 
     void setBasic(const RxSBasic &basic);
 
+    [[nodiscard]] std::string toString() const override;
+
 private:
     static std::map<uint16_t, std::function<RxSBasic(const uint8_t *, uint32_t)>> versionedSolutionMap;
 

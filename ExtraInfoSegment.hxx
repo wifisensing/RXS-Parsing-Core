@@ -17,9 +17,11 @@ public:
 
     ExtraInfoSegment(const uint8_t *buffer, uint32_t bufferLength);
 
-    const ExtraInfo &getExtraInfo() const;
+    [[nodiscard]] const ExtraInfo &getExtraInfo() const;
 
     void setExtraInfo(const ExtraInfo &extraInfoV);
+
+    [[nodiscard]] std::string toString() const override;
 
 private:
     static std::map<uint16_t, std::function<ExtraInfo(const uint8_t *, uint32_t)>> versionedSolutionMap;
@@ -28,6 +30,5 @@ private:
 
     ExtraInfo extraInfo;
 };
-
 
 #endif //PICOSCENES_PLATFORM_EXTRAINFOSEGMENT_HXX

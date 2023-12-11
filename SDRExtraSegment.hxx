@@ -40,11 +40,11 @@ public:
 
     explicit SDRExtraSegment(const SDRExtra &sdrExtra);
 
-    const SDRExtra &getSdrExtra() const;
+    [[nodiscard]] const SDRExtra &getSdrExtra() const;
 
     void setSdrExtra(const SDRExtra &sdrExtra);
 
-    std::string toString() const override;
+    [[nodiscard]] std::string toString() const override;
 
 private:
     static std::map<uint16_t, std::function<SDRExtra(const uint8_t *, uint32_t)>> versionedSolutionMap;
@@ -52,8 +52,6 @@ private:
     static std::map<uint16_t, std::function<SDRExtra(const uint8_t *, uint32_t)>> initializeSolutionMap() noexcept;
 
     SDRExtra sdrExtra{};
-
 };
-
 
 #endif //PICOSCENES_PLATFORM_SDREXTRASEGMENT_HXX

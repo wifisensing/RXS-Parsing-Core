@@ -46,3 +46,7 @@ void ExtraInfoSegment::setExtraInfo(const ExtraInfo &extraInfoV) {
     extraInfo = extraInfoV;
     setSegmentPayload(std::move(extraInfo.toBuffer()));
 }
+
+std::string ExtraInfoSegment::toString() const {
+    return extraInfo.toString();
+}

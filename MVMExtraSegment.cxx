@@ -115,11 +115,6 @@ std::string MVMExtraSegment::toString() const {
     return temp;
 }
 
-std::ostream &operator<<(std::ostream &os, const MVMExtraSegment &mvmSegment) {
-    os << mvmSegment.toString();
-    return os;
-}
-
 const IntelMVMExtraInfo &MVMExtraSegment::getMvmExtra() const {
     return mvmExtra;
 }

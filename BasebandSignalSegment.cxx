@@ -4,10 +4,6 @@
 
 #include "BasebandSignalSegment.hxx"
 
-static auto v1Parser = [](const uint8_t *buffer, uint32_t bufferLength, void *bbsignal) {
-    *(SignalMatrix<std::complex<double>> *) bbsignal = SignalMatrix<std::complex<double>>::fromBuffer(buffer, buffer + bufferLength, SignalMatrixStorageMajority::ColumnMajor);
-};
-
 static auto v2Parser = [](const uint8_t *buffer, uint32_t bufferLength, void *bbsignal) {
     *(SignalMatrix<std::complex<float>> *) bbsignal = SignalMatrix<std::complex<float>>::fromBuffer(buffer, buffer + bufferLength, SignalMatrixStorageMajority::ColumnMajor);
 };
@@ -20,38 +16,15 @@ BasebandSignalSegment::BasebandSignalSegment(const uint8_t *buffer, uint32_t buf
     if (segmentVersionId != 1 && segmentVersionId != 2)
         throw std::runtime_error("BasebandSignalSegment cannot parse the segment with version v" + std::to_string(segmentVersionId) + ".");
 
-    if (segmentVersionId == 0x1U)
-        v1Parser(segmentPayload.data(), segmentPayload.size(), (void *) &bbsignals);
-    else if (segmentVersionId == 0x2U)
-        v2Parser(segmentPayload.data(), segmentPayload.size(), (void *) &bbsignalsFloat32);
-}
-
-[[maybe_unused]] const SignalMatrix<std::complex<double>> &BasebandSignalSegment::getSignalMatrix() const {
-    return bbsignals;
+    v2Parser(segmentPayload.data(), segmentPayload.size(), (void *) &bbsignalsFloat32);
 }
 
 [[maybe_unused]] const SignalMatrix<std::complex<float>> &BasebandSignalSegment::getFloat32SignalMatrix() const {
     return bbsignalsFloat32;
 }
 
-void BasebandSignalSegment::setSignalMatrix(const SignalMatrix<std::complex<double>> &bbsignalsV) {
-    bbsignals = bbsignalsV;
-    setSegmentPayload(std::move(bbsignals.toBuffer()));
-}
-
 void BasebandSignalSegment::setSignalMatrix(const SignalMatrix<std::complex<float>> &bbsignalsV) {
     bbsignalsFloat32 = bbsignalsV;
-    setSegmentPayload(std::move(bbsignalsFloat32.toBuffer()));
-}
-
-void BasebandSignalSegment::setSignalMatrix(const SignalMatrix<std::complex<int16_t>> &bbsignalsV) {
-    bbsignalsInt16 = bbsignalsV;
-    setSegmentPayload(std::move(bbsignalsInt16.toBuffer()));
-}
-
-void BasebandSignalSegment::setSignalMatrix(SignalMatrix<std::complex<double>> &&bbsignalsV) {
-    bbsignals = std::move(bbsignalsV);
-    setSegmentPayload(std::move(bbsignals.toBuffer()));
 }
 
 void BasebandSignalSegment::setSignalMatrix(SignalMatrix<std::complex<float>> &&bbsignalsV) {
@@ -59,24 +32,25 @@ void BasebandSignalSegment::setSignalMatrix(SignalMatrix<std::complex<float>> &&
     setSegmentPayload(std::move(bbsignalsFloat32.toBuffer()));
 }
 
-void BasebandSignalSegment::setSignalMatrix(SignalMatrix<std::complex<int16_t>> &&bbsignalsV) {
-    bbsignalsInt16 = std::move(bbsignalsV);
-    setSegmentPayload(std::move(bbsignalsInt16.toBuffer()));
-}
+//std::vector<uint8_t> BasebandSignalSegment::toBuffer() const {
+//    auto signalBuffer = bbsignalsFloat32.toBuffer();
+//
+//    uint32_t totalLengthV = totalLengthIncludingLeading4ByteLength() + signalBuffer.size();
+//    std::vector<uint8_t> result;
+//    result.reserve(totalLengthV);
+//
+//    uint8_t segNameLength = segmentName.length() + 1;
+//    std::copy((uint8_t *) &totalLengthV, (uint8_t *) &totalLengthV + sizeof(totalLengthV), std::back_inserter(result));
+//    std::copy((uint8_t *) &segNameLength, (uint8_t *) &segNameLength + sizeof(segNameLength), std::back_inserter(result));
+//    std::copy((uint8_t *) segmentName.data(), (uint8_t *) (segmentName.data() + segmentName.size() + 1), std::back_inserter(result));
+//    std::copy((uint8_t *) &segmentVersionId, (uint8_t *) &segmentVersionId + sizeof(segmentVersionId), std::back_inserter(result));
+//    std::copy(signalBuffer.cbegin(), signalBuffer.cend(), std::back_inserter(result));
+//
+//    return result;
+//}
 
 std::string BasebandSignalSegment::toString() const {
     std::stringstream ss;
-    if (!bbsignals.empty())
-        ss << segmentName + ":[(double) " + std::to_string(bbsignals.dimensions[0]) + "x" + std::to_string(bbsignals.dimensions[1]) + "]";
-    else if (!bbsignalsFloat32.empty())
-        ss << segmentName + ":[(float) " + std::to_string(bbsignalsFloat32.dimensions[0]) + "x" + std::to_string(bbsignalsFloat32.dimensions[1]) + "]";
-    else if (!bbsignalsInt16.empty())
-        ss << segmentName + ":[(int16) " + std::to_string(bbsignalsInt16.dimensions[0]) + "x" + std::to_string(bbsignalsInt16.dimensions[1]) + "]";
-    auto temp = ss.str();
-    return temp;
-}
-
-std::ostream &operator<<(std::ostream &os, const BasebandSignalSegment &basebandSignalSegment) {
-    os << basebandSignalSegment.toString();
-    return os;
+    ss << segmentName + ":[(float) " + std::to_string(bbsignalsFloat32.dimensions[0]) + "x" + std::to_string(bbsignalsFloat32.dimensions[1]) + "]";
+    return ss.str();
 }

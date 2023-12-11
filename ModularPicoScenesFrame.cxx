@@ -206,7 +206,8 @@ std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::fromBuffer(con
                 frame.rxExtraInfoSegment = ExtraInfoSegment(buffer + pos, segmentLength + 4);
             } else if (segmentName == "MVMExtra") {
                 frame.mvmExtraSegment = MVMExtraSegment(buffer + pos, segmentLength + 4);
-                std::copy(frame.mvmExtraSegment->rawBuffer.cbegin(), frame.mvmExtraSegment->rawBuffer.cend(), frame.rawBuffer.begin() + pos);
+                auto newRaw = frame.mvmExtraSegment->toBuffer();
+                std::copy(newRaw.cbegin(), newRaw.cend(), frame.rawBuffer.begin() + pos);
             } else if (segmentName == "SDRExtra") {
                 frame.sdrExtraSegment = SDRExtraSegment(buffer + pos, segmentLength + 4);
             } else if (segmentName == "CSI") {

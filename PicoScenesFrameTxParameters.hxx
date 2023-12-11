@@ -170,7 +170,7 @@ struct PicoScenesFrameTxParameters {
 
     [[nodiscard]] std::string toString() const {
         std::stringstream ss;
-        ss << "tx_param[preset=" << (preset ? preset->presetName : "NULL") << ", type=" << PacketFormat2String(frameType) << ", CBW=" << ChannelBandwidth2String(cbw) << ", MCS=" << std::to_string(mcs[0]) << ", numSTS=" << numSTS[0] << ", Coding=" << ChannelCoding2String(coding[0]) << ", GI=" << GuardInterval2String(guardInterval);
+        ss << "tx_param[preset=" << (preset ? preset->presetName : "NULL") << ", type=" << PacketFormat2String(frameType) << ", CBW=" << ChannelBandwidth2String(cbw) << ", MCS=" << static_cast<int16_t>(mcs[0]) << ", numSTS=" << static_cast<int16_t>(numSTS[0]) << ", Coding=" << ChannelCoding2String(coding[0]) << ", GI=" << GuardInterval2String(guardInterval);
         if (frameType == PacketFormatEnum::PacketFormat_HT) {
             ss << ", numESS=" << numExtraSounding << ", sounding(11n)=" << forceSounding;
         } else if (frameType == PacketFormatEnum::PacketFormat_HESU) {

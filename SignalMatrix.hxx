@@ -89,9 +89,21 @@ public:
         return computeCoordinate4Index(dimensions, majority, pos);
     }
 
+    inline int formatPrefixLength() const {
+        return 4 // "BBv2"
+               + 1 // dim size
+               + sizeof(dimensions[0]) * dimensions.size()
+               + 3 // "CF" 64
+               + 1; // "R" or "C"
+    }
+
+    inline int toBufferMemoryLength() const {
+        return formatPrefixLength() + array.size() * sizeof(SignalType);
+    }
+
     [[nodiscard]] std::vector<uint8_t> toBuffer(SignalMatrixStorageMajority outputMajority = SignalMatrixStorageMajority::UndefinedMajority) const {
         std::vector<uint8_t> vout;
-        vout.reserve(array.size() * sizeof(SignalType) + 50);
+        vout.reserve(toBufferMemoryLength());
         std::string header_version("BBv2");
         std::copy(header_version.cbegin(), header_version.cend(), std::back_inserter(vout));
         vout.emplace_back(dimensions.size());

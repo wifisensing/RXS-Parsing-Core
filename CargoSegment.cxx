@@ -136,8 +136,3 @@ std::string CargoSegment::toString() const {
        << ", part_len=" << cargo.payloadData.size() << "]";
     return ss.str();
 }
-
-std::ostream &operator<<(std::ostream &os, const CargoSegment &cargoSegment) {
-    os << cargoSegment.toString();
-    return os;
-}
