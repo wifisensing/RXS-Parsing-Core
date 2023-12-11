@@ -55,7 +55,7 @@ public:
     }
 
     template<typename DimensionContainerType>
-    SignalMatrix(std::vector<SignalType> &&array, const DimensionContainerType &dimensionsV, SignalMatrixStorageMajority majority = SignalMatrixStorageMajority::UndefinedMajority) : array(std::move(array)), majority(majority) {
+    SignalMatrix(std::vector<SignalType> &&arrayV, const DimensionContainerType &dimensionsV, SignalMatrixStorageMajority majority = SignalMatrixStorageMajority::UndefinedMajority) : array(std::move(arrayV)), majority(majority) {
         for (auto it = std::cbegin(dimensionsV); it != std::cend(dimensionsV); it++) {
             dimensions.emplace_back(*it);
         }
