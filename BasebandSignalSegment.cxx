@@ -16,23 +16,23 @@ BasebandSignalSegment::BasebandSignalSegment(const uint8_t *buffer, uint32_t buf
     if (segmentVersionId != 1 && segmentVersionId != 2)
         throw std::runtime_error("BasebandSignalSegment cannot parse the segment with version v" + std::to_string(segmentVersionId) + ".");
 
-    v2Parser(segmentPayload.data(), segmentPayload.size(), (void *) &bbsignalsFloat32);
+    v2Parser(segmentPayload.data(), segmentPayload.size(), (void *) &signals);
 }
 
-[[maybe_unused]] const SignalMatrix<std::complex<float>> &BasebandSignalSegment::getFloat32SignalMatrix() const {
-    return bbsignalsFloat32;
+[[maybe_unused]] const SignalMatrix<std::complex<float>> &BasebandSignalSegment::getSignals() const {
+    return signals;
 }
 
-void BasebandSignalSegment::setSignalMatrix(const SignalMatrix<std::complex<float>> &bbsignalsV) {
-    bbsignalsFloat32 = bbsignalsV;
+void BasebandSignalSegment::setSignals(const SignalMatrix<std::complex<float>> &bbsignalsV) {
+    signals = bbsignalsV;
 }
 
-void BasebandSignalSegment::setSignalMatrix(SignalMatrix<std::complex<float>> &&bbsignalsV) {
-    bbsignalsFloat32 = std::move(bbsignalsV);
+void BasebandSignalSegment::setSignals(SignalMatrix<std::complex<float>> &&bbsignalsV) {
+    signals = std::move(bbsignalsV);
 }
 
 std::vector<uint8_t> BasebandSignalSegment::toBuffer() const {
-    auto signalBuffer = bbsignalsFloat32.toBuffer();
+    auto signalBuffer = signals.toBuffer();
 
     uint32_t totalLengthV = totalLength() + signalBuffer.size();
     std::vector<uint8_t> result;
@@ -50,6 +50,6 @@ std::vector<uint8_t> BasebandSignalSegment::toBuffer() const {
 
 std::string BasebandSignalSegment::toString() const {
     std::stringstream ss;
-    ss << segmentName + ":[(float) " + std::to_string(bbsignalsFloat32.dimensions[0]) + "x" + std::to_string(bbsignalsFloat32.dimensions[1]) + "]";
+    ss << segmentName + ":[(float) " + std::to_string(signals.dimensions[0]) + "x" + std::to_string(signals.dimensions[1]) + "]";
     return ss.str();
 }

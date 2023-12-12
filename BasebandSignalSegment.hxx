@@ -14,18 +14,18 @@ public:
 
     BasebandSignalSegment(const uint8_t *buffer, uint32_t bufferLength);
 
-    [[nodiscard]] const SignalMatrix<std::complex<float>> &getFloat32SignalMatrix() const;
+    [[nodiscard]] const SignalMatrix<std::complex<float>> &getSignals() const;
 
-    void setSignalMatrix(const SignalMatrix<std::complex<float>> &bbsignalsV);
+    void setSignals(const SignalMatrix<std::complex<float>> &bbsignalsV);
 
-    void setSignalMatrix(SignalMatrix<std::complex<float>> &&bbsignalsV);
+    void setSignals(SignalMatrix<std::complex<float>> &&bbsignalsV);
 
     [[nodiscard]] std::vector<uint8_t> toBuffer() const override;
 
     [[nodiscard]] std::string toString() const override;
 
 private:
-    SignalMatrix<std::complex<float>> bbsignalsFloat32;
+    SignalMatrix<std::complex<float>> signals;
 };
 
 #endif //PICOSCENES_PLATFORM_BASEBANDSIGNALSEGMENT_HXX
