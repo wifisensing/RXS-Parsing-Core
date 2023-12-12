@@ -144,6 +144,8 @@ public:
         ss << segmentName << "(" << segmentVersionId << "): " << totalLengthIncludingLeading4ByteLength() << "B";
         return ss.str();
     }
+
+    virtual ~AbstractPicoScenesFrameSegment() = default;
 };
 
 inline std::ostream &operator<<(std::ostream &os, const AbstractPicoScenesFrameSegment &segment) {

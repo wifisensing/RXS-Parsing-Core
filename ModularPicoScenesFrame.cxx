@@ -385,7 +385,7 @@ Uint8Vector ModularPicoScenesRxFrame::toBuffer() const {
     reservedLength += mvmExtraSegment ? mvmExtraSegment->totalLengthIncludingLeading4ByteLength() : 0;
     reservedLength += sdrExtraSegment ? sdrExtraSegment->totalLengthIncludingLeading4ByteLength() : 0;
     reservedLength += legacyCSISegment ? legacyCSISegment->totalLengthIncludingLeading4ByteLength() : 0;
-    reservedLength += basebandSignalSegment ? basebandSignalSegment->totalLengthIncludingLeading4ByteLength() : 0;
+    reservedLength += basebandSignalSegment ? basebandSignalSegment->totalLengthIncludingLeading4ByteLength() + basebandSignalSegment->getFloat32SignalMatrix().toBufferMemoryLength(): 0;
     for (const auto & [segName, segment]: rxUnknownSegments) {
         reservedLength += segment.totalLengthIncludingLeading4ByteLength();
     }
