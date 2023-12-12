@@ -739,8 +739,7 @@ void CSISegment::setCSI(const CSI &csiV) {
 
 void CSISegment::setCSI(CSI &&csiV) {
     csi = std::move(csiV);
-    auto buffer = csi.toBuffer();
-    setSegmentPayload(std::move(buffer));
+    setSegmentPayload(std::move(csi.toBuffer()));
 }
 
 std::string CSISegment::toString() const {
