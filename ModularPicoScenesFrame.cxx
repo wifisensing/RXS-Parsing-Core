@@ -275,8 +275,8 @@ std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::fromBuffer(con
 std::string ModularPicoScenesRxFrame::toString() const {
     std::stringstream ss;
     ss << "RxFrame:{";
-    ss << rxSBasicSegment.getBasic();
-    ss << ", Rx" << rxExtraInfoSegment.getExtraInfo();
+    ss << rxSBasicSegment;
+    ss << ", Rx" << rxExtraInfoSegment;
     if (mvmExtraSegment)
         ss << ", " << *mvmExtraSegment;
     if (sdrExtraSegment)
@@ -305,7 +305,7 @@ std::string ModularPicoScenesRxFrame::toString() const {
     if (PicoScenesHeader)
         ss << ", " << *PicoScenesHeader;
     if (txExtraInfoSegment)
-        ss << ", Tx" << txExtraInfoSegment->getExtraInfo();
+        ss << ", Tx" << *txExtraInfoSegment;
     if (!payloadSegments.empty()) {
         std::stringstream segss;
         segss << "Payloads:(";
