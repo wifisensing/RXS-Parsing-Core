@@ -29,25 +29,24 @@ void BasebandSignalSegment::setSignalMatrix(const SignalMatrix<std::complex<floa
 
 void BasebandSignalSegment::setSignalMatrix(SignalMatrix<std::complex<float>> &&bbsignalsV) {
     bbsignalsFloat32 = std::move(bbsignalsV);
-    setSegmentPayload(std::move(bbsignalsFloat32.toBuffer()));
 }
 
-//std::vector<uint8_t> BasebandSignalSegment::toBuffer() const {
-//    auto signalBuffer = bbsignalsFloat32.toBuffer();
-//
-//    uint32_t totalLengthV = totalLengthIncludingLeading4ByteLength() + signalBuffer.size();
-//    std::vector<uint8_t> result;
-//    result.reserve(totalLengthV);
-//
-//    uint8_t segNameLength = segmentName.length() + 1;
-//    std::copy((uint8_t *) &totalLengthV, (uint8_t *) &totalLengthV + sizeof(totalLengthV), std::back_inserter(result));
-//    std::copy((uint8_t *) &segNameLength, (uint8_t *) &segNameLength + sizeof(segNameLength), std::back_inserter(result));
-//    std::copy((uint8_t *) segmentName.data(), (uint8_t *) (segmentName.data() + segmentName.size() + 1), std::back_inserter(result));
-//    std::copy((uint8_t *) &segmentVersionId, (uint8_t *) &segmentVersionId + sizeof(segmentVersionId), std::back_inserter(result));
-//    std::copy(signalBuffer.cbegin(), signalBuffer.cend(), std::back_inserter(result));
-//
-//    return result;
-//}
+std::vector<uint8_t> BasebandSignalSegment::toBuffer() const {
+    auto signalBuffer = bbsignalsFloat32.toBuffer();
+
+    uint32_t totalLengthV = totalLength() + signalBuffer.size();
+    std::vector<uint8_t> result;
+    result.reserve(totalLengthV);
+
+    uint8_t segNameLength = segmentName.length() + 1;
+    std::copy((uint8_t *) &totalLengthV, (uint8_t *) &totalLengthV + sizeof(totalLengthV), std::back_inserter(result));
+    std::copy((uint8_t *) &segNameLength, (uint8_t *) &segNameLength + sizeof(segNameLength), std::back_inserter(result));
+    std::copy((uint8_t *) segmentName.data(), (uint8_t *) (segmentName.data() + segmentName.size() + 1), std::back_inserter(result));
+    std::copy((uint8_t *) &segmentVersionId, (uint8_t *) &segmentVersionId + sizeof(segmentVersionId), std::back_inserter(result));
+    std::copy(signalBuffer.cbegin(), signalBuffer.cend(), std::back_inserter(result));
+
+    return result;
+}
 
 std::string BasebandSignalSegment::toString() const {
     std::stringstream ss;

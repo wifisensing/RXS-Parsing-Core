@@ -20,7 +20,7 @@ public:
 
     void setSignalMatrix(SignalMatrix<std::complex<float>> &&bbsignalsV);
 
-//    [[nodiscard]] std::vector<uint8_t> toBuffer() const override;
+    [[nodiscard]] std::vector<uint8_t> toBuffer() const override;
 
     [[nodiscard]] std::string toString() const override;
 
