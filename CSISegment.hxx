@@ -161,11 +161,11 @@ public:
     uint8_t antSel; ///< The antenna selection (antenna permutation) information, only used for IWL5300 NIC
     int16_t subcarrierOffset; ///< the index offset of the subcarrierIndices. For example, for a HT20-rate packet, subcarrierOffset = 0; for HT40+, subcarrierOffset = 32; for HT40-, subcarrierOffset = -32;
     std::vector<int16_t> subcarrierIndices; ///< The CSI subcarrier index. For example, [-28, 28] for 11n format frame.
-    SignalMatrix<std::complex<double>> CSIArray; ///< The core CSI data matrix
-    SignalMatrix<double> magnitudeArray; ///< The magnitude data matrix
-    SignalMatrix<double> phaseArray; ///< The phase data matrix
-    SignalMatrix<double> phaseSlope; ///< The slope of the interpolated & unwrapped phase
-    SignalMatrix<double> phaseIntercept; ///< The intercept of the interpolated & unwrapped phase
+    SignalMatrix<std::complex<float>> CSIArray; ///< The core CSI data matrix
+    SignalMatrix<float> magnitudeArray; ///< The magnitude data matrix
+    SignalMatrix<float> phaseArray; ///< The phase data matrix
+    SignalMatrix<float> phaseSlope; ///< The slope of the interpolated & unwrapped phase
+    SignalMatrix<float> phaseIntercept; ///< The intercept of the interpolated & unwrapped phase
 
     Uint8Vector rawCSIData; ///< The raw CSI data
 
@@ -233,11 +233,6 @@ public:
     [[nodiscard]] std::optional<double> getMagnitude(int16_t subcarrierIndex, uint8_t stsIndex = 0, uint8_t rxIndex = 0, uint16_t csiIndexStartingFrom0 = 0) const;
 
     [[nodiscard]] std::optional<double> getPhase(int16_t subcarrierIndex, uint8_t stsIndex = 0, uint8_t rxIndex = 0, uint16_t csiIndexStartingFrom0 = 0) const;
-
-    static void setAutoUnperm(bool autoUnperm);
-
-private:
-    static bool autoUnperm;
 };
 
 class CSISubcarrierIndex {

@@ -2,12 +2,6 @@
 #ifndef _mw_coder_bounded_array_h
 #define _mw_coder_bounded_array_h
 
-#ifdef MATLAB_MEX_FILE
-#include "tmwtypes.h"
-#else
-#include "rtwtypes.h"
-#endif
-
 namespace coder {
 
 #ifndef CODER_ARRAY_SIZE_TYPE_DEFINED

@@ -89,7 +89,7 @@ public:
         return computeCoordinate4Index(dimensions, majority, pos);
     }
 
-    inline int formatPrefixLength() const {
+    [[nodiscard]] inline int formatPrefixLength() const {
         return 4 // "BBv2"
                + 1 // dim size
                + sizeof(dimensions[0]) * dimensions.size()
@@ -97,7 +97,7 @@ public:
                + 1; // "R" or "C"
     }
 
-    inline int toBufferMemoryLength() const {
+    [[nodiscard]] inline int toBufferMemoryLength() const {
         return formatPrefixLength() + array.size() * sizeof(SignalType);
     }
 
@@ -238,6 +238,14 @@ public:
         outputStream.close();
     }
 
+    template<typename AnotherPrimaryType>
+    SignalMatrix<std::complex<AnotherPrimaryType>> convertTo() const {
+        std::vector<std::complex<AnotherPrimaryType>> newArray{array.size()};
+        for(const auto & oldValue: array)
+            newArray.emplace_back(std::complex<AnotherPrimaryType>(static_cast<AnotherPrimaryType>(oldValue.real()), static_cast<AnotherPrimaryType>(oldValue.imag())));
+        return SignalMatrix<std::complex<AnotherPrimaryType>>(newArray, dimensions, majority);
+    }
+
 private:
     template<typename Iterator>
     static bool verifyCompatibility(const Iterator &inputBegin) {
@@ -335,7 +343,7 @@ private:
         }
 
         return oldPos;
-    };
+    }
 };
 
 template<typename SignalType>
