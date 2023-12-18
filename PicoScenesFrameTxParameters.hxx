@@ -58,7 +58,7 @@ struct PicoScenesFrameTxParameters {
     bool hePreHESpatialMapping{false};
     bool ehtDupMode{false};
     uint8_t ehtLTFType{4};
-    std::optional<TxPrecodingParameters> precodingParameters{std::nullopt};
+    std::optional<TxPrecodingParameters> precodingParameters = std::nullopt;
 
     void applyPreset(const std::string &presetName) {
         if (FrontEndModePreset::getPresetMap().find(presetName) == FrontEndModePreset::getPresetMap().cend())
