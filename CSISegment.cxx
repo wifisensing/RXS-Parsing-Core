@@ -725,7 +725,8 @@ static auto v6Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> std::
         csi.samplingRate = samplingRate;
         csi.subcarrierBandwidth = subcarrierBandwidth;
         return csi;
-    } else if (deviceType == PicoScenesDeviceType::IWL5300) {
+    }
+    if (deviceType == PicoScenesDeviceType::IWL5300) {
         auto csi = CSI::fromIWL5300(buffer + pos, CSIBufferLength, numSTS, numRx, numTone, cbw, subcarrierIndexOffset, antSelByte);
         csi.carrierFreq = carrierFreq;
         csi.carrierFreq2 = carrierFreq;
@@ -733,7 +734,8 @@ static auto v6Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> std::
         csi.samplingRate = samplingRate;
         csi.subcarrierBandwidth = subcarrierBandwidth;
         return csi;
-    } else if (deviceType == PicoScenesDeviceType::IWLMVM_AX200 || deviceType == PicoScenesDeviceType::IWLMVM_AX210) {
+    }
+    if (deviceType == PicoScenesDeviceType::IWLMVM_AX200 || deviceType == PicoScenesDeviceType::IWLMVM_AX210) {
         if (auto csi = CSI::fromIWLMVM(buffer + pos, CSIBufferLength, firmwareVersion, numSTS, numRx, numTone, packetFormat, cbw, subcarrierIndexOffset, true, 0)) {
             csi->deviceType = deviceType;
             csi->carrierFreq = carrierFreq;
@@ -744,7 +746,8 @@ static auto v6Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> std::
             return csi;
         }
         return {};
-    } else if (deviceType == PicoScenesDeviceType::USRP) {
+    }
+    if (deviceType == PicoScenesDeviceType::USRP) {
         auto csiBufferStart = pos;
         std::vector<int16_t> subcarrierIndices;
         for (auto i = 0; i < numTone; i++) {
@@ -753,25 +756,25 @@ static auto v6Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> std::
         }
         uint32_t csiArrayLength = CSIBufferLength - 2 * numTone;
         CSI csi{.deviceType = PicoScenesDeviceType::USRP,
-                .firmwareVersion = 0,
-                .packetFormat = packetFormat,
-                .cbw = cbw,
-                .carrierFreq = carrierFreq,
-                .carrierFreq2 = carrierFreq2,
-                .isMerged = isMerged,
-                .samplingRate = samplingRate,
-                .subcarrierBandwidth = subcarrierBandwidth,
-                .dimensions = CSIDimension{.numTones = numTone, .numTx = numSTS, .numRx = numRx, .numESS = numESS, .numCSI = numCSI},
-                .antSel = 0,
-                .subcarrierIndices = subcarrierIndices,
-                .CSIArray = SignalMatrix<std::complex<float>>::fromBuffer(buffer + pos, buffer + pos + csiArrayLength, SignalMatrixStorageMajority::ColumnMajor)
+            .firmwareVersion = 0,
+            .packetFormat = packetFormat,
+            .cbw = cbw,
+            .carrierFreq = carrierFreq,
+            .carrierFreq2 = carrierFreq2,
+            .isMerged = isMerged,
+            .samplingRate = samplingRate,
+            .subcarrierBandwidth = subcarrierBandwidth,
+            .dimensions = CSIDimension{.numTones = numTone, .numTx = numSTS, .numRx = numRx, .numESS = numESS, .numCSI = numCSI},
+            .antSel = 0,
+            .subcarrierIndices = subcarrierIndices,
+            .CSIArray = SignalMatrix<std::complex<float>>::fromBuffer(buffer + pos, buffer + pos + csiArrayLength, SignalMatrixStorageMajority::ColumnMajor)
         };
         auto csiBufferEnd = pos + csiArrayLength;
         std::copy(buffer + csiBufferStart, buffer + csiBufferEnd, std::back_inserter(csi.rawCSIData));
         return csi;
     }
 
-    throw std::runtime_error("CSISegment cannot decode the given buffer by v5Parser.");
+    throw std::runtime_error("CSISegment cannot decode the given buffer by v6Parser.");
 };
 
 std::map<uint16_t, std::function<std::optional<CSI>(const uint8_t *, uint32_t)>> CSISegment::versionedSolutionMap = initializeSolutionMap();
