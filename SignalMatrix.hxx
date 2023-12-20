@@ -240,7 +240,8 @@ public:
 
     template<typename AnotherPrimaryType>
     SignalMatrix<std::complex<AnotherPrimaryType>> convertTo() const {
-        std::vector<std::complex<AnotherPrimaryType>> newArray(array.size());
+        std::vector<std::complex<AnotherPrimaryType>> newArray;
+        newArray.reserve(array.size());
         for(const auto & oldValue: array)
             newArray.emplace_back(std::complex<AnotherPrimaryType>(static_cast<AnotherPrimaryType>(oldValue.real()), static_cast<AnotherPrimaryType>(oldValue.imag())));
         return SignalMatrix<std::complex<AnotherPrimaryType>>(newArray, dimensions, majority);

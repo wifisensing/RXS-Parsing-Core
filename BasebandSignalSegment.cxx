@@ -4,6 +4,10 @@
 
 #include "BasebandSignalSegment.hxx"
 
+static auto v1Parser = [](const uint8_t *buffer, uint32_t bufferLength, void *bbsignal) {
+    *(SignalMatrix<std::complex<float>> *) bbsignal = SignalMatrix<std::complex<double>>::fromBuffer(buffer, buffer + bufferLength, SignalMatrixStorageMajority::ColumnMajor).convertTo<float>();
+};
+
 static auto v2Parser = [](const uint8_t *buffer, uint32_t bufferLength, void *bbsignal) {
     *(SignalMatrix<std::complex<float>> *) bbsignal = SignalMatrix<std::complex<float>>::fromBuffer(buffer, buffer + bufferLength, SignalMatrixStorageMajority::ColumnMajor);
 };
@@ -16,7 +20,10 @@ BasebandSignalSegment::BasebandSignalSegment(const uint8_t *buffer, uint32_t buf
     if (segmentVersionId != 1 && segmentVersionId != 2)
         throw std::runtime_error("BasebandSignalSegment cannot parse the segment with version v" + std::to_string(segmentVersionId) + ".");
 
-    v2Parser(segmentPayload.data(), segmentPayload.size(), (void *) &signals);
+    if (segmentVersionId == 1)
+        v1Parser(segmentPayload.data(), segmentPayload.size(), (void *) &signals);
+    else
+        v2Parser(segmentPayload.data(), segmentPayload.size(), (void *) &signals);
 }
 
 [[maybe_unused]] const SignalMatrix<std::complex<float>> &BasebandSignalSegment::getSignals() const {
