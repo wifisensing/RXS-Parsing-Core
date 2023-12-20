@@ -5,51 +5,50 @@
 #include "CSISegment.hxx"
 #include "preprocess/generated/CSIPreprocessor.h"
 
-SignalMatrix<std::complex<float>> parseQCA9300CSIData(const uint8_t *csiData, int nSTS, int nRx, int nTones) {
+SignalMatrix<std::complex<float>> parseQCA9300CSIData(const uint8_t *csiData, const int nSTS, const int nRx, const int nTones) {
     std::vector<std::complex<float>> CSIArray(nSTS * nRx * nTones);
     parseQCA9300CSIData(CSIArray.begin(), csiData, nSTS, nRx, nTones);
-    return SignalMatrix(CSIArray, std::vector<int32_t>{nTones, nSTS, nRx, 1}, SignalMatrixStorageMajority::ColumnMajor);
+    return SignalMatrix(CSIArray, std::vector{nTones, nSTS, nRx, 1}, SignalMatrixStorageMajority::ColumnMajor);
 }
 
-SignalMatrix<std::complex<float>> parseIWL5300CSIData(const uint8_t *payload, int ntx, int nrx, uint8_t ant_sel) {
+SignalMatrix<std::complex<float>> parseIWL5300CSIData(const uint8_t *payload, const int ntx, const int nrx, const uint8_t ant_sel) {
     std::vector<std::complex<float>> CSIArray(ntx * nrx * 30);
     parseIWL5300CSIData(CSIArray.begin(), payload, ntx, nrx, ant_sel);
-    return SignalMatrix(CSIArray, std::vector<int32_t>{30, ntx, nrx, 1}, SignalMatrixStorageMajority::ColumnMajor);
+    return SignalMatrix(CSIArray, std::vector{30, ntx, nrx, 1}, SignalMatrixStorageMajority::ColumnMajor);
 }
 
-CSI CSI::fromQCA9300(const uint8_t *buffer, uint32_t bufferLength, uint8_t numTx, uint8_t numRx, uint8_t numTones, ChannelBandwidthEnum cbw, int16_t subcarrierIndexOffset) {
+CSI CSI::fromQCA9300(const uint8_t *buffer, const uint32_t bufferLength, const uint8_t numTx, const uint8_t numRx, const uint8_t numTones, const ChannelBandwidthEnum cbw, const int16_t subcarrierIndexOffset) {
     uint32_t actualNumSTSPerChain = bufferLength / (cbw == ChannelBandwidthEnum::CBW_20 ? 140 : 285) / numRx; // 56 * 2 * 10 / 8 = 140B , 114 * 2 * 10 / 8 = 285;
     auto csi = CSI{.deviceType = PicoScenesDeviceType::QCA9300,
             .firmwareVersion = 0,
             .packetFormat = PacketFormatEnum::PacketFormat_HT,
             .cbw = cbw,
-            .dimensions = CSIDimension{.numTones = numTones, .numTx = numTx, .numRx = numRx, .numESS = uint8_t(actualNumSTSPerChain - numTx), .numCSI = 1},
+            .dimensions = CSIDimension{.numTones = numTones, .numTx = numTx, .numRx = numRx, .numESS = static_cast<uint8_t>(actualNumSTSPerChain - numTx), .numCSI = 1},
             .antSel = 0,
             .subcarrierOffset = subcarrierIndexOffset,
             .subcarrierIndices = CSISubcarrierIndex::getAllSubcarrierIndices(PacketFormatEnum::PacketFormat_HT, cbw),
-            .CSIArray = parseQCA9300CSIData(buffer, actualNumSTSPerChain, numRx, numTones),
+            .CSIArray = parseQCA9300CSIData(buffer, static_cast<int>(actualNumSTSPerChain), numRx, numTones),
     };
     std::copy_n(buffer, bufferLength, std::back_inserter(csi.rawCSIData));
 
     if (subcarrierIndexOffset != 0) {
-        std::transform(csi.subcarrierIndices.begin(), csi.subcarrierIndices.end(), csi.subcarrierIndices.begin(), [=](int16_t index) {
-            return index + subcarrierIndexOffset;
-        });
+        for(auto &index: csi.subcarrierIndices)
+            index += static_cast<int16_t>(subcarrierIndexOffset);
     }
 
     return csi;
 }
 
-CSI CSI::fromIWL5300(const uint8_t *buffer, uint32_t bufferLength, uint8_t numTx, uint8_t numRx, uint8_t numTones, ChannelBandwidthEnum cbw, int16_t subcarrierIndexOffset, uint8_t ant_sel) {
+CSI CSI::fromIWL5300(const uint8_t* buffer, const uint32_t bufferLength, const uint8_t numTx, const uint8_t numRx, const uint8_t numTones, const ChannelBandwidthEnum cbw, const int16_t subcarrierIndexOffset, const uint8_t ant_sel) {
     uint32_t actualNumSTSPerChain = (bufferLength - 12) / 60 / numRx;
     auto csi = CSI{.deviceType = PicoScenesDeviceType::IWL5300,
             .firmwareVersion = 52,
             .packetFormat=PacketFormatEnum::PacketFormat_HT,
             .cbw = cbw,
-            .dimensions = CSIDimension{.numTones = numTones, .numTx = numTx, .numRx = numRx, .numESS = uint8_t(actualNumSTSPerChain - numTx), .numCSI = 1},
+            .dimensions = CSIDimension{.numTones = numTones, .numTx = numTx, .numRx = numRx, .numESS = static_cast<uint8_t>(actualNumSTSPerChain - numTx), .numCSI = 1},
             .antSel = ant_sel,
             .subcarrierOffset = subcarrierIndexOffset,
-            .CSIArray = parseIWL5300CSIData(buffer, actualNumSTSPerChain, numRx, ant_sel),
+            .CSIArray = parseIWL5300CSIData(buffer, static_cast<int>(actualNumSTSPerChain), numRx, ant_sel),
     };
     std::copy_n(buffer, bufferLength, std::back_inserter(csi.rawCSIData));
     if (csi.cbw == ChannelBandwidthEnum::CBW_20) {
@@ -58,15 +57,14 @@ CSI CSI::fromIWL5300(const uint8_t *buffer, uint32_t bufferLength, uint8_t numTx
         csi.subcarrierIndices = CSISubcarrierIndex::getIWL5300Subcarriers(ChannelBandwidthEnum::CBW_40);
 
     if (subcarrierIndexOffset != 0) {
-        std::transform(csi.subcarrierIndices.begin(), csi.subcarrierIndices.end(), csi.subcarrierIndices.begin(), [=](int16_t index) {
-            return index + subcarrierIndexOffset;
-        });
+        for(auto &index: csi.subcarrierIndices)
+            index += subcarrierIndexOffset;
     }
 
     return csi;
 }
 
-std::optional<CSI> CSI::fromIWLMVM(const uint8_t *buffer, uint32_t bufferLength, uint8_t firmwareVersion, uint8_t numTx, uint8_t numRx, uint16_t numTones, PacketFormatEnum format, ChannelBandwidthEnum cbw, int16_t subcarrierIndexOffset, bool skipPilotSubcarriers, uint8_t antSelByte) {
+std::optional<CSI> CSI::fromIWLMVM(const uint8_t *buffer, const uint32_t bufferLength, const uint8_t firmwareVersion, const uint8_t numTx, const uint8_t numRx, const uint16_t numTones, PacketFormatEnum format, const ChannelBandwidthEnum cbw, const int16_t subcarrierIndexOffset, bool skipPilotSubcarriers, uint8_t antSelByte) {
     if (numTx * numRx * numTones * 4 != bufferLength)
         throw std::runtime_error("Incorrect Intel MVM-based CSI data format.");
 
@@ -88,8 +86,8 @@ std::optional<CSI> CSI::fromIWLMVM(const uint8_t *buffer, uint32_t bufferLength,
     std::vector CSIArray(numTonesNew * numRx * numTx, std::complex<float>{});
 
     for (auto inputToneIndex = 0, toneIndexWithoutPilot = 0, lastPilotIndex = 0; inputToneIndex < inputNumTones; inputToneIndex++) {
-        const auto *imag = (int16_t *) (buffer + pos);
-        const auto *real = (int16_t *) (buffer + pos + 2);
+        const auto *imag = reinterpret_cast<const int16_t*>(buffer + pos);
+        const auto *real = reinterpret_cast<const int16_t*>(buffer + pos + 2);
         pos += 4;
 
         auto toneIndex = inputToneIndex % numTones;
@@ -156,9 +154,8 @@ std::optional<CSI> CSI::fromIWLMVM(const uint8_t *buffer, uint32_t bufferLength,
     std::copy_n(buffer, bufferLength, std::back_inserter(csi.rawCSIData));
 
     if (subcarrierIndexOffset != 0) {
-        std::transform(csi.subcarrierIndices.begin(), csi.subcarrierIndices.end(), csi.subcarrierIndices.begin(), [=](int16_t index) {
-            return index + subcarrierIndexOffset;
-        });
+        for(auto &index: csi.subcarrierIndices)
+            index += subcarrierIndexOffset;
     }
 
     return csi;
@@ -185,7 +182,6 @@ void CSI::removeCSDAndInterpolateCSI() {
     subcarrierIndex_int16.set_size(subcarrierIndices.size());
     std::copy(subcarrierIndices.cbegin(), subcarrierIndices.cend(), subcarrierIndex_int16.data());
 
-    bool isIntelMVMNIC{deviceType == PicoScenesDeviceType::IWLMVM_AX200 || deviceType == PicoScenesDeviceType::IWLMVM_AX210};
     preprocessorInstance->InterpolateCSIAndRemoveCSD(CSIWrapper, subcarrierIndex_int16, dimensions.numTx, dimensions.numRx, dimensions.numCSI, static_cast<double>(packetFormat), static_cast<double>(cbw), true, newCSI, newMag, newPhase, interpedIndex_int16, phaseSlopeResult, phaseInterceptResult);
 
     CSIArray.array.clear();
@@ -219,40 +215,40 @@ std::vector<uint8_t> CSI::toBuffer() {
         return rawCSIData;
     }
 
-    auto buffer = std::vector<uint8_t>();
-    std::copy_n((uint8_t *) &deviceType, sizeof(deviceType), std::back_inserter(buffer));
-    std::copy_n((uint8_t *) &firmwareVersion, sizeof(firmwareVersion), std::back_inserter(buffer));
-    std::copy_n((uint8_t *) &packetFormat, sizeof(packetFormat), std::back_inserter(buffer));
-    std::copy_n((uint8_t *) &cbw, sizeof(cbw), std::back_inserter(buffer));
-    std::copy_n((uint8_t *) &carrierFreq, sizeof(carrierFreq), std::back_inserter(buffer));
-    std::copy_n((uint8_t *) &carrierFreq2, sizeof(carrierFreq2), std::back_inserter(buffer));
-    std::copy_n((uint8_t *) &isMerged, sizeof(isMerged), std::back_inserter(buffer));
-    std::copy_n((uint8_t *) &samplingRate, sizeof(samplingRate), std::back_inserter(buffer));
-    std::copy_n((uint8_t *) &subcarrierBandwidth, sizeof(subcarrierBandwidth), std::back_inserter(buffer));
-    std::copy_n((uint8_t *) &dimensions.numTones, sizeof(dimensions.numTones), std::back_inserter(buffer));
-    std::copy_n((uint8_t *) &dimensions.numTx, sizeof(dimensions.numTx), std::back_inserter(buffer));
-    std::copy_n((uint8_t *) &dimensions.numRx, sizeof(dimensions.numRx), std::back_inserter(buffer));
-    std::copy_n((uint8_t *) &dimensions.numESS, sizeof(dimensions.numESS), std::back_inserter(buffer));
-    std::copy_n((uint8_t *) &dimensions.numCSI, sizeof(dimensions.numCSI), std::back_inserter(buffer));
-    std::copy_n((uint8_t *) &antSel, sizeof(antSel), std::back_inserter(buffer));
-    std::copy_n((uint8_t *) &subcarrierOffset, sizeof(subcarrierOffset), std::back_inserter(buffer));
+    auto buffer = std::vector<uint8_t>{};
+    if (isSDR(deviceType))
+        buffer.reserve(subcarrierIndices.size() * sizeof(int16_t) + CSIArray.toBufferMemoryLength() + 100);
+    else
+        buffer.reserve(rawCSIData.size() + 100);
+    std::copy_n(reinterpret_cast<uint8_t *>(&deviceType), sizeof(deviceType), std::back_inserter(buffer));
+    std::copy_n(&firmwareVersion, sizeof(firmwareVersion), std::back_inserter(buffer));
+    std::copy_n(reinterpret_cast<uint8_t *>(&packetFormat), sizeof(packetFormat), std::back_inserter(buffer));
+    std::copy_n(reinterpret_cast<uint8_t *>(&cbw), sizeof(cbw), std::back_inserter(buffer));
+    std::copy_n(reinterpret_cast<uint8_t *>(&carrierFreq), sizeof(carrierFreq), std::back_inserter(buffer));
+    std::copy_n(reinterpret_cast<uint8_t *>(&carrierFreq2), sizeof(carrierFreq2), std::back_inserter(buffer));
+    std::copy_n(reinterpret_cast<uint8_t *>(&isMerged), sizeof(isMerged), std::back_inserter(buffer));
+    std::copy_n(reinterpret_cast<uint8_t *>(&samplingRate), sizeof(samplingRate), std::back_inserter(buffer));
+    std::copy_n(reinterpret_cast<uint8_t *>(&subcarrierBandwidth), sizeof(subcarrierBandwidth), std::back_inserter(buffer));
+    std::copy_n(reinterpret_cast<uint8_t *>(&dimensions.numTones), sizeof(dimensions.numTones), std::back_inserter(buffer));
+    std::copy_n(&dimensions.numTx, sizeof(dimensions.numTx), std::back_inserter(buffer));
+    std::copy_n(&dimensions.numRx, sizeof(dimensions.numRx), std::back_inserter(buffer));
+    std::copy_n(&dimensions.numESS, sizeof(dimensions.numESS), std::back_inserter(buffer));
+    std::copy_n(reinterpret_cast<uint8_t *>(&dimensions.numCSI), sizeof(dimensions.numCSI), std::back_inserter(buffer));
+    std::copy_n(&antSel, sizeof(antSel), std::back_inserter(buffer));
+    std::copy_n(reinterpret_cast<uint8_t *>(&subcarrierOffset), sizeof(subcarrierOffset), std::back_inserter(buffer));
     if (deviceType == PicoScenesDeviceType::IWL5300 || deviceType == PicoScenesDeviceType::QCA9300 || isIntelMVMTypeNIC(deviceType)) {
-        std::copy(rawCSIData.cbegin(), rawCSIData.cend(), std::back_inserter(buffer));
+        std::copy_n(rawCSIData.data(), rawCSIData.size(), std::back_inserter(buffer));
     } else if (deviceType == PicoScenesDeviceType::USRP) {
-        std::vector<uint8_t> subcarrierIndicesBuffer;
-        for (const auto &subcarrierIndex: subcarrierIndices) {
-            std::copy_n((uint8_t *) &subcarrierIndex, sizeof(subcarrierIndex), std::back_inserter(subcarrierIndicesBuffer));
-        }
+        uint32_t csiBufferLength = subcarrierIndices.size() * sizeof(int16_t) + CSIArray.toBufferMemoryLength();
+        std::copy_n(reinterpret_cast<uint8_t *>(&csiBufferLength), sizeof(csiBufferLength), std::back_inserter(buffer));
+        std::copy_n(reinterpret_cast<const uint8_t *>(subcarrierIndices.data()), subcarrierIndices.size() * sizeof(int16_t), std::back_inserter(buffer));
+
         auto csiBuffer = CSIArray.toBuffer();
+        std::copy_n(csiBuffer.data(), csiBuffer.size(), std::back_inserter(buffer));
         if constexpr (false) {
             auto recovered = SignalMatrix<>::fromBuffer(csiBuffer);
             std::cout << recovered.toBufferMemoryLength() << std::endl;
         }
-
-        uint32_t csiBufferLength = subcarrierIndicesBuffer.size() + csiBuffer.size();
-        std::copy_n((uint8_t *) &csiBufferLength, sizeof(csiBufferLength), std::back_inserter(buffer));
-        std::copy(subcarrierIndicesBuffer.cbegin(), subcarrierIndicesBuffer.cend(), std::back_inserter(buffer));
-        std::copy(csiBuffer.cbegin(), csiBuffer.cend(), std::back_inserter(buffer));
     }
 
     return buffer;
@@ -267,7 +263,7 @@ std::optional<int16_t> CSI::get0thSubcarrierIndex() const {
     return std::nullopt;
 }
 
-std::optional<std::complex<double>> CSI::getCSI(int16_t subcarrierIndex, uint8_t stsIndexStartingFrom0, uint8_t rxIndexStartingFrom0, uint16_t csiIndexStartingFrom0) const {
+std::optional<std::complex<double>> CSI::getCSI(const int16_t subcarrierIndex, const uint8_t stsIndexStartingFrom0, const uint8_t rxIndexStartingFrom0, const uint16_t csiIndexStartingFrom0) const {
     if (std::find(subcarrierIndices.cbegin(), subcarrierIndices.cend(), 0) == subcarrierIndices.cend())
         return std::nullopt;
 
@@ -278,7 +274,7 @@ std::optional<std::complex<double>> CSI::getCSI(int16_t subcarrierIndex, uint8_t
     return CSIArray.valueAt({dataSubcarrierIndex, stsIndexStartingFrom0, rxIndexStartingFrom0, csiIndexStartingFrom0});
 }
 
-std::optional<double> CSI::getMagnitude(int16_t subcarrierIndex, uint8_t stsIndex, uint8_t rxIndex, uint16_t csiIndexStartingFrom0) const {
+std::optional<double> CSI::getMagnitude(const int16_t subcarrierIndex, const uint8_t stsIndex, const uint8_t rxIndex, const uint16_t csiIndexStartingFrom0) const {
     if (auto csi = getCSI(subcarrierIndex, stsIndex, rxIndex, csiIndexStartingFrom0)) {
         return std::abs(csi.value());
     }
@@ -286,7 +282,7 @@ std::optional<double> CSI::getMagnitude(int16_t subcarrierIndex, uint8_t stsInde
     return std::nullopt;
 }
 
-std::optional<double> CSI::getPhase(int16_t subcarrierIndex, uint8_t stsIndex, uint8_t rxIndex, uint16_t csiIndexStartingFrom0) const {
+auto CSI::getPhase(const int16_t subcarrierIndex, const uint8_t stsIndex, const uint8_t rxIndex, const uint16_t csiIndexStartingFrom0) const -> std::optional<double> {
     if (auto csi = getCSI(subcarrierIndex, stsIndex, rxIndex, csiIndexStartingFrom0)) {
         return std::arg(csi.value());
     }
@@ -297,25 +293,25 @@ std::optional<double> CSI::getPhase(int16_t subcarrierIndex, uint8_t stsIndex, u
 static auto v1Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> std::optional<CSI> {
     uint32_t pos = 0;
 
-    auto deviceType = (PicoScenesDeviceType) *(uint16_t *) (buffer + pos);
+    auto deviceType = static_cast<PicoScenesDeviceType>(*reinterpret_cast<const uint16_t *>(buffer + pos));
     pos += sizeof(PicoScenesDeviceType);
-    PacketFormatEnum packetFormat = *(PacketFormatEnum *) (buffer + pos);
+    PacketFormatEnum packetFormat = *reinterpret_cast<const PacketFormatEnum *>(buffer + pos);
     pos += sizeof(PacketFormatEnum);
-    ChannelBandwidthEnum cbw = *(ChannelBandwidthEnum *) (buffer + pos);
+    ChannelBandwidthEnum cbw = *reinterpret_cast<const ChannelBandwidthEnum *>(buffer + pos);
     pos += sizeof(ChannelBandwidthEnum);
-    auto carrierFreq = *(uint64_t *) (buffer + pos);
+    auto carrierFreq = *reinterpret_cast<const uint64_t *>(buffer + pos);
     pos += sizeof(uint64_t);
-    auto samplingRate = *(uint64_t *) (buffer + pos);
+    auto samplingRate = *reinterpret_cast<const uint64_t *>(buffer + pos);
     pos += sizeof(uint64_t);
-    auto subcarrierBandwidth = *(uint32_t *) (buffer + pos);
+    auto subcarrierBandwidth = *reinterpret_cast<const uint32_t *>(buffer + pos);
     pos += sizeof(uint32_t);
-    uint16_t numTone = *(uint16_t *) (buffer + pos);
-    pos += 2;
-    uint8_t numSTS = *(uint8_t *) (buffer + pos++);
-    uint8_t numRx = *(uint8_t *) (buffer + pos++);
-    uint8_t numESS = *(uint8_t *) (buffer + pos++);
-    uint8_t antSelByte = *(uint8_t *) (buffer + pos++);
-    uint32_t CSIBufferLength = *(uint32_t *) (buffer + pos);
+    uint16_t numTone = *reinterpret_cast<const uint16_t *>(buffer + pos);
+    pos += sizeof(uint16_t);
+    uint8_t numSTS = *const_cast<uint8_t *>(buffer + pos++);
+    uint8_t numRx = *const_cast<uint8_t *>(buffer + pos++);
+    uint8_t numESS = *const_cast<uint8_t *>(buffer + pos++);
+    uint8_t antSelByte = *const_cast<uint8_t *>(buffer + pos++);
+    uint32_t CSIBufferLength = *reinterpret_cast<const uint32_t *>(buffer + pos);
     pos += 4;
 
     if (deviceType == PicoScenesDeviceType::QCA9300) {
@@ -334,7 +330,7 @@ static auto v1Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> std::
         auto csiBufferStart = pos;
         std::vector<int16_t> subcarrierIndices;
         for (auto i = 0; i < numTone; i++) {
-            subcarrierIndices.emplace_back(*(uint16_t *) (buffer + pos));
+            subcarrierIndices.emplace_back(*reinterpret_cast<const uint16_t *>(buffer + pos));
             pos += 2;
         }
         uint32_t csiArrayLength = CSIBufferLength - 2 * numTone;
@@ -361,60 +357,62 @@ static auto v1Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> std::
 static auto v2Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> std::optional<CSI> { // add subcarrierOffset
     uint32_t pos = 0;
 
-    auto deviceType = (PicoScenesDeviceType) *(uint16_t *) (buffer + pos);
+    auto deviceType = static_cast<PicoScenesDeviceType>(*reinterpret_cast<const uint16_t *>(buffer + pos));
     pos += sizeof(PicoScenesDeviceType);
-    PacketFormatEnum packetFormat = *(PacketFormatEnum *) (buffer + pos);
+    PacketFormatEnum packetFormat = *reinterpret_cast<const PacketFormatEnum*>(buffer + pos);
     pos += sizeof(PacketFormatEnum);
-    ChannelBandwidthEnum cbw = *(ChannelBandwidthEnum *) (buffer + pos);
+    ChannelBandwidthEnum cbw = *reinterpret_cast<const ChannelBandwidthEnum*>(buffer + pos);
     pos += sizeof(ChannelBandwidthEnum);
-    auto carrierFreq = *(uint64_t *) (buffer + pos);
+    auto carrierFreq = *reinterpret_cast<const uint64_t *>(buffer + pos);
     pos += sizeof(uint64_t);
-    auto samplingRate = *(uint64_t *) (buffer + pos);
+    auto samplingRate = *reinterpret_cast<const uint64_t *>(buffer + pos);
     pos += sizeof(uint64_t);
-    auto subcarrierBandwidth = *(uint32_t *) (buffer + pos);
+    auto subcarrierBandwidth = *reinterpret_cast<const uint32_t *>(buffer + pos);
     pos += sizeof(uint32_t);
-    uint16_t numTone = *(uint16_t *) (buffer + pos);
+    uint16_t numTone = *reinterpret_cast<const uint16_t *>(buffer + pos);
     pos += 2;
-    uint8_t numSTS = *(uint8_t *) (buffer + pos++);
-    uint8_t numRx = *(uint8_t *) (buffer + pos++);
-    uint8_t numESS = *(uint8_t *) (buffer + pos++);
-    uint8_t antSelByte = *(uint8_t *) (buffer + pos++);
-    uint16_t subcarrierIndexOffset = *(uint16_t *) (buffer + pos);
+    uint8_t numSTS = *const_cast<uint8_t *>(buffer + pos++);
+    uint8_t numRx = *const_cast<uint8_t *>(buffer + pos++);
+    uint8_t numESS = *const_cast<uint8_t *>(buffer + pos++);
+    uint8_t antSelByte = *const_cast<uint8_t *>(buffer + pos++);
+    uint16_t subcarrierIndexOffset = *reinterpret_cast<const uint16_t *>(buffer + pos);
     pos += 2;
-    uint32_t CSIBufferLength = *(uint32_t *) (buffer + pos);
+    uint32_t CSIBufferLength = *reinterpret_cast<const uint32_t *>(buffer + pos);
     pos += 4;
 
     if (deviceType == PicoScenesDeviceType::QCA9300) {
-        auto csi = CSI::fromQCA9300(buffer + pos, CSIBufferLength, numSTS, numRx, numTone, cbw, subcarrierIndexOffset);
+        auto csi = CSI::fromQCA9300(buffer + pos, CSIBufferLength, numSTS, numRx, numTone, cbw, static_cast<int16_t>(subcarrierIndexOffset));
         csi.carrierFreq = carrierFreq;
         csi.samplingRate = samplingRate;
         csi.subcarrierBandwidth = subcarrierBandwidth;
         return csi;
-    } else if (deviceType == PicoScenesDeviceType::IWL5300) {
-        auto csi = CSI::fromIWL5300(buffer + pos, CSIBufferLength, numSTS, numRx, numTone, cbw, subcarrierIndexOffset, antSelByte);
+    }
+    if (deviceType == PicoScenesDeviceType::IWL5300) {
+        auto csi = CSI::fromIWL5300(buffer + pos, CSIBufferLength, numSTS, numRx, numTone, cbw, static_cast<int16_t>(subcarrierIndexOffset), antSelByte);
         csi.carrierFreq = carrierFreq;
         csi.samplingRate = samplingRate;
         csi.subcarrierBandwidth = subcarrierBandwidth;
         return csi;
-    } else if (deviceType == PicoScenesDeviceType::USRP) {
+    }
+    if (deviceType == PicoScenesDeviceType::USRP) {
         auto csiBufferStart = pos;
         std::vector<int16_t> subcarrierIndices;
         for (auto i = 0; i < numTone; i++) {
-            subcarrierIndices.emplace_back(*(uint16_t *) (buffer + pos));
+            subcarrierIndices.emplace_back(*reinterpret_cast<const uint16_t *>(buffer + pos));
             pos += 2;
         }
         uint32_t csiArrayLength = CSIBufferLength - 2 * numTone;
         CSI csi{.deviceType = PicoScenesDeviceType::USRP,
-                .firmwareVersion = 0,
-                .packetFormat = packetFormat,
-                .cbw = cbw,
-                .carrierFreq = carrierFreq,
-                .samplingRate = samplingRate,
-                .subcarrierBandwidth = subcarrierBandwidth,
-                .dimensions = CSIDimension{.numTones = numTone, .numTx = numSTS, .numRx = numRx, .numESS = numESS, .numCSI = 1},
-                .antSel = 0,
-                .subcarrierIndices = subcarrierIndices,
-                .CSIArray = SignalMatrix<std::complex<double>>::fromBuffer(buffer + pos, buffer + pos + csiArrayLength, SignalMatrixStorageMajority::ColumnMajor).convertTo<float>()
+            .firmwareVersion = 0,
+            .packetFormat = packetFormat,
+            .cbw = cbw,
+            .carrierFreq = carrierFreq,
+            .samplingRate = samplingRate,
+            .subcarrierBandwidth = subcarrierBandwidth,
+            .dimensions = CSIDimension{.numTones = numTone, .numTx = numSTS, .numRx = numRx, .numESS = numESS, .numCSI = 1},
+            .antSel = 0,
+            .subcarrierIndices = subcarrierIndices,
+            .CSIArray = SignalMatrix<std::complex<double>>::fromBuffer(buffer + pos, buffer + pos + csiArrayLength, SignalMatrixStorageMajority::ColumnMajor).convertTo<float>()
         };
         auto csiBufferEnd = pos + csiArrayLength;
         std::copy(buffer + csiBufferStart, buffer + csiBufferEnd, std::back_inserter(csi.rawCSIData));
@@ -427,29 +425,29 @@ static auto v2Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> std::
 static auto v3Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> std::optional<CSI> { // add numCSI
     uint32_t pos = 0;
 
-    auto deviceType = (PicoScenesDeviceType) *(uint16_t *) (buffer + pos);
+    auto deviceType = static_cast<PicoScenesDeviceType>(*reinterpret_cast<const uint16_t *>(buffer + pos));
     pos += sizeof(PicoScenesDeviceType);
-    PacketFormatEnum packetFormat = *(PacketFormatEnum *) (buffer + pos);
+    PacketFormatEnum packetFormat = *reinterpret_cast<const PacketFormatEnum*>(buffer + pos);
     pos += sizeof(PacketFormatEnum);
-    ChannelBandwidthEnum cbw = *(ChannelBandwidthEnum *) (buffer + pos);
+    ChannelBandwidthEnum cbw = *reinterpret_cast<const ChannelBandwidthEnum*>(buffer + pos);
     pos += sizeof(ChannelBandwidthEnum);
-    auto carrierFreq = *(uint64_t *) (buffer + pos);
+    auto carrierFreq = *reinterpret_cast<const uint64_t *>(buffer + pos);
     pos += sizeof(uint64_t);
-    auto samplingRate = *(uint64_t *) (buffer + pos);
+    auto samplingRate = *reinterpret_cast<const uint64_t *>(buffer + pos);
     pos += sizeof(uint64_t);
-    auto subcarrierBandwidth = *(uint32_t *) (buffer + pos);
+    auto subcarrierBandwidth = *reinterpret_cast<const uint32_t *>(buffer + pos);
     pos += sizeof(uint32_t);
-    uint16_t numTone = *(uint16_t *) (buffer + pos);
+    uint16_t numTone = *reinterpret_cast<const uint16_t *>(buffer + pos);
     pos += 2;
-    uint8_t numSTS = *(uint8_t *) (buffer + pos++);
-    uint8_t numRx = *(uint8_t *) (buffer + pos++);
-    uint8_t numESS = *(uint8_t *) (buffer + pos++);
-    uint8_t numCSI = *(uint16_t *) (buffer + pos);
+    uint8_t numSTS = *const_cast<uint8_t *>(buffer + pos++);
+    uint8_t numRx = *const_cast<uint8_t *>(buffer + pos++);
+    uint8_t numESS = *const_cast<uint8_t *>(buffer + pos++);
+    uint8_t numCSI = *reinterpret_cast<const uint16_t *>(buffer + pos);
     pos += 2;
-    uint8_t antSelByte = *(uint8_t *) (buffer + pos++);
-    int16_t subcarrierIndexOffset = *(int16_t *) (buffer + pos);
+    uint8_t antSelByte = *const_cast<uint8_t *>(buffer + pos++);
+    int16_t subcarrierIndexOffset = *reinterpret_cast<const int16_t *>(buffer + pos);
     pos += 2;
-    uint32_t CSIBufferLength = *(uint32_t *) (buffer + pos);
+    uint32_t CSIBufferLength = *reinterpret_cast<const uint32_t *>(buffer + pos);
     pos += 4;
 
     if (deviceType == PicoScenesDeviceType::QCA9300) {
@@ -460,7 +458,8 @@ static auto v3Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> std::
         csi.samplingRate = samplingRate;
         csi.subcarrierBandwidth = subcarrierBandwidth;
         return csi;
-    } else if (deviceType == PicoScenesDeviceType::IWL5300) {
+    }
+    if (deviceType == PicoScenesDeviceType::IWL5300) {
         auto csi = CSI::fromIWL5300(buffer + pos, CSIBufferLength, numSTS, numRx, numTone, cbw, subcarrierIndexOffset, antSelByte);
         csi.carrierFreq = carrierFreq;
         csi.carrierFreq2 = carrierFreq;
@@ -468,7 +467,8 @@ static auto v3Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> std::
         csi.samplingRate = samplingRate;
         csi.subcarrierBandwidth = subcarrierBandwidth;
         return csi;
-    } else if (deviceType == PicoScenesDeviceType::IWLMVM_AX200 || deviceType == PicoScenesDeviceType::IWLMVM_AX210) {
+    }
+    if (deviceType == PicoScenesDeviceType::IWLMVM_AX200 || deviceType == PicoScenesDeviceType::IWLMVM_AX210) {
         if (auto csi = CSI::fromIWLMVM(buffer + pos, CSIBufferLength, 68, numSTS, numRx, numTone, packetFormat, cbw, subcarrierIndexOffset, true)) {
             csi->deviceType = deviceType;
             csi->carrierFreq = carrierFreq;
@@ -479,27 +479,28 @@ static auto v3Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> std::
             return csi;
         }
         return {};
-    } else if (deviceType == PicoScenesDeviceType::USRP) {
+    }
+    if (deviceType == PicoScenesDeviceType::USRP) {
         auto csiBufferStart = pos;
         std::vector<int16_t> subcarrierIndices;
         for (auto i = 0; i < numTone; i++) {
-            subcarrierIndices.emplace_back(*(uint16_t *) (buffer + pos));
+            subcarrierIndices.emplace_back(*reinterpret_cast<const uint16_t *>(buffer + pos));
             pos += 2;
         }
         uint32_t csiArrayLength = CSIBufferLength - 2 * numTone;
         CSI csi{.deviceType = PicoScenesDeviceType::USRP,
-                .firmwareVersion = 0,
-                .packetFormat = packetFormat,
-                .cbw = cbw,
-                .carrierFreq = carrierFreq,
-                .carrierFreq2 = carrierFreq,
-                .isMerged = false,
-                .samplingRate = samplingRate,
-                .subcarrierBandwidth = subcarrierBandwidth,
-                .dimensions = CSIDimension{.numTones = numTone, .numTx = numSTS, .numRx = numRx, .numESS = numESS, .numCSI = numCSI},
-                .antSel = 0,
-                .subcarrierIndices = subcarrierIndices,
-                .CSIArray = SignalMatrix<std::complex<double>>::fromBuffer(buffer + pos, buffer + pos + csiArrayLength, SignalMatrixStorageMajority::ColumnMajor).convertTo<float>()
+            .firmwareVersion = 0,
+            .packetFormat = packetFormat,
+            .cbw = cbw,
+            .carrierFreq = carrierFreq,
+            .carrierFreq2 = carrierFreq,
+            .isMerged = false,
+            .samplingRate = samplingRate,
+            .subcarrierBandwidth = subcarrierBandwidth,
+            .dimensions = CSIDimension{.numTones = numTone, .numTx = numSTS, .numRx = numRx, .numESS = numESS, .numCSI = numCSI},
+            .antSel = 0,
+            .subcarrierIndices = subcarrierIndices,
+            .CSIArray = SignalMatrix<std::complex<double>>::fromBuffer(buffer + pos, buffer + pos + csiArrayLength, SignalMatrixStorageMajority::ColumnMajor).convertTo<float>()
         };
         auto csiBufferEnd = pos + csiArrayLength;
         std::copy(buffer + csiBufferStart, buffer + csiBufferEnd, std::back_inserter(csi.rawCSIData));
@@ -512,209 +513,30 @@ static auto v3Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> std::
 static auto v4Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> std::optional<CSI> { // add numCSI
     uint32_t pos = 0;
 
-    auto deviceType = (PicoScenesDeviceType) *(uint16_t *) (buffer + pos);
+    auto deviceType = static_cast<PicoScenesDeviceType>(*reinterpret_cast<const uint16_t *>(buffer + pos));
     pos += sizeof(PicoScenesDeviceType);
-    auto firmwareVersion = *(uint8_t *) (buffer + pos++);
-    PacketFormatEnum packetFormat = *(PacketFormatEnum *) (buffer + pos);
+    auto firmwareVersion = *const_cast<uint8_t *>(buffer + pos++);
+    PacketFormatEnum packetFormat = *reinterpret_cast<const PacketFormatEnum*>(buffer + pos);
     pos += sizeof(PacketFormatEnum);
-    ChannelBandwidthEnum cbw = *(ChannelBandwidthEnum *) (buffer + pos);
+    ChannelBandwidthEnum cbw = *reinterpret_cast<const ChannelBandwidthEnum*>(buffer + pos);
     pos += sizeof(ChannelBandwidthEnum);
-    auto carrierFreq = *(uint64_t *) (buffer + pos);
+    auto carrierFreq = *reinterpret_cast<const uint64_t *>(buffer + pos);
     pos += sizeof(uint64_t);
-    auto samplingRate = *(uint64_t *) (buffer + pos);
+    auto samplingRate = *reinterpret_cast<const uint64_t *>(buffer + pos);
     pos += sizeof(uint64_t);
-    auto subcarrierBandwidth = *(uint32_t *) (buffer + pos);
+    auto subcarrierBandwidth = *reinterpret_cast<const uint32_t *>(buffer + pos);
     pos += sizeof(uint32_t);
-    uint16_t numTone = *(uint16_t *) (buffer + pos);
+    uint16_t numTone = *reinterpret_cast<const uint16_t *>(buffer + pos);
     pos += 2;
-    uint8_t numSTS = *(uint8_t *) (buffer + pos++);
-    uint8_t numRx = *(uint8_t *) (buffer + pos++);
-    uint8_t numESS = *(uint8_t *) (buffer + pos++);
-    uint8_t numCSI = *(uint16_t *) (buffer + pos);
+    uint8_t numSTS = *const_cast<uint8_t *>(buffer + pos++);
+    uint8_t numRx = *const_cast<uint8_t *>(buffer + pos++);
+    uint8_t numESS = *const_cast<uint8_t *>(buffer + pos++);
+    uint8_t numCSI = *reinterpret_cast<const uint16_t *>(buffer + pos);
     pos += 2;
-    uint8_t antSelByte = *(uint8_t *) (buffer + pos++);
-    int16_t subcarrierIndexOffset = *(int16_t *) (buffer + pos);
+    uint8_t antSelByte = *const_cast<uint8_t *>(buffer + pos++);
+    int16_t subcarrierIndexOffset = *reinterpret_cast<const int16_t *>(buffer + pos);
     pos += 2;
-    uint32_t CSIBufferLength = *(uint32_t *) (buffer + pos);
-    pos += 4;
-
-    if (deviceType == PicoScenesDeviceType::QCA9300) {
-        auto csi = CSI::fromQCA9300(buffer + pos, CSIBufferLength, numSTS, numRx, numTone, cbw, subcarrierIndexOffset);
-        csi.carrierFreq = carrierFreq;
-        csi.carrierFreq2 = carrierFreq;
-        csi.isMerged = false;
-        csi.samplingRate = samplingRate;
-        csi.subcarrierBandwidth = subcarrierBandwidth;
-        return csi;
-    } else if (deviceType == PicoScenesDeviceType::IWL5300) {
-        auto csi = CSI::fromIWL5300(buffer + pos, CSIBufferLength, numSTS, numRx, numTone, cbw, subcarrierIndexOffset, antSelByte);
-        csi.carrierFreq = carrierFreq;
-        csi.carrierFreq2 = carrierFreq;
-        csi.isMerged = false;
-        csi.samplingRate = samplingRate;
-        csi.subcarrierBandwidth = subcarrierBandwidth;
-        return csi;
-    } else if (deviceType == PicoScenesDeviceType::IWLMVM_AX200 || deviceType == PicoScenesDeviceType::IWLMVM_AX210) {
-        if (auto csi = CSI::fromIWLMVM(buffer + pos, CSIBufferLength, firmwareVersion, numSTS, numRx, numTone, packetFormat, cbw, subcarrierIndexOffset, true, 0)) {
-            csi->deviceType = deviceType;
-            csi->carrierFreq = carrierFreq;
-            csi->carrierFreq2 = carrierFreq;
-            csi->isMerged = false;
-            csi->samplingRate = samplingRate;
-            csi->subcarrierBandwidth = subcarrierBandwidth;
-            return csi;
-        }
-        return {};
-    } else if (deviceType == PicoScenesDeviceType::USRP) {
-        auto csiBufferStart = pos;
-        std::vector<int16_t> subcarrierIndices;
-        for (auto i = 0; i < numTone; i++) {
-            subcarrierIndices.emplace_back(*(uint16_t *) (buffer + pos));
-            pos += 2;
-        }
-        uint32_t csiArrayLength = CSIBufferLength - 2 * numTone;
-        CSI csi{.deviceType = PicoScenesDeviceType::USRP,
-                .firmwareVersion = 0,
-                .packetFormat = packetFormat,
-                .cbw = cbw,
-                .carrierFreq = carrierFreq,
-                .carrierFreq2 = carrierFreq,
-                .isMerged = false,
-                .samplingRate = samplingRate,
-                .subcarrierBandwidth = subcarrierBandwidth,
-                .dimensions = CSIDimension{.numTones = numTone, .numTx = numSTS, .numRx = numRx, .numESS = numESS, .numCSI = numCSI},
-                .antSel = 0,
-                .subcarrierIndices = subcarrierIndices,
-                .CSIArray = SignalMatrix<std::complex<double>>::fromBuffer(buffer + pos, buffer + pos + csiArrayLength, SignalMatrixStorageMajority::ColumnMajor).convertTo<float>()
-        };
-        auto csiBufferEnd = pos + csiArrayLength;
-        std::copy(buffer + csiBufferStart, buffer + csiBufferEnd, std::back_inserter(csi.rawCSIData));
-        return csi;
-    }
-
-    throw std::runtime_error("CSISegment cannot decode the given buffer by v4Parser.");
-};
-
-static auto v5Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> std::optional<CSI> { // add numCSI
-    uint32_t pos = 0;
-
-    auto deviceType = (PicoScenesDeviceType) *(uint16_t *) (buffer + pos);
-    pos += sizeof(PicoScenesDeviceType);
-    auto firmwareVersion = *(uint8_t *) (buffer + pos++);
-    PacketFormatEnum packetFormat = *(PacketFormatEnum *) (buffer + pos);
-    pos += sizeof(PacketFormatEnum);
-    ChannelBandwidthEnum cbw = *(ChannelBandwidthEnum *) (buffer + pos);
-    pos += sizeof(ChannelBandwidthEnum);
-    auto carrierFreq = *(uint64_t *) (buffer + pos);
-    pos += sizeof(uint64_t);
-    auto carrierFreq2 = *(uint64_t *) (buffer + pos);
-    pos += sizeof(uint64_t);
-    bool isMerged = *(bool *) (buffer + pos++);
-    auto samplingRate = *(uint64_t *) (buffer + pos);
-    pos += sizeof(uint64_t);
-    auto subcarrierBandwidth = *(uint32_t *) (buffer + pos);
-    pos += sizeof(uint32_t);
-    uint16_t numTone = *(uint16_t *) (buffer + pos);
-    pos += 2;
-    uint8_t numSTS = *(uint8_t *) (buffer + pos++);
-    uint8_t numRx = *(uint8_t *) (buffer + pos++);
-    uint8_t numESS = *(uint8_t *) (buffer + pos++);
-    uint8_t numCSI = *(uint16_t *) (buffer + pos);
-    pos += 2;
-    uint8_t antSelByte = *(uint8_t *) (buffer + pos++);
-    int16_t subcarrierIndexOffset = *(int16_t *) (buffer + pos);
-    pos += 2;
-    uint32_t CSIBufferLength = *(uint32_t *) (buffer + pos);
-    pos += 4;
-
-    if (deviceType == PicoScenesDeviceType::QCA9300) {
-        auto csi = CSI::fromQCA9300(buffer + pos, CSIBufferLength, numSTS, numRx, numTone, cbw, subcarrierIndexOffset);
-        csi.carrierFreq = carrierFreq;
-        csi.carrierFreq2 = carrierFreq;
-        csi.isMerged = false;
-        csi.samplingRate = samplingRate;
-        csi.subcarrierBandwidth = subcarrierBandwidth;
-        return csi;
-    } else if (deviceType == PicoScenesDeviceType::IWL5300) {
-        auto csi = CSI::fromIWL5300(buffer + pos, CSIBufferLength, numSTS, numRx, numTone, cbw, subcarrierIndexOffset, antSelByte);
-        csi.carrierFreq = carrierFreq;
-        csi.carrierFreq2 = carrierFreq;
-        csi.isMerged = false;
-        csi.samplingRate = samplingRate;
-        csi.subcarrierBandwidth = subcarrierBandwidth;
-        return csi;
-    } else if (deviceType == PicoScenesDeviceType::IWLMVM_AX200 || deviceType == PicoScenesDeviceType::IWLMVM_AX210) {
-        if (auto csi = CSI::fromIWLMVM(buffer + pos, CSIBufferLength, firmwareVersion, numSTS, numRx, numTone, packetFormat, cbw, subcarrierIndexOffset, true, 0)) {
-            csi->deviceType = deviceType;
-            csi->carrierFreq = carrierFreq;
-            csi->carrierFreq2 = carrierFreq;
-            csi->isMerged = false;
-            csi->samplingRate = samplingRate;
-            csi->subcarrierBandwidth = subcarrierBandwidth;
-            return csi;
-        }
-        return {};
-    } else if (deviceType == PicoScenesDeviceType::USRP) {
-        auto csiBufferStart = pos;
-        std::vector<int16_t> subcarrierIndices;
-        for (auto i = 0; i < numTone; i++) {
-            subcarrierIndices.emplace_back(*(uint16_t *) (buffer + pos));
-            pos += 2;
-        }
-        uint32_t csiArrayLength = CSIBufferLength - 2 * numTone;
-        CSI csi{.deviceType = PicoScenesDeviceType::USRP,
-                .firmwareVersion = 0,
-                .packetFormat = packetFormat,
-                .cbw = cbw,
-                .carrierFreq = carrierFreq,
-                .carrierFreq2 = carrierFreq2,
-                .isMerged = isMerged,
-                .samplingRate = samplingRate,
-                .subcarrierBandwidth = subcarrierBandwidth,
-                .dimensions = CSIDimension{.numTones = numTone, .numTx = numSTS, .numRx = numRx, .numESS = numESS, .numCSI = numCSI},
-                .antSel = 0,
-                .subcarrierIndices = subcarrierIndices,
-                .CSIArray = SignalMatrix<std::complex<double>>::fromBuffer(buffer + pos, buffer + pos + csiArrayLength, SignalMatrixStorageMajority::ColumnMajor).convertTo<float>()
-        };
-        auto csiBufferEnd = pos + csiArrayLength;
-        std::copy(buffer + csiBufferStart, buffer + csiBufferEnd, std::back_inserter(csi.rawCSIData));
-        return csi;
-    }
-
-    throw std::runtime_error("CSISegment cannot decode the given buffer by v5Parser.");
-};
-
-
-static auto v6Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> std::optional<CSI> { // add numCSI
-    uint32_t pos = 0;
-
-    auto deviceType = (PicoScenesDeviceType) *(uint16_t *) (buffer + pos);
-    pos += sizeof(PicoScenesDeviceType);
-    auto firmwareVersion = *(uint8_t *) (buffer + pos++);
-    PacketFormatEnum packetFormat = *(PacketFormatEnum *) (buffer + pos);
-    pos += sizeof(PacketFormatEnum);
-    ChannelBandwidthEnum cbw = *(ChannelBandwidthEnum *) (buffer + pos);
-    pos += sizeof(ChannelBandwidthEnum);
-    auto carrierFreq = *(uint64_t *) (buffer + pos);
-    pos += sizeof(uint64_t);
-    auto carrierFreq2 = *(uint64_t *) (buffer + pos);
-    pos += sizeof(uint64_t);
-    bool isMerged = *(bool *) (buffer + pos++);
-    auto samplingRate = *(uint64_t *) (buffer + pos);
-    pos += sizeof(uint64_t);
-    auto subcarrierBandwidth = *(uint32_t *) (buffer + pos);
-    pos += sizeof(uint32_t);
-    uint16_t numTone = *(uint16_t *) (buffer + pos);
-    pos += 2;
-    uint8_t numSTS = *(uint8_t *) (buffer + pos++);
-    uint8_t numRx = *(uint8_t *) (buffer + pos++);
-    uint8_t numESS = *(uint8_t *) (buffer + pos++);
-    uint8_t numCSI = *(uint16_t *) (buffer + pos);
-    pos += 2;
-    uint8_t antSelByte = *(uint8_t *) (buffer + pos++);
-    int16_t subcarrierIndexOffset = *(int16_t *) (buffer + pos);
-    pos += 2;
-    uint32_t CSIBufferLength = *(uint32_t *) (buffer + pos);
+    uint32_t CSIBufferLength = *reinterpret_cast<const uint32_t *>(buffer + pos);
     pos += 4;
 
     if (deviceType == PicoScenesDeviceType::QCA9300) {
@@ -751,7 +573,192 @@ static auto v6Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> std::
         auto csiBufferStart = pos;
         std::vector<int16_t> subcarrierIndices;
         for (auto i = 0; i < numTone; i++) {
-            subcarrierIndices.emplace_back(*(uint16_t *) (buffer + pos));
+            subcarrierIndices.emplace_back(*reinterpret_cast<const uint16_t *>(buffer + pos));
+            pos += 2;
+        }
+        uint32_t csiArrayLength = CSIBufferLength - 2 * numTone;
+        CSI csi{.deviceType = PicoScenesDeviceType::USRP,
+            .firmwareVersion = 0,
+            .packetFormat = packetFormat,
+            .cbw = cbw,
+            .carrierFreq = carrierFreq,
+            .carrierFreq2 = carrierFreq,
+            .isMerged = false,
+            .samplingRate = samplingRate,
+            .subcarrierBandwidth = subcarrierBandwidth,
+            .dimensions = CSIDimension{.numTones = numTone, .numTx = numSTS, .numRx = numRx, .numESS = numESS, .numCSI = numCSI},
+            .antSel = 0,
+            .subcarrierIndices = subcarrierIndices,
+            .CSIArray = SignalMatrix<std::complex<double>>::fromBuffer(buffer + pos, buffer + pos + csiArrayLength, SignalMatrixStorageMajority::ColumnMajor).convertTo<float>()
+        };
+        auto csiBufferEnd = pos + csiArrayLength;
+        std::copy(buffer + csiBufferStart, buffer + csiBufferEnd, std::back_inserter(csi.rawCSIData));
+        return csi;
+    }
+
+    throw std::runtime_error("CSISegment cannot decode the given buffer by v4Parser.");
+};
+
+static auto v5Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> std::optional<CSI> { // add numCSI
+    uint32_t pos = 0;
+
+    auto deviceType = static_cast<PicoScenesDeviceType>(*reinterpret_cast<const uint16_t *>(buffer + pos));
+    pos += sizeof(PicoScenesDeviceType);
+    auto firmwareVersion = *const_cast<uint8_t *>(buffer + pos++);
+    PacketFormatEnum packetFormat = *reinterpret_cast<const PacketFormatEnum*>(buffer + pos);
+    pos += sizeof(PacketFormatEnum);
+    ChannelBandwidthEnum cbw = *reinterpret_cast<const ChannelBandwidthEnum*>(buffer + pos);
+    pos += sizeof(ChannelBandwidthEnum);
+    auto carrierFreq = *reinterpret_cast<const uint64_t *>(buffer + pos);
+    pos += sizeof(uint64_t);
+    auto carrierFreq2 = *reinterpret_cast<const uint64_t *>(buffer + pos);
+    pos += sizeof(uint64_t);
+    bool isMerged = *reinterpret_cast<const bool *>(buffer + pos++);
+    auto samplingRate = *reinterpret_cast<const uint64_t *>(buffer + pos);
+    pos += sizeof(uint64_t);
+    auto subcarrierBandwidth = *reinterpret_cast<const uint32_t *>(buffer + pos);
+    pos += sizeof(uint32_t);
+    uint16_t numTone = *reinterpret_cast<const uint16_t *>(buffer + pos);
+    pos += 2;
+    uint8_t numSTS = *const_cast<uint8_t *>(buffer + pos++);
+    uint8_t numRx = *const_cast<uint8_t *>(buffer + pos++);
+    uint8_t numESS = *const_cast<uint8_t *>(buffer + pos++);
+    uint8_t numCSI = *reinterpret_cast<const uint16_t *>(buffer + pos);
+    pos += 2;
+    uint8_t antSelByte = *const_cast<uint8_t *>(buffer + pos++);
+    int16_t subcarrierIndexOffset = *reinterpret_cast<const int16_t *>(buffer + pos);
+    pos += 2;
+    uint32_t CSIBufferLength = *reinterpret_cast<const uint32_t *>(buffer + pos);
+    pos += 4;
+
+    if (deviceType == PicoScenesDeviceType::QCA9300) {
+        auto csi = CSI::fromQCA9300(buffer + pos, CSIBufferLength, numSTS, numRx, numTone, cbw, subcarrierIndexOffset);
+        csi.carrierFreq = carrierFreq;
+        csi.carrierFreq2 = carrierFreq;
+        csi.isMerged = false;
+        csi.samplingRate = samplingRate;
+        csi.subcarrierBandwidth = subcarrierBandwidth;
+        return csi;
+    }
+    if (deviceType == PicoScenesDeviceType::IWL5300) {
+        auto csi = CSI::fromIWL5300(buffer + pos, CSIBufferLength, numSTS, numRx, numTone, cbw, subcarrierIndexOffset, antSelByte);
+        csi.carrierFreq = carrierFreq;
+        csi.carrierFreq2 = carrierFreq;
+        csi.isMerged = false;
+        csi.samplingRate = samplingRate;
+        csi.subcarrierBandwidth = subcarrierBandwidth;
+        return csi;
+    }
+    if (deviceType == PicoScenesDeviceType::IWLMVM_AX200 || deviceType == PicoScenesDeviceType::IWLMVM_AX210) {
+        if (auto csi = CSI::fromIWLMVM(buffer + pos, CSIBufferLength, firmwareVersion, numSTS, numRx, numTone, packetFormat, cbw, subcarrierIndexOffset, true, 0)) {
+            csi->deviceType = deviceType;
+            csi->carrierFreq = carrierFreq;
+            csi->carrierFreq2 = carrierFreq;
+            csi->isMerged = false;
+            csi->samplingRate = samplingRate;
+            csi->subcarrierBandwidth = subcarrierBandwidth;
+            return csi;
+        }
+        return {};
+    }
+    if (deviceType == PicoScenesDeviceType::USRP) {
+        auto csiBufferStart = pos;
+        std::vector<int16_t> subcarrierIndices;
+        for (auto i = 0; i < numTone; i++) {
+            subcarrierIndices.emplace_back(*reinterpret_cast<const uint16_t *>(buffer + pos));
+            pos += 2;
+        }
+        uint32_t csiArrayLength = CSIBufferLength - 2 * numTone;
+        CSI csi{.deviceType = PicoScenesDeviceType::USRP,
+            .firmwareVersion = 0,
+            .packetFormat = packetFormat,
+            .cbw = cbw,
+            .carrierFreq = carrierFreq,
+            .carrierFreq2 = carrierFreq2,
+            .isMerged = isMerged,
+            .samplingRate = samplingRate,
+            .subcarrierBandwidth = subcarrierBandwidth,
+            .dimensions = CSIDimension{.numTones = numTone, .numTx = numSTS, .numRx = numRx, .numESS = numESS, .numCSI = numCSI},
+            .antSel = 0,
+            .subcarrierIndices = subcarrierIndices,
+            .CSIArray = SignalMatrix<std::complex<double>>::fromBuffer(buffer + pos, buffer + pos + csiArrayLength, SignalMatrixStorageMajority::ColumnMajor).convertTo<float>()
+        };
+        auto csiBufferEnd = pos + csiArrayLength;
+        std::copy(buffer + csiBufferStart, buffer + csiBufferEnd, std::back_inserter(csi.rawCSIData));
+        return csi;
+    }
+
+    throw std::runtime_error("CSISegment cannot decode the given buffer by v5Parser.");
+};
+
+
+static auto v6Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> std::optional<CSI> { // add numCSI
+    uint32_t pos = 0;
+
+    auto deviceType = static_cast<PicoScenesDeviceType>(*reinterpret_cast<const uint16_t *>(buffer + pos));
+    pos += sizeof(PicoScenesDeviceType);
+    auto firmwareVersion = *const_cast<uint8_t *>(buffer + pos++);
+    PacketFormatEnum packetFormat = *reinterpret_cast<const PacketFormatEnum*>(buffer + pos);
+    pos += sizeof(PacketFormatEnum);
+    ChannelBandwidthEnum cbw = *reinterpret_cast<const ChannelBandwidthEnum*>(buffer + pos);
+    pos += sizeof(ChannelBandwidthEnum);
+    auto carrierFreq = *reinterpret_cast<const uint64_t *>(buffer + pos);
+    pos += sizeof(uint64_t);
+    auto carrierFreq2 = *reinterpret_cast<const uint64_t *>(buffer + pos);
+    pos += sizeof(uint64_t);
+    bool isMerged = *reinterpret_cast<const bool *>(buffer + pos++);
+    auto samplingRate = *reinterpret_cast<const uint64_t *>(buffer + pos);
+    pos += sizeof(uint64_t);
+    auto subcarrierBandwidth = *reinterpret_cast<const uint32_t *>(buffer + pos);
+    pos += sizeof(uint32_t);
+    uint16_t numTone = *reinterpret_cast<const uint16_t *>(buffer + pos);
+    pos += 2;
+    uint8_t numSTS = *const_cast<uint8_t *>(buffer + pos++);
+    uint8_t numRx = *const_cast<uint8_t *>(buffer + pos++);
+    uint8_t numESS = *const_cast<uint8_t *>(buffer + pos++);
+    uint8_t numCSI = *reinterpret_cast<const uint16_t *>(buffer + pos);
+    pos += 2;
+    uint8_t antSelByte = *const_cast<uint8_t *>(buffer + pos++);
+    int16_t subcarrierIndexOffset = *reinterpret_cast<const int16_t *>(buffer + pos);
+    pos += 2;
+    uint32_t CSIBufferLength = *reinterpret_cast<const uint32_t *>(buffer + pos);
+    pos += sizeof(uint32_t);
+
+    if (deviceType == PicoScenesDeviceType::QCA9300) {
+        auto csi = CSI::fromQCA9300(buffer + pos, CSIBufferLength, numSTS, numRx, numTone, cbw, subcarrierIndexOffset);
+        csi.carrierFreq = carrierFreq;
+        csi.carrierFreq2 = carrierFreq;
+        csi.isMerged = false;
+        csi.samplingRate = samplingRate;
+        csi.subcarrierBandwidth = subcarrierBandwidth;
+        return csi;
+    }
+    if (deviceType == PicoScenesDeviceType::IWL5300) {
+        auto csi = CSI::fromIWL5300(buffer + pos, CSIBufferLength, numSTS, numRx, numTone, cbw, subcarrierIndexOffset, antSelByte);
+        csi.carrierFreq = carrierFreq;
+        csi.carrierFreq2 = carrierFreq;
+        csi.isMerged = false;
+        csi.samplingRate = samplingRate;
+        csi.subcarrierBandwidth = subcarrierBandwidth;
+        return csi;
+    }
+    if (deviceType == PicoScenesDeviceType::IWLMVM_AX200 || deviceType == PicoScenesDeviceType::IWLMVM_AX210) {
+        if (auto csi = CSI::fromIWLMVM(buffer + pos, CSIBufferLength, firmwareVersion, numSTS, numRx, numTone, packetFormat, cbw, subcarrierIndexOffset, true, 0)) {
+            csi->deviceType = deviceType;
+            csi->carrierFreq = carrierFreq;
+            csi->carrierFreq2 = carrierFreq;
+            csi->isMerged = false;
+            csi->samplingRate = samplingRate;
+            csi->subcarrierBandwidth = subcarrierBandwidth;
+            return csi;
+        }
+        return {};
+    }
+    if (deviceType == PicoScenesDeviceType::USRP) {
+        auto csiBufferStart = pos;
+        std::vector<int16_t> subcarrierIndices;
+        for (auto i = 0; i < numTone; i++) {
+            subcarrierIndices.emplace_back(*reinterpret_cast<const uint16_t *>(buffer + pos));
             pos += 2;
         }
         uint32_t csiArrayLength = CSIBufferLength - 2 * numTone;
@@ -790,14 +797,14 @@ std::map<uint16_t, std::function<std::optional<CSI>(const uint8_t *, uint32_t)>>
 
 CSISegment::CSISegment() : AbstractPicoScenesFrameSegment("CSI", 0x6U) {}
 
-CSISegment::CSISegment(CSI &&csiV) : AbstractPicoScenesFrameSegment("CSI", 0x6U), csi(std::move(csiV)) {
+CSISegment::CSISegment(CSI &&csi) : AbstractPicoScenesFrameSegment("CSI", 0x6U), csi(std::move(csi)) {
     setSegmentPayload(std::move(csi.toBuffer()));
 }
 
 CSISegment::CSISegment(const uint8_t *buffer, uint32_t bufferLength) : AbstractPicoScenesFrameSegment(buffer, bufferLength) {
     if (!segmentName.ends_with("CSI"))
         throw std::runtime_error("CSISegment cannot parse the segment named " + segmentName + ".");
-    if (!versionedSolutionMap.count(segmentVersionId))
+    if (!versionedSolutionMap.contains(segmentVersionId))
         throw std::runtime_error("CSISegment cannot parse the segment with version v" + std::to_string(segmentVersionId) + ".");
 
     if (auto parsedCSI = versionedSolutionMap.at(segmentVersionId)(segmentPayload.data(), segmentPayload.size())) {
@@ -815,29 +822,29 @@ CSI &CSISegment::getCSI() {
     return csi;
 }
 
-void CSISegment::setCSI(const CSI &csiV) {
-    csi = csiV;
-    setSegmentPayload(std::move(csi.toBuffer()));
+void CSISegment::setCSI(const CSI &csi) {
+    CSISegment::csi = csi;
+    setSegmentPayload(std::move(CSISegment::csi.toBuffer()));
 }
 
-void CSISegment::setCSI(CSI &&csiV) {
-    csi = std::move(csiV);
-    setSegmentPayload(std::move(csi.toBuffer()));
+void CSISegment::setCSI(CSI &&csi) {
+    CSISegment::csi = std::move(csi);
+    setSegmentPayload(std::move(CSISegment::csi.toBuffer()));
 }
 
 std::string CSISegment::toString() const {
     std::stringstream ss;
     ss << segmentName << ":[device=" << csi.deviceType << ", format=" << csi.packetFormat << ", CBW=" << csi.cbw
-       << std::fixed << std::setprecision(6) << ", cf=" << (double) csi.carrierFreq / 1e6 << " MHz"
-       << (csi.isMerged ? ", cf2=" + std::to_string((double) csi.carrierFreq2 / 1e6) + " MHz" : "")
-       << ", sf=" << (double) csi.samplingRate / 1e6 << " MHz"
-       << ", subcarrierBW=" << (double) csi.subcarrierBandwidth / 1e3 << " kHz"
-       << ", dim(nTones,nSTS,nESS,nRx,nCSI)=(" << static_cast<uint16_t>(csi.dimensions.numTones) << "," << static_cast<uint16_t>(csi.dimensions.numTx) << "," << static_cast<uint16_t>(csi.dimensions.numESS) << "," << static_cast<uint16_t>(csi.dimensions.numRx) << "," << static_cast<uint16_t>(csi.dimensions.numCSI) << ")"
+       << std::fixed << std::setprecision(6) << ", cf=" << static_cast<double>(csi.carrierFreq) / 1e6 << " MHz"
+       << (csi.isMerged ? ", cf2=" + std::to_string(static_cast<double>(csi.carrierFreq2) / 1e6) + " MHz" : "")
+       << ", sf=" << static_cast<double>(csi.samplingRate) / 1e6 << " MHz"
+       << ", subcarrierBW=" << static_cast<double>(csi.subcarrierBandwidth) / 1e3 << " kHz"
+       << ", dim(nTones,nSTS,nESS,nRx,nCSI)=(" << csi.dimensions.numTones << "," << static_cast<uint16_t>(csi.dimensions.numTx) << "," << static_cast<uint16_t>(csi.dimensions.numESS) << "," << static_cast<uint16_t>(csi.dimensions.numRx) << "," << csi.dimensions.numCSI << ")"
        << ", raw=" << csi.rawCSIData.size() << "B]";
     return ss.str();
 }
 
-std::vector<int16_t> CSISubcarrierIndex::NonHT20_52Subcarriers_Indices = []() noexcept -> std::vector<int16_t> {
+std::vector<int16_t> const CSISubcarrierIndex::NonHT20_52Subcarriers_Indices = []() noexcept {
     auto indices = std::vector<int16_t>();
     for (auto i = -26; i <= -1; i++)
         indices.emplace_back(i);
@@ -847,7 +854,7 @@ std::vector<int16_t> CSISubcarrierIndex::NonHT20_52Subcarriers_Indices = []() no
     return indices;
 }();
 
-std::vector<int16_t> CSISubcarrierIndex::HTVHT20_56Subcarriers_Indices = []() noexcept -> std::vector<int16_t> {
+std::vector<int16_t> const CSISubcarrierIndex::HTVHT20_56Subcarriers_Indices = []() noexcept {
     auto indices = std::vector<int16_t>();
     for (auto i = -28; i <= -1; i++)
         indices.emplace_back(i);
@@ -857,7 +864,7 @@ std::vector<int16_t> CSISubcarrierIndex::HTVHT20_56Subcarriers_Indices = []() no
     return indices;
 }();
 
-std::vector<int16_t> CSISubcarrierIndex::HTVHT40_114Subcarriers_Indices = []() noexcept -> std::vector<int16_t> {
+std::vector<int16_t> const CSISubcarrierIndex::HTVHT40_114Subcarriers_Indices = []() noexcept {
     auto indices = std::vector<int16_t>();
     for (auto i = -58; i <= -2; i++)
         indices.emplace_back(i);
@@ -866,7 +873,7 @@ std::vector<int16_t> CSISubcarrierIndex::HTVHT40_114Subcarriers_Indices = []() n
     return indices;
 }();
 
-std::vector<int16_t> CSISubcarrierIndex::VHT80_242Subcarriers_Indices = []() noexcept -> std::vector<int16_t> {
+std::vector<int16_t> const CSISubcarrierIndex::VHT80_242Subcarriers_Indices = []() noexcept {
     auto indices = std::vector<int16_t>();
     for (auto i = -122; i <= -2; i++)
         indices.emplace_back(i);
@@ -875,7 +882,7 @@ std::vector<int16_t> CSISubcarrierIndex::VHT80_242Subcarriers_Indices = []() noe
     return indices;
 }();
 
-std::vector<int16_t> CSISubcarrierIndex::VHT160_484Subcarriers_Indices = []() noexcept -> std::vector<int16_t> {
+std::vector<int16_t> const CSISubcarrierIndex::VHT160_484Subcarriers_Indices = []() noexcept {
     auto indices = std::vector<int16_t>();
     for (auto i = -250; i <= -130; i++)
         indices.emplace_back(i);
@@ -888,7 +895,7 @@ std::vector<int16_t> CSISubcarrierIndex::VHT160_484Subcarriers_Indices = []() no
     return indices;
 }();
 
-std::vector<int16_t> CSISubcarrierIndex::HE20_242Subcarriers_Indices = []() noexcept -> std::vector<int16_t> {
+std::vector<int16_t> const CSISubcarrierIndex::HE20_242Subcarriers_Indices = []() noexcept {
     auto indices = std::vector<int16_t>();
     for (auto i = -122; i <= -2; i++)
         indices.emplace_back(i);
@@ -897,7 +904,7 @@ std::vector<int16_t> CSISubcarrierIndex::HE20_242Subcarriers_Indices = []() noex
     return indices;
 }();
 
-std::vector<int16_t> CSISubcarrierIndex::HE40_484Subcarriers_Indices = []() noexcept -> std::vector<int16_t> {
+std::vector<int16_t> const CSISubcarrierIndex::HE40_484Subcarriers_Indices = []() noexcept {
     auto indices = std::vector<int16_t>();
     for (auto i = -244; i <= -3; i++)
         indices.emplace_back(i);
@@ -906,7 +913,7 @@ std::vector<int16_t> CSISubcarrierIndex::HE40_484Subcarriers_Indices = []() noex
     return indices;
 }();
 
-std::vector<int16_t> CSISubcarrierIndex::HE80_996Subcarriers_Indices = []() noexcept -> std::vector<int16_t> {
+std::vector<int16_t> const CSISubcarrierIndex::HE80_996Subcarriers_Indices = []() noexcept {
     auto indices = std::vector<int16_t>();
     for (auto i = -500; i <= -3; i++)
         indices.emplace_back(i);
@@ -915,7 +922,7 @@ std::vector<int16_t> CSISubcarrierIndex::HE80_996Subcarriers_Indices = []() noex
     return indices;
 }();
 
-std::vector<int16_t> CSISubcarrierIndex::HE160_1992Subcarriers_Indices = []() noexcept -> std::vector<int16_t> {
+std::vector<int16_t> const CSISubcarrierIndex::HE160_1992Subcarriers_Indices = []() noexcept {
     auto indices = std::vector<int16_t>();
     for (auto i = -1012; i <= -515; i++)
         indices.emplace_back(i);
@@ -929,26 +936,26 @@ std::vector<int16_t> CSISubcarrierIndex::HE160_1992Subcarriers_Indices = []() no
 }();
 
 
-std::vector<int16_t> CSISubcarrierIndex::NonHT20_52Subcarriers_DataIndices = []() noexcept -> std::vector<int16_t> {
+std::vector<int16_t> const CSISubcarrierIndex::NonHT20_52Subcarriers_DataIndices = []() noexcept {
     return std::vector<int16_t>{-26, -25, -24, -23, -22, -20, -19, -18, -17, -16, -15, -14, -13, -12, -11, -10, -9, -8, -6, -5, -4, -3, -2, -1, 1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 22, 23, 24, 25, 26};
 }();
 
-std::vector<int16_t> CSISubcarrierIndex::HTVHT20_56Subcarriers_DataIndices = []() noexcept -> std::vector<int16_t> {
+std::vector<int16_t> const CSISubcarrierIndex::HTVHT20_56Subcarriers_DataIndices = []() noexcept {
     return std::vector<int16_t>{-28, -27, -26, -25, -24, -23, -22, -20, -19, -18, -17, -16, -15, -14, -13, -12, -11, -10, -9, -8, -6, -5, -4, -3, -2, -1, 1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 22, 23, 24, 25, 26, 27, 28};
 }();
 
-std::vector<int16_t> CSISubcarrierIndex::HTVHT40_114Subcarriers_DataIndices = []() noexcept -> std::vector<int16_t> {
+std::vector<int16_t> const CSISubcarrierIndex::HTVHT40_114Subcarriers_DataIndices = []() noexcept {
     return std::vector<int16_t>{-58, -57, -56, -55, -54, -52, -51, -50, -49, -48, -47, -46, -45, -44, -43, -42, -41, -40, -39, -38, -37, -36, -35, -34, -33, -32, -31, -30, -29, -28, -27, -26, -24, -23, -22, -21, -20, -19, -18, -17, -16, -15, -14, -13, -12, -10, -9, -8, -7, -6, -5, -4, -3, -2, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 54, 55, 56, 57,
                                 58};
 }();
 
-std::vector<int16_t> CSISubcarrierIndex::VHT80_242Subcarriers_DataIndices = []() noexcept -> std::vector<int16_t> {
+std::vector<int16_t> const CSISubcarrierIndex::VHT80_242Subcarriers_DataIndices = []() noexcept {
     return std::vector<int16_t>{-122, -121, -120, -119, -118, -117, -116, -115, -114, -113, -112, -111, -110, -109, -108, -107, -106, -105, -104, -102, -101, -100, -99, -98, -97, -96, -95, -94, -93, -92, -91, -90, -89, -88, -87, -86, -85, -84, -83, -82, -81, -80, -79, -78, -77, -76, -74, -73, -72, -71, -70, -69, -68, -67, -66, -65, -64, -63, -62, -61, -60, -59, -58, -57, -56, -55, -54, -53, -52, -51, -50, -49, -48, -47, -46, -45, -44, -43, -42, -41, -40, -38, -37, -36, -35, -34, -33, -32, -31,
                                 -30, -29, -28, -27, -26, -25, -24, -23, -22, -21, -20, -19, -18, -17, -16, -15, -14, -13, -12, -10, -9, -8, -7, -6, -5, -4, -3, -2, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90,
                                 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122};
 }();
 
-std::vector<int16_t> CSISubcarrierIndex::VHT160_484Subcarriers_DataIndices = []() noexcept -> std::vector<int16_t> {
+std::vector<int16_t> const CSISubcarrierIndex::VHT160_484Subcarriers_DataIndices = []() noexcept {
     return std::vector<int16_t>{-250, -249, -248, -247, -246, -245, -244, -243, -242, -241, -240, -239, -238, -237, -236, -235, -234, -233, -232, -230, -229, -228, -227, -226, -225, -224, -223, -222, -221, -220, -219, -218, -217, -216, -215, -214, -213, -212, -211, -210, -209, -208, -207, -206, -205, -204, -202, -201, -200, -199, -198, -197, -196, -195, -194, -193, -192, -191, -190, -189, -188, -187, -186, -185, -184, -183, -182, -181, -180, -179, -178, -177, -176, -175, -174, -173, -172, -171,
                                 -170, -169, -168, -166, -165, -164, -163, -162, -161, -160, -159, -158, -157, -156, -155, -154, -153, -152, -151, -150, -149, -148, -147, -146, -145, -144, -143, -142, -141, -140, -138, -137, -136, -135, -134, -133, -132, -131, -130, -126, -125, -124, -123, -122, -121, -120, -119, -118, -116, -115, -114, -113, -112, -111, -110, -109, -108, -107, -106, -105, -104, -103, -102, -101, -100, -99, -98, -97, -96, -95, -94, -93, -92, -91, -90, -88, -87, -86, -85, -84,
                                 -83, -82, -81, -80, -79, -78, -77, -76, -75, -74, -73, -72, -71, -70, -69, -68, -67, -66, -65, -64, -63, -62, -61, -60, -59, -58, -57, -56, -55, -54, -52, -51, -50, -49, -48, -47, -46, -45, -44, -43, -42, -41, -40, -39, -38, -37, -36, -35, -34, -33, -32, -31, -30, -29, -28, -27, -26, -24, -23, -22, -21, -20, -19, -18, -17, -16, -15, -14, -13, -12, -11, -10, -9, -8, -7, -6, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 26, 27, 28, 29, 30,
@@ -957,13 +964,13 @@ std::vector<int16_t> CSISubcarrierIndex::VHT160_484Subcarriers_DataIndices = [](
                                 241, 242, 243, 244, 245, 246, 247, 248, 249, 250};
 }();
 
-std::vector<int16_t> CSISubcarrierIndex::HE20_242Subcarriers_DataIndices = []() noexcept -> std::vector<int16_t> {
+std::vector<int16_t> const CSISubcarrierIndex::HE20_242Subcarriers_DataIndices = []() noexcept {
     return std::vector<int16_t>{-122, -121, -120, -119, -118, -117, -115, -114, -113, -112, -111, -110, -109, -108, -107, -106, -105, -104, -103, -102, -101, -100, -99, -98, -97, -96, -95, -94, -93, -92, -91, -89, -88, -87, -86, -85, -84, -83, -82, -81, -80, -79, -78, -77, -76, -75, -74, -73, -72, -71, -70, -69, -68, -67, -66, -65, -64, -63, -62, -61, -60, -59, -58, -57, -56, -55, -54, -53, -52, -51, -50, -49, -47, -46, -45, -44, -43, -42, -41, -40, -39, -38, -37, -36, -35, -34, -33, -32, -31,
                                 -30, -29, -28, -27, -26, -25, -24, -23, -21, -20, -19, -18, -17, -16, -15, -14, -13, -12, -11, -10, -9, -8, -7, -6, -5, -4, -3, -2, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89,
                                 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 117, 118, 119, 120, 121, 122};
 }();
 
-std::vector<int16_t> CSISubcarrierIndex::HE40_484Subcarriers_DataIndices = []() noexcept -> std::vector<int16_t> {
+std::vector<int16_t> const CSISubcarrierIndex::HE40_484Subcarriers_DataIndices = []() noexcept {
     return std::vector<int16_t>{-244, -243, -242, -241, -240, -239, -237, -236, -235, -234, -233, -232, -231, -230, -229, -228, -227, -226, -225, -224, -223, -222, -221, -220, -219, -218, -217, -216, -215, -214, -213, -211, -210, -209, -208, -207, -206, -205, -204, -203, -202, -201, -200, -199, -198, -197, -196, -195, -194, -193, -192, -191, -190, -189, -188, -187, -186, -185, -184, -183, -182, -181, -180, -179, -178, -177, -176, -175, -174, -173, -172, -171, -169, -168, -167, -166, -165, -164,
                                 -163, -162, -161, -160, -159, -158, -157, -156, -155, -154, -153, -152, -151, -150, -149, -148, -147, -146, -145, -143, -142, -141, -140, -139, -138, -137, -136, -135, -134, -133, -132, -131, -130, -129, -128, -127, -126, -125, -124, -123, -122, -121, -120, -119, -118, -117, -116, -115, -114, -113, -112, -111, -110, -109, -108, -107, -106, -105, -103, -102, -101, -100, -99, -98, -97, -96, -95, -94, -93, -92, -91, -90, -89, -88, -87, -86, -85, -84, -83, -82, -81,
                                 -80, -79, -77, -76, -75, -74, -73, -72, -71, -70, -69, -68, -67, -66, -65, -64, -63, -62, -61, -60, -59, -58, -57, -56, -55, -54, -53, -52, -51, -50, -49, -48, -47, -46, -45, -44, -43, -42, -41, -40, -39, -38, -37, -35, -34, -33, -32, -31, -30, -29, -28, -27, -26, -25, -24, -23, -22, -21, -20, -19, -18, -17, -16, -15, -14, -13, -12, -11, -9, -8, -7, -6, -5, -4, -3, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
@@ -972,7 +979,7 @@ std::vector<int16_t> CSISubcarrierIndex::HE40_484Subcarriers_DataIndices = []() 
                                 237, 239, 240, 241, 242, 243, 244};
 }();
 
-std::vector<int16_t> CSISubcarrierIndex::HE80_996Subcarriers_DataIndices = []() noexcept -> std::vector<int16_t> {
+std::vector<int16_t> const CSISubcarrierIndex::HE80_996Subcarriers_DataIndices = []() noexcept {
     return std::vector<int16_t>{-500, -499, -498, -497, -496, -495, -494, -493, -492, -491, -490, -489, -488, -487, -486, -485, -484, -483, -482, -481, -480, -479, -478, -477, -476, -475, -474, -473, -472, -471, -470, -469, -467, -466, -465, -464, -463, -462, -461, -460, -459, -458, -457, -456, -455, -454, -453, -452, -451, -450, -449, -448, -447, -446, -445, -444, -443, -442, -441, -440, -439, -438, -437, -436, -435, -434, -433, -432, -431, -430, -429, -428, -427, -426, -425, -424, -423, -422,
                                 -421, -420, -419, -418, -417, -416, -415, -414, -413, -412, -411, -410, -409, -408, -407, -406, -405, -404, -403, -402, -401, -399, -398, -397, -396, -395, -394, -393, -392, -391, -390, -389, -388, -387, -386, -385, -384, -383, -382, -381, -380, -379, -378, -377, -376, -375, -374, -373, -372, -371, -370, -369, -368, -367, -366, -365, -364, -363, -362, -361, -360, -359, -358, -357, -356, -355, -354, -353, -352, -351, -350, -349, -348, -347, -346, -345, -344, -343,
                                 -342, -341, -340, -339, -338, -337, -336, -335, -333, -332, -331, -330, -329, -328, -327, -326, -325, -324, -323, -322, -321, -320, -319, -318, -317, -316, -315, -314, -313, -312, -311, -310, -309, -308, -307, -306, -305, -304, -303, -302, -301, -300, -299, -298, -297, -296, -295, -294, -293, -292, -291, -290, -289, -288, -287, -286, -285, -284, -283, -282, -281, -280, -279, -278, -277, -276, -275, -274, -273, -272, -271, -270, -269, -268, -267, -265, -264, -263,
@@ -987,7 +994,7 @@ std::vector<int16_t> CSISubcarrierIndex::HE80_996Subcarriers_DataIndices = []() 
                                 490, 491, 492, 493, 494, 495, 496, 497, 498, 499, 500};
 }();
 
-std::vector<int16_t> CSISubcarrierIndex::HE160_1992Subcarriers_DataIndices = []() noexcept -> std::vector<int16_t> {
+std::vector<int16_t> const CSISubcarrierIndex::HE160_1992Subcarriers_DataIndices = []() noexcept {
     return std::vector<int16_t>{-1012, -1011, -1010, -1009, -1008, -1007, -1006, -1005, -1004, -1003, -1002, -1001, -1000, -999, -998, -997, -996, -995, -994, -993, -992, -991, -990, -989, -988, -987, -986, -985, -984, -983, -982, -981, -979, -978, -977, -976, -975, -974, -973, -972, -971, -970, -969, -968, -967, -966, -965, -964, -963, -962, -961, -960, -959, -958, -957, -956, -955, -954, -953, -952, -951, -950, -949, -948, -947, -946, -945, -944, -943, -942, -941, -940, -939, -938, -937, -936,
                                 -935, -934, -933, -932, -931, -930, -929, -928, -927, -926, -925, -924, -923, -922, -921, -920, -919, -918, -917, -916, -915, -914, -913, -911, -910, -909, -908, -907, -906, -905, -904, -903, -902, -901, -900, -899, -898, -897, -896, -895, -894, -893, -892, -891, -890, -889, -888, -887, -886, -885, -884, -883, -882, -881, -880, -879, -878, -877, -876, -875, -874, -873, -872, -871, -870, -869, -868, -867, -866, -865, -864, -863, -862, -861, -860, -859, -858, -857,
                                 -856, -855, -854, -853, -852, -851, -850, -849, -848, -847, -845, -844, -843, -842, -841, -840, -839, -838, -837, -836, -835, -834, -833, -832, -831, -830, -829, -828, -827, -826, -825, -824, -823, -822, -821, -820, -819, -818, -817, -816, -815, -814, -813, -812, -811, -810, -809, -808, -807, -806, -805, -804, -803, -802, -801, -800, -799, -798, -797, -796, -795, -794, -793, -792, -791, -790, -789, -788, -787, -786, -785, -784, -783, -782, -781, -780, -779, -777,
@@ -1013,60 +1020,60 @@ std::vector<int16_t> CSISubcarrierIndex::HE160_1992Subcarriers_DataIndices = [](
                                 942, 943, 944, 945, 946, 947, 948, 949, 950, 951, 952, 953, 954, 955, 956, 957, 958, 959, 960, 961, 962, 963, 964, 965, 966, 967, 968, 969, 970, 971, 972, 973, 974, 975, 976, 977, 978, 979, 981, 982, 983, 984, 985, 986, 987, 988, 989, 990, 991, 992, 993, 994, 995, 996, 997, 998, 999, 1000, 1001, 1002, 1003, 1004, 1005, 1006, 1007, 1008, 1009, 1010, 1011, 1012};
 }();
 
-std::vector<int16_t> CSISubcarrierIndex::NonHT20_52Subcarriers_PilotIndices = []() noexcept -> std::vector<int16_t> {
+std::vector<int16_t> const CSISubcarrierIndex::NonHT20_52Subcarriers_PilotIndices = []() noexcept {
     auto indices = std::vector<int16_t>{5, 19, 32, 46};
     return indices;
 }();
 
-std::vector<int16_t> CSISubcarrierIndex::HTVHT20_56Subcarriers_PilotIndices = []() noexcept -> std::vector<int16_t> {
+std::vector<int16_t> const CSISubcarrierIndex::HTVHT20_56Subcarriers_PilotIndices = []() noexcept {
     auto indices = std::vector<int16_t>{7, 21, 34, 48};
     return indices;
 }();
 
-std::vector<int16_t> CSISubcarrierIndex::HTVHT40_114Subcarriers_PilotIndices = []() noexcept -> std::vector<int16_t> {
+std::vector<int16_t> const CSISubcarrierIndex::HTVHT40_114Subcarriers_PilotIndices = []() noexcept {
     auto indices = std::vector<int16_t>{5, 33, 47, 66, 80, 108};
     return indices;
 }();
 
-std::vector<int16_t> CSISubcarrierIndex::VHT80_242Subcarriers_PilotIndices = []() noexcept -> std::vector<int16_t> {
+std::vector<int16_t> const CSISubcarrierIndex::VHT80_242Subcarriers_PilotIndices = []() noexcept {
     auto indices = std::vector<int16_t>{19, 47, 83, 111, 130, 158, 194, 222};
     return indices;
 }();
 
-std::vector<int16_t> CSISubcarrierIndex::VHT160_484Subcarriers_PilotIndices = []() noexcept -> std::vector<int16_t> {
+std::vector<int16_t> const CSISubcarrierIndex::VHT160_484Subcarriers_PilotIndices = []() noexcept {
     auto indices = std::vector<int16_t>{19, 47, 83, 111, 130, 158, 194, 222, 261, 289, 325, 353, 372, 400, 436, 464};
     return indices;
 }();
 
-std::vector<int16_t> CSISubcarrierIndex::HE20_242Subcarriers_PilotIndices = []() noexcept -> std::vector<int16_t> {
+std::vector<int16_t> const CSISubcarrierIndex::HE20_242Subcarriers_PilotIndices = []() noexcept {
     auto indices = std::vector<int16_t>{6, 32, 74, 100, 141, 167, 209, 235};
     return indices;
 }();
 
-std::vector<int16_t> CSISubcarrierIndex::HE40_484Subcarriers_PilotIndices = []() noexcept -> std::vector<int16_t> {
+std::vector<int16_t> const CSISubcarrierIndex::HE40_484Subcarriers_PilotIndices = []() noexcept {
     auto indices = std::vector<int16_t>{6, 32, 74, 100, 140, 166, 208, 234, 249, 275, 317, 343, 383, 409, 451, 477};
     return indices;
 }();
 
-std::vector<int16_t> CSISubcarrierIndex::HE80_996Subcarriers_PilotIndices = []() noexcept -> std::vector<int16_t> {
+std::vector<int16_t> const CSISubcarrierIndex::HE80_996Subcarriers_PilotIndices = []() noexcept {
     auto indices = std::vector<int16_t>{32, 100, 166, 234, 274, 342, 408, 476, 519, 587, 653, 721, 761, 829, 895, 963};
     return indices;
 }();
 
-std::vector<int16_t> CSISubcarrierIndex::HE160_1992Subcarriers_PilotIndices = []() noexcept -> std::vector<int16_t> {
+std::vector<int16_t> const CSISubcarrierIndex::HE160_1992Subcarriers_PilotIndices = []() noexcept {
     auto indices = std::vector<int16_t>{32, 100, 166, 234, 274, 342, 408, 476, 519, 587, 653, 721, 761, 829, 895, 963, 1028, 1096, 1162, 1230, 1270, 1338, 1404, 1472, 1515, 1583, 1649, 1717, 1757, 1825, 1891, 1959};
     return indices;
 }();
 
-std::vector<int16_t> CSISubcarrierIndex::IWL5300SubcarrierIndices_CBW20 = []() noexcept -> std::vector<int16_t> {
+std::vector<int16_t> const CSISubcarrierIndex::IWL5300SubcarrierIndices_CBW20 = []() noexcept {
     return std::vector<int16_t>{-28, -26, -24, -22, -20, -18, -16, -14, -12, -10, -8, -6, -4, -2, -1, 1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 28};
 }();
 
-std::vector<int16_t> CSISubcarrierIndex::IWL5300SubcarrierIndices_CBW40 = []() noexcept -> std::vector<int16_t> {
+std::vector<int16_t> const CSISubcarrierIndex::IWL5300SubcarrierIndices_CBW40 = []() noexcept {
     return std::vector<int16_t>{-58, -54, -50, -46, -42, -38, -34, -30, -26, -22, -18, -14, -10, -6, -2, 2, 6, 10, 14, 18, 22, 26, 30, 34, 38, 42, 46, 50, 54, 58};
 }();
 
-const std::vector<int16_t> &CSISubcarrierIndex::getAllSubcarrierIndices(PacketFormatEnum format, ChannelBandwidthEnum cbw) {
+const std::vector<int16_t> &CSISubcarrierIndex::getAllSubcarrierIndices(const PacketFormatEnum format, const ChannelBandwidthEnum cbw) {
     if (format == PacketFormatEnum::PacketFormat_HESU) {
         switch (cbw) {
             case ChannelBandwidthEnum::CBW_20:
@@ -1115,7 +1122,7 @@ const std::vector<int16_t> &CSISubcarrierIndex::getAllSubcarrierIndices(PacketFo
     throw std::runtime_error("Unsupported CBW for index computation.");
 }
 
-const std::vector<int16_t> &CSISubcarrierIndex::getPilotSubcarrierIndices(PacketFormatEnum format, ChannelBandwidthEnum cbw) {
+const std::vector<int16_t> &CSISubcarrierIndex::getPilotSubcarrierIndices(const PacketFormatEnum format, const ChannelBandwidthEnum cbw) {
     if (format == PacketFormatEnum::PacketFormat_HESU) {
         switch (cbw) {
             case ChannelBandwidthEnum::CBW_20:
@@ -1164,7 +1171,7 @@ const std::vector<int16_t> &CSISubcarrierIndex::getPilotSubcarrierIndices(Packet
     throw std::runtime_error("Unsupported CBW for pilot index computation.");
 }
 
-const std::vector<int16_t> &CSISubcarrierIndex::getDataSubcarrierIndices(PacketFormatEnum format, ChannelBandwidthEnum cbw) {
+const std::vector<int16_t> &CSISubcarrierIndex::getDataSubcarrierIndices(const PacketFormatEnum format, const ChannelBandwidthEnum cbw) {
     if (format == PacketFormatEnum::PacketFormat_HESU) {
         switch (cbw) {
             case ChannelBandwidthEnum::CBW_20:
@@ -1213,10 +1220,10 @@ const std::vector<int16_t> &CSISubcarrierIndex::getDataSubcarrierIndices(PacketF
     throw std::runtime_error("Unsupported CBW for pilot index computation.");
 }
 
-const std::vector<int16_t> &CSISubcarrierIndex::getIWL5300Subcarriers(ChannelBandwidthEnum cbw) {
+const std::vector<int16_t> &CSISubcarrierIndex::getIWL5300Subcarriers(const ChannelBandwidthEnum cbw) {
     if (cbw == ChannelBandwidthEnum::CBW_20)
         return IWL5300SubcarrierIndices_CBW20;
-    else if (cbw == ChannelBandwidthEnum::CBW_40)
+    if (cbw == ChannelBandwidthEnum::CBW_40)
         return IWL5300SubcarrierIndices_CBW40;
 
     throw std::runtime_error("Unsupported CBW for IWL5300 subcarrier index query.");
