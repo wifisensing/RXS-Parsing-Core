@@ -129,7 +129,7 @@ struct PicoScenesFrameTxParameters {
 
             if (guardInterval > GuardIntervalEnum::GI_800)
                 throw std::invalid_argument("Invalid Tx GI: " + GuardInterval2String(guardInterval) + " for VHT frame.");
-        } else if (frameType == PacketFormatEnum::PacketFormat_HESU) {
+        } else if (frameType == PacketFormatEnum::PacketFormat_HESU || frameType == PacketFormatEnum::PacketFormat_HEMU) {
             if (coding[0] == ChannelCodingEnum::BCC && cbw > ChannelBandwidthEnum::CBW_20)
                 throw std::invalid_argument("Invalid Tx Coding: " + ChannelCoding2String(coding[0]) + " for HE-SU frame.");
 
@@ -159,12 +159,53 @@ struct PicoScenesFrameTxParameters {
 
             if ((heLTFType == 2 || heLTFType == 1) && guardInterval == GuardIntervalEnum::GI_3200)
                 throw std::invalid_argument("Invalid GI " + std::to_string(static_cast<uint16_t>(guardInterval)) + " for HE-SU HE-LTF compression mode 1 or 2. Must be 800 or 1600ns.");
-        } else if (frameType == PacketFormatEnum::PacketFormat_HEMU) {
-            // TODO add Wi-Fi 6 MU section
         } else if (frameType == PacketFormatEnum::PacketFormat_EHTSU) {
-            // TODO add Wi-Fi 7 section
-        } else if (frameType == PacketFormatEnum::PacketFormat_EHTMU) {
-            // TODO add Wi-Fi 7 MU section
+            if (coding[0] == ChannelCodingEnum::BCC && cbw > ChannelBandwidthEnum::CBW_20)
+                throw std::invalid_argument(">20 MHz CBW EHT-SU format requires the LDPC coding.");
+
+            if (coding[0] == ChannelCodingEnum::BCC && numSTS[0] >= 4)
+                throw std::invalid_argument(">4 STS EHT-SU format requires the LDPC coding.");
+
+            if (coding[0] == ChannelCodingEnum::BCC && mcs[0] > 9)
+                throw std::invalid_argument(" >9 MCS EHT-SU format requires the LDPC coding.");
+
+            if (mcs[0] > 13)
+                throw std::invalid_argument("Invalid Tx MCS: " + std::to_string(mcs[0]) + " for EHT-SU frame.");
+
+            if (auto expectedNumEHTLTF = [] (uint8_t numSTS) {
+                switch (numSTS) {
+                    case 1:
+                        return 1;
+                    case 2:
+                        return 2;
+                    case 3:
+                        [[fallthrough]]
+                    case 4:
+                        return 4;
+                    case 5:
+                        [[fallthrough]]
+                    case 6:
+                        return 6;
+                    case 7:
+                        [[fallthrough]];
+                    default:
+                        return 8;
+                }
+            }(numSTS[0]) + numExtraSounding; numExtraSounding > 1 && (expectedNumEHTLTF == 3 || expectedNumEHTLTF == 5 || expectedNumEHTLTF == 7 || expectedNumEHTLTF > 8)) {
+                    throw std::invalid_argument("Invalid number of Extra EHT-LTF: " + std::to_string(numExtraSounding) + " for EHT-LTF frame with " + std::to_string(numSTS[0]) + " STSs.");
+            }
+
+            if (guardInterval == GuardIntervalEnum::GI_400)
+                throw std::invalid_argument("Invalid GI " + std::to_string(static_cast<uint16_t>(guardInterval)) + " for EHT-SU frame. Must be 800, 1600 or 3200ns.");
+
+            if (ehtLTFType == 1)
+                throw std::invalid_argument("Invalid EHT-LTF compression mode " + std::to_string(ehtLTFType) + " for EHT-SU frame. Must be 2 or 4.");
+
+            if (ehtLTFType == 4 && guardInterval == GuardIntervalEnum::GI_1600)
+                throw std::invalid_argument("Invalid GI " + std::to_string(static_cast<uint16_t>(guardInterval)) + " for EHT-SU EHT-LTF compression mode 4. Must be 800 or 3200ns.");
+
+            if (ehtLTFType == 2 && guardInterval == GuardIntervalEnum::GI_3200)
+                throw std::invalid_argument("Invalid GI " + std::to_string(static_cast<uint16_t>(guardInterval)) + " for EHT-SU EHT-LTF compression mode 1 or 2. Must be 800 or 1600ns.");
         }
     }
 
