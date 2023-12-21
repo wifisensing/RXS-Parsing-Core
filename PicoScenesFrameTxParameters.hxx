@@ -179,11 +179,11 @@ struct PicoScenesFrameTxParameters {
                     case 2:
                         return 2;
                     case 3:
-                        [[fallthrough]]
+                        [[fallthrough]];
                     case 4:
                         return 4;
                     case 5:
-                        [[fallthrough]]
+                        [[fallthrough]];
                     case 6:
                         return 6;
                     case 7:
