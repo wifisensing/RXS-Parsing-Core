@@ -9,7 +9,7 @@
 #include "PicoScenesCommons.hxx"
 
 template<typename Iterator>
-void parseQCA9300CSIData(Iterator outputArray, const uint8_t *csiData, int nSTS, int nRx, int nTones) {
+void parseQCA9300CSIData(Iterator outputArray, const uint8_t *csiData, const int nSTS, const int nRx, const int nTones) {
 
     auto parse10bitsValues = [](const uint8_t rawByte[5], int outputArray[4]) {
         static uint16_t negativeSignBit = (1 << (10 - 1));
@@ -24,16 +24,16 @@ void parseQCA9300CSIData(Iterator outputArray, const uint8_t *csiData, int nSTS,
         }
     };
 
-    int valuePos, pos, rxIndex, txIndex, toneIndex, totalTones = nRx * nSTS * nTones;
-    int tempArray[4];
+    int totalTones = nRx * nSTS * nTones;
     for (auto i = 0; i < totalTones / 2; i++) {
+        int tempArray[4];
         parse10bitsValues(csiData + i * 5, tempArray);
 
-        valuePos = i * 2;
-        rxIndex = valuePos % nRx;
-        txIndex = (valuePos / nRx) % nSTS;
-        toneIndex = valuePos / (nRx * nSTS);
-        pos = rxIndex * (nSTS * nTones) + txIndex * nTones + toneIndex;
+        int valuePos = i * 2;
+        int rxIndex = valuePos % nRx;
+        int txIndex = (valuePos / nRx) % nSTS;
+        int toneIndex = valuePos / (nRx * nSTS);
+        int pos = rxIndex * (nSTS * nTones) + txIndex * nTones + toneIndex;
         outputArray[pos].real(tempArray[1]);
         outputArray[pos].imag(tempArray[0]);
 
@@ -62,9 +62,9 @@ std::vector<size_t> sort_indexes(const std::vector<T> &v) {
 }
 
 template<typename Iterator>
-void parseIWL5300CSIData(Iterator csi_matrix, const uint8_t *payload, int ntx, int nrx, uint8_t ant_sel) {
+void parseIWL5300CSIData(Iterator csi_matrix, const uint8_t *payload, const int ntx, const int nrx, const uint8_t ant_sel) {
 
-    auto positionComputationWRTPermutation = [](int ntx, int num_tones, int ntxIdx, int nrxIdx, int subcarrierIdx, std::optional<Uint8Vector> ant_sel) -> int {
+    auto positionComputationWRTPermutation = [](const int ntx, const int num_tones, const int ntxIdx, const int nrxIdx, const int subcarrierIdx, const std::optional<Uint8Vector>& ant_sel) -> int {
         auto new_nrxIdx = nrxIdx;
         if (ant_sel && !ant_sel->empty()) {
             auto sorted_indexes = sort_indexes(*ant_sel);
@@ -78,29 +78,26 @@ void parseIWL5300CSIData(Iterator csi_matrix, const uint8_t *payload, int ntx, i
     std::vector<uint8_t> antSelVector = [&](uint8_t ant_sel) {
         auto v = std::vector<uint8_t>();
         if (nrx > 1) {
-            v.emplace_back(static_cast<unsigned char>(((unsigned) ant_sel & 0x1U) + 1));
-            v.emplace_back(static_cast<unsigned char>((((unsigned) ant_sel >> 0x2U) & 0x3U) + 1));
+            v.emplace_back(static_cast<unsigned char>((static_cast<unsigned>(ant_sel) & 0x1U) + 1));
+            v.emplace_back(static_cast<unsigned char>(((static_cast<unsigned>(ant_sel) >> 0x2U) & 0x3U) + 1));
         };
         if (nrx > 2)
-            v.emplace_back(static_cast<unsigned char>((((unsigned) ant_sel >> 0x4U) & 0x3U) + 1));
+            v.emplace_back(static_cast<unsigned char>(((static_cast<unsigned>(ant_sel) >> 0x4U) & 0x3U) + 1));
         return v;
     }(ant_sel);
 
     uint32_t index = 0;
-    uint8_t remainder;
-
-//    auto position = 0;
     for (auto subcarrierIdx = 0; subcarrierIdx < 30; subcarrierIdx++) {
         index += 3;
-        remainder = index % 8;
+        uint8_t remainder = index % 8;
 
         for (auto nrxIdx = 0; nrxIdx < nrx; nrxIdx++) {
             for (auto ntxIdx = 0; ntxIdx < ntx; ntxIdx++) {
                 auto position = positionComputationWRTPermutation(ntx, 30, ntxIdx, nrxIdx, subcarrierIdx, antSelVector);
                 char tmp1 = (payload[index / 8] >> remainder) | (payload[index / 8 + 1] << (8 - remainder));
                 char tmp2 = (payload[index / 8 + 1] >> remainder) | (payload[index / 8 + 2] << (8 - remainder));
-                csi_matrix[position].real((double) tmp1);
-                csi_matrix[position].imag((double) tmp2);
+                csi_matrix[position].real(static_cast<double>(tmp1));
+                csi_matrix[position].imag(static_cast<double>(tmp2));
                 index += 16;
             }
         }
@@ -283,7 +280,7 @@ private:
 /**
  * The CSI Segment data
  */
-class CSISegment : public AbstractPicoScenesFrameSegment {
+class CSISegment final : public AbstractPicoScenesFrameSegment {
 public:
     CSISegment();
 
