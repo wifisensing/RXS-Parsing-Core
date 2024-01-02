@@ -798,7 +798,7 @@ std::map<uint16_t, std::function<std::optional<CSI>(const uint8_t *, uint32_t)>>
 CSISegment::CSISegment() : AbstractPicoScenesFrameSegment("CSI", 0x6U) {}
 
 CSISegment::CSISegment(CSI &&csi) : AbstractPicoScenesFrameSegment("CSI", 0x6U), csi(std::move(csi)) {
-    setSegmentPayload(std::move(csi.toBuffer()));
+    setSegmentPayload(std::move(this->csi.toBuffer()));
 }
 
 CSISegment::CSISegment(const uint8_t *buffer, uint32_t bufferLength) : AbstractPicoScenesFrameSegment(buffer, bufferLength) {
