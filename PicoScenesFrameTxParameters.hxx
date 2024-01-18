@@ -43,6 +43,7 @@ struct PicoScenesFrameTxParameters {
     uint8_t scramblerState{0x27};
     double txIQAmplitudeImbalance_dB{0};
     double txIQPhaseImbalance_rad{0};
+    std::optional<double> fixedPowerScale{std::nullopt};
     double hardwareSamplingRate{20e6};
     double samplingRateOffset{0};
     double carrierFrequencyOffset{0};
