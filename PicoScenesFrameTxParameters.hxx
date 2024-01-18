@@ -62,7 +62,7 @@ struct PicoScenesFrameTxParameters {
     std::optional<TxPrecodingParameters> precodingParameters = std::nullopt;
 
     void applyPreset(const std::string &presetName) {
-        if (FrontEndModePreset::getPresetMap().find(presetName) == FrontEndModePreset::getPresetMap().cend())
+        if (!FrontEndModePreset::getPresetMap().contains(presetName))
             throw std::invalid_argument("invalid frontend mode preset name: " + presetName + "\n" + FrontEndModePreset::printHelpContentForFrontEndModePreset());
         applyPreset(FrontEndModePreset::getPresetMap().at(presetName));
     }
@@ -173,7 +173,7 @@ struct PicoScenesFrameTxParameters {
             if (mcs[0] > 13)
                 throw std::invalid_argument("Invalid Tx MCS: " + std::to_string(mcs[0]) + " for EHT-SU frame.");
 
-            if (auto expectedNumEHTLTF = [] (uint8_t numSTS) {
+            if (const auto expectedNumEHTLTF = [] (const uint8_t numSTS) {
                 switch (numSTS) {
                     case 1:
                         return 1;
@@ -214,9 +214,9 @@ struct PicoScenesFrameTxParameters {
         std::stringstream ss;
         ss << "tx_param[preset=" << (preset ? preset->presetName : "NULL") << ", type=" << PacketFormat2String(frameType) << ", CBW=" << ChannelBandwidth2String(cbw) << ", MCS=" << static_cast<int16_t>(mcs[0]) << ", numSTS=" << static_cast<int16_t>(numSTS[0]) << ", Coding=" << ChannelCoding2String(coding[0]) << ", GI=" << GuardInterval2String(guardInterval);
         if (frameType == PacketFormatEnum::PacketFormat_HT) {
-            ss << ", numESS=" << numExtraSounding << ", sounding(11n)=" << forceSounding;
+            ss << ", numESS=" << static_cast<int>(numExtraSounding) << ", sounding(11n)=" << forceSounding;
         } else if (frameType == PacketFormatEnum::PacketFormat_HESU) {
-            ss << ", HiDoppler=" << int(heMidamblePeriodicity) << ", ER=" << txHEExtendedRange;
+            ss << ", HiDoppler=" << static_cast<int>(heMidamblePeriodicity) << ", ER=" << txHEExtendedRange;
         } else if (frameType == PacketFormatEnum::PacketFormat_EHTSU) {
             // TODO add Wi-Fi 7 section
         }
