@@ -272,13 +272,13 @@ auto ModularPicoScenesRxFrame::fromBuffer(const uint8_t* inputBuffer, const uint
 std::string ModularPicoScenesRxFrame::toString() const {
     std::stringstream ss;
     ss << "RxFrame:{";
-    ss << rxSBasicSegment;
-    ss << ", Rx" << rxExtraInfoSegment;
+    ss << *rxSBasicSegment;
+    ss << ", Rx" << *rxExtraInfoSegment;
     if (mvmExtraSegment)
         ss << ", " << *mvmExtraSegment;
     if (sdrExtraSegment)
         ss << ", " << *sdrExtraSegment;
-    ss << ", " << "(" << PacketFormat2String(csiSegment->getCSI().packetFormat) << ")" << csiSegment;
+    ss << ", " << "(" << PacketFormat2String(csiSegment->getCSI().packetFormat) << ")" << *csiSegment;
     if (legacyCSISegment)
         ss << ", " << *legacyCSISegment;
     if (basebandSignalSegment)
@@ -307,7 +307,7 @@ std::string ModularPicoScenesRxFrame::toString() const {
         std::stringstream segss;
         segss << "Payloads:(";
         for (const auto &segment: payloadSegments) {
-            segss << segment << ", ";
+            segss << *segment << ", ";
         }
         auto temp = segss.str();
         temp.erase(temp.end() - 2, temp.end());
@@ -315,12 +315,12 @@ std::string ModularPicoScenesRxFrame::toString() const {
         ss << ", " << temp;
     }
     if (!cargoSegments.empty())
-        ss << ", " << cargoSegments[0]; // TODO better display for cargo
+        ss << ", " << *cargoSegments[0]; // TODO better display for cargo
     if (!txUnknownSegments.empty()) {
         std::stringstream segss;
         segss << "TxSegments:(";
         for (const auto & [name, segment]: txUnknownSegments) {
-            segss << segment << ", ";
+            segss << *segment << ", ";
         }
         auto temp = segss.str();
         temp.erase(temp.end() - 2, temp.end());
