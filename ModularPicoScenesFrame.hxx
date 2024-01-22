@@ -33,7 +33,7 @@ struct ieee80211_mac_frame_header_frame_control_field {
     // type 0 -- Management Frame, subtype 0xE -- Action Frame NO ACK.  Supported by both QCA9300 and IWL5300.
     ieee80211_mac_frame_header_frame_control_field() : version(0), type(0), subtype(0xe), toDS(0), fromDS(0), moreFrags(0), retry(0), power_mgmt(0), more(0), protect(0), order(1) {}
 
-    std::string getTypeString() const;
+    [[nodiscard]] std::string getTypeString() const;
 
 } __attribute__ ((__packed__));
 
@@ -100,27 +100,27 @@ class ModularPicoScenesRxFrame {
 public:
     ModularPicoScenesRxFrameHeader rxFrameHeader;
     // Rx side segments
-    RxSBasicSegment rxSBasicSegment;
-    ExtraInfoSegment rxExtraInfoSegment;
-    CSISegment csiSegment;
-    std::optional<MVMExtraSegment> mvmExtraSegment;
-    std::optional<SDRExtraSegment> sdrExtraSegment;
-    std::optional<CSISegment> legacyCSISegment;
-    std::optional<BasebandSignalSegment> basebandSignalSegment;
+    std::shared_ptr<RxSBasicSegment> rxSBasicSegment;
+    std::shared_ptr<ExtraInfoSegment> rxExtraInfoSegment;
+    std::shared_ptr<CSISegment> csiSegment;
+    std::shared_ptr<MVMExtraSegment> mvmExtraSegment;
+    std::shared_ptr<SDRExtraSegment> sdrExtraSegment;
+    std::shared_ptr<CSISegment> legacyCSISegment;
+    std::shared_ptr<BasebandSignalSegment> basebandSignalSegment;
 
     // Tx side header and segments
     ieee80211_mac_frame_header standardHeader;
     std::optional<PicoScenesFrameHeader> PicoScenesHeader;
-    std::optional<ExtraInfoSegment> txExtraInfoSegment;
-    std::vector<PayloadSegment> payloadSegments;
-    std::vector<CargoSegment> cargoSegments;
+    std::shared_ptr<ExtraInfoSegment> txExtraInfoSegment;
+    std::vector<std::shared_ptr<PayloadSegment>> payloadSegments;
+    std::vector<std::shared_ptr<CargoSegment>> cargoSegments;
 
-    std::map<std::string, AbstractPicoScenesFrameSegment> rxUnknownSegments;
-    std::map<std::string, AbstractPicoScenesFrameSegment> txUnknownSegments;
+    std::map<std::string, std::shared_ptr<AbstractPicoScenesFrameSegment>> rxUnknownSegments;
+    std::map<std::string, std::shared_ptr<AbstractPicoScenesFrameSegment>> txUnknownSegments;
     std::vector<Uint8Vector> mpdus; // unified single-MPDU and A-MPDU
     bool isNDP{false};
 
-    static std::optional<ModularPicoScenesRxFrame> fromBuffer(const uint8_t *buffer, uint32_t bufferLength, bool interpolateCSI = false);
+    static std::optional<ModularPicoScenesRxFrame> fromBuffer(const uint8_t *inputBuffer, uint32_t bufferLength, bool interpolateCSI = false);
 
     static std::optional<ModularPicoScenesRxFrame> concatenateFragmentedPicoScenesRxFrames(const std::vector<ModularPicoScenesRxFrame> &frameQueue);
 
@@ -134,7 +134,7 @@ private:
     Uint8Vector rawBuffer;
 };
 
-std::ostream &operator<<(std::ostream &os, const ModularPicoScenesRxFrame &parameters);
+std::ostream &operator<<(std::ostream &os, const ModularPicoScenesRxFrame &rxframe);
 
 class ModularPicoScenesTxFrame {
 public:
@@ -170,7 +170,7 @@ public:
 
     ModularPicoScenesTxFrame & prebuildMPDU();
 
-    std::vector<ModularPicoScenesTxFrame> autoSplit(int16_t maxSegmentBuffersLength = 1400, std::optional<uint16_t> firstSegmentCappingLength = std::nullopt) const;
+    [[nodiscard]] std::vector<ModularPicoScenesTxFrame> autoSplit(int16_t maxSegmentBuffersLength = 1400, std::optional<uint16_t> firstSegmentCappingLength = std::nullopt) const;
 
     ModularPicoScenesTxFrame &setMoreFrags();
 

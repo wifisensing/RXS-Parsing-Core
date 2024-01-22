@@ -4,7 +4,7 @@
 
 #include "RXSExtraInfo.hxx"
 
-void featureCodeInterpretation(uint32_t featureCode, struct ExtraInfo *extraInfo) {
+void featureCodeInterpretation(const uint32_t featureCode, ExtraInfo *extraInfo) {
     extraInfo->hasLength = extraInfoHasLength(featureCode);
     extraInfo->hasVersion = extraInfoHasVersion(featureCode);
     extraInfo->hasMacAddr_cur = extraInfoHasMacAddress_Current(featureCode);
@@ -91,10 +91,10 @@ ExtraInfo::ExtraInfo() {
     setVersion(2);
 }
 
-int ExtraInfo::fromBinary(const uint8_t *extraInfoPtr, struct ExtraInfo *extraInfo, uint32_t suppliedFeatureCode) {
+int ExtraInfo::fromBinary(const uint8_t *extraInfoPtr, struct ExtraInfo *extraInfo, const uint32_t suppliedFeatureCode) {
     int pos = 0;
     if (suppliedFeatureCode == 0) {
-        extraInfo->featureCode = *((uint32_t *) extraInfoPtr);
+        extraInfo->featureCode = *reinterpret_cast<const uint32_t *>(extraInfoPtr);
         pos += 4;
     } else
         extraInfo->featureCode = suppliedFeatureCode;
@@ -119,11 +119,11 @@ int ExtraInfo::fromBinary(const uint8_t *extraInfoPtr, struct ExtraInfo *extraIn
     GETVALUE(hasCF, cf)
     if (extraInfo->version != 2) {
         if (extraInfo->hasTxTSF) {
-            extraInfo->txTSF = *(uint32_t *) (extraInfoPtr + pos);
+            extraInfo->txTSF = *reinterpret_cast<const uint32_t *>(extraInfoPtr + pos);
             pos += 4;
         }
         if (extraInfo->hasLastHWTxTSF) {
-            extraInfo->lastHwTxTSF = *(uint32_t *) (extraInfoPtr + pos);
+            extraInfo->lastHwTxTSF = *reinterpret_cast<const uint32_t *>(extraInfoPtr + pos);
             pos += 4;
         }
     } else {
@@ -140,8 +140,8 @@ int ExtraInfo::fromBinary(const uint8_t *extraInfoPtr, struct ExtraInfo *extraIn
     if (extraInfo->hasAntennaSelection) {
         auto ant_sel_raw = extraInfoPtr[pos++];
         extraInfo->ant_sel[0] = ((ant_sel_raw) & 0x1U) + 1;
-        extraInfo->ant_sel[1] = (((unsigned) ant_sel_raw >> 0x2U) & 0x3U) + 1;
-        extraInfo->ant_sel[2] = (((unsigned) ant_sel_raw >> 0x4U) & 0x3U) + 1;
+        extraInfo->ant_sel[1] = ((static_cast<unsigned>(ant_sel_raw) >> 0x2U) & 0x3U) + 1;
+        extraInfo->ant_sel[2] = ((static_cast<unsigned>(ant_sel_raw) >> 0x4U) & 0x3U) + 1;
     }
     GETVALUE(hasSamplingRate, samplingRate)
     GETVALUE(hasCFO, cfo)
@@ -152,7 +152,7 @@ int ExtraInfo::fromBinary(const uint8_t *extraInfoPtr, struct ExtraInfo *extraIn
 #undef GETVALUE
 }
 
-std::optional<ExtraInfo> ExtraInfo::fromBuffer(const uint8_t *extraInfoPtr, uint32_t suppliedFeatureCode) {
+std::optional<ExtraInfo> ExtraInfo::fromBuffer(const uint8_t *extraInfoPtr, const uint32_t suppliedFeatureCode) {
     ExtraInfo extraInfo;
     auto parsedLength = fromBinary(extraInfoPtr, &extraInfo, suppliedFeatureCode);
     if (suppliedFeatureCode != 0 && parsedLength == extraInfo.calculateBufferLength())
@@ -217,7 +217,7 @@ int ExtraInfo::toBuffer(uint8_t *buffer) const {
         pos += sizeof(v); \
     } \
 
-    *(uint32_t *) buffer = this->featureCode;
+    *reinterpret_cast<uint32_t *>(buffer) = this->featureCode;
     uint16_t pos = 4;
     SETBUFF(hasLength, length)
     SETBUFF(hasVersion, version)
@@ -240,8 +240,8 @@ int ExtraInfo::toBuffer(uint8_t *buffer) const {
     SETBUFF(hasPLLClkSel, pll_clock_select)
     SETBUFF(hasAGC, agc)
     if (hasAntennaSelection) {
-        auto *antV = (uint8_t *) (buffer + pos++);
-        *antV = (ant_sel[0] - 1) + ((unsigned) (ant_sel[1] - 1) << 2U) + ((unsigned) (ant_sel[2] - 1) << 4U);
+        auto *antV = buffer + pos++;
+        *antV = (ant_sel[0] - 1) + (static_cast<unsigned>(ant_sel[1] - 1) << 2U) + (static_cast<unsigned>(ant_sel[2] - 1) << 4U);
     }
     SETBUFF(hasSamplingRate, samplingRate)
     SETBUFF(hasCFO, cfo)
@@ -252,16 +252,16 @@ int ExtraInfo::toBuffer(uint8_t *buffer) const {
 #undef SETBUFF
 }
 
-void ExtraInfo::setLength(uint16_t lengthV) {
+void ExtraInfo::setLength(const uint16_t lengthV) {
     hasLength = true;
     featureCode |= PICOSCENES_EXTRAINFO_HASLENGTH;
-    ExtraInfo::length = lengthV;
+    length = lengthV;
 }
 
-void ExtraInfo::setVersion(uint64_t versionV) {
+void ExtraInfo::setVersion(const uint64_t versionV) {
     hasVersion = true;
     featureCode |= PICOSCENES_EXTRAINFO_HASVERSION;
-    ExtraInfo::version = versionV;
+    version = versionV;
     updateLength();
 }
 
@@ -279,70 +279,70 @@ void ExtraInfo::setMacaddr_cur(const uint8_t addr_cur[6]) {
     updateLength();
 }
 
-void ExtraInfo::setChansel(uint32_t chanselV) {
+void ExtraInfo::setChansel(const uint32_t chanselV) {
     hasChansel = true;
     featureCode |= PICOSCENES_EXTRAINFO_HASCHANSEL;
-    ExtraInfo::chansel = chanselV;
+    chansel = chanselV;
     updateLength();
 }
 
-void ExtraInfo::setBmode(uint8_t bmodeV) {
+void ExtraInfo::setBmode(const uint8_t bmodeV) {
     hasBMode = true;
     featureCode |= PICOSCENES_EXTRAINFO_HASBMODE;
-    ExtraInfo::bmode = bmodeV;
+    bmode = bmodeV;
     updateLength();
 }
 
 void ExtraInfo::setTxChainMask(uint8_t txChainMaskV) {
     hasTxChainMask = true;
     featureCode |= PICOSCENES_EXTRAINFO_HASTXCHAINMASK;
-    ExtraInfo::txChainMask = txChainMaskV;
+    txChainMask = txChainMaskV;
     updateLength();
 }
 
-void ExtraInfo::setRxChainMask(uint8_t rxChainMaskV) {
+void ExtraInfo::setRxChainMask(const uint8_t rxChainMaskV) {
     hasRxChainMask = true;
     featureCode |= PICOSCENES_EXTRAINFO_HASRXCHAINMASK;
-    ExtraInfo::rxChainMask = rxChainMaskV;
+    rxChainMask = rxChainMaskV;
     updateLength();
 }
 
-void ExtraInfo::setTxpower(uint8_t txpowerV) {
+void ExtraInfo::setTxpower(const uint8_t txpowerV) {
     hasTxpower = true;
     featureCode |= PICOSCENES_EXTRAINFO_HASTXPOWER;
-    ExtraInfo::txpower = txpowerV;
+    txpower = txpowerV;
     updateLength();
 }
 
 void ExtraInfo::setCf(uint64_t cfV) {
     hasCF = true;
     featureCode |= PICOSCENES_EXTRAINFO_HASCF;
-    ExtraInfo::cf = cfV;
+    cf = cfV;
     updateLength();
 }
 
-void ExtraInfo::setTxTsf(uint64_t txTsfV) {
+void ExtraInfo::setTxTsf(const uint64_t txTsfV) {
     hasTxTSF = true;
     featureCode |= PICOSCENES_EXTRAINFO_HASTXTSF;
     txTSF = txTsfV;
     updateLength();
 }
 
-void ExtraInfo::setLastHwTxTsf(uint64_t lastHwTxTsfV) {
+void ExtraInfo::setLastHwTxTsf(const uint64_t lastHwTxTsfV) {
     hasLastHWTxTSF = true;
     featureCode |= PICOSCENES_EXTRAINFO_HASLASTHWTXTSF;
     lastHwTxTSF = lastHwTxTsfV;
     updateLength();
 }
 
-void ExtraInfo::setChannelFlags(uint16_t channelFlagsV) {
+void ExtraInfo::setChannelFlags(const uint16_t channelFlagsV) {
     hasChannelFlags = true;
     featureCode |= PICOSCENES_EXTRAINFO_HASCHANNELFLAGS;
     ExtraInfo::channelFlags = channelFlagsV;
     updateLength();
 }
 
-void ExtraInfo::setTxNess(uint8_t txNess) {
+void ExtraInfo::setTxNess(const uint8_t txNess) {
     hasTxNess = true;
     featureCode |= PICOSCENES_EXTRAINFO_HASTXNESS;
     tx_ness = txNess;
@@ -352,18 +352,18 @@ void ExtraInfo::setTxNess(uint8_t txNess) {
 void ExtraInfo::setTuningPolicy(uint8_t tuningPolicyV) {
     hasTuningPolicy = true;
     featureCode |= PICOSCENES_EXTRAINFO_HASTUNINGPOLICY;
-    ExtraInfo::tuningPolicy = AtherosCFTuningPolicy(tuningPolicyV);
+    tuningPolicy = static_cast<AtherosCFTuningPolicy>(tuningPolicyV);
     updateLength();
 }
 
-void ExtraInfo::setPllRate(uint16_t pllRateV) {
+void ExtraInfo::setPllRate(const uint16_t pllRateV) {
     hasPLLRate = true;
     featureCode |= PICOSCENES_EXTRAINFO_HASPLLRATE;
     pll_rate = pllRateV;
     updateLength();
 }
 
-void ExtraInfo::setPllRefdiv(uint8_t pllRefdivV) {
+void ExtraInfo::setPllRefdiv(const uint8_t pllRefdivV) {
     hasPLLRefDiv = true;
     featureCode |= PICOSCENES_EXTRAINFO_HASPLLREFDIV;
     pll_refdiv = pllRefdivV;
@@ -391,28 +391,28 @@ void ExtraInfo::setAntennaSelection(const uint8_t sel[3]) {
     updateLength();
 }
 
-void ExtraInfo::setSamplingRate(double sf) {
+void ExtraInfo::setSamplingRate(const double sf) {
     hasSamplingRate = true;
     featureCode |= PICOSCENES_EXTRAINFO_HASSAMPLINGRATE;
     samplingRate = sf;
     updateLength();
 }
 
-void ExtraInfo::setCFO(int32_t cfov) {
+void ExtraInfo::setCFO(const int32_t cfov) {
     hasCFO = true;
     featureCode |= PICOSCENES_EXTRAINFO_HASCFO;
     cfo = cfov;
     updateLength();
 }
 
-void ExtraInfo::setSFO(int32_t sfov) {
+void ExtraInfo::setSFO(const int32_t sfov) {
     hasSFO = true;
     featureCode |= PICOSCENES_EXTRAINFO_HASSFO;
     sfo = sfov;
     updateLength();
 }
 
-void ExtraInfo::setTemperature(int8_t temperaturev) {
+void ExtraInfo::setTemperature(const int8_t temperaturev) {
     hasTemperature = true;
     featureCode |= PICOSCENES_EXTRAINFO_HASTEMPERATURE;
     temperature = temperaturev;
@@ -431,9 +431,9 @@ std::string ExtraInfo::toString() const {
     if (hasVersion)
         ss << "ver=0x" << std::hex << version << ", ";
     if (hasMacAddr_cur)
-        ss << "mac_cur[4-6]=" << std::nouppercase << std::setfill('0') << std::setw(2) << std::right << std::hex << int(macaddr_cur[3]) << ":" << int(macaddr_cur[4]) << ":" << int(macaddr_cur[5]) << ", ";
+        ss << "mac_cur[4-6]=" << std::nouppercase << std::setfill('0') << std::setw(2) << std::right << std::hex << static_cast<int>(macaddr_cur[3]) << ":" << static_cast<int>(macaddr_cur[4]) << ":" << static_cast<int>(macaddr_cur[5]) << ", ";
     if (hasMacAddr_cur)
-        ss << "mac_rom[4-6]=" << std::nouppercase << std::setfill('0') << std::setw(2) << std::right << std::hex << int(macaddr_rom[3]) << ":" << int(macaddr_rom[4]) << ":" << int(macaddr_rom[5]) << ", ";
+        ss << "mac_rom[4-6]=" << std::nouppercase << std::setfill('0') << std::setw(2) << std::right << std::hex << static_cast<int>(macaddr_rom[3]) << ":" << static_cast<int>(macaddr_rom[4]) << ":" << static_cast<int>(macaddr_rom[5]) << ", ";
     if (hasChansel)
         ss << "chansel=" << std::to_string(chansel) << ", ";
     if (hasBMode)
@@ -486,7 +486,7 @@ std::string ExtraInfo::toString() const {
     return temp;
 }
 
-std::ostream &operator<<(std::ostream &os, const ExtraInfo &ei) {
-    os << ei.toString();
+std::ostream &operator<<(std::ostream &os, const ExtraInfo &extraInfo) {
+    os << extraInfo.toString();
     return os;
 }

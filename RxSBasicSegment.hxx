@@ -43,7 +43,7 @@ struct RxSBasic {
 
     [[nodiscard]] std::string toString() const;
 
-    std::vector<uint8_t> toBuffer();
+    std::vector<uint8_t> toBuffer() const;
 
 } __attribute__ ((__packed__));
 
@@ -61,7 +61,7 @@ public:
 
     [[nodiscard]] const RxSBasic &getBasic() const;
 
-    void setBasic(const RxSBasic &basic);
+    void setBasic(const RxSBasic &basicV);
 
     [[nodiscard]] std::string toString() const override;
 

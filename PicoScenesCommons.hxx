@@ -32,9 +32,9 @@ using Uint8Vector = std::vector<uint8_t>;
 /**
  * IWL5300 can measure CSI for this MAC address in monitor mode. A pure magic MAC address
  */
-static const std::array<uint8_t, 6> MagicIntel123456{0x00, 0x16, 0xea, 0x12, 0x34, 0x56};
+static constexpr std::array<uint8_t, 6> MagicIntel123456{0x00, 0x16, 0xea, 0x12, 0x34, 0x56};
 
-static const std::array<uint8_t, 6> BroadcastFFMAC{0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
+static constexpr std::array<uint8_t, 6> BroadcastFFMAC{0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
 
 /**
  * @brief PicoScenes supported device type
@@ -136,7 +136,7 @@ enum class ChannelCodingEnum : uint8_t {
  * Check the specified device type is Intel MVM-based NIC (AX200 or AX210)
  * @return
  */
-inline bool isIntelMVMTypeNIC(PicoScenesDeviceType psdt) {
+inline bool isIntelMVMTypeNIC(const PicoScenesDeviceType psdt) {
     return psdt == PicoScenesDeviceType::IWLMVM_AX200 || psdt == PicoScenesDeviceType::IWLMVM_AX210;
 }
 
@@ -144,7 +144,7 @@ inline bool isIntelMVMTypeNIC(PicoScenesDeviceType psdt) {
  * Check the specified device type is COTS Wi-Fi NICS (210/200/9300/5300/802)
  * @return
  */
-inline bool isCOTSNIC(PicoScenesDeviceType psdt) {
+inline bool isCOTSNIC(const PicoScenesDeviceType psdt) {
     return isIntelMVMTypeNIC(psdt) || psdt == PicoScenesDeviceType::QCA9300 || psdt == PicoScenesDeviceType::IWL5300 || psdt == PicoScenesDeviceType::MAC80211Compatible;
 }
 
@@ -153,11 +153,11 @@ inline bool isCOTSNIC(PicoScenesDeviceType psdt) {
  * @param psdt
  * @return
  */
-inline bool isSDR(PicoScenesDeviceType psdt) {
+inline bool isSDR(const PicoScenesDeviceType psdt) {
     return psdt == PicoScenesDeviceType::USRP || psdt == PicoScenesDeviceType::SoapySDR;
 }
 
-inline std::string DeviceType2String(PicoScenesDeviceType type) {
+inline std::string DeviceType2String(const PicoScenesDeviceType type) {
     switch (type) {
         case PicoScenesDeviceType::QCA9300:
             return "QCA9300";
@@ -182,7 +182,7 @@ inline std::string DeviceType2String(PicoScenesDeviceType type) {
     }
 }
 
-inline std::string DeviceSubtype2String(PicoScenesDeviceSubtype subtype) {
+inline std::string DeviceSubtype2String(const PicoScenesDeviceSubtype subtype) {
     switch (subtype) {
         case PicoScenesDeviceSubtype::Unknown:
             return "Unknown";
@@ -221,7 +221,7 @@ inline std::string DeviceSubtype2String(PicoScenesDeviceSubtype subtype) {
     }
 }
 
-inline std::string PacketFormat2String(PacketFormatEnum format) {
+inline std::string PacketFormat2String(const PacketFormatEnum format) {
     switch (format) {
         case PacketFormatEnum::PacketFormat_NonHT:
             return "NonHT";
@@ -244,7 +244,7 @@ inline std::string PacketFormat2String(PacketFormatEnum format) {
     throw std::runtime_error("Unsupported packet format.");
 }
 
-inline std::string ChannelBandwidth2String(ChannelBandwidthEnum cbw) {
+inline std::string ChannelBandwidth2String(const ChannelBandwidthEnum cbw) {
     switch (cbw) {
         case ChannelBandwidthEnum::CBW_20:
             return "20";
@@ -261,7 +261,7 @@ inline std::string ChannelBandwidth2String(ChannelBandwidthEnum cbw) {
     }
 }
 
-inline std::string channelModel2String(ChannelModeEnum mode) {
+inline std::string channelModel2String(const ChannelModeEnum mode) {
     switch (mode) {
         case ChannelModeEnum::HT40_PLUS:
             return "HT40_PLUS";
@@ -273,7 +273,7 @@ inline std::string channelModel2String(ChannelModeEnum mode) {
     return "channel mode error.";
 }
 
-inline std::string GuardInterval2String(GuardIntervalEnum gi) {
+inline std::string GuardInterval2String(const GuardIntervalEnum gi) {
     switch (gi) {
         case GuardIntervalEnum::GI_400:
             return "0.4us";
@@ -288,7 +288,7 @@ inline std::string GuardInterval2String(GuardIntervalEnum gi) {
     }
 }
 
-inline std::string ChannelCoding2String(ChannelCodingEnum coding) {
+inline std::string ChannelCoding2String(const ChannelCodingEnum coding) {
     switch (coding) {
         case ChannelCodingEnum::LDPC:
             return "LDPC";

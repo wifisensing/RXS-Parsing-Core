@@ -51,9 +51,9 @@ const std::shared_ptr<SDRResamplingPreset> SDRResamplingPreset::Preset_TR_160_20
 
 SDRResamplingPreset::SDRResamplingPreset(std::string presetName, const std::optional<double> &txCbw,
                                          const std::optional<double> &txSamplingRate, const std::optional<double> &rxCbw,
-                                         const std::optional<double> &rxSamplingRate, std::string description) : presetName(std::move(presetName)), txCBW(txCbw), txSamplingRate(txSamplingRate), rxCBW(rxCbw),
-                                                                                                                 rxSamplingRate(rxSamplingRate), description(std::move(description)),
-                                                                                                                 txResampleRatio(txCBW && txSamplingRate ? std::make_optional(*txSamplingRate / *txCBW) : std::nullopt),
+                                         const std::optional<double> &rxSamplingRate, std::string description) : presetName(std::move(presetName)), description(std::move(description)), txCBW(txCbw), txSamplingRate(txSamplingRate),
+                                                                                                                 txResampleRatio(txCBW && txSamplingRate ? std::make_optional(*txSamplingRate / *txCBW) : std::nullopt), rxCBW(rxCbw),
+                                                                                                                 rxSamplingRate(rxSamplingRate),
                                                                                                                  rxResampleRatio(rxCBW && rxSamplingRate ? std::make_optional(*rxCBW / *rxSamplingRate) : std::nullopt) {}
 
 bool SDRResamplingPreset::operator==(const SDRResamplingPreset &rhs) const {

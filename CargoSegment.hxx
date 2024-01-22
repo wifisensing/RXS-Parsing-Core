@@ -61,13 +61,15 @@ class CargoSegment : public AbstractPicoScenesFrameSegment {
 public:
     CargoSegment();
 
-    explicit CargoSegment(const PayloadCargo &cargo);
+    explicit CargoSegment(const PayloadCargo &cargoV);
+
+    explicit CargoSegment(PayloadCargo &&cargoV);
 
     CargoSegment(const uint8_t *buffer, uint32_t bufferLength);
 
     [[nodiscard]] const PayloadCargo &getCargo() const;
 
-    void setCargo(const PayloadCargo &cargo);
+    void setCargo(const PayloadCargo &cargoV);
 
     [[nodiscard]] std::string toString() const override;
 

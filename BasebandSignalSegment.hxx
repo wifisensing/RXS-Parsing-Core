@@ -14,13 +14,15 @@ public:
 
     BasebandSignalSegment(const uint8_t *buffer, uint32_t bufferLength);
 
+    BasebandSignalSegment(const SignalMatrix<std::complex<float>> & signalsV);
+
+    BasebandSignalSegment(SignalMatrix<std::complex<float>> && signalsV);
+
     [[nodiscard]] const SignalMatrix<std::complex<float>> &getSignals() const;
 
     void setSignals(const SignalMatrix<std::complex<float>> &bbsignalsV);
 
     void setSignals(SignalMatrix<std::complex<float>> &&bbsignalsV);
-
-    [[nodiscard]] std::vector<uint8_t> toBuffer() const override;
 
     [[nodiscard]] std::string toString() const override;
 

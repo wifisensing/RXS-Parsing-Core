@@ -13,7 +13,9 @@ class ExtraInfoSegment : public AbstractPicoScenesFrameSegment {
 public:
     ExtraInfoSegment();
 
-    explicit ExtraInfoSegment(const ExtraInfo &extraInfo);
+    explicit ExtraInfoSegment(const ExtraInfo &extraInfoV);
+
+    explicit ExtraInfoSegment(ExtraInfo &&extraInfoV);
 
     ExtraInfoSegment(const uint8_t *buffer, uint32_t bufferLength);
 

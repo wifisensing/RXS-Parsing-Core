@@ -55,19 +55,19 @@ void IntelMVMParsedCSIHeader::registerDefaultMVMHeaderInterpretation() {
     DynamicContentTypeDictionary::getInstance()->registerType(DynamicContentType{"MVMExtra", 1, fields});
 }
 
-static auto v1Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> IntelMVMExtraInfo {
+static auto v1Parser = [](const uint8_t *buffer, const uint32_t bufferLength) -> IntelMVMExtraInfo {
     uint32_t pos = 0;
     auto extra = IntelMVMExtraInfo();
-    extra.CSIHeaderLength = *(uint16_t *) (buffer + pos);
+    extra.CSIHeaderLength = *reinterpret_cast<const uint16_t *>(buffer + pos);
     pos += 2;
     if (bufferLength - pos < extra.CSIHeaderLength)
         throw std::runtime_error("MVMExtraSegment v1Parser cannot parse the segment with insufficient buffer length.");
 
-    extra.parsedHeader = *(IntelMVMParsedCSIHeader *) (buffer + pos);
+    extra.parsedHeader = *reinterpret_cast<const IntelMVMParsedCSIHeader *>(buffer + pos);
     pos += sizeof(IntelMVMParsedCSIHeader);
     MVMExtraSegment::manipulateHeader(extra.parsedHeader);
 
-    std::copy((uint8_t *) &extra.parsedHeader, (uint8_t *) (&extra.parsedHeader) + sizeof(IntelMVMParsedCSIHeader), std::back_inserter(extra.CSIHeader));
+    std::copy_n(reinterpret_cast<uint8_t *>(&extra.parsedHeader), sizeof(IntelMVMParsedCSIHeader), std::back_inserter(extra.CSIHeader));
     std::copy(buffer + pos, buffer + bufferLength, std::back_inserter(extra.CSIHeader));
     if (false) {
         IntelMVMParsedCSIHeader regeneratedInstance = *(IntelMVMParsedCSIHeader *) extra.CSIHeader.data();
@@ -80,7 +80,7 @@ static auto v1Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> Intel
 
 std::vector<uint8_t> IntelMVMExtraInfo::toBuffer() const {
     auto buffer = std::vector<uint8_t>();
-    std::copy((uint8_t *) &CSIHeaderLength, (uint8_t *) &CSIHeaderLength + sizeof(CSIHeaderLength), std::back_inserter(buffer));
+    std::copy_n(reinterpret_cast<const uint8_t *>(&CSIHeaderLength), sizeof(CSIHeaderLength), std::back_inserter(buffer));
     std::copy(CSIHeader.cbegin(), CSIHeader.cend(), std::back_inserter(buffer));
     return buffer;
 }
@@ -97,10 +97,10 @@ std::function<void(IntelMVMParsedCSIHeader &)> MVMExtraSegment::headerManipulato
 
 MVMExtraSegment::MVMExtraSegment() : AbstractPicoScenesFrameSegment("MVMExtra", 0x1U) {}
 
-MVMExtraSegment::MVMExtraSegment(const uint8_t *buffer, uint32_t bufferLength) : AbstractPicoScenesFrameSegment(buffer, bufferLength) {
+MVMExtraSegment::MVMExtraSegment(const uint8_t *buffer, const uint32_t bufferLength) : AbstractPicoScenesFrameSegment(buffer, bufferLength) {
     if (segmentName != "MVMExtra")
         throw std::runtime_error("MVMExtraSegment cannot parse the segment named " + segmentName + ".");
-    if (!versionedSolutionMap.count(segmentVersionId))
+    if (!versionedSolutionMap.contains(segmentVersionId))
         throw std::runtime_error("MVMExtraSegment cannot parse the segment with version v" + std::to_string(segmentVersionId) + ".");
 
     mvmExtra = versionedSolutionMap.at(segmentVersionId)(segmentPayload.data(), segmentPayload.size());
@@ -124,10 +124,10 @@ void MVMExtraSegment::manipulateHeader(IntelMVMParsedCSIHeader &header) {
         headerManipulator(header);
 }
 
-void MVMExtraSegment::setHeaderManipulator(const std::function<void(IntelMVMParsedCSIHeader &)> &headerManipulatorV) {
+void MVMExtraSegment::setHeaderManipulator(const std::function<void(IntelMVMParsedCSIHeader &)> &headerManipulator) {
     static std::once_flag flag;
     std::call_once(flag, [&] {
-        headerManipulator = headerManipulatorV == nullptr ? headerManipulator : headerManipulatorV; // this property can only be set once during the start
+        MVMExtraSegment::headerManipulator = headerManipulator == nullptr ? MVMExtraSegment::headerManipulator : headerManipulator; // this property can only be set once during the start
     });
 }
 
