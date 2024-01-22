@@ -37,41 +37,42 @@ std::vector<uint8_t> PayloadCargo::toBuffer() const {
     return buffer;
 }
 
-PayloadCargo PayloadCargo::fromBuffer(const uint8_t *buffer, const uint32_t bufferLength) {
-    if (uint32_t cargoLength = *reinterpret_cast<const uint32_t *>(buffer); cargoLength != bufferLength - 4)[[unlikely]] {
+PayloadCargo::PayloadCargo(const uint8_t* buffer, uint32_t bufferLength) {
+    if (const uint32_t cargoLength = *reinterpret_cast<const uint32_t *>(buffer); cargoLength != bufferLength - 4)[[unlikely]] {
         throw std::runtime_error("cargo segment length inconsistent");
     }
 
     auto pos = 4;
-    PayloadCargo cargo;
-    cargo.taskId = *reinterpret_cast<const decltype(taskId) *>(buffer + pos);
+    this->taskId = *reinterpret_cast<const decltype(taskId) *>(buffer + pos);
     pos += sizeof(taskId);
-    cargo.numSegments = *(buffer + pos);
+    this->numSegments = *(buffer + pos);
     pos += sizeof(numSegments);
-    cargo.sequence = *(buffer + pos);
+    this->sequence = *(buffer + pos);
     pos += sizeof(sequence);
-    cargo.totalParts = *(buffer + pos);
+    this->totalParts = *(buffer + pos);
     pos += sizeof(totalParts);
-    cargo.compressed = *reinterpret_cast<const bool *>(buffer + pos);
+    this->compressed = *reinterpret_cast<const bool *>(buffer + pos);
     pos += sizeof(compressed);
-    cargo.payloadLength = *reinterpret_cast<const uint32_t *>(buffer + pos);
+    this->payloadLength = *reinterpret_cast<const uint32_t *>(buffer + pos);
     pos += sizeof(payloadLength);
-    std::copy(buffer + pos, buffer + bufferLength, std::back_inserter(cargo.payloadData));
+    std::copy(buffer + pos, buffer + bufferLength, std::back_inserter(this->payloadData));
+}
 
-    return cargo;
+PayloadCargo PayloadCargo::fromBuffer(const uint8_t *buffer, const uint32_t bufferLength) {
+    return PayloadCargo{buffer, bufferLength};
 }
 
 PayloadCargo PayloadCargo::fromBuffer(const std::vector<uint8_t> &buffer) {
     return fromBuffer(buffer.data(), buffer.size());
 }
 
-Uint8Vector PayloadCargo::mergeAndValidateCargo(const std::vector<PayloadCargo> &cargos) {
+Uint8Vector PayloadCargo::mergeAndValidateCargo(const std::vector<std::shared_ptr<PayloadCargo>>& cargos) {
     Uint8Vector rawPayload, decompressedPayload;
-    std::for_each(cargos.cbegin(), cargos.cend(), [&](const PayloadCargo &cargo) {
-        std::copy(cargo.payloadData.cbegin(), cargo.payloadData.cend(), std::back_inserter(rawPayload));
+    std::for_each(cargos.cbegin(), cargos.cend(), [&](const std::shared_ptr<PayloadCargo> &cargo) {
+        std::copy(cargo->payloadData.cbegin(), cargo->payloadData.cend(), std::back_inserter(rawPayload));
     });
 
-    if (cargos.front().compressed && CargoCompression::isAlgorithmRegistered()) {
+    if (cargos.front()->compressed && CargoCompression::isAlgorithmRegistered()) {
         decompressedPayload = CargoCompression::getDecompressor()(rawPayload.data(), rawPayload.size()).value_or(Uint8Vector());
     } else {
         decompressedPayload = rawPayload;
@@ -84,32 +85,28 @@ Uint8Vector PayloadCargo::mergeAndValidateCargo(const std::vector<PayloadCargo> 
         numSegment++;
     }
 
-    if (pos != decompressedPayload.size() && numSegment != cargos.front().numSegments) [[unlikely]] {
+    if (pos != decompressedPayload.size() && numSegment != cargos.front()->numSegments) [[unlikely]] {
         throw std::runtime_error("incorrect cargo length");
     }
 
     return decompressedPayload;
 }
 
-static auto v1Parser = [](const uint8_t *buffer, const uint32_t bufferLength) -> PayloadCargo {
-    auto cargo = PayloadCargo::fromBuffer(buffer, bufferLength);
+static auto v1Parser = [](const uint8_t *buffer, const uint32_t bufferLength) -> std::shared_ptr<PayloadCargo> {
+    auto cargo = std::make_shared<PayloadCargo>(buffer, bufferLength);
     return cargo;
 };
 
-std::map<uint16_t, std::function<PayloadCargo(const uint8_t *, uint32_t)>> CargoSegment::versionedSolutionMap = initializeSolutionMap();
+std::map<uint16_t, std::function<std::shared_ptr<PayloadCargo>(const uint8_t *, uint32_t)>> CargoSegment::versionedSolutionMap = initializeSolutionMap();
 
-std::map<uint16_t, std::function<PayloadCargo(const uint8_t *, uint32_t)>> CargoSegment::initializeSolutionMap() noexcept {
-    return std::map<uint16_t, std::function<PayloadCargo(const uint8_t *, uint32_t)>>{{0x1U, v1Parser}};
+std::map<uint16_t, std::function<std::shared_ptr<PayloadCargo>(const uint8_t *, uint32_t)>> CargoSegment::initializeSolutionMap() noexcept {
+    return std::map<uint16_t, std::function<std::shared_ptr<PayloadCargo>(const uint8_t *, uint32_t)>>{{0x1U, v1Parser}};
 }
 
 CargoSegment::CargoSegment() : AbstractPicoScenesFrameSegment("Cargo", 0x1U) {}
 
-CargoSegment::CargoSegment(const PayloadCargo& cargoV): AbstractPicoScenesFrameSegment("Cargo", 0x1U), cargo(cargoV) {
-    setSegmentPayload(std::move(cargo.toBuffer()));
-}
-
-CargoSegment::CargoSegment(PayloadCargo &&cargoV) : AbstractPicoScenesFrameSegment("Cargo", 0x1U), cargo(std::move(cargoV)) {
-    setSegmentPayload(std::move(cargo.toBuffer()));
+CargoSegment::CargoSegment(const std::shared_ptr<PayloadCargo>& cargoV): AbstractPicoScenesFrameSegment("Cargo", 0x1U), cargo(cargoV) {
+    setSegmentPayload(std::move(cargo->toBuffer()));
 }
 
 CargoSegment::CargoSegment(const uint8_t *buffer, const uint32_t bufferLength) : AbstractPicoScenesFrameSegment(buffer, bufferLength) {
@@ -121,20 +118,20 @@ CargoSegment::CargoSegment(const uint8_t *buffer, const uint32_t bufferLength) :
     cargo = versionedSolutionMap.at(segmentVersionId)(segmentPayload.data(), segmentPayload.size());
 }
 
-const PayloadCargo &CargoSegment::getCargo() const {
+std::shared_ptr<PayloadCargo> CargoSegment::getCargo() const {
     return cargo;
 }
 
-void CargoSegment::setCargo(const PayloadCargo &cargoV) {
+void CargoSegment::setCargo(const std::shared_ptr<PayloadCargo> &cargoV) {
     cargo = cargoV;
-    setSegmentPayload(std::move(cargo.toBuffer()));
+    setSegmentPayload(std::move(cargo->toBuffer()));
 }
 
 std::string CargoSegment::toString() const {
     std::stringstream ss;
-    ss << segmentName << ":[taskId=" << cargo.taskId << ", numSeg=" << static_cast<uint16_t>(cargo.numSegments)
-       << ", seq=" << static_cast<uint16_t>(cargo.sequence) << ", total_part=" << static_cast<uint16_t>(cargo.totalParts)
-       << ", compressed=" << cargo.compressed << ", total_length=" << cargo.payloadLength
-       << ", part_len=" << cargo.payloadData.size() << "]";
+    ss << segmentName << ":[taskId=" << cargo->taskId << ", numSeg=" << static_cast<uint16_t>(cargo->numSegments)
+       << ", seq=" << static_cast<uint16_t>(cargo->sequence) << ", total_part=" << static_cast<uint16_t>(cargo->totalParts)
+       << ", compressed=" << cargo->compressed << ", total_length=" << cargo->payloadLength
+       << ", part_len=" << cargo->payloadData.size() << "]";
     return ss.str();
 }

@@ -337,7 +337,7 @@ std::string ModularPicoScenesRxFrame::toString() const {
 
 std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::concatenateFragmentedPicoScenesRxFrames(const std::vector<ModularPicoScenesRxFrame> &frameQueue) {
     ModularPicoScenesRxFrame baseFrame = frameQueue.front();
-    std::vector<PayloadCargo> cargos;
+    std::vector<std::shared_ptr<PayloadCargo>> cargos;
     for (const auto &frame: frameQueue)
         for (const auto &segment: frame.cargoSegments)
             cargos.emplace_back(segment->getCargo());
@@ -597,7 +597,7 @@ std::vector<ModularPicoScenesTxFrame> ModularPicoScenesTxFrame::autoSplit(const 
         numCargos = std::ceil(1.0 * remainLength / maxSegmentBuffersLength) + 1;
     }
     auto avgStepLength = size_t(std::ceil(1.0 * bufferLength / numCargos));
-    auto cargos = std::vector<PayloadCargo>();
+    auto cargos = std::vector<std::shared_ptr<PayloadCargo>>();
 
     pos = 0;
     uint8_t sequence = 0;
@@ -605,15 +605,7 @@ std::vector<ModularPicoScenesTxFrame> ModularPicoScenesTxFrame::autoSplit(const 
         auto stepLength = pos + avgStepLength < bufferLength ? avgStepLength : bufferLength - pos;
         if (pos == 0 && firstSegmentCappingLength)
             stepLength = pos + *firstSegmentCappingLength < bufferLength ? *firstSegmentCappingLength : bufferLength - pos;
-        cargos.emplace_back(PayloadCargo{
-                .taskId = frameHeader->taskId,
-                .numSegments = frameHeader->numSegments,
-                .sequence = sequence++,
-                .totalParts = numCargos,
-                .compressed = usingCompression,
-                .payloadLength = static_cast<uint32_t>(bufferLength),
-                .payloadData = Uint8Vector(bufferPtr->data() + pos, bufferPtr->data() + pos + stepLength),
-        });
+        cargos.emplace_back(std::make_shared<PayloadCargo>(frameHeader->taskId, frameHeader->numSegments, sequence++, numCargos, usingCompression, static_cast<uint32_t>(bufferLength), Uint8Vector(bufferPtr->data() + pos, bufferPtr->data() + pos + stepLength)));
         pos += stepLength;
     }
 

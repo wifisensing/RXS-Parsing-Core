@@ -50,35 +50,45 @@ public:
 
     [[nodiscard]] std::vector<uint8_t> toBuffer() const;
 
+    explicit PayloadCargo(const uint8_t *buffer, uint32_t bufferLength);
+
+    explicit PayloadCargo(const uint16_t task_id, const uint8_t num_segments, const uint8_t sequence, const uint8_t total_parts, const bool compressed, const uint32_t payload_length, const std::vector<uint8_t>& payload_data)
+        : taskId(task_id),
+          numSegments(num_segments),
+          sequence(sequence),
+          totalParts(total_parts),
+          compressed(compressed),
+          payloadLength(payload_length),
+          payloadData(payload_data) {
+    }
+
     static PayloadCargo fromBuffer(const uint8_t *buffer, uint32_t bufferLength);
 
     static PayloadCargo fromBuffer(const std::vector<uint8_t> &buffer);
 
-    static Uint8Vector mergeAndValidateCargo(const std::vector<PayloadCargo> &cargos);
+    static Uint8Vector mergeAndValidateCargo(const std::vector<std::shared_ptr<PayloadCargo>>&cargos);
 };
 
 class CargoSegment : public AbstractPicoScenesFrameSegment {
 public:
     CargoSegment();
 
-    explicit CargoSegment(const PayloadCargo &cargoV);
-
-    explicit CargoSegment(PayloadCargo &&cargoV);
+    explicit CargoSegment(const std::shared_ptr<PayloadCargo> &cargoV);
 
     CargoSegment(const uint8_t *buffer, uint32_t bufferLength);
 
-    [[nodiscard]] const PayloadCargo &getCargo() const;
+    [[nodiscard]] std::shared_ptr<PayloadCargo> getCargo() const;
 
-    void setCargo(const PayloadCargo &cargoV);
+    void setCargo(const std::shared_ptr<PayloadCargo> &cargoV);
 
     [[nodiscard]] std::string toString() const override;
 
 private:
-    static std::map<uint16_t, std::function<PayloadCargo(const uint8_t *, uint32_t)>> versionedSolutionMap;
+    static std::map<uint16_t, std::function<std::shared_ptr<PayloadCargo>(const uint8_t *, uint32_t)>> versionedSolutionMap;
 
-    static std::map<uint16_t, std::function<PayloadCargo(const uint8_t *, uint32_t)>> initializeSolutionMap() noexcept;
+    static std::map<uint16_t, std::function<std::shared_ptr<PayloadCargo>(const uint8_t *, uint32_t)>> initializeSolutionMap() noexcept;
 
-    PayloadCargo cargo;
+    std::shared_ptr<PayloadCargo> cargo{nullptr};
 };
 
 #endif //PICOSCENES_PLATFORM_CARGOSEGMENT_HXX
