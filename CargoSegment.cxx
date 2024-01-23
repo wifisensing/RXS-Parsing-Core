@@ -37,32 +37,31 @@ std::vector<uint8_t> PayloadCargo::toBuffer() const {
     return buffer;
 }
 
-PayloadCargo::PayloadCargo(const uint8_t* buffer, uint32_t bufferLength) {
-    if (const uint32_t cargoLength = *reinterpret_cast<const uint32_t *>(buffer); cargoLength != bufferLength - 4)[[unlikely]] {
+std::shared_ptr<PayloadCargo> PayloadCargo::fromBuffer(const uint8_t *buffer, const uint32_t bufferLength) {
+    if (uint32_t cargoLength = *reinterpret_cast<const uint32_t *>(buffer); cargoLength != bufferLength - 4)[[unlikely]] {
         throw std::runtime_error("cargo segment length inconsistent");
     }
 
     auto pos = 4;
-    this->taskId = *reinterpret_cast<const decltype(taskId) *>(buffer + pos);
+    auto cargo = std::make_shared<PayloadCargo>();
+    cargo->taskId = *reinterpret_cast<const decltype(taskId) *>(buffer + pos);
     pos += sizeof(taskId);
-    this->numSegments = *(buffer + pos);
+    cargo->numSegments = *(buffer + pos);
     pos += sizeof(numSegments);
-    this->sequence = *(buffer + pos);
+    cargo->sequence = *(buffer + pos);
     pos += sizeof(sequence);
-    this->totalParts = *(buffer + pos);
+    cargo->totalParts = *(buffer + pos);
     pos += sizeof(totalParts);
-    this->compressed = *reinterpret_cast<const bool *>(buffer + pos);
+    cargo->compressed = *reinterpret_cast<const bool *>(buffer + pos);
     pos += sizeof(compressed);
-    this->payloadLength = *reinterpret_cast<const uint32_t *>(buffer + pos);
+    cargo->payloadLength = *reinterpret_cast<const uint32_t *>(buffer + pos);
     pos += sizeof(payloadLength);
-    std::copy(buffer + pos, buffer + bufferLength, std::back_inserter(this->payloadData));
+    std::copy(buffer + pos, buffer + bufferLength, std::back_inserter(cargo->payloadData));
+
+    return cargo;
 }
 
-PayloadCargo PayloadCargo::fromBuffer(const uint8_t *buffer, const uint32_t bufferLength) {
-    return PayloadCargo{buffer, bufferLength};
-}
-
-PayloadCargo PayloadCargo::fromBuffer(const std::vector<uint8_t> &buffer) {
+std::shared_ptr<PayloadCargo> PayloadCargo::fromBuffer(const std::vector<uint8_t> &buffer) {
     return fromBuffer(buffer.data(), buffer.size());
 }
 
@@ -93,7 +92,7 @@ Uint8Vector PayloadCargo::mergeAndValidateCargo(const std::vector<std::shared_pt
 }
 
 static auto v1Parser = [](const uint8_t *buffer, const uint32_t bufferLength) -> std::shared_ptr<PayloadCargo> {
-    auto cargo = std::make_shared<PayloadCargo>(buffer, bufferLength);
+    auto cargo = PayloadCargo::fromBuffer(buffer, bufferLength);
     return cargo;
 };
 

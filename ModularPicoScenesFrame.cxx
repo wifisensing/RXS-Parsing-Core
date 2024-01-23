@@ -177,7 +177,7 @@ std::ostream &operator<<(std::ostream &os, const PicoScenesFrameHeader &frameHea
     return os;
 }
 
-auto ModularPicoScenesRxFrame::fromBuffer(const uint8_t* inputBuffer, const uint32_t bufferLength, const bool interpolateCSI) -> std::optional<ModularPicoScenesRxFrame> {
+auto ModularPicoScenesRxFrame::fromBuffer(const uint8_t *inputBuffer, const uint32_t bufferLength, const bool interpolateCSI) -> std::optional<ModularPicoScenesRxFrame> {
     uint32_t pos = 0;
     auto rxFrameHeader = *reinterpret_cast<const ModularPicoScenesRxFrameHeader *>(inputBuffer);
     if (rxFrameHeader.frameLength + 4 != bufferLength || rxFrameHeader.magicWord != 0x20150315) {
@@ -210,12 +210,12 @@ auto ModularPicoScenesRxFrame::fromBuffer(const uint8_t* inputBuffer, const uint
             } else if (segmentName == "CSI") {
                 frame.csiSegment = std::make_shared<CSISegment>(buffer + pos, segmentLength + 4);
                 if (interpolateCSI) {
-                    frame.csiSegment->getCSI().removeCSDAndInterpolateCSI();
+                    frame.csiSegment->getCSI()->removeCSDAndInterpolateCSI();
                 }
             } else if (segmentName == "LegacyCSI") {
                 frame.legacyCSISegment = std::make_shared<CSISegment>(buffer + pos, segmentLength + 4);
                 if (interpolateCSI) {
-                    frame.legacyCSISegment->getCSI().removeCSDAndInterpolateCSI();
+                    frame.legacyCSISegment->getCSI()->removeCSDAndInterpolateCSI();
                 }
             } else if (segmentName == "BasebandSignal") {
                 frame.basebandSignalSegment = std::make_shared<BasebandSignalSegment>(buffer + pos, segmentLength + 4);
@@ -278,7 +278,7 @@ std::string ModularPicoScenesRxFrame::toString() const {
         ss << ", " << *mvmExtraSegment;
     if (sdrExtraSegment)
         ss << ", " << *sdrExtraSegment;
-    ss << ", " << "(" << PacketFormat2String(csiSegment->getCSI().packetFormat) << ")" << *csiSegment;
+    ss << ", " << "(" << PacketFormat2String(csiSegment->getCSI()->packetFormat) << ")" << *csiSegment;
     if (legacyCSISegment)
         ss << ", " << *legacyCSISegment;
     if (basebandSignalSegment)
@@ -286,7 +286,7 @@ std::string ModularPicoScenesRxFrame::toString() const {
     if (!rxUnknownSegments.empty()) {
         std::stringstream segss;
         segss << "RxSegments:(";
-        for (const auto & [name, segment]: rxUnknownSegments) {
+        for (const auto &[name, segment]: rxUnknownSegments) {
             segss << name << ":" << segment->totalLengthIncludingLeading4ByteLength() << "B, ";
         }
         auto temp = segss.str();
@@ -319,7 +319,7 @@ std::string ModularPicoScenesRxFrame::toString() const {
     if (!txUnknownSegments.empty()) {
         std::stringstream segss;
         segss << "TxSegments:(";
-        for (const auto & [name, segment]: txUnknownSegments) {
+        for (const auto &[name, segment]: txUnknownSegments) {
             segss << *segment << ", ";
         }
         auto temp = segss.str();
@@ -381,8 +381,8 @@ Uint8Vector ModularPicoScenesRxFrame::toBuffer() const {
     reservedLength += mvmExtraSegment ? mvmExtraSegment->totalLengthIncludingLeading4ByteLength() : 0;
     reservedLength += sdrExtraSegment ? sdrExtraSegment->totalLengthIncludingLeading4ByteLength() : 0;
     reservedLength += legacyCSISegment ? legacyCSISegment->totalLengthIncludingLeading4ByteLength() : 0;
-    reservedLength += basebandSignalSegment ? basebandSignalSegment->totalLengthIncludingLeading4ByteLength(): 0;
-    for (const auto & [segName, segment]: rxUnknownSegments) {
+    reservedLength += basebandSignalSegment ? basebandSignalSegment->totalLengthIncludingLeading4ByteLength() : 0;
+    for (const auto &[segName, segment]: rxUnknownSegments) {
         reservedLength += segment->totalLengthIncludingLeading4ByteLength();
     }
     Uint8Vector rxSegmentBuffer;
@@ -422,7 +422,7 @@ Uint8Vector ModularPicoScenesRxFrame::toBuffer() const {
         modularFrameHeader.numRxSegments++;
     }
 
-    for (const auto & [name, segmentPtr]: rxUnknownSegments) {
+    for (const auto &[name, segmentPtr]: rxUnknownSegments) {
         std::copy(segmentPtr->getSyncedRawBuffer().cbegin(), segmentPtr->getSyncedRawBuffer().cend(), std::back_inserter(rxSegmentBuffer));
         modularFrameHeader.numRxSegments++;
     }
@@ -470,7 +470,7 @@ void ModularPicoScenesRxFrame::rebuildRawBuffer() {
             std::copy(cargo->getSyncedRawBuffer().cbegin(), cargo->getSyncedRawBuffer().cend(), std::back_inserter(mpdus[0]));
         }
 
-        for (auto & [name, segmentPtr]: txUnknownSegments) {
+        for (auto &[name, segmentPtr]: txUnknownSegments) {
             std::copy(segmentPtr->getSyncedRawBuffer().cbegin(), segmentPtr->getSyncedRawBuffer().cend(), std::back_inserter(mpdus[0]));
         }
     }
@@ -605,7 +605,15 @@ std::vector<ModularPicoScenesTxFrame> ModularPicoScenesTxFrame::autoSplit(const 
         auto stepLength = pos + avgStepLength < bufferLength ? avgStepLength : bufferLength - pos;
         if (pos == 0 && firstSegmentCappingLength)
             stepLength = pos + *firstSegmentCappingLength < bufferLength ? *firstSegmentCappingLength : bufferLength - pos;
-        cargos.emplace_back(std::make_shared<PayloadCargo>(frameHeader->taskId, frameHeader->numSegments, sequence++, numCargos, usingCompression, static_cast<uint32_t>(bufferLength), Uint8Vector(bufferPtr->data() + pos, bufferPtr->data() + pos + stepLength)));
+        auto cargo = std::make_shared<PayloadCargo>(PayloadCargo{
+            .taskId = frameHeader->taskId,
+            .numSegments = frameHeader->numSegments,
+            .sequence = sequence++,
+            .totalParts = numCargos,
+            .compressed = usingCompression,
+            .payloadLength = static_cast<uint32_t>(bufferLength),
+            .payloadData = Uint8Vector(bufferPtr->data() + pos, bufferPtr->data() + pos + stepLength)
+        });
         pos += stepLength;
     }
 

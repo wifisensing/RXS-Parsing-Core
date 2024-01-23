@@ -182,17 +182,17 @@ public:
     /**
      * Create CSI object from the QCA9300 NIC returned raw bytes
      */
-    static CSI fromQCA9300(const uint8_t *buffer, uint32_t bufferLength, uint8_t numTx, uint8_t numRx, uint8_t numTones, ChannelBandwidthEnum cbw, int16_t subcarrierIndexOffset);
+    static std::shared_ptr<CSI> fromQCA9300(const uint8_t* buffer, uint32_t bufferLength, uint8_t numTx, uint8_t numRx, uint8_t numTones, ChannelBandwidthEnum cbw, int16_t subcarrierIndexOffset);
 
     /**
      * Create CSI object from the IWL5300 NIC returned raw bytes
      */
-    static CSI fromIWL5300(const uint8_t *buffer, uint32_t bufferLength, uint8_t numTx, uint8_t numRx, uint8_t numTones, ChannelBandwidthEnum cbw, int16_t subcarrierIndexOffset, uint8_t ant_sel);
+    static std::shared_ptr<CSI> fromIWL5300(const uint8_t* buffer, uint32_t bufferLength, uint8_t numTx, uint8_t numRx, uint8_t numTones, ChannelBandwidthEnum cbw, int16_t subcarrierIndexOffset, uint8_t ant_sel);
 
     /**
      * Create CSI object from the AX200/AX210 NIC returned raw bytes
      */
-    static std::optional<CSI> fromIWLMVM(const uint8_t *buffer, uint32_t bufferLength, uint8_t firmwareVersion, uint8_t numTx, uint8_t numRx, uint16_t numTones, PacketFormatEnum format, ChannelBandwidthEnum cbw, int16_t subcarrierIndexOffset, bool skipPilotSubcarriers = true, uint8_t antSelByte = 0);
+    static std::shared_ptr<CSI> fromIWLMVM(const uint8_t* buffer, uint32_t bufferLength, uint8_t firmwareVersion, uint8_t numTx, uint8_t numRx, uint16_t numTones, PacketFormatEnum format, ChannelBandwidthEnum cbw, int16_t subcarrierIndexOffset, bool skipPilotSubcarriers = true, uint8_t antSelByte = 0);
 
     /**
      * A CSI data format converter
@@ -286,24 +286,20 @@ public:
 
     CSISegment(const uint8_t *buffer, uint32_t bufferLength);
 
-    explicit CSISegment(CSI &&csi);
+    explicit CSISegment(const std::shared_ptr<CSI> & csi);
 
     [[nodiscard]] std::string toString() const override;
 
-    CSI &getCSI();
+    const std::shared_ptr<CSI> &getCSI();
 
-    [[nodiscard]] const CSI &getCSI() const;
-
-    void setCSI(const CSI &csi);
-
-    void setCSI(CSI &&csi);
+    void setCSI(const std::shared_ptr<CSI> &csi);
 
 private:
-    static std::map<uint16_t, std::function<std::optional<CSI>(const uint8_t *, uint32_t)>> versionedSolutionMap;
+    static std::map<uint16_t, std::function<std::shared_ptr<CSI>(const uint8_t *, uint32_t)>> versionedSolutionMap;
 
-    static std::map<uint16_t, std::function<std::optional<CSI>(const uint8_t *, uint32_t)>> initializeSolutionMap() noexcept;
+    static std::map<uint16_t, std::function<std::shared_ptr<CSI>(const uint8_t *, uint32_t)>> initializeSolutionMap() noexcept;
 
-    CSI csi{};
+    std::shared_ptr<CSI> csi{nullptr};
 };
 
 #endif //PICOSCENES_PLATFORM_CSISEGMENT_HXX
