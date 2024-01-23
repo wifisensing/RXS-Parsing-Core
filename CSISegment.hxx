@@ -290,7 +290,7 @@ public:
 
     [[nodiscard]] std::string toString() const override;
 
-    const std::shared_ptr<CSI> &getCSI();
+    const std::shared_ptr<CSI> &getCSI() const;
 
     void setCSI(const std::shared_ptr<CSI> &csi);
 

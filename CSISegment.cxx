@@ -814,7 +814,7 @@ CSISegment::CSISegment(const uint8_t *buffer, uint32_t bufferLength) : AbstractP
     }
 }
 
-const std::shared_ptr<CSI> &CSISegment::getCSI() {
+const std::shared_ptr<CSI> &CSISegment::getCSI() const {
     return csi;
 }
 
