@@ -659,7 +659,7 @@ static auto v5Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> std::
             csi->subcarrierBandwidth = subcarrierBandwidth;
             return csi;
         }
-        return {};
+        return nullptr;
     }
     if (deviceType == PicoScenesDeviceType::USRP) {
         auto csiBufferStart = pos;
@@ -752,7 +752,7 @@ static auto v6Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> std::
             csi->subcarrierBandwidth = subcarrierBandwidth;
             return csi;
         }
-        return {};
+        return nullptr;
     }
     if (deviceType == PicoScenesDeviceType::USRP) {
         auto csiBufferStart = pos;
