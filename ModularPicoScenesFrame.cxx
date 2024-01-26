@@ -390,6 +390,7 @@ Uint8Vector ModularPicoScenesRxFrame::toBuffer() const {
 
     if (rxSBasicSegment) {
         std::copy(rxSBasicSegment->getSyncedRawBuffer().cbegin(), rxSBasicSegment->getSyncedRawBuffer().cend(), std::back_inserter(rxSegmentBuffer));
+        modularFrameHeader.numRxSegments++;
     }
 
     if (rxExtraInfoSegment) {
