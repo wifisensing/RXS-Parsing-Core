@@ -386,10 +386,11 @@ Uint8Vector ModularPicoScenesRxFrame::toBuffer() const {
         reservedLength += segment->totalLengthIncludingLeading4ByteLength();
     }
     Uint8Vector rxSegmentBuffer;
-    rxSegmentBuffer.reserve(reservedLength + 100);
+    rxSegmentBuffer.reserve(reservedLength);
 
     if (rxSBasicSegment) {
         std::copy(rxSBasicSegment->getSyncedRawBuffer().cbegin(), rxSBasicSegment->getSyncedRawBuffer().cend(), std::back_inserter(rxSegmentBuffer));
+        modularFrameHeader.numRxSegments++;
     }
 
     if (rxExtraInfoSegment) {
@@ -427,6 +428,10 @@ Uint8Vector ModularPicoScenesRxFrame::toBuffer() const {
         modularFrameHeader.numRxSegments++;
     }
 
+    if (rxSegmentBuffer.size() != reservedLength) {
+        throw std::runtime_error("RxSegmentBuffer reservation fails.");
+    }
+
     // Assembly the full buffer
     Uint8Vector frameBuffer;
     modularFrameHeader.frameLength = sizeof(modularFrameHeader) + rxSegmentBuffer.size() + std::accumulate(mpdus.cbegin(), mpdus.cend(), 0, [](size_t acc, const auto &mpdu) {
@@ -434,11 +439,11 @@ Uint8Vector ModularPicoScenesRxFrame::toBuffer() const {
     }) - 4;
     frameBuffer.reserve(modularFrameHeader.frameLength + 4);
     std::copy_n(reinterpret_cast<const uint8_t *>(&modularFrameHeader), sizeof(ModularPicoScenesRxFrameHeader), std::back_inserter(frameBuffer));
-    std::copy(rxSegmentBuffer.cbegin(), rxSegmentBuffer.cend(), std::back_inserter(frameBuffer));
+    std::copy_n(rxSegmentBuffer.data(), rxSegmentBuffer.size(), std::back_inserter(frameBuffer));
     for (const auto &mpdu: mpdus) {
         uint32_t mpduSize = mpdu.size();
         std::copy_n(reinterpret_cast<const uint8_t *>(&mpduSize), sizeof(uint32_t), std::back_inserter(frameBuffer));
-        std::copy(mpdu.cbegin(), mpdu.cend(), std::back_inserter(frameBuffer));
+        std::copy_n(mpdu.data(), mpdu.size(), std::back_inserter(frameBuffer));
     }
 
     //// for in-situ validation
