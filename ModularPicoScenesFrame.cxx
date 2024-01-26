@@ -439,7 +439,7 @@ Uint8Vector ModularPicoScenesRxFrame::toBuffer() const {
     }) - 4;
     frameBuffer.reserve(modularFrameHeader.frameLength + 4);
     std::copy_n(reinterpret_cast<const uint8_t *>(&modularFrameHeader), sizeof(ModularPicoScenesRxFrameHeader), std::back_inserter(frameBuffer));
-    std::copy_n(rxSegmentBuffer.data, rxSegmentBuffer.size(), std::back_inserter(frameBuffer));
+    std::copy_n(rxSegmentBuffer.data(), rxSegmentBuffer.size(), std::back_inserter(frameBuffer));
     for (const auto &mpdu: mpdus) {
         uint32_t mpduSize = mpdu.size();
         std::copy_n(reinterpret_cast<const uint8_t *>(&mpduSize), sizeof(uint32_t), std::back_inserter(frameBuffer));
