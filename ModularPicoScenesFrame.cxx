@@ -314,8 +314,13 @@ std::string ModularPicoScenesRxFrame::toString() const {
         temp.append(")");
         ss << ", " << temp;
     }
-    if (!cargoSegments.empty())
-        ss << ", " << *cargoSegments[0]; // TODO better display for cargo
+    if (!cargoSegments.empty()) {
+        ss << ", Cargos (" << cargoSegments.size()  << "): {";
+        for (auto i = 0; i < cargoSegments.size() - 1; i++) {
+            ss << *cargoSegments[i] << ", ";
+        }
+        ss << *cargoSegments.back() << "}";
+    }
     if (!txUnknownSegments.empty()) {
         std::stringstream segss;
         segss << "TxSegments:(";
