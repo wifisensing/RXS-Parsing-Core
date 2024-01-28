@@ -567,7 +567,7 @@ std::vector<ModularPicoScenesTxFrame> ModularPicoScenesTxFrame::autoSplit(const 
 
     auto segmentsLength = 0;
     for (const auto &segment: segments) {
-        segmentsLength += segment->totalLength() + 4;
+        segmentsLength += segment->totalLengthIncludingLeading4ByteLength();
     }
 
     if (segmentsLength < maxSegmentBuffersLength)
@@ -577,7 +577,7 @@ std::vector<ModularPicoScenesTxFrame> ModularPicoScenesTxFrame::autoSplit(const 
     Uint8Vector allSegmentBuffer(segmentsLength), compressedBuffer;
     for (const auto &segment: segments) {
         segment->toBuffer(allSegmentBuffer.data() + pos);
-        pos += segment->totalLength() + 4;
+        pos += segment->totalLengthIncludingLeading4ByteLength();
     }
 
     Uint8Vector *bufferPtr;
@@ -601,7 +601,7 @@ std::vector<ModularPicoScenesTxFrame> ModularPicoScenesTxFrame::autoSplit(const 
         auto remainLength = bufferLength - firstSegmentCappingLength.value();
         numCargos = std::ceil(1.0 * remainLength / maxSegmentBuffersLength) + 1;
     }
-    auto avgStepLength = size_t(std::ceil(1.0 * bufferLength / numCargos));
+    const auto avgStepLength = size_t(std::ceil(1.0 * bufferLength / numCargos));
     auto cargos = std::vector<std::shared_ptr<PayloadCargo>>();
 
     pos = 0;
@@ -610,7 +610,7 @@ std::vector<ModularPicoScenesTxFrame> ModularPicoScenesTxFrame::autoSplit(const 
         auto stepLength = pos + avgStepLength < bufferLength ? avgStepLength : bufferLength - pos;
         if (pos == 0 && firstSegmentCappingLength)
             stepLength = pos + *firstSegmentCappingLength < bufferLength ? *firstSegmentCappingLength : bufferLength - pos;
-        auto cargo = std::make_shared<PayloadCargo>(PayloadCargo{
+        cargos.emplace_back(std::make_shared<PayloadCargo>(PayloadCargo{
             .taskId = frameHeader->taskId,
             .numSegments = frameHeader->numSegments,
             .sequence = sequence++,
@@ -618,7 +618,7 @@ std::vector<ModularPicoScenesTxFrame> ModularPicoScenesTxFrame::autoSplit(const 
             .compressed = usingCompression,
             .payloadLength = static_cast<uint32_t>(bufferLength),
             .payloadData = Uint8Vector(bufferPtr->data() + pos, bufferPtr->data() + pos + stepLength)
-        });
+        }));
         pos += stepLength;
     }
 

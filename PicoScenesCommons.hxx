@@ -154,7 +154,7 @@ inline bool isCOTSNIC(const PicoScenesDeviceType psdt) {
  * @return
  */
 inline bool isSDR(const PicoScenesDeviceType psdt) {
-    return psdt == PicoScenesDeviceType::USRP || psdt == PicoScenesDeviceType::SoapySDR;
+    return psdt == PicoScenesDeviceType::USRP || psdt == PicoScenesDeviceType::SoapySDR || psdt == PicoScenesDeviceType::VirtualSDR;
 }
 
 inline std::string DeviceType2String(const PicoScenesDeviceType type) {
