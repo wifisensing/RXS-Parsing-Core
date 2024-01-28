@@ -216,9 +216,9 @@ struct PicoScenesFrameTxParameters {
         if (frameType == PacketFormatEnum::PacketFormat_HT) {
             ss << ", numESS=" << static_cast<int>(numExtraSounding) << ", sounding(11n)=" << forceSounding;
         } else if (frameType == PacketFormatEnum::PacketFormat_HESU) {
-            ss << ", HiDoppler=" << static_cast<int>(heMidamblePeriodicity) << ", ER=" << txHEExtendedRange;
+            ss << ", HiDoppler=" << (heHighDoppler ? static_cast<int>(heMidamblePeriodicity) : 0) << ", ER=" << txHEExtendedRange;
         } else if (frameType == PacketFormatEnum::PacketFormat_EHTSU) {
-            // TODO add Wi-Fi 7 section
+            ss << ", numESS=" << static_cast<int>(numExtraSounding);
         }
         ss << "]";
         return ss.str();
