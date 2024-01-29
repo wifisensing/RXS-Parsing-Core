@@ -220,7 +220,7 @@ struct PicoScenesFrameTxParameters {
         } else if (frameType == PacketFormatEnum::PacketFormat_EHTSU) {
             ss << ", numESS=" << static_cast<int>(numExtraSounding);
         }
-        ss << "]";
+        ss <<", prefix=" << prefixPaddingTime * 1e6 <<"us, postfix=" << postfixPaddingTime * 1e6 << "us]";
         return ss.str();
     }
 };
