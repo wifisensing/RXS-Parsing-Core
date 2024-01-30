@@ -513,19 +513,16 @@ uint32_t ModularPicoScenesTxFrame::totalLength() const {
     if (txParameters.NDPFrame)
         return 0;
 
-    if (!arbitraryMPDUContent.empty())
-        return arbitraryMPDUContent.size();
+    if (arbitraryAMPDUContent && !arbitraryAMPDUContent->empty()) {
+        // TODO should considering the AMPDU case
+        return arbitraryAMPDUContent->at(0).size();
+    }
 
     uint32_t length = sizeof(ieee80211_mac_frame_header) + (frameHeader ? sizeof(PicoScenesFrameHeader) : 4); // plus 4 is to avoid NDP skip on QCA9300
     for (const auto &segment: segments) {
         length += segment->totalLength() + 4;
     }
     return length;
-}
-
-ModularPicoScenesTxFrame &ModularPicoScenesTxFrame::prebuildMPDU() {
-    prebuiltMPDU = toBuffer();
-    return *this;
 }
 
 Uint8Vector ModularPicoScenesTxFrame::toBuffer() const {
@@ -543,9 +540,11 @@ int ModularPicoScenesTxFrame::toBuffer(uint8_t *buffer, const uint32_t bufferLen
     if (bufferLength < totalLength())
         throw std::overflow_error("Buffer not long enough for TX frame dumping...");
 
-    if (!arbitraryMPDUContent.empty()) {
-        std::copy(arbitraryMPDUContent.cbegin(), arbitraryMPDUContent.cend(), buffer);
-        return arbitraryMPDUContent.size();
+    if (arbitraryAMPDUContent && !arbitraryAMPDUContent->empty()) {
+        // TODO should considering the AMPDU case
+        // TODO CHECK again, very strange!
+        std::copy((*arbitraryAMPDUContent)[0][0].cbegin(), (*arbitraryAMPDUContent)[0][0].cend(), buffer);
+        return arbitraryAMPDUContent->at(0).size();
     }
 
     memset(buffer, 0, bufferLength);
@@ -658,8 +657,8 @@ void ModularPicoScenesTxFrame::reset() {
     standardHeader = ieee80211_mac_frame_header();
     frameHeader = PicoScenesFrameHeader();
     txParameters = PicoScenesFrameTxParameters();
-    arbitraryMPDUContent.clear();
-    AMPDUFrames.clear();
+    arbitraryAMPDUContent = std::nullopt;
+    additionalAMPDUFrames.clear();
     prebuiltSignals.clear();
     segments.clear();
 }
@@ -826,13 +825,13 @@ std::string ModularPicoScenesTxFrame::toString() const {
     }
     ss << ", " << txParameters;
 
-    if (!arbitraryMPDUContent.empty()) {
-        ss << ", ArbitraryMPDU:" << std::to_string(arbitraryMPDUContent.size()) << "B}";
+    if (arbitraryAMPDUContent && !arbitraryAMPDUContent->empty()) {
+        ss << ", ArbitraryAMPDU:" << std::to_string(arbitraryAMPDUContent->size()) << "Pkts}";
         return ss.str();
     }
 
-    if (!AMPDUFrames.empty()) {
-        ss << ", AMPDU (incl. self):" << std::to_string(AMPDUFrames.size() + 1) << " Pkts}";
+    if (!additionalAMPDUFrames.empty()) {
+        ss << ", AMPDU (incl. self):" << std::to_string(additionalAMPDUFrames.size() + 1) << " Pkts}";
         return ss.str();
     }
 
@@ -852,7 +851,7 @@ std::string ModularPicoScenesTxFrame::toString() const {
 }
 
 ModularPicoScenesTxFrame &ModularPicoScenesTxFrame::appendAMPDUFrame(const ModularPicoScenesTxFrame &frame) {
-    AMPDUFrames.emplace_back(frame);
+    additionalAMPDUFrames.emplace_back(frame);
     return *this;
 }
 

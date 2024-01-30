@@ -136,16 +136,25 @@ private:
 
 std::ostream &operator<<(std::ostream &os, const ModularPicoScenesRxFrame &rxframe);
 
+/**
+ * \brief TxFrame represent the frame data structure to be transmitted.
+ * Two ways to specify its content, THEY ARE MUTUALLY EXCLUSIVE!!!
+ *  1. through PicoScenes segment-based structure (frameHeader, segments, etc.)
+ *  2. the diract arbitraryAMPDUContent, which specifies the MPDU and/or AMPDU. If you want to transmit a single MPDU, just specify the first element of arbitraryAMPDUContent
+ */
 class ModularPicoScenesTxFrame {
 public:
+    // The PicoScenes Segment-based frame structure, with additional AMPDU
     ieee80211_mac_frame_header standardHeader;
-    PicoScenesFrameTxParameters txParameters;
     std::optional<PicoScenesFrameHeader> frameHeader;
     std::vector<std::shared_ptr<AbstractPicoScenesFrameSegment>> segments;
-    Uint8Vector arbitraryMPDUContent;
-    std::vector<ModularPicoScenesTxFrame> AMPDUFrames;
+    std::vector<ModularPicoScenesTxFrame> additionalAMPDUFrames;
 
-    Uint8Vector prebuiltMPDU;
+    // The more direct arbitrary AMPDU appraoch. If this is not std::nullopt, the above segment-based appraoch will be skipped!
+    std::optional<std::vector<std::vector<Uint8Vector>>> arbitraryAMPDUContent;
+
+    PicoScenesFrameTxParameters txParameters;
+
     std::vector<std::vector<std::complex<int16_t>>> prebuiltSignals;
 
     ModularPicoScenesTxFrame & appendAMPDUFrame(const ModularPicoScenesTxFrame &frame);
@@ -167,8 +176,6 @@ public:
     int toBuffer(uint8_t *buffer, uint32_t bufferLength) const;
 
     [[nodiscard]] Uint8Vector toBuffer() const;
-
-    ModularPicoScenesTxFrame & prebuildMPDU();
 
     [[nodiscard]] std::vector<ModularPicoScenesTxFrame> autoSplit(int16_t maxSegmentBuffersLength = 1400, std::optional<uint16_t> firstSegmentCappingLength = std::nullopt, std::optional<uint16_t> maxNumMPDUInAMPDU = std::nullopt) const;
 
