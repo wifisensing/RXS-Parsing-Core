@@ -98,26 +98,30 @@ public:
 
 class ModularPicoScenesRxFrame {
 public:
-    ModularPicoScenesRxFrameHeader rxFrameHeader;
-    // Rx side segments
-    std::shared_ptr<RxSBasicSegment> rxSBasicSegment;
-    std::shared_ptr<ExtraInfoSegment> rxExtraInfoSegment;
-    std::shared_ptr<CSISegment> csiSegment;
-    std::shared_ptr<MVMExtraSegment> mvmExtraSegment;
-    std::shared_ptr<SDRExtraSegment> sdrExtraSegment;
-    std::shared_ptr<CSISegment> legacyCSISegment;
-    std::shared_ptr<BasebandSignalSegment> basebandSignalSegment;
+    // Rx side header and segments
+    struct {
+        ModularPicoScenesRxFrameHeader rxFrameHeader;
+        std::shared_ptr<RxSBasicSegment> rxSBasicSegment;
+        std::shared_ptr<ExtraInfoSegment> rxExtraInfoSegment;
+        std::shared_ptr<CSISegment> csiSegment;
+        std::shared_ptr<MVMExtraSegment> mvmExtraSegment;
+        std::shared_ptr<SDRExtraSegment> sdrExtraSegment;
+        std::shared_ptr<CSISegment> legacyCSISegment;
+        std::shared_ptr<BasebandSignalSegment> basebandSignalSegment;
+        std::map<std::string, std::shared_ptr<AbstractPicoScenesFrameSegment>> rxUnknownSegments;
+    };
 
     // Tx side header and segments
-    ieee80211_mac_frame_header standardHeader;
-    std::optional<PicoScenesFrameHeader> PicoScenesHeader;
-    std::shared_ptr<ExtraInfoSegment> txExtraInfoSegment;
-    std::vector<std::shared_ptr<PayloadSegment>> payloadSegments;
-    std::vector<std::shared_ptr<CargoSegment>> cargoSegments;
+    struct {
+        ieee80211_mac_frame_header standardHeader;
+        std::optional<PicoScenesFrameHeader> PicoScenesHeader;
+        std::shared_ptr<ExtraInfoSegment> txExtraInfoSegment;
+        std::vector<std::shared_ptr<PayloadSegment>> payloadSegments;
+        std::vector<std::shared_ptr<CargoSegment>> cargoSegments;
+        std::map<std::string, std::shared_ptr<AbstractPicoScenesFrameSegment>> txUnknownSegments;
+        std::vector<U8Vector> mpdus; // unified single-MPDU and A-MPDU
+    };
 
-    std::map<std::string, std::shared_ptr<AbstractPicoScenesFrameSegment>> rxUnknownSegments;
-    std::map<std::string, std::shared_ptr<AbstractPicoScenesFrameSegment>> txUnknownSegments;
-    std::vector<Uint8Vector> mpdus; // unified single-MPDU and A-MPDU
     bool isNDP{false};
 
     static std::optional<ModularPicoScenesRxFrame> fromBuffer(const uint8_t *inputBuffer, uint32_t bufferLength, bool interpolateCSI = false);
@@ -128,25 +132,48 @@ public:
 
     void rebuildRawBuffer();
 
-    [[nodiscard]] Uint8Vector toBuffer() const;
+    [[nodiscard]] U8Vector toBuffer() const;
 
 private:
-    Uint8Vector rawBuffer;
+    U8Vector rawBuffer;
 };
 
 std::ostream &operator<<(std::ostream &os, const ModularPicoScenesRxFrame &rxframe);
 
+/**
+ * \brief TxFrame represent the frame data structure to be transmitted.
+ *
+ * Two MUTUALLY EXCLUSIVE approaches to specify the frame content:
+ *  1. through PicoScenes segment-based structure (frameHeader, segments, etc.)
+ *  2. the diract arbitraryAMPDUContent, which directly specifies the bytes of a whole AMPDU. If you want to transmit a single MPDU, just specify the first element of it.
+ *
+ *  REMINDER: If arbitraryAMPDUContent is not std::nullopt, the segment-based appraoch will be skipped! Two appraoches are mutually exclusive!
+ */
 class ModularPicoScenesTxFrame {
 public:
-    ieee80211_mac_frame_header standardHeader;
-    PicoScenesFrameTxParameters txParameters;
-    std::optional<PicoScenesFrameHeader> frameHeader;
-    std::vector<std::shared_ptr<AbstractPicoScenesFrameSegment>> segments;
-    Uint8Vector arbitraryMPDUContent;
-    std::vector<ModularPicoScenesTxFrame> AMPDUFrames;
+    struct {
+        // Transmission parameters
+        PicoScenesFrameTxParameters txParameters;
 
-    Uint8Vector prebuiltMPDU;
-    std::vector<std::vector<std::complex<int16_t>>> prebuiltSignals;
+        // Two approaches to specify frame content
+        struct {
+            // Content specification Approach 1: PicoScenes Segment-based frame structure, with additional AMPDU
+            struct {
+                ieee80211_mac_frame_header standardHeader;
+                std::optional<PicoScenesFrameHeader> frameHeader;
+                std::vector<std::shared_ptr<AbstractPicoScenesFrameSegment>> segments;
+                std::vector<ModularPicoScenesTxFrame> additionalAMPDUFrames;
+            };
+
+            // Content specification Approach 2: Arbitrary AMPDU content
+            struct {
+                std::optional<std::vector<U8Vector>> arbitraryAMPDUContent;
+            };
+        };
+
+        // Used for storing prebuilt baseband signals
+        std::vector<CS16Vector> prebuiltSignals;
+    };
 
     ModularPicoScenesTxFrame & appendAMPDUFrame(const ModularPicoScenesTxFrame &frame);
 
@@ -162,13 +189,7 @@ public:
 
     void reset();
 
-    [[nodiscard]] uint32_t totalLength() const;
-
-    int toBuffer(uint8_t *buffer, uint32_t bufferLength) const;
-
-    [[nodiscard]] Uint8Vector toBuffer() const;
-
-    ModularPicoScenesTxFrame & prebuildMPDU();
+    [[nodiscard]] std::vector<U8Vector> toBuffer() const;
 
     [[nodiscard]] std::vector<ModularPicoScenesTxFrame> autoSplit(int16_t maxSegmentBuffersLength = 1400, std::optional<uint16_t> firstSegmentCappingLength = std::nullopt, std::optional<uint16_t> maxNumMPDUInAMPDU = std::nullopt) const;
 

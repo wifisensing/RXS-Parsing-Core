@@ -372,7 +372,7 @@ std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::concatenateFra
     return baseFrame;
 }
 
-Uint8Vector ModularPicoScenesRxFrame::toBuffer() const {
+U8Vector ModularPicoScenesRxFrame::toBuffer() const {
     if (!rawBuffer.empty())
         return rawBuffer;
 
@@ -390,7 +390,7 @@ Uint8Vector ModularPicoScenesRxFrame::toBuffer() const {
     for (const auto &[segName, segment]: rxUnknownSegments) {
         reservedLength += segment->totalLengthIncludingLeading4ByteLength();
     }
-    Uint8Vector rxSegmentBuffer;
+    U8Vector rxSegmentBuffer;
     rxSegmentBuffer.reserve(reservedLength);
 
     if (rxSBasicSegment) {
@@ -438,7 +438,7 @@ Uint8Vector ModularPicoScenesRxFrame::toBuffer() const {
     }
 
     // Assembly the full buffer
-    Uint8Vector frameBuffer;
+    U8Vector frameBuffer;
     modularFrameHeader.frameLength = sizeof(modularFrameHeader) + rxSegmentBuffer.size() + std::accumulate(mpdus.cbegin(), mpdus.cend(), 0, [](size_t acc, const auto &mpdu) {
         return acc + mpdu.size() + sizeof(uint32_t);
     }) - 4;
@@ -464,7 +464,7 @@ void ModularPicoScenesRxFrame::rebuildRawBuffer() {
     rawBuffer.clear();
 
     if (PicoScenesHeader) {
-        mpdus.assign(1, Uint8Vector{});
+        mpdus.assign(1, U8Vector{});
 
         std::copy_n(reinterpret_cast<const uint8_t *>(&standardHeader), sizeof(standardHeader), std::back_inserter(mpdus[0]));
         std::copy_n(reinterpret_cast<const uint8_t *>(&PicoScenesHeader.value()), sizeof(PicoScenesFrameHeader), std::back_inserter(mpdus[0]));
@@ -509,61 +509,42 @@ std::shared_ptr<AbstractPicoScenesFrameSegment> ModularPicoScenesTxFrame::getSeg
     return resultIt == segments.end() ? nullptr : *resultIt;
 }
 
-uint32_t ModularPicoScenesTxFrame::totalLength() const {
-    if (txParameters.NDPFrame)
-        return 0;
-
-    if (!arbitraryMPDUContent.empty())
-        return arbitraryMPDUContent.size();
-
-    uint32_t length = sizeof(ieee80211_mac_frame_header) + (frameHeader ? sizeof(PicoScenesFrameHeader) : 4); // plus 4 is to avoid NDP skip on QCA9300
-    for (const auto &segment: segments) {
-        length += segment->totalLength() + 4;
-    }
-    return length;
-}
-
-ModularPicoScenesTxFrame &ModularPicoScenesTxFrame::prebuildMPDU() {
-    prebuiltMPDU = toBuffer();
-    return *this;
-}
-
-Uint8Vector ModularPicoScenesTxFrame::toBuffer() const {
+std::vector<U8Vector> ModularPicoScenesTxFrame::toBuffer() const {
     if (txParameters.NDPFrame)
         return {};
 
-    auto bufferLength = totalLength();
-    Uint8Vector buffer(bufferLength);
-    auto copiedLength = toBuffer(&buffer[0], bufferLength);
-    assert(bufferLength == copiedLength || bufferLength == copiedLength + 4);
-    return buffer;
-}
-
-int ModularPicoScenesTxFrame::toBuffer(uint8_t *buffer, const uint32_t bufferLength) const {
-    if (bufferLength < totalLength())
-        throw std::overflow_error("Buffer not long enough for TX frame dumping...");
-
-    if (!arbitraryMPDUContent.empty()) {
-        std::copy(arbitraryMPDUContent.cbegin(), arbitraryMPDUContent.cend(), buffer);
-        return arbitraryMPDUContent.size();
+    // If arbitraryAMPDUContent is not empty, return the arbitraryAMPDUContent
+    if (arbitraryAMPDUContent && !arbitraryAMPDUContent->empty() && !arbitraryAMPDUContent.value()[0].empty()) {
+        return *arbitraryAMPDUContent;
     }
 
-    memset(buffer, 0, bufferLength);
-    memcpy(buffer, &standardHeader, sizeof(ieee80211_mac_frame_header));
-    uint32_t pos = sizeof(ieee80211_mac_frame_header);
-    if (frameHeader) {
-        if (frameHeader->numSegments != segments.size())
-            throw std::overflow_error("ModularPicoScenesTxFrame toBuffer method segment number in-consistent!");
+    // Else in PicoScenes Segment-based Tx frame style
+    {
+        std::vector<U8Vector> ampduOutput{};
 
-        memcpy(buffer + sizeof(ieee80211_mac_frame_header), &frameHeader, sizeof(PicoScenesFrameHeader));
-        pos += sizeof(PicoScenesFrameHeader);
-        for (const auto &segment: segments) {
-            segment->toBuffer(buffer + pos);
-            pos += segment->totalLength() + 4;
+        // use a pointer vector to flatten the AMPDU hierarchy
+        std::vector framePtrs{this};
+        for(const auto & frame : additionalAMPDUFrames) {
+            framePtrs.emplace_back(&frame);
         }
-    }
 
-    return pos;
+        std::transform(framePtrs.cbegin(), framePtrs.cend(), std::back_inserter(ampduOutput), [&] (const auto * framePtr) -> U8Vector {
+            auto mpduContent = U8Vector{};
+            std::copy_n(reinterpret_cast<const uint8_t *>(&framePtr->standardHeader), sizeof(ieee80211_mac_frame_header), std::back_inserter(mpduContent));
+            if (frameHeader) {
+                if (frameHeader->numSegments != segments.size())
+                    throw std::overflow_error("ModularPicoScenesTxFrame toBuffer method segment number in-consistent!");
+                std::copy_n(reinterpret_cast<const uint8_t *>(&frameHeader), sizeof(PicoScenesFrameHeader), std::back_inserter(mpduContent));
+                for(const auto &segment: framePtr->segments) {
+                    std::copy(segment->getSyncedRawBuffer().cbegin(), segment->getSyncedRawBuffer().cend(), std::back_inserter(mpduContent));
+                }
+            }
+
+            return mpduContent;
+        });
+
+        return ampduOutput;
+    }
 }
 
 std::vector<ModularPicoScenesTxFrame> ModularPicoScenesTxFrame::autoSplit(const int16_t maxSegmentBuffersLength, const std::optional<uint16_t> firstSegmentCappingLength, std::optional<uint16_t> maxNumMPDUInAMPDU) const {
@@ -579,17 +560,17 @@ std::vector<ModularPicoScenesTxFrame> ModularPicoScenesTxFrame::autoSplit(const 
         return std::vector<ModularPicoScenesTxFrame>{1, *this};
 
     auto pos = 0;
-    Uint8Vector allSegmentBuffer(segmentsLength), compressedBuffer;
+    U8Vector allSegmentBuffer(segmentsLength), compressedBuffer;
     for (const auto &segment: segments) {
         segment->toBuffer(allSegmentBuffer.data() + pos);
         pos += segment->totalLengthIncludingLeading4ByteLength();
     }
 
-    Uint8Vector *bufferPtr;
+    U8Vector *bufferPtr;
     size_t bufferLength{0};
     bool usingCompression{false};
     if (CargoCompression::isAlgorithmRegistered()) {
-        compressedBuffer = CargoCompression::getCompressor()(allSegmentBuffer.data(), allSegmentBuffer.size()).value_or(Uint8Vector());
+        compressedBuffer = CargoCompression::getCompressor()(allSegmentBuffer.data(), allSegmentBuffer.size()).value_or(U8Vector());
         bufferLength = compressedBuffer.size();
         bufferPtr = &compressedBuffer;
         usingCompression = true;
@@ -622,7 +603,7 @@ std::vector<ModularPicoScenesTxFrame> ModularPicoScenesTxFrame::autoSplit(const 
             .totalParts = numCargos,
             .compressed = usingCompression,
             .payloadLength = static_cast<uint32_t>(bufferLength),
-            .payloadData = Uint8Vector(bufferPtr->data() + pos, bufferPtr->data() + pos + stepLength)
+            .payloadData = U8Vector(bufferPtr->data() + pos, bufferPtr->data() + pos + stepLength)
         }));
         pos += stepLength;
     }
@@ -639,8 +620,11 @@ std::vector<ModularPicoScenesTxFrame> ModularPicoScenesTxFrame::autoSplit(const 
         cargoFrames.emplace_back(txframe);
     }
 
-    if (!maxNumMPDUInAMPDU)
+    if (!txParameters.preferAMPDU)
         return cargoFrames;
+
+    if (!maxNumMPDUInAMPDU)
+        maxNumMPDUInAMPDU = 3; // default value
 
     std::vector<ModularPicoScenesTxFrame> ampduFrames;
     for (auto baseIndex = 0; baseIndex < cargoFrames.size(); baseIndex += *maxNumMPDUInAMPDU) {
@@ -658,8 +642,8 @@ void ModularPicoScenesTxFrame::reset() {
     standardHeader = ieee80211_mac_frame_header();
     frameHeader = PicoScenesFrameHeader();
     txParameters = PicoScenesFrameTxParameters();
-    arbitraryMPDUContent.clear();
-    AMPDUFrames.clear();
+    arbitraryAMPDUContent = std::nullopt;
+    additionalAMPDUFrames.clear();
     prebuiltSignals.clear();
     segments.clear();
 }
@@ -826,13 +810,13 @@ std::string ModularPicoScenesTxFrame::toString() const {
     }
     ss << ", " << txParameters;
 
-    if (!arbitraryMPDUContent.empty()) {
-        ss << ", ArbitraryMPDU:" << std::to_string(arbitraryMPDUContent.size()) << "B}";
+    if (arbitraryAMPDUContent && !arbitraryAMPDUContent->empty() && !arbitraryAMPDUContent.value()[0].empty()) {
+        ss << ", ArbitraryAMPDU:" << std::to_string(arbitraryAMPDUContent->size()) << "Pkts}";
         return ss.str();
     }
 
-    if (!AMPDUFrames.empty()) {
-        ss << ", AMPDU (incl. self):" << std::to_string(AMPDUFrames.size() + 1) << " Pkts}";
+    if (!additionalAMPDUFrames.empty()) {
+        ss << ", AMPDU (incl. self):" << std::to_string(additionalAMPDUFrames.size() + 1) << " Pkts}";
         return ss.str();
     }
 
@@ -852,7 +836,7 @@ std::string ModularPicoScenesTxFrame::toString() const {
 }
 
 ModularPicoScenesTxFrame &ModularPicoScenesTxFrame::appendAMPDUFrame(const ModularPicoScenesTxFrame &frame) {
-    AMPDUFrames.emplace_back(frame);
+    additionalAMPDUFrames.emplace_back(frame);
     return *this;
 }
 

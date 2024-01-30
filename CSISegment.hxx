@@ -64,7 +64,7 @@ std::vector<size_t> sort_indexes(const std::vector<T> &v) {
 template<typename Iterator>
 void parseIWL5300CSIData(Iterator csi_matrix, const uint8_t *payload, const int ntx, const int nrx, const uint8_t ant_sel) {
 
-    auto positionComputationWRTPermutation = [](const int ntx, const int num_tones, const int ntxIdx, const int nrxIdx, const int subcarrierIdx, const std::optional<Uint8Vector>& ant_sel) -> int {
+    auto positionComputationWRTPermutation = [](const int ntx, const int num_tones, const int ntxIdx, const int nrxIdx, const int subcarrierIdx, const std::optional<U8Vector>& ant_sel) -> int {
         auto new_nrxIdx = nrxIdx;
         if (ant_sel && !ant_sel->empty()) {
             auto sorted_indexes = sort_indexes(*ant_sel);
@@ -164,7 +164,7 @@ public:
     SignalMatrix<float> phaseSlope; ///< The slope of the interpolated & unwrapped phase
     SignalMatrix<float> phaseIntercept; ///< The intercept of the interpolated & unwrapped phase
 
-    Uint8Vector rawCSIData; ///< The raw CSI data
+    U8Vector rawCSIData; ///< The raw CSI data
 
     /**
      * Perform cyclic shift delay (CSD) removal and CSI interpolation

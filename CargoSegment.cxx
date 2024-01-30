@@ -65,14 +65,14 @@ std::shared_ptr<PayloadCargo> PayloadCargo::fromBuffer(const std::vector<uint8_t
     return fromBuffer(buffer.data(), buffer.size());
 }
 
-Uint8Vector PayloadCargo::mergeAndValidateCargo(const std::vector<std::shared_ptr<PayloadCargo>>& cargos) {
-    Uint8Vector rawPayload, decompressedPayload;
+U8Vector PayloadCargo::mergeAndValidateCargo(const std::vector<std::shared_ptr<PayloadCargo>>& cargos) {
+    U8Vector rawPayload, decompressedPayload;
     std::for_each(cargos.cbegin(), cargos.cend(), [&](const std::shared_ptr<PayloadCargo> &cargo) {
         std::copy(cargo->payloadData.cbegin(), cargo->payloadData.cend(), std::back_inserter(rawPayload));
     });
 
     if (cargos.front()->compressed && CargoCompression::isAlgorithmRegistered()) {
-        decompressedPayload = CargoCompression::getDecompressor()(rawPayload.data(), rawPayload.size()).value_or(Uint8Vector());
+        decompressedPayload = CargoCompression::getDecompressor()(rawPayload.data(), rawPayload.size()).value_or(U8Vector());
     } else {
         decompressedPayload = rawPayload;
     }
