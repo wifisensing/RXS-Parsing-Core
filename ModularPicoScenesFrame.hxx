@@ -148,7 +148,7 @@ public:
     Uint8Vector prebuiltMPDU;
     std::vector<std::vector<std::complex<int16_t>>> prebuiltSignals;
 
-    ModularPicoScenesTxFrame &  appendAMPDUFrame(const ModularPicoScenesTxFrame &frame);
+    ModularPicoScenesTxFrame & appendAMPDUFrame(const ModularPicoScenesTxFrame &frame);
 
     ModularPicoScenesTxFrame &  addSegment(const std::shared_ptr<AbstractPicoScenesFrameSegment> &segment);
 
@@ -170,7 +170,7 @@ public:
 
     ModularPicoScenesTxFrame & prebuildMPDU();
 
-    [[nodiscard]] std::vector<ModularPicoScenesTxFrame> autoSplit(int16_t maxSegmentBuffersLength = 1400, std::optional<uint16_t> firstSegmentCappingLength = std::nullopt) const;
+    [[nodiscard]] std::vector<ModularPicoScenesTxFrame> autoSplit(int16_t maxSegmentBuffersLength = 1400, std::optional<uint16_t> firstSegmentCappingLength = std::nullopt, std::optional<uint16_t> maxNumMPDUInAMPDU = std::nullopt) const;
 
     ModularPicoScenesTxFrame &setMoreFrags();
 

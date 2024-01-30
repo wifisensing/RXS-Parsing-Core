@@ -566,7 +566,7 @@ int ModularPicoScenesTxFrame::toBuffer(uint8_t *buffer, const uint32_t bufferLen
     return pos;
 }
 
-std::vector<ModularPicoScenesTxFrame> ModularPicoScenesTxFrame::autoSplit(const int16_t maxSegmentBuffersLength, const std::optional<uint16_t> firstSegmentCappingLength) const {
+std::vector<ModularPicoScenesTxFrame> ModularPicoScenesTxFrame::autoSplit(const int16_t maxSegmentBuffersLength, const std::optional<uint16_t> firstSegmentCappingLength, std::optional<uint16_t> maxNumMPDUInAMPDU) const {
     if (!frameHeader)
         return std::vector<ModularPicoScenesTxFrame>{1, *this};
 
@@ -638,7 +638,20 @@ std::vector<ModularPicoScenesTxFrame> ModularPicoScenesTxFrame::autoSplit(const 
         txframe.addSegment(std::make_shared<CargoSegment>(cargo));
         cargoFrames.emplace_back(txframe);
     }
-    return cargoFrames;
+
+    if (!maxNumMPDUInAMPDU)
+        return cargoFrames;
+
+    std::vector<ModularPicoScenesTxFrame> ampduFrames;
+    for (auto baseIndex = 0; baseIndex < cargoFrames.size(); baseIndex += *maxNumMPDUInAMPDU) {
+        for (auto i = 1; i < *maxNumMPDUInAMPDU; i++) {
+            if (baseIndex + i < cargoFrames.size())
+                cargoFrames[baseIndex].appendAMPDUFrame(cargoFrames[baseIndex + i]);
+        }
+        ampduFrames.emplace_back(cargoFrames[baseIndex]);
+    }
+
+    return ampduFrames;
 }
 
 void ModularPicoScenesTxFrame::reset() {
@@ -819,7 +832,7 @@ std::string ModularPicoScenesTxFrame::toString() const {
     }
 
     if (!AMPDUFrames.empty()) {
-        ss << ", AMPDU:" << std::to_string(AMPDUFrames.size() + 1) << " Pkts}";
+        ss << ", AMPDU (incl. self):" << std::to_string(AMPDUFrames.size() + 1) << " Pkts}";
         return ss.str();
     }
 
@@ -840,6 +853,11 @@ std::string ModularPicoScenesTxFrame::toString() const {
 
 ModularPicoScenesTxFrame &ModularPicoScenesTxFrame::appendAMPDUFrame(const ModularPicoScenesTxFrame &frame) {
     AMPDUFrames.emplace_back(frame);
+    return *this;
+}
+
+ModularPicoScenesTxFrame& ModularPicoScenesTxFrame::appendRawMPDUs(const std::vector<std::vector<uint8_t>> &rawMPDUs) {
+
     return *this;
 }
 
