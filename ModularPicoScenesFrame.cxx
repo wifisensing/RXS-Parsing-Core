@@ -856,11 +856,6 @@ ModularPicoScenesTxFrame &ModularPicoScenesTxFrame::appendAMPDUFrame(const Modul
     return *this;
 }
 
-ModularPicoScenesTxFrame& ModularPicoScenesTxFrame::appendRawMPDUs(const std::vector<std::vector<uint8_t>> &rawMPDUs) {
-
-    return *this;
-}
-
 std::ostream &operator<<(std::ostream &os, const ModularPicoScenesTxFrame &txframe) {
     os << txframe.toString();
     return os;
