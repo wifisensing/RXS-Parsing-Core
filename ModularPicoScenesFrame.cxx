@@ -372,7 +372,7 @@ std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::concatenateFra
     return baseFrame;
 }
 
-Uint8Vector ModularPicoScenesRxFrame::toBuffer() const {
+U8Vector ModularPicoScenesRxFrame::toBuffer() const {
     if (!rawBuffer.empty())
         return rawBuffer;
 
@@ -390,7 +390,7 @@ Uint8Vector ModularPicoScenesRxFrame::toBuffer() const {
     for (const auto &[segName, segment]: rxUnknownSegments) {
         reservedLength += segment->totalLengthIncludingLeading4ByteLength();
     }
-    Uint8Vector rxSegmentBuffer;
+    U8Vector rxSegmentBuffer;
     rxSegmentBuffer.reserve(reservedLength);
 
     if (rxSBasicSegment) {
@@ -438,7 +438,7 @@ Uint8Vector ModularPicoScenesRxFrame::toBuffer() const {
     }
 
     // Assembly the full buffer
-    Uint8Vector frameBuffer;
+    U8Vector frameBuffer;
     modularFrameHeader.frameLength = sizeof(modularFrameHeader) + rxSegmentBuffer.size() + std::accumulate(mpdus.cbegin(), mpdus.cend(), 0, [](size_t acc, const auto &mpdu) {
         return acc + mpdu.size() + sizeof(uint32_t);
     }) - 4;
@@ -464,7 +464,7 @@ void ModularPicoScenesRxFrame::rebuildRawBuffer() {
     rawBuffer.clear();
 
     if (PicoScenesHeader) {
-        mpdus.assign(1, Uint8Vector{});
+        mpdus.assign(1, U8Vector{});
 
         std::copy_n(reinterpret_cast<const uint8_t *>(&standardHeader), sizeof(standardHeader), std::back_inserter(mpdus[0]));
         std::copy_n(reinterpret_cast<const uint8_t *>(&PicoScenesHeader.value()), sizeof(PicoScenesFrameHeader), std::back_inserter(mpdus[0]));
@@ -509,7 +509,7 @@ std::shared_ptr<AbstractPicoScenesFrameSegment> ModularPicoScenesTxFrame::getSeg
     return resultIt == segments.end() ? nullptr : *resultIt;
 }
 
-std::vector<Uint8Vector> ModularPicoScenesTxFrame::toBuffer() const {
+std::vector<U8Vector> ModularPicoScenesTxFrame::toBuffer() const {
     if (txParameters.NDPFrame)
         return {};
 
@@ -520,7 +520,7 @@ std::vector<Uint8Vector> ModularPicoScenesTxFrame::toBuffer() const {
 
     // Else in PicoScenes Segment-based Tx frame style
     {
-        std::vector<Uint8Vector> ampduOutput{};
+        std::vector<U8Vector> ampduOutput{};
 
         // use a pointer vector to flatten the AMPDU hierarchy
         std::vector framePtrs{this};
@@ -528,8 +528,8 @@ std::vector<Uint8Vector> ModularPicoScenesTxFrame::toBuffer() const {
             framePtrs.emplace_back(&frame);
         }
 
-        std::transform(framePtrs.cbegin(), framePtrs.cend(), std::back_inserter(ampduOutput), [&] (const auto * framePtr) -> Uint8Vector {
-            auto mpduContent = Uint8Vector{};
+        std::transform(framePtrs.cbegin(), framePtrs.cend(), std::back_inserter(ampduOutput), [&] (const auto * framePtr) -> U8Vector {
+            auto mpduContent = U8Vector{};
             std::copy_n(reinterpret_cast<const uint8_t *>(&framePtr->standardHeader), sizeof(ieee80211_mac_frame_header), std::back_inserter(mpduContent));
             if (frameHeader) {
                 if (frameHeader->numSegments != segments.size())
@@ -560,17 +560,17 @@ std::vector<ModularPicoScenesTxFrame> ModularPicoScenesTxFrame::autoSplit(const 
         return std::vector<ModularPicoScenesTxFrame>{1, *this};
 
     auto pos = 0;
-    Uint8Vector allSegmentBuffer(segmentsLength), compressedBuffer;
+    U8Vector allSegmentBuffer(segmentsLength), compressedBuffer;
     for (const auto &segment: segments) {
         segment->toBuffer(allSegmentBuffer.data() + pos);
         pos += segment->totalLengthIncludingLeading4ByteLength();
     }
 
-    Uint8Vector *bufferPtr;
+    U8Vector *bufferPtr;
     size_t bufferLength{0};
     bool usingCompression{false};
     if (CargoCompression::isAlgorithmRegistered()) {
-        compressedBuffer = CargoCompression::getCompressor()(allSegmentBuffer.data(), allSegmentBuffer.size()).value_or(Uint8Vector());
+        compressedBuffer = CargoCompression::getCompressor()(allSegmentBuffer.data(), allSegmentBuffer.size()).value_or(U8Vector());
         bufferLength = compressedBuffer.size();
         bufferPtr = &compressedBuffer;
         usingCompression = true;
@@ -603,7 +603,7 @@ std::vector<ModularPicoScenesTxFrame> ModularPicoScenesTxFrame::autoSplit(const 
             .totalParts = numCargos,
             .compressed = usingCompression,
             .payloadLength = static_cast<uint32_t>(bufferLength),
-            .payloadData = Uint8Vector(bufferPtr->data() + pos, bufferPtr->data() + pos + stepLength)
+            .payloadData = U8Vector(bufferPtr->data() + pos, bufferPtr->data() + pos + stepLength)
         }));
         pos += stepLength;
     }

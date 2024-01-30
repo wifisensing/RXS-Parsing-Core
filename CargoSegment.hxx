@@ -54,7 +54,7 @@ public:
 
     static std::shared_ptr<PayloadCargo> fromBuffer(const std::vector<uint8_t> &buffer);
 
-    static Uint8Vector mergeAndValidateCargo(const std::vector<std::shared_ptr<PayloadCargo>>&cargos);
+    static U8Vector mergeAndValidateCargo(const std::vector<std::shared_ptr<PayloadCargo>>&cargos);
 };
 
 class CargoSegment : public AbstractPicoScenesFrameSegment {

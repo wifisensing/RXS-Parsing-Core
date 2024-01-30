@@ -28,8 +28,8 @@ using ComplexFloatData = std::complex<float>;
 using CS16 = std::complex<int16_t>;
 using ComplexArray = std::vector<ComplexData>;
 using ComplexFloatArray = std::vector<ComplexData>;
-using CS16Array = std::vector<std::complex<int16_t>>;
-using Uint8Vector = std::vector<uint8_t>;
+using CS16Vector = std::vector<std::complex<int16_t>>;
+using U8Vector = std::vector<uint8_t>;
 
 /**
  * IWL5300 can measure CSI for this MAC address in monitor mode. A pure magic MAC address

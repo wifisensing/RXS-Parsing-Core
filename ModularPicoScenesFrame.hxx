@@ -119,7 +119,7 @@ public:
         std::vector<std::shared_ptr<PayloadSegment>> payloadSegments;
         std::vector<std::shared_ptr<CargoSegment>> cargoSegments;
         std::map<std::string, std::shared_ptr<AbstractPicoScenesFrameSegment>> txUnknownSegments;
-        std::vector<Uint8Vector> mpdus; // unified single-MPDU and A-MPDU
+        std::vector<U8Vector> mpdus; // unified single-MPDU and A-MPDU
     };
 
     bool isNDP{false};
@@ -132,10 +132,10 @@ public:
 
     void rebuildRawBuffer();
 
-    [[nodiscard]] Uint8Vector toBuffer() const;
+    [[nodiscard]] U8Vector toBuffer() const;
 
 private:
-    Uint8Vector rawBuffer;
+    U8Vector rawBuffer;
 };
 
 std::ostream &operator<<(std::ostream &os, const ModularPicoScenesRxFrame &rxframe);
@@ -167,12 +167,12 @@ public:
 
             // Content specification Approach 2: Arbitrary AMPDU content
             struct {
-                std::optional<std::vector<Uint8Vector>> arbitraryAMPDUContent;
+                std::optional<std::vector<U8Vector>> arbitraryAMPDUContent;
             };
         };
 
         // Used for storing prebuilt baseband signals
-        std::vector<CS16Array> prebuiltSignals;
+        std::vector<CS16Vector> prebuiltSignals;
     };
 
     ModularPicoScenesTxFrame & appendAMPDUFrame(const ModularPicoScenesTxFrame &frame);
@@ -189,7 +189,7 @@ public:
 
     void reset();
 
-    [[nodiscard]] std::vector<Uint8Vector> toBuffer() const;
+    [[nodiscard]] std::vector<U8Vector> toBuffer() const;
 
     [[nodiscard]] std::vector<ModularPicoScenesTxFrame> autoSplit(int16_t maxSegmentBuffersLength = 1400, std::optional<uint16_t> firstSegmentCappingLength = std::nullopt, std::optional<uint16_t> maxNumMPDUInAMPDU = std::nullopt) const;
 
