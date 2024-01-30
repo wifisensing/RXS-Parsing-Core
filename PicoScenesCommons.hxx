@@ -25,8 +25,10 @@
 
 using ComplexData = std::complex<double>;
 using ComplexFloatData = std::complex<float>;
+using CS16 = std::complex<int16_t>;
 using ComplexArray = std::vector<ComplexData>;
 using ComplexFloatArray = std::vector<ComplexData>;
+using CS16Array = std::vector<std::complex<int16_t>>;
 using Uint8Vector = std::vector<uint8_t>;
 
 /**

@@ -159,9 +159,7 @@ public:
     // If this is not std::nullopt, the above segment-based appraoch will be skipped!
     std::optional<std::vector<Uint8Vector>> arbitraryAMPDUContent;
 
-    PicoScenesFrameTxParameters txParameters;
-
-    std::vector<std::vector<std::complex<int16_t>>> prebuiltSignals;
+    std::vector<CS16Array> prebuiltSignals;
 
     ModularPicoScenesTxFrame & appendAMPDUFrame(const ModularPicoScenesTxFrame &frame);
 
