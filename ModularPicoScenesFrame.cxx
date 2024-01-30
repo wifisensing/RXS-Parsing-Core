@@ -542,8 +542,7 @@ int ModularPicoScenesTxFrame::toBuffer(uint8_t *buffer, const uint32_t bufferLen
 
     if (arbitraryAMPDUContent && !arbitraryAMPDUContent->empty()) {
         // TODO should considering the AMPDU case
-        // TODO CHECK again, very strange!
-        std::copy((*arbitraryAMPDUContent)[0][0].cbegin(), (*arbitraryAMPDUContent)[0][0].cend(), buffer);
+        std::copy_n(arbitraryAMPDUContent->at(0).data(), arbitraryAMPDUContent->at(0).size(), buffer);
         return arbitraryAMPDUContent->at(0).size();
     }
 

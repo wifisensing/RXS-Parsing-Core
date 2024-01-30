@@ -151,7 +151,7 @@ public:
     std::vector<ModularPicoScenesTxFrame> additionalAMPDUFrames;
 
     // The more direct arbitrary AMPDU appraoch. If this is not std::nullopt, the above segment-based appraoch will be skipped!
-    std::optional<std::vector<std::vector<Uint8Vector>>> arbitraryAMPDUContent;
+    std::optional<std::vector<Uint8Vector>> arbitraryAMPDUContent;
 
     PicoScenesFrameTxParameters txParameters;
 
