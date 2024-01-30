@@ -99,28 +99,24 @@ public:
 class ModularPicoScenesRxFrame {
 public:
     // Rx side header and segments
-    struct {
-        ModularPicoScenesRxFrameHeader rxFrameHeader;
-        std::shared_ptr<RxSBasicSegment> rxSBasicSegment;
-        std::shared_ptr<ExtraInfoSegment> rxExtraInfoSegment;
-        std::shared_ptr<CSISegment> csiSegment;
-        std::shared_ptr<MVMExtraSegment> mvmExtraSegment;
-        std::shared_ptr<SDRExtraSegment> sdrExtraSegment;
-        std::shared_ptr<CSISegment> legacyCSISegment;
-        std::shared_ptr<BasebandSignalSegment> basebandSignalSegment;
-        std::map<std::string, std::shared_ptr<AbstractPicoScenesFrameSegment>> rxUnknownSegments;
-    };
+    ModularPicoScenesRxFrameHeader rxFrameHeader;
+    std::shared_ptr<RxSBasicSegment> rxSBasicSegment;
+    std::shared_ptr<ExtraInfoSegment> rxExtraInfoSegment;
+    std::shared_ptr<CSISegment> csiSegment;
+    std::shared_ptr<MVMExtraSegment> mvmExtraSegment;
+    std::shared_ptr<SDRExtraSegment> sdrExtraSegment;
+    std::shared_ptr<CSISegment> legacyCSISegment;
+    std::shared_ptr<BasebandSignalSegment> basebandSignalSegment;
+    std::map<std::string, std::shared_ptr<AbstractPicoScenesFrameSegment>> rxUnknownSegments;
 
     // Tx side header and segments
-    struct {
-        ieee80211_mac_frame_header standardHeader;
-        std::optional<PicoScenesFrameHeader> PicoScenesHeader;
-        std::shared_ptr<ExtraInfoSegment> txExtraInfoSegment;
-        std::vector<std::shared_ptr<PayloadSegment>> payloadSegments;
-        std::vector<std::shared_ptr<CargoSegment>> cargoSegments;
-        std::map<std::string, std::shared_ptr<AbstractPicoScenesFrameSegment>> txUnknownSegments;
-        std::vector<U8Vector> mpdus; // unified single-MPDU and A-MPDU
-    };
+    ieee80211_mac_frame_header standardHeader;
+    std::optional<PicoScenesFrameHeader> PicoScenesHeader;
+    std::shared_ptr<ExtraInfoSegment> txExtraInfoSegment;
+    std::vector<std::shared_ptr<PayloadSegment>> payloadSegments;
+    std::vector<std::shared_ptr<CargoSegment>> cargoSegments;
+    std::map<std::string, std::shared_ptr<AbstractPicoScenesFrameSegment>> txUnknownSegments;
+    std::vector<U8Vector> mpdus; // unified single-MPDU and A-MPDU
 
     bool isNDP{false};
 
@@ -151,29 +147,20 @@ std::ostream &operator<<(std::ostream &os, const ModularPicoScenesRxFrame &rxfra
  */
 class ModularPicoScenesTxFrame {
 public:
-    struct {
-        // Transmission parameters
-        PicoScenesFrameTxParameters txParameters;
+    // Transmission parameters
+    PicoScenesFrameTxParameters txParameters;
 
-        // Two approaches to specify frame content
-        struct {
-            // Content specification Approach 1: PicoScenes Segment-based frame structure, with additional AMPDU
-            struct {
-                ieee80211_mac_frame_header standardHeader;
-                std::optional<PicoScenesFrameHeader> frameHeader;
-                std::vector<std::shared_ptr<AbstractPicoScenesFrameSegment>> segments;
-                std::vector<ModularPicoScenesTxFrame> additionalAMPDUFrames;
-            };
+    // Content specification Approach 1: PicoScenes Segment-based frame structure, with additional AMPDU
+    ieee80211_mac_frame_header standardHeader;
+    std::optional<PicoScenesFrameHeader> frameHeader;
+    std::vector<std::shared_ptr<AbstractPicoScenesFrameSegment>> segments;
+    std::vector<ModularPicoScenesTxFrame> additionalAMPDUFrames;
 
-            // Content specification Approach 2: Arbitrary AMPDU content
-            struct {
-                std::optional<std::vector<U8Vector>> arbitraryAMPDUContent;
-            };
-        };
+    // Content specification Approach 2: Arbitrary AMPDU content
+    std::optional<std::vector<U8Vector>> arbitraryAMPDUContent;
 
-        // Used for storing prebuilt baseband signals
-        std::vector<CS16Vector> prebuiltSignals;
-    };
+    // Used for storing prebuilt baseband signals
+    std::vector<CS16Vector> prebuiltSignals;
 
     ModularPicoScenesTxFrame & appendAMPDUFrame(const ModularPicoScenesTxFrame &frame);
 
