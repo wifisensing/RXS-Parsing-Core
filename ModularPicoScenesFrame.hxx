@@ -138,19 +138,25 @@ std::ostream &operator<<(std::ostream &os, const ModularPicoScenesRxFrame &rxfra
 
 /**
  * \brief TxFrame represent the frame data structure to be transmitted.
- * Two ways to specify its content, THEY ARE MUTUALLY EXCLUSIVE!!!
+ *
+ * Two MUTUALLY EXCLUSIVE approaches to specify the frame content:
  *  1. through PicoScenes segment-based structure (frameHeader, segments, etc.)
- *  2. the diract arbitraryAMPDUContent, which specifies the MPDU and/or AMPDU. If you want to transmit a single MPDU, just specify the first element of arbitraryAMPDUContent
+ *  2. the diract arbitraryAMPDUContent, which directly specifies the bytes of a whole AMPDU. If you want to transmit a single MPDU, just specify the first element of it.
+ *
+ *  REMINDER: If arbitraryAMPDUContent is not std::nullopt, the segment-based appraoch will be skipped! Two appraoches are mutually exclusive!
  */
 class ModularPicoScenesTxFrame {
 public:
+    // Transmission parameters
+    PicoScenesFrameTxParameters txParameters;
+
     // The PicoScenes Segment-based frame structure, with additional AMPDU
     ieee80211_mac_frame_header standardHeader;
     std::optional<PicoScenesFrameHeader> frameHeader;
     std::vector<std::shared_ptr<AbstractPicoScenesFrameSegment>> segments;
     std::vector<ModularPicoScenesTxFrame> additionalAMPDUFrames;
 
-    // The more direct arbitrary AMPDU appraoch. If this is not std::nullopt, the above segment-based appraoch will be skipped!
+    // If this is not std::nullopt, the above segment-based appraoch will be skipped!
     std::optional<std::vector<Uint8Vector>> arbitraryAMPDUContent;
 
     PicoScenesFrameTxParameters txParameters;
