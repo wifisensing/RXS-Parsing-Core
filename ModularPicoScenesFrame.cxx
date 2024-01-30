@@ -509,59 +509,42 @@ std::shared_ptr<AbstractPicoScenesFrameSegment> ModularPicoScenesTxFrame::getSeg
     return resultIt == segments.end() ? nullptr : *resultIt;
 }
 
-uint32_t ModularPicoScenesTxFrame::totalLength() const {
-    if (txParameters.NDPFrame)
-        return 0;
-
-    if (arbitraryAMPDUContent && !arbitraryAMPDUContent->empty()) {
-        // TODO should considering the AMPDU case
-        return arbitraryAMPDUContent->at(0).size();
-    }
-
-    uint32_t length = sizeof(ieee80211_mac_frame_header) + (frameHeader ? sizeof(PicoScenesFrameHeader) : 4); // plus 4 is to avoid NDP skip on QCA9300
-    for (const auto &segment: segments) {
-        length += segment->totalLength() + 4;
-    }
-    return length;
-}
-
-Uint8Vector ModularPicoScenesTxFrame::toBuffer() const {
+std::vector<Uint8Vector> ModularPicoScenesTxFrame::toBuffer() const {
     if (txParameters.NDPFrame)
         return {};
 
-    auto bufferLength = totalLength();
-    Uint8Vector buffer(bufferLength);
-    auto copiedLength = toBuffer(&buffer[0], bufferLength);
-    assert(bufferLength == copiedLength || bufferLength == copiedLength + 4);
-    return buffer;
-}
-
-int ModularPicoScenesTxFrame::toBuffer(uint8_t *buffer, const uint32_t bufferLength) const {
-    if (bufferLength < totalLength())
-        throw std::overflow_error("Buffer not long enough for TX frame dumping...");
-
-    if (arbitraryAMPDUContent && !arbitraryAMPDUContent->empty()) {
-        // TODO should considering the AMPDU case
-        std::copy_n(arbitraryAMPDUContent->at(0).data(), arbitraryAMPDUContent->at(0).size(), buffer);
-        return arbitraryAMPDUContent->at(0).size();
+    // If arbitraryAMPDUContent is not empty, return the arbitraryAMPDUContent
+    if (arbitraryAMPDUContent && !arbitraryAMPDUContent->empty() && !arbitraryAMPDUContent.value()[0].empty()) {
+        return *arbitraryAMPDUContent;
     }
 
-    memset(buffer, 0, bufferLength);
-    memcpy(buffer, &standardHeader, sizeof(ieee80211_mac_frame_header));
-    uint32_t pos = sizeof(ieee80211_mac_frame_header);
-    if (frameHeader) {
-        if (frameHeader->numSegments != segments.size())
-            throw std::overflow_error("ModularPicoScenesTxFrame toBuffer method segment number in-consistent!");
+    // Else in PicoScenes Segment-based Tx frame style
+    {
+        std::vector<Uint8Vector> ampduOutput{};
 
-        memcpy(buffer + sizeof(ieee80211_mac_frame_header), &frameHeader, sizeof(PicoScenesFrameHeader));
-        pos += sizeof(PicoScenesFrameHeader);
-        for (const auto &segment: segments) {
-            segment->toBuffer(buffer + pos);
-            pos += segment->totalLength() + 4;
+        // use a pointer vector to flatten the AMPDU hierarchy
+        std::vector framePtrs{this};
+        for(const auto & frame : additionalAMPDUFrames) {
+            framePtrs.emplace_back(&frame);
         }
-    }
 
-    return pos;
+        std::transform(framePtrs.cbegin(), framePtrs.cend(), std::back_inserter(ampduOutput), [&] (const auto * framePtr) -> Uint8Vector {
+            auto mpduContent = Uint8Vector{};
+            std::copy_n(reinterpret_cast<const uint8_t *>(&framePtr->standardHeader), sizeof(ieee80211_mac_frame_header), std::back_inserter(mpduContent));
+            if (frameHeader) {
+                if (frameHeader->numSegments != segments.size())
+                    throw std::overflow_error("ModularPicoScenesTxFrame toBuffer method segment number in-consistent!");
+                std::copy_n(reinterpret_cast<const uint8_t *>(&frameHeader), sizeof(PicoScenesFrameHeader), std::back_inserter(mpduContent));
+                for(const auto &segment: framePtr->segments) {
+                    std::copy(segment->getSyncedRawBuffer().cbegin(), segment->getSyncedRawBuffer().cend(), std::back_inserter(mpduContent));
+                }
+            }
+
+            return mpduContent;
+        });
+
+        return ampduOutput;
+    }
 }
 
 std::vector<ModularPicoScenesTxFrame> ModularPicoScenesTxFrame::autoSplit(const int16_t maxSegmentBuffersLength, const std::optional<uint16_t> firstSegmentCappingLength, std::optional<uint16_t> maxNumMPDUInAMPDU) const {
@@ -824,7 +807,7 @@ std::string ModularPicoScenesTxFrame::toString() const {
     }
     ss << ", " << txParameters;
 
-    if (arbitraryAMPDUContent && !arbitraryAMPDUContent->empty()) {
+    if (arbitraryAMPDUContent && !arbitraryAMPDUContent->empty() && !arbitraryAMPDUContent.value()[0].empty()) {
         ss << ", ArbitraryAMPDU:" << std::to_string(arbitraryAMPDUContent->size()) << "Pkts}";
         return ss.str();
     }
