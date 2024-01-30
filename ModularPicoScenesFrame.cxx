@@ -620,8 +620,11 @@ std::vector<ModularPicoScenesTxFrame> ModularPicoScenesTxFrame::autoSplit(const 
         cargoFrames.emplace_back(txframe);
     }
 
-    if (!maxNumMPDUInAMPDU)
+    if (!txParameters.preferAMPDU)
         return cargoFrames;
+
+    if (!maxNumMPDUInAMPDU)
+        maxNumMPDUInAMPDU = 3; // default value
 
     std::vector<ModularPicoScenesTxFrame> ampduFrames;
     for (auto baseIndex = 0; baseIndex < cargoFrames.size(); baseIndex += *maxNumMPDUInAMPDU) {
