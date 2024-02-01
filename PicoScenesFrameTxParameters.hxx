@@ -119,6 +119,36 @@ struct PicoScenesFrameTxParameters {
             if (numSTS[0] > 4)
                 throw std::invalid_argument("Invalid Tx numSTS: " + std::to_string(numSTS[0]) + " for HT frame.");
 
+            if (const auto requiredNumHTLTFs = [&] {
+                switch (numSTS) {
+                    case 1:
+                        return 1;
+                    case 2:
+                        return 2;
+                    case 3:
+                        [[fallthrough]];
+                    default:
+                        return 4;
+                }
+            }() + [&] {
+                switch (numExtraSounding) {
+                    case 0:
+                        return 0;
+                    case 1:
+                        return 1;
+                    case 2:
+                        return 2;
+                    case 3:
+                        [[fallthrough]];
+                    case 4:
+                        return 4;
+                    default:
+                        return numExtraSounding;
+                }
+            }(); requiredNumHTLTFs > 5) {
+                throw std::invalid_argument("Invalid number of Extra HT-LTF: " + std::to_string(numExtraSounding) + " for HT-format frame with " + std::to_string(numSTS[0]) + " STS.");
+            }
+
             if (guardInterval > GuardIntervalEnum::GI_800)
                 throw std::invalid_argument("Invalid Tx GI: " + GuardInterval2String(guardInterval) + " for HT frame.");
         } else if (frameType == PacketFormatEnum::PacketFormat_VHT) {
@@ -173,8 +203,8 @@ struct PicoScenesFrameTxParameters {
             if (mcs[0] > 13)
                 throw std::invalid_argument("Invalid Tx MCS: " + std::to_string(mcs[0]) + " for EHT-SU frame.");
 
-            if (const auto expectedNumEHTLTF = [] (const uint8_t numSTS) {
-                switch (numSTS) {
+            if (const auto expectedNumEHTLTF = [&] {
+                switch (numSTS[0]) {
                     case 1:
                         return 1;
                     case 2:
@@ -192,8 +222,8 @@ struct PicoScenesFrameTxParameters {
                     default:
                         return 8;
                 }
-            }(numSTS[0]) + numExtraSounding; numExtraSounding > 1 && (expectedNumEHTLTF == 3 || expectedNumEHTLTF == 5 || expectedNumEHTLTF == 7 || expectedNumEHTLTF > 8)) {
-                    throw std::invalid_argument("Invalid number of Extra EHT-LTF: " + std::to_string(numExtraSounding) + " for EHT-LTF frame with " + std::to_string(numSTS[0]) + " STSs.");
+            }() + numExtraSounding; numExtraSounding > 0 && (expectedNumEHTLTF == 3 || expectedNumEHTLTF == 5 || expectedNumEHTLTF == 7 || expectedNumEHTLTF > 8)) {
+                    throw std::invalid_argument("Invalid number of Extra EHT-LTF: " + std::to_string(numExtraSounding) + " for EHT-format frame with " + std::to_string(numSTS[0]) + " STS.");
             }
 
             if (guardInterval == GuardIntervalEnum::GI_400)
