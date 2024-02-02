@@ -120,7 +120,7 @@ struct PicoScenesFrameTxParameters {
                 throw std::invalid_argument("Invalid Tx numSTS: " + std::to_string(numSTS[0]) + " for HT frame.");
 
             if (const auto requiredNumHTLTFs = [&] {
-                switch (numSTS) {
+                switch (numSTS[0]) {
                     case 1:
                         return 1;
                     case 2:
@@ -143,7 +143,7 @@ struct PicoScenesFrameTxParameters {
                     case 4:
                         return 4;
                     default:
-                        return numExtraSounding;
+                        return int(numExtraSounding);
                 }
             }(); requiredNumHTLTFs > 5) {
                 throw std::invalid_argument("Invalid number of Extra HT-LTF: " + std::to_string(numExtraSounding) + " for HT-format frame with " + std::to_string(numSTS[0]) + " STS.");
