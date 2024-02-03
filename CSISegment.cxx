@@ -80,7 +80,17 @@ std::shared_ptr<CSI> CSI::fromIWLMVM(const uint8_t *buffer, const uint32_t buffe
     const auto &pilotArray = CSISubcarrierIndex::getPilotSubcarrierIndices(format, cbw);
     const auto &dataSubcarrierIndeices = CSISubcarrierIndex::getDataSubcarrierIndices(format, cbw);
     const auto &allSubcarrierIndices = CSISubcarrierIndex::getAllSubcarrierIndices(format, cbw);
-    skipPilotSubcarriers &= (numTones == allSubcarrierIndices.size());
+    skipPilotSubcarriers &= [&] {
+        // Intel AX200/210 NIC returns correct number of CSI values under 160 MHz CBW
+        if (static_cast<uint16_t>(cbw) < 160 && numTones == dataSubcarrierIndeices.size())
+            return true;
+
+        // Returns incorrect number of CSI values by >83 version firmware
+        if (firmwareVersion >= 83 && cbw == ChannelBandwidthEnum::CBW_160 && (format == PacketFormatEnum::PacketFormat_HESU || format == PacketFormatEnum::PacketFormat_VHT) && (numTones == 498 || numTones == 2020))
+            return true;
+
+        return false;
+    }();
     const auto &subcarrierIndices = skipPilotSubcarriers ? dataSubcarrierIndeices : allSubcarrierIndices;
     auto numTonesNew = subcarrierIndices.size();
     std::vector CSIArray(numTonesNew * numRx * numTx, std::complex<float>{});
