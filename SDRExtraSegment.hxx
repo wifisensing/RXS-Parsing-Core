@@ -17,7 +17,9 @@ struct SDRExtra {
     double lastTxTime{0};
     double signalInputSystemTime{0};
     double signalDecodeSystemTime{0};
-    double sigEVM{0};
+    double sigEVM{0}; /// The EVM estimated by the L-SIG field
+    double initialCFO{0}; ///< The CFO estiamted by L-STF and L-LTF. This CFO is used to rotate the following L-LTF and Non-L-LTFs, so affacting the CFO measured from CSI.
+    double residualCFO{0}; ///< The CFO estimtaed by the Pilot subcarriers per-OFDM symbol. This estimation is much much more accurate than initialCFO IFF the PPDU is long, e.g., > 1ms.  The reported ExtraInfo::cfo = initialCFO + residualCFO.
 
     [[nodiscard]] inline double decodingDelay() const {
         return signalDecodeSystemTime - signalInputSystemTime;

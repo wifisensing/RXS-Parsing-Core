@@ -14,7 +14,8 @@ std::string SDRExtra::toString() const {
     ss << "SDRExtra:[scrambler=" << static_cast<int16_t>(scramblerInit) << ", packetStartInternal="
        << packetStartInternal << ", rxIndex=" << hardwareRxSamplingIndex
        << std::setprecision(9) << ", rxTime=" << preciseRxTime << ", decodingDelay=" << decodingDelay()
-       << ", lastTxTime=" << lastTxTime << ", sigEVM=" << std::fixed << std::setprecision(1) << sigEVM << "]";
+       << ", lastTxTime=" << lastTxTime << ", sigEVM=" << std::fixed << std::setprecision(1) << sigEVM
+       << ", initialCFO=" << initialCFO << ", residualCFO=" << residualCFO << "]";
     return ss.str();
 }
 
@@ -63,6 +64,19 @@ struct SDRExtraV5 {
     double signalInputSystemTime{0};
     double signalDecodeSystemTime{0};
     double sigEVM{0};
+} __attribute__ ((__packed__));
+
+struct SDRExtraV6 {
+    int8_t scramblerInit{0};
+    int64_t packetStartInternal{0};
+    int64_t hardwareRxSamplingIndex{0};
+    double preciseRxTime{0};
+    double lastTxTime{0};
+    double signalInputSystemTime{0};
+    double signalDecodeSystemTime{0};
+    double sigEVM{0};
+    double initialCFO{0};
+    double residualCFO{0};
 } __attribute__ ((__packed__));
 
 static auto v1Parser = [](const uint8_t *buffer, const uint32_t bufferLength) -> SDRExtra {
@@ -160,7 +174,6 @@ static auto v4Parser = [](const uint8_t *buffer, const uint32_t bufferLength) ->
     return r;
 };
 
-
 static auto v5Parser = [](const uint8_t *buffer, const uint32_t bufferLength) -> SDRExtra {
     uint32_t pos = 0;
     if (bufferLength < sizeof(SDRExtraV5))
@@ -191,6 +204,40 @@ static auto v5Parser = [](const uint8_t *buffer, const uint32_t bufferLength) ->
     return r;
 };
 
+static auto v6Parser = [](const uint8_t *buffer, const uint32_t bufferLength) -> SDRExtra {
+    uint32_t pos = 0;
+    if (bufferLength < sizeof(SDRExtraV6))
+        throw std::runtime_error("SDRExtra v6Parser cannot parse the segment with insufficient buffer length.");
+
+    auto r = SDRExtra();
+    std::memset(&r, 0, sizeof(r));
+    r.scramblerInit = *reinterpret_cast<const int8_t *>(buffer + pos);
+    pos += sizeof(int8_t);
+    r.packetStartInternal = *reinterpret_cast<const int64_t *>(buffer + pos);
+    pos += sizeof(int64_t);
+    r.hardwareRxSamplingIndex = *reinterpret_cast<const int64_t *>(buffer + pos);
+    pos += sizeof(int64_t);
+    r.preciseRxTime = *reinterpret_cast<const double *>(buffer + pos);
+    pos += sizeof(double);
+    r.lastTxTime = *reinterpret_cast<const double *>(buffer + pos);
+    pos += sizeof(double);
+    r.signalInputSystemTime = *reinterpret_cast<const double *>(buffer + pos);
+    pos += sizeof(double);
+    r.signalDecodeSystemTime = *reinterpret_cast<const double *>(buffer + pos);
+    pos += sizeof(double);
+    r.sigEVM = *reinterpret_cast<const double *>(buffer + pos);
+    pos += sizeof(double);
+    r.initialCFO = *reinterpret_cast<const double *>(buffer + pos);
+    pos += sizeof(double);
+    r.residualCFO = *reinterpret_cast<const double *>(buffer + pos);
+    pos += sizeof(double);
+
+    if (pos != bufferLength)
+        throw std::runtime_error("SDRExtra v6Parser cannot parse the segment with mismatched buffer length.");
+
+    return r;
+};
+
 std::map<uint16_t, std::function<SDRExtra(const uint8_t *, uint32_t)>> SDRExtraSegment::versionedSolutionMap = initializeSolutionMap();
 
 std::map<uint16_t, std::function<SDRExtra(const uint8_t *, uint32_t)>> SDRExtraSegment::initializeSolutionMap() noexcept {
@@ -198,10 +245,11 @@ std::map<uint16_t, std::function<SDRExtra(const uint8_t *, uint32_t)>> SDRExtraS
                                                                                   {0x2U, v2Parser},
                                                                                   {0x3U, v3Parser},
                                                                                   {0x4U, v4Parser},
-                                                                                  {0x5U, v5Parser}};
+                                                                                  {0x5U, v5Parser},
+                                                                                  {0x6U, v6Parser}};
 }
 
-SDRExtraSegment::SDRExtraSegment() : AbstractPicoScenesFrameSegment("SDRExtra", 0x5U) {}
+SDRExtraSegment::SDRExtraSegment() : AbstractPicoScenesFrameSegment("SDRExtra", 0x6U) {}
 
 SDRExtraSegment::SDRExtraSegment(const uint8_t *buffer, const uint32_t bufferLength) : AbstractPicoScenesFrameSegment(buffer, bufferLength) {
     if (segmentName != "SDRExtra")
