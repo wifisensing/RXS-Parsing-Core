@@ -158,6 +158,7 @@ public:
     uint8_t antSel; ///< The antenna selection (antenna permutation) information, only used for IWL5300 NIC
     int16_t subcarrierOffset; ///< the index offset of the subcarrierIndices. For example, for a HT20-rate packet, subcarrierOffset = 0; for HT40+, subcarrierOffset = 32; for HT40-, subcarrierOffset = -32;
     std::vector<int16_t> subcarrierIndices; ///< The CSI subcarrier index. For example, [-28, 28] for 11n format frame.
+    std::vector<uint32_t> timingOffsets; ///< The offset of LTF segment within the whole PPDU, multiple values for multiple CSI, e.g., in case of the extra spatial sounding or midamble
     SignalMatrix<std::complex<float>> CSIArray; ///< The core CSI data matrix
     SignalMatrix<float> magnitudeArray; ///< The magnitude data matrix
     SignalMatrix<float> phaseArray; ///< The phase data matrix
@@ -290,7 +291,7 @@ public:
 
     [[nodiscard]] std::string toString() const override;
 
-    const std::shared_ptr<CSI> &getCSI() const;
+    [[nodiscard]] const std::shared_ptr<CSI> &getCSI() const;
 
     void setCSI(const std::shared_ptr<CSI> &csi);
 
