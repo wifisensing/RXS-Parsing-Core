@@ -41,6 +41,8 @@ std::vector<uint32_t> computeTimingOffsetPreEHT(const PacketFormatEnum format, c
     if (format == PacketFormatEnum::PacketFormat_HESU) {
         return std::vector<uint32_t>{720 * static_cast<uint32_t>(cbw) / 20};
     }
+
+    return std::vector<uint32_t>{};
 }
 
 std::shared_ptr<CSI> CSI::fromQCA9300(const uint8_t *buffer, const uint32_t bufferLength, const uint8_t numTx, const uint8_t numRx, const uint8_t numTones, const ChannelBandwidthEnum cbw, const int16_t subcarrierIndexOffset) {
@@ -278,13 +280,14 @@ std::vector<uint8_t> CSI::toBuffer() {
     if (deviceType == PicoScenesDeviceType::IWL5300 || deviceType == PicoScenesDeviceType::QCA9300 || isIntelMVMTypeNIC(deviceType)) {
         std::copy_n(rawCSIData.data(), rawCSIData.size(), std::back_inserter(buffer));
     } else if (deviceType == PicoScenesDeviceType::USRP) {
-        uint32_t csiBufferLength = subcarrierIndices.size() * sizeof(int16_t) + timingOffsets.size() * sizeof(uint32_t) + CSIArray.toBufferMemoryLength();
+        uint32_t csiBufferLength = CSIArray.toBufferMemoryLength();
         std::copy_n(reinterpret_cast<uint8_t *>(&csiBufferLength), sizeof(csiBufferLength), std::back_inserter(buffer));
-        std::copy_n(reinterpret_cast<const uint8_t *>(subcarrierIndices.data()), subcarrierIndices.size() * sizeof(int16_t), std::back_inserter(buffer));
-        std::copy_n(reinterpret_cast<const uint8_t *>(timingOffsets.data()), timingOffsets.size() * sizeof(uint32_t), std::back_inserter(buffer));
-
         auto csiBuffer = CSIArray.toBuffer();
         std::copy_n(csiBuffer.data(), csiBuffer.size(), std::back_inserter(buffer));
+        std::copy_n(reinterpret_cast<const uint8_t *>(subcarrierIndices.data()), subcarrierIndices.size() * sizeof(int16_t), std::back_inserter(buffer));
+        uint16_t numTimingOffset = timingOffsets.size();
+        std::copy_n(reinterpret_cast<uint8_t *>(&numTimingOffset), sizeof(numTimingOffset), std::back_inserter(buffer));
+        std::copy_n(reinterpret_cast<const uint8_t *>(timingOffsets.data()), timingOffsets.size() * sizeof(uint32_t), std::back_inserter(buffer));
         if constexpr (false) {
             auto recovered = SignalMatrix<>::fromBuffer(csiBuffer);
             std::cout << recovered.toBufferMemoryLength() << std::endl;
@@ -889,18 +892,23 @@ static auto v7Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> std::
         return nullptr;
     }
     if (deviceType == PicoScenesDeviceType::USRP) {
-        const auto csiBufferStart = pos;
+        auto csiMatrix = SignalMatrix<std::complex<float>>::fromBuffer(buffer + pos, buffer + pos + CSIBufferLength, SignalMatrixStorageMajority::ColumnMajor);
+        pos += CSIBufferLength;
+
         std::vector<int16_t> subcarrierIndices;
         for (auto i = 0; i < numTone; i++) {
             subcarrierIndices.emplace_back(*reinterpret_cast<const uint16_t *>(buffer + pos));
             pos += 2;
         }
+
+        const auto numTimingOffsets = *reinterpret_cast<const uint16_t *>(buffer + pos);
+        pos += 2;
         std::vector<uint32_t> timingOffsets;
-        for (auto i = 0; i < numTone; i++) {
+        for (auto i = 0; i < numTimingOffsets; i++) {
             timingOffsets.emplace_back(*reinterpret_cast<const uint32_t *>(buffer + pos));
             pos += 4;
         }
-        const uint32_t csiArrayLength = CSIBufferLength - 2 * numTone - 4 * numCSI;
+
         auto csi = std::make_shared<CSI>(CSI{.deviceType = PicoScenesDeviceType::USRP,
                 .firmwareVersion = 0,
                 .packetFormat = packetFormat,
@@ -914,10 +922,8 @@ static auto v7Parser = [](const uint8_t *buffer, uint32_t bufferLength) -> std::
                 .antSel = 0,
                 .subcarrierIndices = std::move(subcarrierIndices),
                 .timingOffsets = std::move(timingOffsets),
-                .CSIArray = SignalMatrix<std::complex<float>>::fromBuffer(buffer + pos, buffer + pos + csiArrayLength, SignalMatrixStorageMajority::ColumnMajor)
+                .CSIArray = std::move(csiMatrix),
         });
-        auto csiBufferEnd = pos + csiArrayLength;
-        std::copy(buffer + csiBufferStart, buffer + csiBufferEnd, std::back_inserter(csi->rawCSIData));
         return csi;
     }
 
