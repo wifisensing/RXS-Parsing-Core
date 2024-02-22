@@ -38,7 +38,7 @@ struct PicoScenesFrameTxParameters {
     uint8_t numExtraSounding{0};
     bool forceSounding{true};
     double prefixPaddingTime{8e-6};
-    double idleTime{4e-6};
+    double inBasebandPostfixPaddingTime{4e-6};
     double postfixPaddingTime{0};
     uint8_t scramblerState{0x27};
     double txIQAmplitudeImbalance_dB{0};
