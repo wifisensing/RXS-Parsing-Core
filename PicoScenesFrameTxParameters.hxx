@@ -89,9 +89,6 @@ struct PicoScenesFrameTxParameters {
             if (NDPFrame)
                 throw std::invalid_argument("NDP frame is only valid for VHT and HE-SU frame.");
 
-            if (static_cast<int>(cbw) > static_cast<int>(ChannelBandwidthEnum::CBW_20))
-                throw std::invalid_argument("Invalid Tx CBW: " + ChannelBandwidth2String(cbw) + " for NonHT frame.");
-
             if (coding[0] == ChannelCodingEnum::LDPC)
                 throw std::invalid_argument("Invalid Tx Coding: " + ChannelCoding2String(coding[0]) + " for NonHT frame.");
 
