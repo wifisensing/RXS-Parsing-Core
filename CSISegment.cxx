@@ -94,62 +94,57 @@ std::shared_ptr<CSI> CSI::fromIWL5300(const uint8_t *buffer, const uint32_t buff
     return csi;
 }
 
-std::shared_ptr<CSI> CSI::fromIWLMVM(const uint8_t *buffer, const uint32_t bufferLength, const uint8_t firmwareVersion, const uint8_t numTx, const uint8_t numRx, const uint16_t numTones, PacketFormatEnum format, const ChannelBandwidthEnum cbw, const int16_t subcarrierIndexOffset, bool skipPilotSubcarriers, uint8_t antSelByte) {
-    if (numTx * numRx * numTones * 4 != bufferLength)
+std::shared_ptr<CSI> CSI::fromIWLMVM(const uint8_t *buffer, const uint32_t bufferLength, const uint8_t firmwareVersion, const uint8_t numSTS, const uint8_t numRx, const uint16_t numTones, PacketFormatEnum format, const ChannelBandwidthEnum cbw, const int16_t subcarrierIndexOffset, bool skipPilotSubcarriers, uint8_t antSelByte) {
+    if (numSTS * numRx * numTones * 4 != bufferLength)
         throw std::runtime_error("Incorrect Intel MVM-based CSI data format.");
 
-    /**
-     * @brief workaround for the Intel firmware bug
-     * This bug has been fixed in the latest driver. But for the sake of backward compatibility, add here again.
-     */
-    if (format == PacketFormatEnum::PacketFormat_NonHT && ((cbw == ChannelBandwidthEnum::CBW_40 && numTones == 114) || (cbw == ChannelBandwidthEnum::CBW_80 && numTones == 242) || (cbw == ChannelBandwidthEnum::CBW_160 && numTones == 484))) {
-        format = PacketFormatEnum::PacketFormat_VHT;
-    }
-
-    auto inputNumTones = numRx * numTx * numTones, pos = 0;
     const auto &pilotArray = CSISubcarrierIndex::getPilotSubcarrierIndices(format, cbw);
-    const auto &dataSubcarrierIndeices = CSISubcarrierIndex::getDataSubcarrierIndices(format, cbw);
+    const auto &dataSubcarrierIndices = CSISubcarrierIndex::getDataSubcarrierIndices(format, cbw);
     const auto &allSubcarrierIndices = CSISubcarrierIndex::getAllSubcarrierIndices(format, cbw);
+    const auto numDataTones = dataSubcarrierIndices.size();
+    const auto numAllFFTTones = allSubcarrierIndices.size();
     skipPilotSubcarriers &= [&] {
-        // Intel AX200/210 NIC returns correct number of CSI values under 160 MHz CBW
-        if (static_cast<uint16_t>(cbw) < 160 && numTones == dataSubcarrierIndeices.size())
+
+        // NIC returns all subcarriers by >=83 version firmware
+        if (firmwareVersion >= 83 && numTones == numAllFFTTones)
             return true;
 
         // Returns incorrect number of CSI values by >83 version firmware
         if (firmwareVersion >= 83 && cbw == ChannelBandwidthEnum::CBW_160 && (format == PacketFormatEnum::PacketFormat_HESU || format == PacketFormatEnum::PacketFormat_VHT) && (numTones == 498 || numTones == 2020))
             return true;
 
+        // NIC returns only data subcarriers by <83 version firmware
+        if (static_cast<uint16_t>(cbw) < 160 && numTones == numDataTones)
+            return true;
+
         return false;
     }();
-    const auto &subcarrierIndices = skipPilotSubcarriers ? dataSubcarrierIndeices : allSubcarrierIndices;
+    // skipPilotSubcarriers = false;
+    const auto &subcarrierIndices = skipPilotSubcarriers ? dataSubcarrierIndices : allSubcarrierIndices;
     auto numTonesNew = subcarrierIndices.size();
-    std::vector CSIArray(numTonesNew * numRx * numTx, std::complex<float>{});
+    std::vector<std::complex<float>> CSIArray;
+    CSIArray.reserve(numTones * numSTS * numRx);
 
-    for (auto inputToneIndex = 0, toneIndexWithoutPilot = 0, lastPilotIndex = 0; inputToneIndex < inputNumTones; inputToneIndex++) {
+    for (auto pos = 0, inputToneIndex = 0, toneIndexWithoutPilot = 0, lastPilotIndex = 0; inputToneIndex < numTones * numSTS * numRx; inputToneIndex++) {
         const auto *imag = reinterpret_cast<const int16_t *>(buffer + pos);
         const auto *real = reinterpret_cast<const int16_t *>(buffer + pos + 2);
         pos += 4;
 
-        auto toneIndex = inputToneIndex % numTones;
-        auto toneIndexBugFix = toneIndex;
-        auto stsIndex = inputToneIndex / numTones % numTx;
-        auto rxIndex = inputToneIndex / (numTones * numTx);
-        rxIndex = antSelByte == 1 ? (rxIndex == 0 ? 1 : 0) : (rxIndex == 0 ? 0 : 1);
+        auto rawToneIndex = inputToneIndex % numTones;
+        auto toneIndexBugFix = rawToneIndex;
 
-        if (cbw == ChannelBandwidthEnum::CBW_160 && firmwareVersion >= 67) {
+        if (cbw == ChannelBandwidthEnum::CBW_160 && firmwareVersion >= 83) {
             if (format == PacketFormatEnum::PacketFormat_HESU) {
-                if (toneIndex > 995 && toneIndex < 1024) // Fix the firmware bug
+                if (rawToneIndex > 995 && rawToneIndex < 1024) // Fix the firmware bug. I guess the data transfer chunk is 1024 per stream, so skip the last 28
                     continue;
 
-                if (toneIndex >= 1024) // Fix the firmware bug
+                if (rawToneIndex >= 1024) // Fix the firmware bug. I guess the data transfer chunk is 1024 per stream, so skip the last 28
                     toneIndexBugFix -= 28;
-            }
-
-            if (format == PacketFormatEnum::PacketFormat_VHT) {
-                if (toneIndex > 241 && toneIndex < 256) // Fix the firmware bug
+            } else if (format == PacketFormatEnum::PacketFormat_VHT) {
+                if (rawToneIndex > 241 && rawToneIndex < 256) // Fix the firmware bug. I guess the data transfer chunk is 256 per stream, so skip the last 14
                     continue;
 
-                if (toneIndex >= 256) // Fix the firmware bug
+                if (rawToneIndex >= 256) // Fix the firmware bug. I guess the data transfer chunk is 256 per stream, so skip the last 14
                     toneIndexBugFix -= 14;
             }
         }
@@ -169,23 +164,16 @@ std::shared_ptr<CSI> CSI::fromIWLMVM(const uint8_t *buffer, const uint32_t buffe
             toneIndexWithoutPilot = toneIndexBugFix;
         }
 
-        auto newIndex = rxIndex * (numTx * numTonesNew) + stsIndex * numTonesNew + toneIndexWithoutPilot;
-        if (newIndex >= CSIArray.size()) [[unlikely]] {
-            std::stringstream ss;
-            ss << static_cast<int>(numTx) << " " << static_cast<int>(numRx) << " " << static_cast<int>(numTones) << " " << static_cast<int>(format) << " " << static_cast<int>(cbw) << " " << rxIndex << " " << stsIndex << " " << numTonesNew << " " << newIndex << std::endl;
-            std::cout << ss.str() << std::endl;
-            std::cout << "Firmware data size inconsistent bug encountered: " + ss.str() + ". This data is skipped." << std::endl;
-            return {};
-        }
-        CSIArray.at(newIndex) = std::complex<float>(*real, *imag);
+        CSIArray.emplace_back(static_cast<float>(*real), static_cast<float>(*imag));
     }
 
-    auto CSIMatrix = SignalMatrix(CSIArray, std::vector<int32_t>{static_cast<int>(subcarrierIndices.size()), numTx, numRx, 1}, SignalMatrixStorageMajority::ColumnMajor);
+    auto numTonesFinal = CSIArray.size() / (numSTS * numRx);
+    auto CSIMatrix = SignalMatrix(std::move(CSIArray), std::vector<int32_t>{static_cast<int32_t>(numTonesFinal), numSTS, numRx, 1}, SignalMatrixStorageMajority::ColumnMajor);
 
     auto csi = std::make_shared<CSI>(CSI{.firmwareVersion = firmwareVersion,
             .packetFormat = format,
             .cbw = cbw,
-            .dimensions = CSIDimension{.numTones = static_cast<uint16_t>(subcarrierIndices.size()), .numTx = numTx, .numRx = numRx, .numESS = 0, .numCSI = 1},
+            .dimensions = CSIDimension{.numTones = static_cast<uint16_t>(numTonesFinal), .numTx = numSTS, .numRx = numRx, .numESS = 0, .numCSI = 1},
             .antSel = antSelByte,
             .subcarrierOffset = subcarrierIndexOffset,
             .subcarrierIndices = subcarrierIndices,
