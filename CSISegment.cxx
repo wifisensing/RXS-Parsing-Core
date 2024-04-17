@@ -105,6 +105,10 @@ std::shared_ptr<CSI> CSI::fromIWLMVM(const uint8_t *buffer, const uint32_t buffe
     const auto numAllFFTTones = allSubcarrierIndices.size();
     skipPilotSubcarriers &= [&] {
 
+        // For compatibility for older firmware version
+        if (firmwareVersion < 83)
+            return numTones == allSubcarrierIndices.size();
+
         // NIC returns all subcarriers by >=83 version firmware
         if (firmwareVersion >= 83 && numTones == numAllFFTTones)
             return true;
@@ -133,7 +137,7 @@ std::shared_ptr<CSI> CSI::fromIWLMVM(const uint8_t *buffer, const uint32_t buffe
         auto rawToneIndex = inputToneIndex % numTones;
         auto toneIndexBugFix = rawToneIndex;
 
-        if (cbw == ChannelBandwidthEnum::CBW_160 && firmwareVersion >= 83) {
+        if (cbw == ChannelBandwidthEnum::CBW_160 && firmwareVersion >= 67) {
             if (format == PacketFormatEnum::PacketFormat_HESU) {
                 if (rawToneIndex > 995 && rawToneIndex < 1024) // Fix the firmware bug. I guess the data transfer chunk is 1024 per stream, so skip the last 28
                     continue;
