@@ -77,7 +77,7 @@ U8Vector PayloadCargo::mergeAndValidateCargo(const std::vector<std::shared_ptr<P
         decompressedPayload = rawPayload;
     }
 
-    auto pos = 0, numSegment = 0;
+    std::size_t pos = 0, numSegment = 0;
     while (pos < decompressedPayload.size()) {
         auto [segmentName, segmentLength, versionId, contentOffset] = AbstractPicoScenesFrameSegment::extractSegmentMetaData(decompressedPayload.data() + pos, decompressedPayload.size() - pos);
         pos += segmentLength + 4;

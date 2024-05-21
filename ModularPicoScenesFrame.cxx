@@ -316,7 +316,7 @@ std::string ModularPicoScenesRxFrame::toString() const {
     }
     if (!cargoSegments.empty()) {
         ss << ", Cargos (" << cargoSegments.size()  << "): {";
-        for (auto i = 0; i < cargoSegments.size() - 1; i++) {
+        for (std::size_t i = 0; i < cargoSegments.size() - 1; i++) {
             ss << *cargoSegments[i] << ", ";
         }
         ss << *cargoSegments.back() << "}";
@@ -350,7 +350,7 @@ std::optional<ModularPicoScenesRxFrame> ModularPicoScenesRxFrame::concatenateFra
     if (mergedPayload.empty()) // in case of decompression failure
         return std::nullopt;
 
-    auto pos = 0, numSegment = 0;
+    std::size_t pos = 0, numSegment = 0;
     while (pos < mergedPayload.size()) {
         auto [segmentName, segmentLength, versionId, contentOffset] = AbstractPicoScenesFrameSegment::extractSegmentMetaData(mergedPayload.data() + pos, mergedPayload.size() - pos);
         if (segmentName == "ExtraInfo") {
@@ -569,7 +569,7 @@ std::vector<ModularPicoScenesTxFrame> ModularPicoScenesTxFrame::autoSplit(const 
     if (segmentsLength < maxSegmentBuffersLength)
         return std::vector<ModularPicoScenesTxFrame>{1, *this};
 
-    auto pos = 0;
+    std::size_t pos = 0;
     U8Vector allSegmentBuffer(segmentsLength), compressedBuffer;
     for (const auto &segment: segments) {
         segment->toBuffer(allSegmentBuffer.data() + pos);
@@ -619,7 +619,7 @@ std::vector<ModularPicoScenesTxFrame> ModularPicoScenesTxFrame::autoSplit(const 
     }
 
     auto cargoFrames = std::vector<ModularPicoScenesTxFrame>();
-    for (auto i = 0; i < cargos.size(); i++) {
+    for (std::size_t i = 0; i < cargos.size(); i++) {
         const auto &cargo = cargos[i];
         auto txframe = *this;
         txframe.standardHeader.seq = i;
@@ -637,7 +637,7 @@ std::vector<ModularPicoScenesTxFrame> ModularPicoScenesTxFrame::autoSplit(const 
         maxNumMPDUInAMPDU = 3; // default value
 
     std::vector<ModularPicoScenesTxFrame> ampduFrames;
-    for (auto baseIndex = 0; baseIndex < cargoFrames.size(); baseIndex += *maxNumMPDUInAMPDU) {
+    for (std::size_t baseIndex = 0; baseIndex < cargoFrames.size(); baseIndex += *maxNumMPDUInAMPDU) {
         for (auto i = 1; i < *maxNumMPDUInAMPDU; i++) {
             if (baseIndex + i < cargoFrames.size())
                 cargoFrames[baseIndex].appendAMPDUFrame(cargoFrames[baseIndex + i]);
