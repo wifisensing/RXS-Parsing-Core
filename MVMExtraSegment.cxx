@@ -70,12 +70,6 @@ static auto v1Parser = [](const uint8_t *buffer, const uint32_t bufferLength) ->
     std::copy_n(reinterpret_cast<uint8_t *>(&extra.parsedHeader), sizeof(IntelMVMParsedCSIHeader), std::back_inserter(extra.CSIHeader));
     std::copy(buffer + pos, buffer + bufferLength, std::back_inserter(extra.CSIHeader));
 
-    if (false) {
-        IntelMVMParsedCSIHeader regeneratedInstance = *(IntelMVMParsedCSIHeader *) extra.CSIHeader.data();
-        if (extra.parsedHeader != regeneratedInstance)
-            throw std::runtime_error("failed to validate IntelMVMParsedCSIHeader parser.");
-    }
-
     return extra;
 };
 
