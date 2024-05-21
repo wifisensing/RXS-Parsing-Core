@@ -15,11 +15,11 @@ static auto v2Parser = [](const uint8_t *buffer, const uint32_t bufferLength, vo
 BasebandSignalSegment::BasebandSignalSegment() : AbstractPicoScenesFrameSegment("BasebandSignal", 0x2U) {}
 
 BasebandSignalSegment::BasebandSignalSegment(SignalMatrix<std::complex<float>>&& signalsV): AbstractPicoScenesFrameSegment("BasebandSignal", 0x2U), signals(std::move(signalsV)) {
-    setSegmentPayload(std::move(signals.toBuffer()));
+    setSegmentPayload(signals.toBuffer());
 }
 
 BasebandSignalSegment::BasebandSignalSegment(const SignalMatrix<std::complex<float>>& signalsV): AbstractPicoScenesFrameSegment("BasebandSignal", 0x2U), signals(signalsV) {
-    setSegmentPayload(std::move(signals.toBuffer()));
+    setSegmentPayload(signals.toBuffer());
 }
 
 BasebandSignalSegment::BasebandSignalSegment(const uint8_t *buffer, const uint32_t bufferLength) : AbstractPicoScenesFrameSegment(buffer, bufferLength) {
@@ -40,12 +40,12 @@ BasebandSignalSegment::BasebandSignalSegment(const uint8_t *buffer, const uint32
 
 void BasebandSignalSegment::setSignals(const SignalMatrix<std::complex<float>> &bbsignalsV) {
     signals = bbsignalsV;
-    setSegmentPayload(std::move(signals.toBuffer()));
+    setSegmentPayload(signals.toBuffer());
 }
 
 void BasebandSignalSegment::setSignals(SignalMatrix<std::complex<float>> &&bbsignalsV) {
     signals = std::move(bbsignalsV);
-    setSegmentPayload(std::move(signals.toBuffer()));
+    setSegmentPayload(signals.toBuffer());
 }
 
 std::string BasebandSignalSegment::toString() const {

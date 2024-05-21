@@ -937,7 +937,7 @@ std::map<uint16_t, std::function<std::shared_ptr<CSI>(const uint8_t *, uint32_t)
 CSISegment::CSISegment() : AbstractPicoScenesFrameSegment("CSI", 0x7U) {}
 
 CSISegment::CSISegment(const std::shared_ptr<CSI> &csi) : AbstractPicoScenesFrameSegment("CSI", 0x7U), csi(csi) {
-    setSegmentPayload(std::move(this->csi->toBuffer()));
+    setSegmentPayload(this->csi->toBuffer());
 }
 
 CSISegment::CSISegment(const uint8_t *buffer, uint32_t bufferLength) : AbstractPicoScenesFrameSegment(buffer, bufferLength) {
@@ -959,7 +959,7 @@ const std::shared_ptr<CSI> &CSISegment::getCSI() const {
 
 void CSISegment::setCSI(const std::shared_ptr<CSI> &csi) {
     CSISegment::csi = csi;
-    setSegmentPayload(std::move(CSISegment::csi->toBuffer()));
+    setSegmentPayload(CSISegment::csi->toBuffer());
 }
 
 std::string CSISegment::toString() const {
