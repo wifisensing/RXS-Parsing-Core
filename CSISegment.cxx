@@ -125,11 +125,11 @@ std::shared_ptr<CSI> CSI::fromIWLMVM(const uint8_t *buffer, const uint32_t buffe
     }();
     // skipPilotSubcarriers = false;
     const auto &subcarrierIndices = skipPilotSubcarriers ? dataSubcarrierIndices : allSubcarrierIndices;
-    auto numTonesNew = subcarrierIndices.size();
+
     std::vector<std::complex<float>> CSIArray;
     CSIArray.reserve(numTones * numSTS * numRx);
 
-    for (auto pos = 0, inputToneIndex = 0, toneIndexWithoutPilot = 0, lastPilotIndex = 0; inputToneIndex < numTones * numSTS * numRx; inputToneIndex++) {
+    for (auto pos = 0, inputToneIndex = 0, lastPilotIndex = 0; inputToneIndex < numTones * numSTS * numRx; inputToneIndex++) {
         const auto *imag = reinterpret_cast<const int16_t *>(buffer + pos);
         const auto *real = reinterpret_cast<const int16_t *>(buffer + pos + 2);
         pos += 4;
@@ -156,16 +156,12 @@ std::shared_ptr<CSI> CSI::fromIWLMVM(const uint8_t *buffer, const uint32_t buffe
         if (skipPilotSubcarriers) { // the CSI value measured by AX200/210 is too low to be useful, so skip it.
             if (toneIndexBugFix == 0) {
                 lastPilotIndex = 0;
-                toneIndexWithoutPilot = 0;
             } else {
                 if (toneIndexBugFix == pilotArray[lastPilotIndex]) {
                     lastPilotIndex++;
                     continue;
                 }
-                toneIndexWithoutPilot++;
             }
-        } else {
-            toneIndexWithoutPilot = toneIndexBugFix;
         }
 
         CSIArray.emplace_back(static_cast<float>(*real), static_cast<float>(*imag));
