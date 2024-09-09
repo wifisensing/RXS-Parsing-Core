@@ -103,7 +103,7 @@ enum class ChannelBandwidthEnum : uint16_t {
     CBW_40 = 40, ///< 40 MHz
     CBW_80 = 80, ///< 80 MHz
     CBW_160 = 160, ///< 160 MHz
-    CBW_320 = 320,  ///< 320 MHz
+    CBW_320 = 320, ///< 320 MHz
 };
 
 /**
@@ -218,6 +218,8 @@ inline std::string DeviceSubtype2String(const PicoScenesDeviceSubtype subtype) {
             return "BladeRF";
         case PicoScenesDeviceSubtype::SOAPYSDR_UHD:
             return "SoapySDR_UHD";
+        case PicoScenesDeviceSubtype::VirtualSDR:
+            return "VirtualSDR";
         default:
             throw std::runtime_error("unrecognized PicoScenesDeviceSubtype.");
     }
@@ -301,37 +303,37 @@ inline std::string ChannelCoding2String(const ChannelCodingEnum coding) {
     }
 }
 
-inline std::ostream &operator<<(std::ostream &os, const PicoScenesDeviceType &deviceType) {
+inline std::ostream& operator<<(std::ostream& os, const PicoScenesDeviceType& deviceType) {
     os << DeviceType2String(deviceType);
     return os;
 }
 
-inline std::ostream &operator<<(std::ostream &os, const PacketFormatEnum &format) {
+inline std::ostream& operator<<(std::ostream& os, const PacketFormatEnum& format) {
     os << PacketFormat2String(format);
     return os;
 }
 
-inline std::ostream &operator<<(std::ostream &os, const ChannelBandwidthEnum &cbw) {
+inline std::ostream& operator<<(std::ostream& os, const ChannelBandwidthEnum& cbw) {
     os << ChannelBandwidth2String(cbw);
     return os;
 }
 
-inline std::ostream &operator<<(std::ostream &os, const ChannelModeEnum &channelMode) {
+inline std::ostream& operator<<(std::ostream& os, const ChannelModeEnum& channelMode) {
     os << channelModel2String(channelMode);
     return os;
 }
 
-inline std::ostream &operator<<(std::ostream &os, const GuardIntervalEnum &gi) {
+inline std::ostream& operator<<(std::ostream& os, const GuardIntervalEnum& gi) {
     os << GuardInterval2String(gi);
     return os;
 }
 
-inline std::ostream &operator<<(std::ostream &os, const ChannelCodingEnum &coding) {
+inline std::ostream& operator<<(std::ostream& os, const ChannelCodingEnum& coding) {
     os << ChannelCoding2String(coding);
     return os;
 }
 
-inline std::ostream &operator<<(std::ostream &os, const PicoScenesDeviceSubtype &deviceSubtype) {
+inline std::ostream& operator<<(std::ostream& os, const PicoScenesDeviceSubtype& deviceSubtype) {
     os << DeviceSubtype2String(deviceSubtype);
     return os;
 }
