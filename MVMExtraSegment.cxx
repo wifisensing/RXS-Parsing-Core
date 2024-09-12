@@ -79,9 +79,9 @@ static auto v1Parser = [](const uint8_t *buffer, const uint32_t bufferLength) ->
 };
 
 std::vector<uint8_t> IntelMVMExtraInfo::toBuffer() const {
-    auto buffer = std::vector<uint8_t>();
-    std::copy_n(reinterpret_cast<const uint8_t *>(&CSIHeaderLength), sizeof(CSIHeaderLength), std::back_inserter(buffer));
-    std::copy(CSIHeader.cbegin(), CSIHeader.cend(), std::back_inserter(buffer));
+    auto buffer = std::vector<uint8_t>(sizeof(CSIHeaderLength) + CSIHeader.size());
+    std::copy_n(reinterpret_cast<const uint8_t *>(&CSIHeaderLength), sizeof(CSIHeaderLength), buffer.begin());
+    std::copy_n(CSIHeader.cbegin(), CSIHeader.size(), buffer.begin() + sizeof(CSIHeaderLength));
     return buffer;
 }
 
