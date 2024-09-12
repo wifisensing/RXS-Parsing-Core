@@ -380,75 +380,85 @@ U8Vector ModularPicoScenesRxFrame::toBuffer() const {
     auto modularFrameHeader = ModularPicoScenesRxFrameHeader().initialize2Default();
     modularFrameHeader.numMPDU = mpdus.size();
 
-    auto reservedLength = rxSBasicSegment ? rxSBasicSegment->totalLengthIncludingLeading4ByteLength() : 0;
-    reservedLength += rxExtraInfoSegment ? rxExtraInfoSegment->totalLengthIncludingLeading4ByteLength() : 0;
-    reservedLength += csiSegment ? csiSegment->totalLengthIncludingLeading4ByteLength() : 0;
-    reservedLength += mvmExtraSegment ? mvmExtraSegment->totalLengthIncludingLeading4ByteLength() : 0;
-    reservedLength += sdrExtraSegment ? sdrExtraSegment->totalLengthIncludingLeading4ByteLength() : 0;
-    reservedLength += legacyCSISegment ? legacyCSISegment->totalLengthIncludingLeading4ByteLength() : 0;
-    reservedLength += basebandSignalSegment ? basebandSignalSegment->totalLengthIncludingLeading4ByteLength() : 0;
+    auto reservedLength = rxSBasicSegment ? rxSBasicSegment->getSyncedRawBuffer().size() : 0;
+    reservedLength += rxExtraInfoSegment ? rxExtraInfoSegment->getSyncedRawBuffer().size() : 0;
+    reservedLength += csiSegment ? csiSegment->getSyncedRawBuffer().size() : 0;
+    reservedLength += mvmExtraSegment ? mvmExtraSegment->getSyncedRawBuffer().size() : 0;
+    reservedLength += sdrExtraSegment ? sdrExtraSegment->getSyncedRawBuffer().size() : 0;
+    reservedLength += legacyCSISegment ? legacyCSISegment->getSyncedRawBuffer().size() : 0;
+    reservedLength += basebandSignalSegment ? basebandSignalSegment->getSyncedRawBuffer().size() : 0;
     for (const auto &[segName, segment]: rxUnknownSegments) {
-        reservedLength += segment->totalLengthIncludingLeading4ByteLength();
+        reservedLength += segment->getSyncedRawBuffer().size();
     }
-    U8Vector rxSegmentBuffer;
-    rxSegmentBuffer.reserve(reservedLength);
+    U8Vector rxSegmentBuffer(reservedLength);
 
+    size_t currentOffset{0};
     if (rxSBasicSegment) {
-        std::copy(rxSBasicSegment->getSyncedRawBuffer().cbegin(), rxSBasicSegment->getSyncedRawBuffer().cend(), std::back_inserter(rxSegmentBuffer));
+        std::copy(rxSBasicSegment->getSyncedRawBuffer().cbegin(), rxSBasicSegment->getSyncedRawBuffer().cend(), rxSegmentBuffer.data() + currentOffset);
+        currentOffset += rxSBasicSegment->getSyncedRawBuffer().size();
         modularFrameHeader.numRxSegments++;
     }
 
     if (rxExtraInfoSegment) {
-        std::copy(rxExtraInfoSegment->getSyncedRawBuffer().cbegin(), rxExtraInfoSegment->getSyncedRawBuffer().cend(), std::back_inserter(rxSegmentBuffer));
+        std::copy(rxExtraInfoSegment->getSyncedRawBuffer().cbegin(), rxExtraInfoSegment->getSyncedRawBuffer().cend(), rxSegmentBuffer.data() + currentOffset);
+        currentOffset += rxExtraInfoSegment->getSyncedRawBuffer().size();
         modularFrameHeader.numRxSegments++;
     }
 
     if (csiSegment) {
-        std::copy(csiSegment->getSyncedRawBuffer().cbegin(), csiSegment->getSyncedRawBuffer().cend(), std::back_inserter(rxSegmentBuffer));
+        std::copy(csiSegment->getSyncedRawBuffer().cbegin(), csiSegment->getSyncedRawBuffer().cend(), rxSegmentBuffer.data() + currentOffset);
+        currentOffset += csiSegment->getSyncedRawBuffer().size();
         modularFrameHeader.numRxSegments++;
     }
 
     if (mvmExtraSegment) {
-        std::copy(mvmExtraSegment->getSyncedRawBuffer().cbegin(), mvmExtraSegment->getSyncedRawBuffer().cend(), std::back_inserter(rxSegmentBuffer));
+        std::copy(mvmExtraSegment->getSyncedRawBuffer().cbegin(), mvmExtraSegment->getSyncedRawBuffer().cend(), rxSegmentBuffer.data() + currentOffset);
+        currentOffset += mvmExtraSegment->getSyncedRawBuffer().size();
         modularFrameHeader.numRxSegments++;
     }
 
     if (sdrExtraSegment) {
-        std::copy(sdrExtraSegment->getSyncedRawBuffer().cbegin(), sdrExtraSegment->getSyncedRawBuffer().cend(), std::back_inserter(rxSegmentBuffer));
+        std::copy(sdrExtraSegment->getSyncedRawBuffer().cbegin(), sdrExtraSegment->getSyncedRawBuffer().cend(), rxSegmentBuffer.data() + currentOffset);
+        currentOffset += sdrExtraSegment->getSyncedRawBuffer().size();
         modularFrameHeader.numRxSegments++;
     }
 
     if (legacyCSISegment) {
-        std::copy(legacyCSISegment->getSyncedRawBuffer().cbegin(), legacyCSISegment->getSyncedRawBuffer().cend(), std::back_inserter(rxSegmentBuffer));
+        std::copy(legacyCSISegment->getSyncedRawBuffer().cbegin(), legacyCSISegment->getSyncedRawBuffer().cend(), rxSegmentBuffer.data() + currentOffset);
+        currentOffset += legacyCSISegment->getSyncedRawBuffer().size();
         modularFrameHeader.numRxSegments++;
     }
 
     if (basebandSignalSegment) {
-        std::copy(basebandSignalSegment->getSyncedRawBuffer().cbegin(), basebandSignalSegment->getSyncedRawBuffer().cend(), std::back_inserter(rxSegmentBuffer));
+        std::copy(basebandSignalSegment->getSyncedRawBuffer().cbegin(), basebandSignalSegment->getSyncedRawBuffer().cend(), rxSegmentBuffer.data() + currentOffset);
+        currentOffset += basebandSignalSegment->getSyncedRawBuffer().size();
         modularFrameHeader.numRxSegments++;
     }
 
     for (const auto &[name, segmentPtr]: rxUnknownSegments) {
-        std::copy(segmentPtr->getSyncedRawBuffer().cbegin(), segmentPtr->getSyncedRawBuffer().cend(), std::back_inserter(rxSegmentBuffer));
+        std::copy(segmentPtr->getSyncedRawBuffer().cbegin(), segmentPtr->getSyncedRawBuffer().cend(), rxSegmentBuffer.data() + currentOffset);
+        currentOffset += segmentPtr->getSyncedRawBuffer().size();
         modularFrameHeader.numRxSegments++;
     }
 
-    if (rxSegmentBuffer.size() != reservedLength) {
-        throw std::runtime_error("RxSegmentBuffer reservation fails.");
-    }
+    assert(rxSegmentBuffer.size() == reservedLength);
 
     // Assembly the full buffer
-    U8Vector frameBuffer;
     modularFrameHeader.frameLength = sizeof(modularFrameHeader) + rxSegmentBuffer.size() + std::accumulate(mpdus.cbegin(), mpdus.cend(), 0, [](size_t acc, const auto &mpdu) {
         return acc + mpdu.size() + sizeof(uint32_t);
     }) - 4;
-    frameBuffer.reserve(modularFrameHeader.frameLength + 4);
-    std::copy_n(reinterpret_cast<const uint8_t *>(&modularFrameHeader), sizeof(ModularPicoScenesRxFrameHeader), std::back_inserter(frameBuffer));
-    std::copy_n(rxSegmentBuffer.data(), rxSegmentBuffer.size(), std::back_inserter(frameBuffer));
+    currentOffset = 0;
+    U8Vector frameBuffer(modularFrameHeader.frameLength + 4);
+    std::copy_n(reinterpret_cast<const uint8_t *>(&modularFrameHeader), sizeof(ModularPicoScenesRxFrameHeader), frameBuffer.data() + currentOffset);
+    currentOffset += sizeof(ModularPicoScenesRxFrameHeader);
+    std::copy_n(rxSegmentBuffer.data(), rxSegmentBuffer.size(), frameBuffer.data() + currentOffset);
+    currentOffset += rxSegmentBuffer.size();
     for (const auto &mpdu: mpdus) {
         uint32_t mpduSize = mpdu.size();
-        std::copy_n(reinterpret_cast<const uint8_t *>(&mpduSize), sizeof(uint32_t), std::back_inserter(frameBuffer));
-        std::copy_n(mpdu.data(), mpdu.size(), std::back_inserter(frameBuffer));
+        std::copy_n(reinterpret_cast<const uint8_t *>(&mpduSize), sizeof(uint32_t), frameBuffer.data() + currentOffset);
+        currentOffset += sizeof(uint32_t);
+        std::copy_n(mpdu.data(), mpdu.size(), frameBuffer.data() + currentOffset);
+        currentOffset += mpdu.size();
     }
 
     //// for in-situ validation
