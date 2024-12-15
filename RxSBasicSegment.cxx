@@ -359,7 +359,7 @@ std::vector<uint8_t> RxSBasic::toBuffer() const {
 RxSBasicSegment::RxSBasicSegment() : AbstractPicoScenesFrameSegment("RxSBasic", 0x5U) {}
 
 RxSBasicSegment::RxSBasicSegment(const RxSBasic &rvBasic) : AbstractPicoScenesFrameSegment("RxSBasic", 0x5U), basic(rvBasic) {
-    setSegmentPayload(std::move(basic.toBuffer()));
+    setSegmentPayload(basic.toBuffer());
 }
 
 RxSBasicSegment::RxSBasicSegment(const uint8_t *buffer, uint32_t bufferLength) : AbstractPicoScenesFrameSegment(buffer, bufferLength) {
@@ -378,7 +378,7 @@ const RxSBasic &RxSBasicSegment::getBasic() const {
 
 void RxSBasicSegment::setBasic(const RxSBasic &basicV) {
     basic = basicV;
-    setSegmentPayload(std::move(basic.toBuffer()));
+    setSegmentPayload(basic.toBuffer());
 }
 
 std::ostream &operator<<(std::ostream &os, const RxSBasic &rxSBasic) {

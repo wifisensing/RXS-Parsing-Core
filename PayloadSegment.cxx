@@ -117,7 +117,7 @@ const PayloadData &PayloadSegment::getPayloadData() const {
 
 void PayloadSegment::setPayloadData(const PayloadData &payload) {
     payloadData = payload;
-    setSegmentPayload(std::move(payloadData.toBuffer()));
+    setSegmentPayload(payloadData.toBuffer());
 }
 
 std::string PayloadSegment::toString() const {

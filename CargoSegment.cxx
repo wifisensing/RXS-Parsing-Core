@@ -77,7 +77,7 @@ U8Vector PayloadCargo::mergeAndValidateCargo(const std::vector<std::shared_ptr<P
         decompressedPayload = rawPayload;
     }
 
-    auto pos = 0, numSegment = 0;
+    std::size_t pos = 0, numSegment = 0;
     while (pos < decompressedPayload.size()) {
         auto [segmentName, segmentLength, versionId, contentOffset] = AbstractPicoScenesFrameSegment::extractSegmentMetaData(decompressedPayload.data() + pos, decompressedPayload.size() - pos);
         pos += segmentLength + 4;
@@ -105,7 +105,7 @@ std::map<uint16_t, std::function<std::shared_ptr<PayloadCargo>(const uint8_t *, 
 CargoSegment::CargoSegment() : AbstractPicoScenesFrameSegment("Cargo", 0x1U) {}
 
 CargoSegment::CargoSegment(const std::shared_ptr<PayloadCargo>& cargoV): AbstractPicoScenesFrameSegment("Cargo", 0x1U), cargo(cargoV) {
-    setSegmentPayload(std::move(cargo->toBuffer()));
+    setSegmentPayload(cargo->toBuffer());
 }
 
 CargoSegment::CargoSegment(const uint8_t *buffer, const uint32_t bufferLength) : AbstractPicoScenesFrameSegment(buffer, bufferLength) {
@@ -123,7 +123,7 @@ std::shared_ptr<PayloadCargo> CargoSegment::getCargo() const {
 
 void CargoSegment::setCargo(const std::shared_ptr<PayloadCargo> &cargoV) {
     cargo = cargoV;
-    setSegmentPayload(std::move(cargo->toBuffer()));
+    setSegmentPayload(cargo->toBuffer());
 }
 
 std::string CargoSegment::toString() const {

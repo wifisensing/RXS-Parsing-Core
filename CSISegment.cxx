@@ -125,11 +125,11 @@ std::shared_ptr<CSI> CSI::fromIWLMVM(const uint8_t *buffer, const uint32_t buffe
     }();
     // skipPilotSubcarriers = false;
     const auto &subcarrierIndices = skipPilotSubcarriers ? dataSubcarrierIndices : allSubcarrierIndices;
-    auto numTonesNew = subcarrierIndices.size();
+
     std::vector<std::complex<float>> CSIArray;
     CSIArray.reserve(numTones * numSTS * numRx);
 
-    for (auto pos = 0, inputToneIndex = 0, toneIndexWithoutPilot = 0, lastPilotIndex = 0; inputToneIndex < numTones * numSTS * numRx; inputToneIndex++) {
+    for (auto pos = 0, inputToneIndex = 0, lastPilotIndex = 0; inputToneIndex < numTones * numSTS * numRx; inputToneIndex++) {
         const auto *imag = reinterpret_cast<const int16_t *>(buffer + pos);
         const auto *real = reinterpret_cast<const int16_t *>(buffer + pos + 2);
         pos += 4;
@@ -156,16 +156,12 @@ std::shared_ptr<CSI> CSI::fromIWLMVM(const uint8_t *buffer, const uint32_t buffe
         if (skipPilotSubcarriers) { // the CSI value measured by AX200/210 is too low to be useful, so skip it.
             if (toneIndexBugFix == 0) {
                 lastPilotIndex = 0;
-                toneIndexWithoutPilot = 0;
             } else {
                 if (toneIndexBugFix == pilotArray[lastPilotIndex]) {
                     lastPilotIndex++;
                     continue;
                 }
-                toneIndexWithoutPilot++;
             }
-        } else {
-            toneIndexWithoutPilot = toneIndexBugFix;
         }
 
         CSIArray.emplace_back(static_cast<float>(*real), static_cast<float>(*imag));
@@ -963,7 +959,7 @@ std::map<uint16_t, std::function<std::shared_ptr<CSI>(const uint8_t *, uint32_t)
 CSISegment::CSISegment() : AbstractPicoScenesFrameSegment("CSI", 0x7U) {}
 
 CSISegment::CSISegment(const std::shared_ptr<CSI> &csi) : AbstractPicoScenesFrameSegment("CSI", 0x7U), csi(csi) {
-    setSegmentPayload(std::move(this->csi->toBuffer()));
+    setSegmentPayload(this->csi->toBuffer());
 }
 
 CSISegment::CSISegment(const uint8_t *buffer, uint32_t bufferLength) : AbstractPicoScenesFrameSegment(buffer, bufferLength) {
@@ -985,7 +981,7 @@ const std::shared_ptr<CSI> &CSISegment::getCSI() const {
 
 void CSISegment::setCSI(const std::shared_ptr<CSI> &csi) {
     CSISegment::csi = csi;
-    setSegmentPayload(std::move(CSISegment::csi->toBuffer()));
+    setSegmentPayload(CSISegment::csi->toBuffer());
 }
 
 std::string CSISegment::toString() const {

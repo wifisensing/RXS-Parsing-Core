@@ -24,12 +24,12 @@ std::map<uint16_t, std::function<ExtraInfo(const uint8_t *, uint32_t)>> ExtraInf
 ExtraInfoSegment::ExtraInfoSegment() : AbstractPicoScenesFrameSegment("ExtraInfo", 0x2U) {}
 
 ExtraInfoSegment::ExtraInfoSegment(ExtraInfo&& extraInfoV): AbstractPicoScenesFrameSegment("ExtraInfo", 0x2U), extraInfo(std::move(extraInfoV)) {
-    setSegmentPayload(std::move(extraInfoV.toBuffer()));
+    setSegmentPayload(extraInfoV.toBuffer());
 }
 
 ExtraInfoSegment::ExtraInfoSegment(const ExtraInfo &extraInfoV) : ExtraInfoSegment() {
     extraInfo = extraInfoV;
-    setSegmentPayload(std::move(extraInfoV.toBuffer()));
+    setSegmentPayload(extraInfoV.toBuffer());
 }
 
 ExtraInfoSegment::ExtraInfoSegment(const uint8_t *buffer, uint32_t bufferLength) : AbstractPicoScenesFrameSegment(buffer, bufferLength) {
@@ -47,7 +47,7 @@ const ExtraInfo &ExtraInfoSegment::getExtraInfo() const {
 
 void ExtraInfoSegment::setExtraInfo(const ExtraInfo &extraInfoV) {
     extraInfo = extraInfoV;
-    setSegmentPayload(std::move(extraInfo.toBuffer()));
+    setSegmentPayload(extraInfo.toBuffer());
 }
 
 std::string ExtraInfoSegment::toString() const {
