@@ -7,6 +7,7 @@
 
 #include "AbstractPicoScenesFrameSegment.hxx"
 #include "PicoScenesCommons.hxx"
+#include <functional>
 
 template<typename Iterator>
 void parseQCA9300CSIData(Iterator outputArray, const uint8_t *csiData, const int nSTS, const int nRx, const int nTones) {

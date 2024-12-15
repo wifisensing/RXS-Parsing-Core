@@ -7,6 +7,7 @@
 
 #include "AbstractPicoScenesFrameSegment.hxx"
 #include "PicoScenesCommons.hxx"
+#include <functional>
 
 class CargoCompression {
 public:

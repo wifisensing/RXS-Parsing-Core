@@ -102,37 +102,47 @@ public:
     }
 
     [[nodiscard]] std::vector<uint8_t> toBuffer(SignalMatrixStorageMajority outputMajority = SignalMatrixStorageMajority::UndefinedMajority) const {
-        std::vector<uint8_t> vout;
-        vout.reserve(toBufferMemoryLength());
+        std::vector<uint8_t> vout(toBufferMemoryLength());
+        size_t offset{0};
+
         std::string header_version("BBv2");
-        std::copy(header_version.cbegin(), header_version.cend(), std::back_inserter(vout));
-        vout.emplace_back(dimensions.size());
-        for (const auto &dimension: dimensions) {
-            std::copy((uint8_t *) &dimension, ((uint8_t *) &dimension) + sizeof(dimension), std::back_inserter(vout));
+        std::memcpy(vout.data() + offset, header_version.data(), header_version.size());
+        offset += header_version.size();
+
+        // Dimensions size
+        vout[offset++] = dimensions.size();
+
+        // Copy dimensions
+        for (const auto &dimension : dimensions) {
+            std::memcpy(vout.data() + offset, &dimension, sizeof(dimension));
+            offset += sizeof(dimension);
         }
 
-        vout.emplace_back(is_std_complex<SignalType>::value ? 'C' : 'R');
-        vout.emplace_back(getTypeChar<SignalElementType>());
-        vout.emplace_back(sizeof(SignalElementType) * 8);
+        // Type information
+        vout[offset++] = is_std_complex<SignalType>::value ? 'C' : 'R';
+        vout[offset++] = getTypeChar<SignalElementType>();
+        vout[offset++] = sizeof(SignalElementType) * 8;
 
         outputMajority = outputMajority == SignalMatrixStorageMajority::UndefinedMajority ? majority : outputMajority;
         switch (outputMajority) {
             case SignalMatrixStorageMajority::RowMajor:
-                vout.emplace_back('R');
+                vout[offset++] = 'R';
                 break;
             case SignalMatrixStorageMajority::ColumnMajor:
-                vout.emplace_back('C');
+                vout[offset++] = 'C';
                 break;
             case SignalMatrixStorageMajority::UndefinedMajority:
                 throw std::runtime_error("SignalMatrix::toBuffer failed due to unsupported storage majority.");
         }
 
         if (majority == outputMajority) {
-            std::copy(reinterpret_cast<const uint8_t *>(array.data()), reinterpret_cast<const uint8_t *>(array.data()) + array.size() * sizeof(SignalType), std::back_inserter(vout));
+            std::memcpy(vout.data() + offset, array.data(), array.size() * sizeof(SignalType));
+            offset += array.size() * sizeof(SignalType);
         } else {
             for (uint64_t i = 0; i < array.size(); i++) {
                 auto pos = computePositionUnderInversedMajority(i, dimensions);
-                std::copy((uint8_t *) &array[pos], ((uint8_t *) &array[pos]) + sizeof(SignalType), std::back_inserter(vout));
+                std::memcpy(vout.data() + offset, &array[pos], sizeof(SignalType));
+                offset += sizeof(SignalType);
             }
         }
 

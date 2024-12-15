@@ -244,38 +244,64 @@ std::vector<uint8_t> CSI::toBuffer() {
         return rawCSIData;
     }
 
-    auto buffer = std::vector<uint8_t>{};
-    if (isSDR(deviceType))
-        buffer.reserve(subcarrierIndices.size() * sizeof(int16_t) + CSIArray.toBufferMemoryLength() + 100);
-    else
-        buffer.reserve(rawCSIData.size() + 100);
-    std::copy_n(reinterpret_cast<uint8_t *>(&deviceType), sizeof(deviceType), std::back_inserter(buffer));
-    std::copy_n(&firmwareVersion, sizeof(firmwareVersion), std::back_inserter(buffer));
-    std::copy_n(reinterpret_cast<uint8_t *>(&packetFormat), sizeof(packetFormat), std::back_inserter(buffer));
-    std::copy_n(reinterpret_cast<uint8_t *>(&cbw), sizeof(cbw), std::back_inserter(buffer));
-    std::copy_n(reinterpret_cast<uint8_t *>(&carrierFreq), sizeof(carrierFreq), std::back_inserter(buffer));
-    std::copy_n(reinterpret_cast<uint8_t *>(&carrierFreq2), sizeof(carrierFreq2), std::back_inserter(buffer));
-    std::copy_n(reinterpret_cast<uint8_t *>(&isMerged), sizeof(isMerged), std::back_inserter(buffer));
-    std::copy_n(reinterpret_cast<uint8_t *>(&samplingRate), sizeof(samplingRate), std::back_inserter(buffer));
-    std::copy_n(reinterpret_cast<uint8_t *>(&subcarrierBandwidth), sizeof(subcarrierBandwidth), std::back_inserter(buffer));
-    std::copy_n(reinterpret_cast<uint8_t *>(&dimensions.numTones), sizeof(dimensions.numTones), std::back_inserter(buffer));
-    std::copy_n(&dimensions.numTx, sizeof(dimensions.numTx), std::back_inserter(buffer));
-    std::copy_n(&dimensions.numRx, sizeof(dimensions.numRx), std::back_inserter(buffer));
-    std::copy_n(&dimensions.numESS, sizeof(dimensions.numESS), std::back_inserter(buffer));
-    std::copy_n(reinterpret_cast<uint8_t *>(&dimensions.numCSI), sizeof(dimensions.numCSI), std::back_inserter(buffer));
-    std::copy_n(&antSel, sizeof(antSel), std::back_inserter(buffer));
-    std::copy_n(reinterpret_cast<uint8_t *>(&subcarrierOffset), sizeof(subcarrierOffset), std::back_inserter(buffer));
-    if (deviceType == PicoScenesDeviceType::IWL5300 || deviceType == PicoScenesDeviceType::QCA9300 || isIntelMVMTypeNIC(deviceType)) {
-        std::copy_n(rawCSIData.data(), rawCSIData.size(), std::back_inserter(buffer));
-    } else if (deviceType == PicoScenesDeviceType::USRP) {
+    std::vector<uint8_t> && csiBuffer{};
+    // Calculate the necessary buffer size
+    size_t bufferSize = sizeof(deviceType) + sizeof(firmwareVersion) + sizeof(packetFormat) +
+                        sizeof(cbw) + sizeof(carrierFreq) + sizeof(carrierFreq2) + sizeof(isMerged) +
+                        sizeof(samplingRate) + sizeof(subcarrierBandwidth) + sizeof(dimensions.numTones) +
+                        sizeof(dimensions.numTx) + sizeof(dimensions.numRx) + sizeof(dimensions.numESS) +
+                        sizeof(dimensions.numCSI) + sizeof(antSel) + sizeof(subcarrierOffset);
+
+    // Include the size for the CSI data or subcarrier indices
+    if (!isSDR(deviceType)) {
+        bufferSize += rawCSIData.size();
+    } else {
+        csiBuffer = std::move(CSIArray.toBuffer());
+        bufferSize += sizeof(uint32_t);
+        bufferSize += csiBuffer.size();
+        bufferSize += subcarrierIndices.size() * sizeof(int16_t);
+        bufferSize += sizeof(int16_t);
+        bufferSize += timingOffsets.size() * sizeof(uint32_t);
+    }
+
+    std::vector<uint8_t> buffer(bufferSize);
+    size_t offset = 0;
+
+    auto appendToBuffer = [&](const void* src, size_t numBytes) {
+        std::memcpy(buffer.data() + offset, src, numBytes);
+        offset += numBytes;
+    };
+
+    // Append various fields
+    appendToBuffer(&deviceType, sizeof(deviceType));
+    appendToBuffer(&firmwareVersion, sizeof(firmwareVersion));
+    appendToBuffer(&packetFormat, sizeof(packetFormat));
+    appendToBuffer(&cbw, sizeof(cbw));
+    appendToBuffer(&carrierFreq, sizeof(carrierFreq));
+    appendToBuffer(&carrierFreq2, sizeof(carrierFreq2));
+    appendToBuffer(&isMerged, sizeof(isMerged));
+    appendToBuffer(&samplingRate, sizeof(samplingRate));
+    appendToBuffer(&subcarrierBandwidth, sizeof(subcarrierBandwidth));
+    appendToBuffer(&dimensions.numTones, sizeof(dimensions.numTones));
+    appendToBuffer(&dimensions.numTx, sizeof(dimensions.numTx));
+    appendToBuffer(&dimensions.numRx, sizeof(dimensions.numRx));
+    appendToBuffer(&dimensions.numESS, sizeof(dimensions.numESS));
+    appendToBuffer(&dimensions.numCSI, sizeof(dimensions.numCSI));
+    appendToBuffer(&antSel, sizeof(antSel));
+    appendToBuffer(&subcarrierOffset, sizeof(subcarrierOffset));
+
+    if (!isSDR(deviceType)) {
+        std::memcpy(buffer.data() + offset, rawCSIData.data(), rawCSIData.size());
+        offset += rawCSIData.size();
+    } else {
         uint32_t csiBufferLength = CSIArray.toBufferMemoryLength();
-        std::copy_n(reinterpret_cast<uint8_t *>(&csiBufferLength), sizeof(csiBufferLength), std::back_inserter(buffer));
-        auto csiBuffer = CSIArray.toBuffer();
-        std::copy_n(csiBuffer.data(), csiBuffer.size(), std::back_inserter(buffer));
-        std::copy_n(reinterpret_cast<const uint8_t *>(subcarrierIndices.data()), subcarrierIndices.size() * sizeof(int16_t), std::back_inserter(buffer));
+        appendToBuffer(&csiBufferLength, sizeof(csiBufferLength));
+        appendToBuffer(csiBuffer.data(), csiBuffer.size());
+        appendToBuffer(subcarrierIndices.data(), subcarrierIndices.size() * sizeof(int16_t));
         uint16_t numTimingOffset = timingOffsets.size();
-        std::copy_n(reinterpret_cast<uint8_t *>(&numTimingOffset), sizeof(numTimingOffset), std::back_inserter(buffer));
-        std::copy_n(reinterpret_cast<const uint8_t *>(timingOffsets.data()), timingOffsets.size() * sizeof(uint32_t), std::back_inserter(buffer));
+        appendToBuffer(&numTimingOffset, sizeof(numTimingOffset));
+        appendToBuffer(timingOffsets.data(), timingOffsets.size() * sizeof(uint32_t));
+
         if constexpr (false) {
             auto recovered = SignalMatrix<>::fromBuffer(csiBuffer);
             std::cout << recovered.toBufferMemoryLength() << std::endl;

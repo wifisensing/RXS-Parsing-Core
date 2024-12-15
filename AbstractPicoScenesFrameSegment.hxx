@@ -130,8 +130,7 @@ public:
     }
 
     void rebuildRawBuffer() {
-        rawBuffer.clear();
-        rawBuffer.resize( totalLengthIncludingLeading4ByteLength());
+        rawBuffer = U8Vector(totalLengthIncludingLeading4ByteLength());
         toBuffer(rawBuffer.data(), rawBuffer.size());
         rawBufferSynced = true;
     }
