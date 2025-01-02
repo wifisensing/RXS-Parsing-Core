@@ -15,6 +15,7 @@
 #include <mutex>
 #include <bitset>
 #include <iomanip>
+#include <functional>
 #include "SignalMatrix.hxx"
 #include "SDRResamplingPreset.hxx"
 
