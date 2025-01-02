@@ -4,4 +4,4 @@ This repo holds the core .csi data parsing routine. This routine is shared (via 
 
 ## No Issue Tracker for this repo
 
-All PicoScenes related issues should be raised in the dedicated [PicoScenes Issue Tracker](https://gitlab.com/wifisensing/picoscenes-issue-tracker/-/issues).
+All PicoScenes related issues should be raised in the dedicated [PicoScenes Issue Tracker](https://github.com/wifisensing/PicoScenes-Issue-Tracker/issues).
