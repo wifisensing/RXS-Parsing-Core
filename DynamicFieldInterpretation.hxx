@@ -10,6 +10,7 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <algorithm>
 
 class DynamicContentTypeDictionary;
 
