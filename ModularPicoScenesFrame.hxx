@@ -109,16 +109,17 @@ public:
     std::shared_ptr<BasebandSignalSegment> basebandSignalSegment;
     std::map<std::string, std::shared_ptr<AbstractPicoScenesFrameSegment>> rxUnknownSegments;
 
-    // Tx side header and segments
+    // Tx side MPDU header and MPDUs
     ieee80211_mac_frame_header standardHeader;
+    std::vector<U8Vector> mpdus; // unified single-MPDU and A-MPDU, i.e., mpdus[0] is the normal MPDU or the first MPDU of an A-MPDU
+    bool isNDP{false};
+
+    // Tx side PicoScenes header and segments
     std::optional<PicoScenesFrameHeader> PicoScenesHeader;
     std::shared_ptr<ExtraInfoSegment> txExtraInfoSegment;
     std::vector<std::shared_ptr<PayloadSegment>> payloadSegments;
     std::vector<std::shared_ptr<CargoSegment>> cargoSegments;
     std::map<std::string, std::shared_ptr<AbstractPicoScenesFrameSegment>> txUnknownSegments;
-    std::vector<U8Vector> mpdus; // unified single-MPDU and A-MPDU
-
-    bool isNDP{false};
 
     static std::optional<ModularPicoScenesRxFrame> fromBuffer(const uint8_t *inputBuffer, uint32_t bufferLength, bool interpolateCSI = false);
 
