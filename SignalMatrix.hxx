@@ -41,25 +41,15 @@ public:
     SignalMatrix() = default;
 
     template<typename DimensionContainerType>
-    SignalMatrix(const std::vector<SignalType>& array, const DimensionContainerType& dimensionsV, const SignalMatrixStorageMajority majority = SignalMatrixStorageMajority::UndefinedMajority) : array(array), majority(majority) {
-        for (auto it = std::cbegin(dimensionsV); it != std::cend(dimensionsV); ++it) {
-            dimensions.emplace_back(*it);
-        }
-
-        uint64_t sum = std::accumulate(dimensions.cbegin(), dimensions.cend(), 1, std::multiplies());
-        if (sum != array.size())
-            throw std::invalid_argument("SignalMatrix creation failed due to the inconsistent dimensions.");
+    SignalMatrix(const std::vector<SignalType>& array, const DimensionContainerType& dimensionsV, const SignalMatrixStorageMajority majority = SignalMatrixStorageMajority::UndefinedMajority) : array(array), dimensions(dimensionsV.begin(), dimensionsV.end()), majority(majority) {
+        if (auto sum = std::accumulate(dimensions.cbegin(), dimensions.cend(), 1L, std::multiplies()); sum != array.size())
+            throw std::invalid_argument("SignalMatrix creation failed due to the inconsistent dimensions. sum=" + std::to_string(sum) + " array=" + std::to_string(array.size()));
     }
 
     template<typename DimensionContainerType>
-    SignalMatrix(std::vector<SignalType>&& arrayV, const DimensionContainerType& dimensionsV, const SignalMatrixStorageMajority majority = SignalMatrixStorageMajority::UndefinedMajority) : array(std::move(arrayV)), majority(majority) {
-        for (auto it = std::cbegin(dimensionsV); it != std::cend(dimensionsV); ++it) {
-            dimensions.emplace_back(*it);
-        }
-
-        uint64_t sum = std::accumulate(dimensions.cbegin(), dimensions.cend(), 1, std::multiplies());
-        if (sum != array.size())
-            throw std::invalid_argument("SignalMatrix creation failed due to the inconsistent dimensions.");
+    SignalMatrix(std::vector<SignalType>&& arrayV, const DimensionContainerType& dimensionsV, const SignalMatrixStorageMajority majority = SignalMatrixStorageMajority::UndefinedMajority) : array(std::move(arrayV)), dimensions(dimensionsV.begin(), dimensionsV.end()), majority(majority) {
+        if (auto sum = std::accumulate(dimensions.cbegin(), dimensions.cend(), 1L, std::multiplies()); sum != array.size())
+            throw std::invalid_argument("SignalMatrix creation failed due to the inconsistent dimensions. sum=" + std::to_string(sum) + " array=" + std::to_string(array.size()));
     }
 
     [[nodiscard]] bool empty() const {
