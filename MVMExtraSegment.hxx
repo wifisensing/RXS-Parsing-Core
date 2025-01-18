@@ -5,29 +5,30 @@
 #ifndef PICOSCENES_PLATFORM_MVMEXTRASEGMENT_HXX
 #define PICOSCENES_PLATFORM_MVMEXTRASEGMENT_HXX
 
+#include "macros.hxx"
 #include "AbstractPicoScenesFrameSegment.hxx"
 #include "PicoScenesCommons.hxx"
 #include "IntelRateNFlag.hxx"
 
-class IntelMVMParsedCSIHeader {
+PACKED(class IntelMVMParsedCSIHeader {
 public:
     union {
-        uint8_t headerBytes[272]  __attribute__ ((__packed__));
+        PACKED(uint8_t headerBytes[272]);
         struct {
-            uint32_t iqDataSize{};
-            union {
-                uint32_t blockedSection4[12] __attribute__ ((__packed__));
-                struct {
+            uint32_t iqDataSize;
+            PACKED(union {
+                PACKED(uint32_t blockedSection4[12]);
+                PACKED(struct {
                     uint32_t value4;
                     uint32_t ftmClock;
                     uint8_t value12[40];
-                } __attribute__ ((__packed__));
+                });
             };
             uint32_t numTones;
             uint32_t value56[9];
             uint32_t rateNflag;
             uint32_t value96[44];
-        }__attribute__ ((__packed__));
+        });
     };
 
     IntelMVMParsedCSIHeader();
@@ -40,7 +41,7 @@ public:
 
     static void registerDefaultMVMHeaderInterpretation();
 
-} __attribute__ ((__packed__));
+});
 
 class IntelMVMExtraInfo {
 public:

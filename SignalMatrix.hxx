@@ -220,7 +220,7 @@ public:
 
     static SignalMatrix<SignalType> fromFile(const std::string& filePath) {
         auto inputStream = std::ifstream(filePath, std::ios::binary | std::ios::in);
-        std::vector<uint8_t> buffer(std::istreambuf_iterator(inputStream), {});
+        std::vector<uint8_t> buffer(std::istreambuf_iterator<uint8_t>(inputStream), {});
         auto parseResult = SignalMatrix<SignalType>::fromBuffer(buffer, SignalMatrixStorageMajority::UndefinedMajority);
         return parseResult;
     }

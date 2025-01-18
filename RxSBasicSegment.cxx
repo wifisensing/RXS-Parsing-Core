@@ -2,9 +2,10 @@
 // Created by Zhiping Jiang on 2020/11/6.
 //
 
+#include "macros.hxx"
 #include "RxSBasicSegment.hxx"
 
-struct RxsBasicContentV1 {
+PACKED(struct RxsBasicContentV1 {
     uint16_t deviceType;  /* device type code */
     uint64_t tstamp;      /* h/w assigned timestamp */
     uint16_t channelFreq;     /* receiving channel frequency */
@@ -20,10 +21,10 @@ struct RxsBasicContentV1 {
     uint8_t rssi_ctl0;   /* rx frame RSSI [ctl, chain 0] */
     uint8_t rssi_ctl1;   /* rx frame RSSI [ctl, chain 1] */
     uint8_t rssi_ctl2;   /* rx frame RSSI [ctl, chain 2] */
-} __attribute__((packed));
+});
 
 // compared to V1, add numUser and userIndex
-struct RxsBasicContentV2 {
+PACKED(struct RxsBasicContentV2 {
     uint16_t deviceType;  /* device type code */
     uint64_t tstamp;      /* h/w assigned timestamp */
     uint16_t channelFreq;     /* receiving channel frequency */
@@ -41,10 +42,10 @@ struct RxsBasicContentV2 {
     uint8_t rssi_ctl0;   /* rx frame RSSI [ctl, chain 0] */
     uint8_t rssi_ctl1;   /* rx frame RSSI [ctl, chain 1] */
     uint8_t rssi_ctl2;   /* rx frame RSSI [ctl, chain 2] */
-} __attribute__((packed));
+});
 
 // compared to V2, add controlFreq, add pkt_cbw, and rename channelFreq to centerFreq
-struct RxsBasicContentV3 {
+PACKED(struct RxsBasicContentV3 {
     uint16_t deviceType;    /* device type code */
     uint64_t tstamp;        /* h/w assigned timestamp */
     int16_t centerFreq;     /* receiving channel frequency */
@@ -64,10 +65,10 @@ struct RxsBasicContentV3 {
     int8_t rssi_ctl0;   /* rx frame RSSI [ctl, chain 0] */
     int8_t rssi_ctl1;   /* rx frame RSSI [ctl, chain 1] */
     int8_t rssi_ctl2;   /* rx frame RSSI [ctl, chain 2] */
-} __attribute__((packed));
+});
 
 // compared to V3, add systemTime
-struct RxsBasicContentV4 {
+PACKED(struct RxsBasicContentV4 {
     uint16_t deviceType;    /* device type code */
     uint64_t tstamp;        /* h/w assigned timestamp */
     uint64_t systemTime;    /* system nanosecond time via ktime_get_real() */
@@ -88,10 +89,10 @@ struct RxsBasicContentV4 {
     int8_t rssi_ctl0;   /* rx frame RSSI [ctl, chain 0] */
     int8_t rssi_ctl1;   /* rx frame RSSI [ctl, chain 1] */
     int8_t rssi_ctl2;   /* rx frame RSSI [ctl, chain 2] */
-} __attribute__((packed));
+});
 
 // compared to V4, add centerFreq2 and 5 additional rss values
-struct RxsBasicContentV5 {
+PACKED(struct RxsBasicContentV5 {
     uint16_t deviceType;    /* device type code */
     uint64_t tstamp;        /* h/w assigned timestamp */
     uint64_t systemTime;    /* system nanosecond time via ktime_get_real() */
@@ -118,7 +119,7 @@ struct RxsBasicContentV5 {
     int8_t rssi_ctl5;   /* rx frame RSSI [ctl, chain 5] */
     int8_t rssi_ctl6;   /* rx frame RSSI [ctl, chain 6] */
     int8_t rssi_ctl7;   /* rx frame RSSI [ctl, chain 7] */
-} __attribute__((packed));
+});
 
 static auto v1Parser = [](const uint8_t *buffer, const uint32_t bufferLength) -> RxSBasic {
     uint32_t pos = 0;
