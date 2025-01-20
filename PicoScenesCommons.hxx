@@ -19,11 +19,6 @@
 #include "SignalMatrix.hxx"
 #include "SDRResamplingPreset.hxx"
 
-#ifdef BUILD_WITH_MEX
-#include "mex.h"
-#define printf mexPrintf
-#endif
-
 using ComplexData = std::complex<double>;
 using ComplexFloatData = std::complex<float>;
 using CS16 = std::complex<int16_t>;
