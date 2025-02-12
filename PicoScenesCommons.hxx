@@ -67,8 +67,8 @@ enum class PicoScenesDeviceSubtype : uint16_t {
     USRP_B2x0, // b200
     USRP_E3x0, // e3x0
     USRP_N3x0, // n3xx
-    USRP_X3x0, // x300
-    USRP_X4x0, // x4xx
+    USRP_X3x0, // x3x0 [should be replaced by USRP_N300_N310 or USRP_N320_N321]
+    USRP_X4x0, // x4xx [should be replaced by USRP_X410 or USRP_X440]
     HackRFOne,
     LimeSDR,
     BladeRF,
