@@ -74,6 +74,10 @@ enum class PicoScenesDeviceSubtype : uint16_t {
     BladeRF,
     SOAPYSDR_UHD,
     AX211,
+    USRP_N300_N310 = 310,
+    USRP_N320_N321 = 320,
+    USRP_X410 = 410,
+    USRP_X440 = 440,
 };
 
 /**
