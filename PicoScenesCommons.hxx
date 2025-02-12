@@ -66,7 +66,7 @@ enum class PicoScenesDeviceSubtype : uint16_t {
     USRP_B100, // b100
     USRP_B2x0, // b200
     USRP_E3x0, // e3x0
-    USRP_N3x0, // n3xx
+    USRP_N3x0, // n3xx [should be replaced by USRP_E310 or USRP_E320]
     USRP_X3x0, // x3x0 [should be replaced by USRP_N300_N310 or USRP_N320_N321]
     USRP_X4x0, // x4xx [should be replaced by USRP_X410 or USRP_X440]
     HackRFOne,
@@ -74,6 +74,8 @@ enum class PicoScenesDeviceSubtype : uint16_t {
     BladeRF,
     SOAPYSDR_UHD,
     AX211,
+    USRP_E310 = 1310,
+    USRP_E320 = 1320,
     USRP_N300_N310 = 310,
     USRP_N320_N321 = 320,
     USRP_X410 = 410,
@@ -220,6 +222,18 @@ inline std::string DeviceSubtype2String(const PicoScenesDeviceSubtype subtype) {
             return "SoapySDR_UHD";
         case PicoScenesDeviceSubtype::VirtualSDR:
             return "VirtualSDR";
+        case PicoScenesDeviceSubtype::USRP_E310:
+            return "USRP E310";
+        case PicoScenesDeviceSubtype::USRP_E320:
+            return "USRP E320";
+        case PicoScenesDeviceSubtype::USRP_N300_N310:
+            return "USRP N300/N310";
+        case PicoScenesDeviceSubtype::USRP_N320_N321:
+            return "USRP N320/N321";
+        case PicoScenesDeviceSubtype::USRP_X410:
+            return "USRP X410";
+        case PicoScenesDeviceSubtype::USRP_X440:
+            return "USRP X440";
         default:
             throw std::runtime_error("unrecognized PicoScenesDeviceSubtype.");
     }
