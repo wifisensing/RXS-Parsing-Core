@@ -73,10 +73,10 @@ struct PicoScenesFrameTxParameters {
             hardwareSamplingRate = preset->txSamplingRate.value();
             cbw = static_cast<ChannelBandwidthEnum>(preset->txCBW.value());
             frameType = preset->format;
-            coding = std::vector<ChannelCodingEnum>{preset->coding};
+            coding = std::vector{preset->coding};
             resampleRatio = preset->txResampleRatio.value();
             if (frameType == PacketFormatEnum::PacketFormat_HESU ||
-                frameType == PacketFormatEnum::PacketFormat_EHTMU ||
+                frameType == PacketFormatEnum::PacketFormat_HEMU ||
                 frameType == PacketFormatEnum::PacketFormat_EHTSU ||
                 frameType == PacketFormatEnum::PacketFormat_EHTMU) {
                 guardInterval = GuardIntervalEnum::GI_3200; // default to 3.2us GI for higher robustness
@@ -140,7 +140,7 @@ struct PicoScenesFrameTxParameters {
                     case 4:
                         return 4;
                     default:
-                        return int(numExtraSounding);
+                        return static_cast<int>(numExtraSounding);
                 }
             }(); requiredNumHTLTFs > 5) {
                 throw std::invalid_argument("Invalid number of Extra HT-LTF: " + std::to_string(numExtraSounding) + " for HT-format frame with " + std::to_string(numSTS[0]) + " STS.");
