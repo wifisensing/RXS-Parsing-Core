@@ -12,19 +12,18 @@
  * @brief PicoScenes Frame Segment is a typed, versioned and named data structure used to carrier various of data from the Tx end, PicoScenes driver or SDR baseband to the PicoScenes Platform.
  * @details AbstractPicoScenesFrameSegment is the root class for various of Frame segment classes.
  */
-class AbstractPicoScenesFrameSegment {
-public:
-    std::string segmentName; ///< The name of the segment
-    uint16_t segmentVersionId; ///< The version of the segment
-    std::vector<uint8_t> segmentPayload; ///< The actual payload part of the segment
-    std::vector<uint8_t> rawBuffer; ///< Raw buffer contains the segment header and the payload
-    bool rawBufferSynced{false}; ///< Indicating if the rawBuffer is in-sync with the segment meta Info AND the segmentPayload
+struct AbstractPicoScenesFrameSegment {
+    std::string segmentName{}; ///< The name of the segment
+    uint16_t segmentVersionId{}; ///< The version of the segment
+    std::vector<uint8_t> segmentPayload{}; ///< The actual payload part of the segment
+    mutable std::vector<uint8_t> rawBuffer{}; ///< Raw buffer contains the segment header and the payload
+    mutable bool rawBufferSynced{false}; ///< Indicating if the rawBuffer is in-sync with the segment meta Info AND the segmentPayload
 
     /**
      * Extract the SegmentName, SegmentLength (except the 4 bytes of the field itself), 2-byte version, and offset of the segment payload
      * @return
      */
-    static std::tuple<std::string, uint32_t, uint16_t, uint32_t> extractSegmentMetaData(const uint8_t *buffer, const uint32_t bufferLength) {
+    static std::tuple<std::string, uint32_t, uint16_t, uint32_t> extractSegmentMetaData(const uint8_t* buffer, const uint32_t bufferLength) {
         uint32_t rxPos = 0;
         uint32_t segmentLength = *reinterpret_cast<const uint32_t *>(buffer + rxPos);
         rxPos += 4;
@@ -39,9 +38,9 @@ public:
         return std::make_tuple(segmentName, segmentLength, segmentVersionId, rxPos);
     }
 
-    AbstractPicoScenesFrameSegment(std::string &&segmentNameV, const uint16_t segmentVersionId) : segmentName(std::move(segmentNameV)), segmentVersionId(segmentVersionId) {}
+    AbstractPicoScenesFrameSegment(std::string&& segmentNameV, const uint16_t segmentVersionId) : segmentName(std::move(segmentNameV)), segmentVersionId(segmentVersionId) {}
 
-    AbstractPicoScenesFrameSegment(const uint8_t *buffer, const size_t bufferLength) {
+    AbstractPicoScenesFrameSegment(const uint8_t* buffer, const size_t bufferLength) {
         auto [segmentNameV, segmentLengthV, versionIdV, offset] = extractSegmentMetaData(buffer, bufferLength);
         if (segmentLengthV + 4 > bufferLength)
             throw std::underflow_error("Cannot parse the segment [" + segmentNameV + "] version [" + std::to_string(versionIdV) + "[with less than " + std::to_string(segmentLengthV + 4) + "B.");
@@ -54,15 +53,11 @@ public:
         rawBufferSynced = true;
     }
 
-    [[nodiscard]] const std::vector<uint8_t> &getSegmentPayload() const {
+    [[nodiscard]] const std::vector<uint8_t>& getSegmentPayload() const {
         return segmentPayload;
     }
 
-    [[nodiscard]] const std::vector<uint8_t> &getRawBuffer() const {
-        return rawBuffer;
-    }
-
-    [[nodiscard]] const std::vector<uint8_t> &getSyncedRawBuffer() {
+    [[nodiscard]] const std::vector<uint8_t>& getSyncedRawBuffer() const {
         if (!rawBufferSynced)
             rebuildRawBuffer();
         return rawBuffer;
@@ -72,17 +67,9 @@ public:
      * @brief Change the payload data, the rawBuffer is also updated.
      * @param payload
      */
-    void setSegmentPayload(const std::vector<uint8_t> &payload) {
-        segmentPayload = payload;
-        rawBufferSynced = false;
-    }
-
-    /**
-     * The move semantic version of setSegmentPayload()
-     * @param payload
-     */
-    void setSegmentPayload(std::vector<uint8_t> &&payload) {
-        segmentPayload = std::move(payload);
+    template<typename T = std::vector<uint8_t>>
+    void setSegmentPayload(T&& payload) {
+        segmentPayload = std::forward<T>(payload);
         rawBufferSynced = false;
     }
 
@@ -111,31 +98,13 @@ public:
         return totalLength() + 4;
     }
 
-    /**
-     * @brief ModularPicoScenesTxFrame and ModularPicoScenesRxFrame call this method to get the whole data of this segment
-     * @details By default, this method performs 3 things:
-     * 1. call totalLength method to obtain the length of the raw buffer;
-     * 2. pre-allocate a std::vector<uint8_t> buffer;
-     * 3. fill the buffer with the other AbstractPicoScenesFrameSegment#toBuffer method
-     *
-     */
-     [[deprecated("use getSyncedRawBuffer instead")]]
-    [[nodiscard]] std::vector<uint8_t> toBuffer() const {
-        if (rawBufferSynced)
-            return rawBuffer;
-
-        std::vector<uint8_t> result(totalLengthIncludingLeading4ByteLength());
-        toBuffer(result.data(), result.size());
-        return result;
-    }
-
-    void rebuildRawBuffer() {
+    void rebuildRawBuffer() const {
         rawBuffer = U8Vector(totalLengthIncludingLeading4ByteLength());
         toBuffer(rawBuffer.data(), rawBuffer.size());
         rawBufferSynced = true;
     }
 
-    uint32_t toBuffer(uint8_t *buffer, const std::optional<uint32_t> bufferLength = std::nullopt) const {
+    uint32_t toBuffer(uint8_t* buffer, const std::optional<uint32_t> bufferLength = std::nullopt) const {
         const uint32_t totalLengthV = totalLength();
 
         if (bufferLength && bufferLength < totalLengthV)
@@ -169,7 +138,7 @@ public:
     virtual ~AbstractPicoScenesFrameSegment() = default;
 };
 
-inline std::ostream &operator<<(std::ostream &os, const AbstractPicoScenesFrameSegment &segment) {
+inline std::ostream& operator<<(std::ostream& os, const AbstractPicoScenesFrameSegment& segment) {
     os << segment.toString();
     return os;
 }

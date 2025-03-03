@@ -19,11 +19,6 @@
 #include "SignalMatrix.hxx"
 #include "SDRResamplingPreset.hxx"
 
-#ifdef BUILD_WITH_MEX
-#include "mex.h"
-#define printf mexPrintf
-#endif
-
 using ComplexData = std::complex<double>;
 using ComplexFloatData = std::complex<float>;
 using CS16 = std::complex<int16_t>;
@@ -71,14 +66,20 @@ enum class PicoScenesDeviceSubtype : uint16_t {
     USRP_B100, // b100
     USRP_B2x0, // b200
     USRP_E3x0, // e3x0
-    USRP_N3x0, // n3xx
-    USRP_X3x0, // x300
-    USRP_X4x0, // x4xx
+    USRP_N3x0, // n3xx [should be replaced by USRP_E310 or USRP_E320]
+    USRP_X3x0, // x3x0 [should be replaced by USRP_N300_N310 or USRP_N320_N321]
+    USRP_X4x0, // x4xx [should be replaced by USRP_X410 or USRP_X440]
     HackRFOne,
     LimeSDR,
     BladeRF,
     SOAPYSDR_UHD,
     AX211,
+    USRP_E310 = 1310,
+    USRP_E320 = 1320,
+    USRP_N300_N310 = 310,
+    USRP_N320_N321 = 320,
+    USRP_X410 = 410,
+    USRP_X440 = 440,
 };
 
 /**
@@ -221,6 +222,18 @@ inline std::string DeviceSubtype2String(const PicoScenesDeviceSubtype subtype) {
             return "SoapySDR_UHD";
         case PicoScenesDeviceSubtype::VirtualSDR:
             return "VirtualSDR";
+        case PicoScenesDeviceSubtype::USRP_E310:
+            return "USRP E310";
+        case PicoScenesDeviceSubtype::USRP_E320:
+            return "USRP E320";
+        case PicoScenesDeviceSubtype::USRP_N300_N310:
+            return "USRP N300/N310";
+        case PicoScenesDeviceSubtype::USRP_N320_N321:
+            return "USRP N320/N321";
+        case PicoScenesDeviceSubtype::USRP_X410:
+            return "USRP X410";
+        case PicoScenesDeviceSubtype::USRP_X440:
+            return "USRP X440";
         default:
             throw std::runtime_error("unrecognized PicoScenesDeviceSubtype.");
     }
