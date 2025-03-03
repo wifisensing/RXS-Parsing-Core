@@ -120,6 +120,36 @@ struct RxsBasicContentV5 {
     int8_t rssi_ctl7;   /* rx frame RSSI [ctl, chain 7] */
 } __attribute__((packed));
 
+// compared to V5, change RSSI values from int8_t to float for increased accuracy
+struct RxsBasicContentV6 {
+    uint16_t deviceType;    /* device type code */
+    uint64_t tstamp;        /* h/w assigned timestamp */
+    uint64_t systemTime;    /* system nanosecond time via ktime_get_real() */
+    int16_t centerFreq;     /* primary RF center frequency */
+    int16_t centerFreq2;    /* second RF center frequency, mainly used for multi-channel splitting, e.g., 80 + 80 mode */
+    int16_t controlFreq;    /* control channel frequency */
+    uint16_t cbw;           /* channel bandwidth [20, 40, 80, 160, 320] */
+    uint8_t packetFormat;   /* 0 for NonHT, 1 for HT, 2 for VHT, 3 for HE-SU, 4 for HE-MU, 5 for EHT-MU */
+    uint16_t pkt_cbw;       /* packet CBW [20, 40, 80, 160, 320] */
+    uint16_t guardInterval; /* 400/800/1600/3200ns */
+    uint8_t mcs;
+    uint8_t numSTS;         /* number of Space-Time Stream */
+    uint8_t numESS;         /* number of Extra Spatial Sounding (an 802.11n only feature) */
+    uint8_t numRx;          /* number of Rx antenna */
+    uint8_t numUser;
+    uint8_t userIndex;
+    float noiseFloor;   /* noise floor */
+    float rssi;        /* rx frame RSSI */
+    float rssi_ctl0;   /* rx frame RSSI [ctl, chain 0] */
+    float rssi_ctl1;   /* rx frame RSSI [ctl, chain 1] */
+    float rssi_ctl2;   /* rx frame RSSI [ctl, chain 2] */
+    float rssi_ctl3;   /* rx frame RSSI [ctl, chain 3] */
+    float rssi_ctl4;   /* rx frame RSSI [ctl, chain 4] */
+    float rssi_ctl5;   /* rx frame RSSI [ctl, chain 5] */
+    float rssi_ctl6;   /* rx frame RSSI [ctl, chain 6] */
+    float rssi_ctl7;   /* rx frame RSSI [ctl, chain 7] */
+} __attribute__((packed));
+
 static auto v1Parser = [](const uint8_t *buffer, const uint32_t bufferLength) -> RxSBasic {
     uint32_t pos = 0;
     if (bufferLength < sizeof(RxsBasicContentV1))
@@ -147,11 +177,17 @@ static auto v1Parser = [](const uint8_t *buffer, const uint32_t bufferLength) ->
     r.numRx = *(buffer + pos++);
     r.numUser = 1;
     r.userIndex = 0;
-    r.noiseFloor = *reinterpret_cast<const int8_t *>(buffer + pos++);
-    r.rssi = r.noiseFloor + *reinterpret_cast<const int8_t *>(buffer + pos++);
-    r.rssi_ctl0 = r.noiseFloor + *reinterpret_cast<const int8_t *>(buffer + pos++);
-    r.rssi_ctl1 = r.noiseFloor + *reinterpret_cast<const int8_t *>(buffer + pos++);
-    r.rssi_ctl2 = r.noiseFloor + *reinterpret_cast<const int8_t *>(buffer + pos++);
+    r.noiseFloor = static_cast<float>(*reinterpret_cast<const int8_t *>(buffer + pos++));
+    r.rssi = static_cast<float>(r.noiseFloor + *reinterpret_cast<const int8_t *>(buffer + pos++));
+    r.rssi_ctl0 = static_cast<float>(r.noiseFloor + *reinterpret_cast<const int8_t *>(buffer + pos++));
+    r.rssi_ctl1 = static_cast<float>(r.noiseFloor + *reinterpret_cast<const int8_t *>(buffer + pos++));
+    r.rssi_ctl2 = static_cast<float>(r.noiseFloor + *reinterpret_cast<const int8_t *>(buffer + pos++));
+    // Initialize remaining RSSI values to 0
+    r.rssi_ctl3 = 0.0f;
+    r.rssi_ctl4 = 0.0f;
+    r.rssi_ctl5 = 0.0f;
+    r.rssi_ctl6 = 0.0f;
+    r.rssi_ctl7 = 0.0f;
 
     if (pos != bufferLength)
         throw std::runtime_error("RxSBasicSegment v1Parser cannot parse the segment with mismatched buffer length.");
@@ -186,11 +222,17 @@ static auto v2Parser = [](const uint8_t *buffer, const uint32_t bufferLength) ->
     r.numRx = *(buffer + pos++);
     r.numUser = *(buffer + pos++);
     r.userIndex = *(buffer + pos++);
-    r.noiseFloor = *reinterpret_cast<const int8_t *>(buffer + pos++);
-    r.rssi = r.noiseFloor + *reinterpret_cast<const int8_t *>(buffer + pos++);
-    r.rssi_ctl0 = r.noiseFloor + *reinterpret_cast<const int8_t *>(buffer + pos++);
-    r.rssi_ctl1 = r.noiseFloor + *reinterpret_cast<const int8_t *>(buffer + pos++);
-    r.rssi_ctl2 = r.noiseFloor + *reinterpret_cast<const int8_t *>(buffer + pos++);
+    r.noiseFloor = static_cast<float>(*reinterpret_cast<const int8_t *>(buffer + pos++));
+    r.rssi = static_cast<float>(r.noiseFloor + *reinterpret_cast<const int8_t *>(buffer + pos++));
+    r.rssi_ctl0 = static_cast<float>(r.noiseFloor + *reinterpret_cast<const int8_t *>(buffer + pos++));
+    r.rssi_ctl1 = static_cast<float>(r.noiseFloor + *reinterpret_cast<const int8_t *>(buffer + pos++));
+    r.rssi_ctl2 = static_cast<float>(r.noiseFloor + *reinterpret_cast<const int8_t *>(buffer + pos++));
+    // Initialize remaining RSSI values to 0
+    r.rssi_ctl3 = 0.0f;
+    r.rssi_ctl4 = 0.0f;
+    r.rssi_ctl5 = 0.0f;
+    r.rssi_ctl6 = 0.0f;
+    r.rssi_ctl7 = 0.0f;
 
     if (pos != bufferLength)
         throw std::runtime_error("RxSBasicSegment v2Parser cannot parse the segment with mismatched buffer length.");
@@ -226,11 +268,17 @@ static auto v3Parser = [](const uint8_t *buffer, const uint32_t bufferLength) ->
     r.numRx = *(buffer + pos++);
     r.numUser = *(buffer + pos++);
     r.userIndex = *(buffer + pos++);
-    r.noiseFloor = *reinterpret_cast<const int8_t *>(buffer + pos++);
-    r.rssi = *reinterpret_cast<const int8_t *>(buffer + pos++);
-    r.rssi_ctl0 = *reinterpret_cast<const int8_t *>(buffer + pos++);
-    r.rssi_ctl1 = *reinterpret_cast<const int8_t *>(buffer + pos++);
-    r.rssi_ctl2 = *reinterpret_cast<const int8_t *>(buffer + pos++);
+    r.noiseFloor = static_cast<float>(*reinterpret_cast<const int8_t *>(buffer + pos++));
+    r.rssi = static_cast<float>(*reinterpret_cast<const int8_t *>(buffer + pos++));
+    r.rssi_ctl0 = static_cast<float>(*reinterpret_cast<const int8_t *>(buffer + pos++));
+    r.rssi_ctl1 = static_cast<float>(*reinterpret_cast<const int8_t *>(buffer + pos++));
+    r.rssi_ctl2 = static_cast<float>(*reinterpret_cast<const int8_t *>(buffer + pos++));
+    // Initialize remaining RSSI values to 0
+    r.rssi_ctl3 = 0.0f;
+    r.rssi_ctl4 = 0.0f;
+    r.rssi_ctl5 = 0.0f;
+    r.rssi_ctl6 = 0.0f;
+    r.rssi_ctl7 = 0.0f;
 
     if (pos != bufferLength)
         throw std::runtime_error("RxSBasicSegment v3Parser cannot parse the segment with mismatched buffer length.");
@@ -268,12 +316,18 @@ static auto v4Parser = [](const uint8_t *buffer, const uint32_t bufferLength) ->
     r.numRx = *(buffer + pos++);
     r.numUser = *(buffer + pos++);
     r.userIndex = *(buffer + pos++);
-    r.noiseFloor = *reinterpret_cast<const int8_t *>(buffer + pos++);
-    r.rssi = *reinterpret_cast<const int8_t *>(buffer + pos++);
+    r.noiseFloor = static_cast<float>(*reinterpret_cast<const int8_t *>(buffer + pos++));
+    r.rssi = static_cast<float>(*reinterpret_cast<const int8_t *>(buffer + pos++));
     std::memset(r.rssAntenna, 0, sizeof(r.rssAntenna));
-    r.rssi_ctl0 = *reinterpret_cast<const int8_t *>(buffer + pos++);
-    r.rssi_ctl1 = *reinterpret_cast<const int8_t *>(buffer + pos++);
-    r.rssi_ctl2 = *reinterpret_cast<const int8_t *>(buffer + pos++);
+    r.rssi_ctl0 = static_cast<float>(*reinterpret_cast<const int8_t *>(buffer + pos++));
+    r.rssi_ctl1 = static_cast<float>(*reinterpret_cast<const int8_t *>(buffer + pos++));
+    r.rssi_ctl2 = static_cast<float>(*reinterpret_cast<const int8_t *>(buffer + pos++));
+    // Initialize remaining RSSI values to 0
+    r.rssi_ctl3 = 0.0f;
+    r.rssi_ctl4 = 0.0f;
+    r.rssi_ctl5 = 0.0f;
+    r.rssi_ctl6 = 0.0f;
+    r.rssi_ctl7 = 0.0f;
 
     if (pos != bufferLength)
         throw std::runtime_error("RxSBasicSegment v4Parser cannot parse the segment with mismatched buffer length.");
@@ -312,19 +366,77 @@ static auto v5Parser = [](const uint8_t *buffer, const uint32_t bufferLength) ->
     r.numRx = *(buffer + pos++);
     r.numUser = *(buffer + pos++);
     r.userIndex = *(buffer + pos++);
-    r.noiseFloor = *reinterpret_cast<const int8_t *>(buffer + pos++);
-    r.rssi = *reinterpret_cast<const int8_t *>(buffer + pos++);
-    r.rssi_ctl0 = *reinterpret_cast<const int8_t *>(buffer + pos++);
-    r.rssi_ctl1 = *reinterpret_cast<const int8_t *>(buffer + pos++);
-    r.rssi_ctl2 = *reinterpret_cast<const int8_t *>(buffer + pos++);
-    r.rssi_ctl3 = *reinterpret_cast<const int8_t *>(buffer + pos++);
-    r.rssi_ctl4 = *reinterpret_cast<const int8_t *>(buffer + pos++);
-    r.rssi_ctl5 = *reinterpret_cast<const int8_t *>(buffer + pos++);
-    r.rssi_ctl6 = *reinterpret_cast<const int8_t *>(buffer + pos++);
-    r.rssi_ctl7 = *reinterpret_cast<const int8_t *>(buffer + pos++);
+    r.noiseFloor = static_cast<float>(*reinterpret_cast<const int8_t *>(buffer + pos++));
+    r.rssi = static_cast<float>(*reinterpret_cast<const int8_t *>(buffer + pos++));
+    r.rssi_ctl0 = static_cast<float>(*reinterpret_cast<const int8_t *>(buffer + pos++));
+    r.rssi_ctl1 = static_cast<float>(*reinterpret_cast<const int8_t *>(buffer + pos++));
+    r.rssi_ctl2 = static_cast<float>(*reinterpret_cast<const int8_t *>(buffer + pos++));
+    r.rssi_ctl3 = static_cast<float>(*reinterpret_cast<const int8_t *>(buffer + pos++));
+    r.rssi_ctl4 = static_cast<float>(*reinterpret_cast<const int8_t *>(buffer + pos++));
+    r.rssi_ctl5 = static_cast<float>(*reinterpret_cast<const int8_t *>(buffer + pos++));
+    r.rssi_ctl6 = static_cast<float>(*reinterpret_cast<const int8_t *>(buffer + pos++));
+    r.rssi_ctl7 = static_cast<float>(*reinterpret_cast<const int8_t *>(buffer + pos++));
 
     if (pos != bufferLength)
         throw std::runtime_error("RxSBasicSegment v5Parser cannot parse the segment with mismatched buffer length.");
+
+    return r;
+};
+
+static auto v6Parser = [](const uint8_t *buffer, const uint32_t bufferLength) -> RxSBasic {
+    uint32_t pos = 0;
+    if (bufferLength < sizeof(RxsBasicContentV6))
+        throw std::runtime_error("RxSBasicSegment v6Parser cannot parse the segment with insufficient buffer length.");
+
+    auto r = RxSBasic();
+    r.deviceType = *reinterpret_cast<const uint16_t *>(buffer + pos);
+    pos += 2;
+    r.tstamp = *reinterpret_cast<const uint64_t *>(buffer + pos);
+    pos += 8;
+    r.systemTime = *reinterpret_cast<const uint64_t *>(buffer + pos);
+    pos += 8;
+    r.centerFreq = *reinterpret_cast<const int16_t *>(buffer + pos);
+    pos += 2;
+    r.centerFreq2 = *reinterpret_cast<const int16_t *>(buffer + pos);
+    pos += 2;
+    r.controlFreq = *reinterpret_cast<const int16_t *>(buffer + pos);
+    pos += 2;
+    r.cbw = *reinterpret_cast<const int16_t *>(buffer + pos);
+    pos += 2;
+    r.packetFormat = *(const uint8_t *) (buffer + pos++);
+    r.pkt_cbw = *reinterpret_cast<const uint16_t *>(buffer + pos);
+    pos += 2;
+    r.guardInterval = *reinterpret_cast<const uint16_t *>(buffer + pos);
+    pos += 2;
+    r.mcs = *(buffer + pos++);
+    r.numSTS = *(buffer + pos++);
+    r.numESS = *(buffer + pos++);
+    r.numRx = *(buffer + pos++);
+    r.numUser = *(buffer + pos++);
+    r.userIndex = *(buffer + pos++);
+    r.noiseFloor = *reinterpret_cast<const float *>(buffer + pos);
+    pos += sizeof(float);
+    r.rssi = *reinterpret_cast<const float *>(buffer + pos);
+    pos += sizeof(float);
+    r.rssi_ctl0 = *reinterpret_cast<const float *>(buffer + pos);
+    pos += sizeof(float);
+    r.rssi_ctl1 = *reinterpret_cast<const float *>(buffer + pos);
+    pos += sizeof(float);
+    r.rssi_ctl2 = *reinterpret_cast<const float *>(buffer + pos);
+    pos += sizeof(float);
+    r.rssi_ctl3 = *reinterpret_cast<const float *>(buffer + pos);
+    pos += sizeof(float);
+    r.rssi_ctl4 = *reinterpret_cast<const float *>(buffer + pos);
+    pos += sizeof(float);
+    r.rssi_ctl5 = *reinterpret_cast<const float *>(buffer + pos);
+    pos += sizeof(float);
+    r.rssi_ctl6 = *reinterpret_cast<const float *>(buffer + pos);
+    pos += sizeof(float);
+    r.rssi_ctl7 = *reinterpret_cast<const float *>(buffer + pos);
+    pos += sizeof(float);
+
+    if (pos != bufferLength)
+        throw std::runtime_error("RxSBasicSegment v6Parser cannot parse the segment with mismatched buffer length.");
 
     return r;
 };
@@ -338,6 +450,7 @@ std::map<uint16_t, std::function<RxSBasic(const uint8_t *, uint32_t)>> RxSBasicS
     map.emplace(0x3U, v3Parser);
     map.emplace(0x4U, v4Parser);
     map.emplace(0x5U, v5Parser);
+    map.emplace(0x6U, v6Parser);
     return map;
 }
 
@@ -348,7 +461,7 @@ std::string RxSBasic::toString() const {
             << ", control=" << controlFreq << ", CBW=" << cbw << ", format=" << PacketFormat2String(static_cast<PacketFormatEnum>(packetFormat))
             << ", Pkt_CBW=" << pkt_cbw << ", MCS=" << static_cast<uint16_t>(mcs) << ", numSTS=" << static_cast<uint16_t>(numSTS) << ", GI=" << GuardInterval2String(static_cast<GuardIntervalEnum>(guardInterval))
             << ", UsrIdx/NUsr=(" << static_cast<uint16_t>(userIndex) << "/" << static_cast<uint16_t>(numUser) << "), timestamp=" << tstamp << ", system_ns=" << systemTime
-            << ", NF=" << static_cast<int16_t>(noiseFloor) << ", RSS=" << static_cast<int16_t>(rssi) << "]";
+            << ", NF=" << noiseFloor << ", RSS=" << rssi << "]";
     return ss.str();
 }
 
@@ -356,16 +469,16 @@ std::vector<uint8_t> RxSBasic::toBuffer() const {
     return std::vector<uint8_t>{reinterpret_cast<const uint8_t *>(this), reinterpret_cast<const uint8_t *>(this) + sizeof(RxSBasic)};
 }
 
-RxSBasicSegment::RxSBasicSegment() : AbstractPicoScenesFrameSegment("RxSBasic", 0x5U) {}
+RxSBasicSegment::RxSBasicSegment() : AbstractPicoScenesFrameSegment("RxSBasic", 0x6U) {}
 
-RxSBasicSegment::RxSBasicSegment(const RxSBasic &rvBasic) : AbstractPicoScenesFrameSegment("RxSBasic", 0x5U), basic(rvBasic) {
+RxSBasicSegment::RxSBasicSegment(const RxSBasic &rvBasic) : AbstractPicoScenesFrameSegment("RxSBasic", 0x6U), basic(rvBasic) {
     setSegmentPayload(std::move(basic.toBuffer()));
 }
 
 RxSBasicSegment::RxSBasicSegment(const uint8_t *buffer, uint32_t bufferLength) : AbstractPicoScenesFrameSegment(buffer, bufferLength) {
     if (segmentName != "RxSBasic")
         throw std::runtime_error("RxSBasicSegment cannot parse the segment named " + segmentName + ".");
-    if (!versionedSolutionMap.contains(segmentVersionId)) {
+    if (versionedSolutionMap.find(segmentVersionId) == versionedSolutionMap.end()) {
         throw std::runtime_error("RxSBasicSegment cannot parse the segment with version v" + std::to_string(segmentVersionId) + ".");
     }
 

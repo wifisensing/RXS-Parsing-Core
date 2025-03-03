@@ -25,19 +25,19 @@ struct RxSBasic {
     uint8_t numRx;          /* number of Rx antenna */
     uint8_t numUser;
     uint8_t userIndex;
-    int8_t noiseFloor;   /* noise floor */
-    int8_t rssi;        /* rx frame RSSI */
+    float noiseFloor;   /* noise floor */
+    float rssi;        /* rx frame RSSI */
     union {
-        int8_t rssAntenna[8] __attribute__ ((__packed__));
+        float rssAntenna[8] __attribute__ ((__packed__));
         struct {
-            int8_t rssi_ctl0;   /* rx frame RSSI [ctl, chain 0] */
-            int8_t rssi_ctl1;   /* rx frame RSSI [ctl, chain 1] */
-            int8_t rssi_ctl2;   /* rx frame RSSI [ctl, chain 2] */
-            int8_t rssi_ctl3;   /* rx frame RSSI [ctl, chain 3] */
-            int8_t rssi_ctl4;   /* rx frame RSSI [ctl, chain 4] */
-            int8_t rssi_ctl5;   /* rx frame RSSI [ctl, chain 5] */
-            int8_t rssi_ctl6;   /* rx frame RSSI [ctl, chain 6] */
-            int8_t rssi_ctl7;   /* rx frame RSSI [ctl, chain 7] */
+            float rssi_ctl0;   /* rx frame RSSI [ctl, chain 0] */
+            float rssi_ctl1;   /* rx frame RSSI [ctl, chain 1] */
+            float rssi_ctl2;   /* rx frame RSSI [ctl, chain 2] */
+            float rssi_ctl3;   /* rx frame RSSI [ctl, chain 3] */
+            float rssi_ctl4;   /* rx frame RSSI [ctl, chain 4] */
+            float rssi_ctl5;   /* rx frame RSSI [ctl, chain 5] */
+            float rssi_ctl6;   /* rx frame RSSI [ctl, chain 6] */
+            float rssi_ctl7;   /* rx frame RSSI [ctl, chain 7] */
         };
     } __attribute__ ((__packed__));
 
