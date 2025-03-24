@@ -2,7 +2,6 @@
 // Created by Zhiping Jiang on 4/20/22.
 //
 
-#define RXS_PARSING_CORE_EXPORTS
 #include "CargoSegment.hxx"
 
 std::function<std::optional<std::vector<uint8_t>>(const uint8_t *, size_t)> CargoCompression::compressor;

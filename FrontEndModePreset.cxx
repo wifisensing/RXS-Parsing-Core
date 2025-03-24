@@ -2,7 +2,6 @@
 // Created by Zhiping Jiang on 11/27/22.
 //
 
-#define RXS_PARSING_CORE_EXPORTS
 #include "FrontEndModePreset.hxx"
 
 const std::shared_ptr<FrontEndModePreset> FrontEndModePreset::TX_CBW_320_EHTSU = std::shared_ptr<FrontEndModePreset>(new FrontEndModePreset("TX_CBW_320_EHTSU", PacketFormatEnum::PacketFormat_EHTSU, ChannelCodingEnum::LDPC, 320, 400, std::nullopt, std::nullopt, "Equivalent to \"--format ehtsu --coding ldpc --rate 400e6 --tx-resample-ratio 1.25 --cbw 320\""));
