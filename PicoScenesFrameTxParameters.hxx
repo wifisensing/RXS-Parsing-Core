@@ -43,10 +43,8 @@ struct PicoScenesFrameTxParameters {
     double txIQAmplitudeImbalance_dB{0};
     double txIQPhaseImbalance_rad{0};
     std::optional<double> fixedPowerScale{std::nullopt};
-    double hardwareSamplingRate{20e6};
     double samplingRateOffset{0};
     double carrierFrequencyOffset{0};
-    double resampleRatio{1.0};
     double simulateTxDistance{0};
     bool splitHighLow{false};
     uint8_t vhtGroupId{0};
@@ -68,12 +66,10 @@ struct PicoScenesFrameTxParameters {
 
     void applyPreset(const std::shared_ptr<FrontEndModePreset> &presetV) {
         preset = presetV;
-        if (preset->txSamplingRate && preset->txResampleRatio && preset->txCBW) {
-            hardwareSamplingRate = preset->txSamplingRate.value();
+        if (preset->txCBW) {
             cbw = static_cast<ChannelBandwidthEnum>(preset->txCBW.value());
             frameType = preset->format;
             coding = std::vector{preset->coding};
-            resampleRatio = preset->txResampleRatio.value();
             if (frameType == PacketFormatEnum::PacketFormat_HESU ||
                 frameType == PacketFormatEnum::PacketFormat_HEMU ||
                 frameType == PacketFormatEnum::PacketFormat_EHTSU ||

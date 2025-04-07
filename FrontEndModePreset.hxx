@@ -82,16 +82,12 @@ public:
     const PacketFormatEnum format{PacketFormatEnum::PacketFormat_Unknown};
     const ChannelCodingEnum coding{ChannelCodingEnum::BCC};
     const std::optional<double> txCBW{std::nullopt};
-    const std::optional<double> txSamplingRate{std::nullopt};
     const std::optional<double> rxCBW{std::nullopt};
-    const std::optional<double> rxSamplingRate{std::nullopt};
     const std::string description{};
-    const std::optional<double> txResampleRatio{std::nullopt};
-    const std::optional<double> rxResampleRatio{std::nullopt};
 
 private:
 
-    FrontEndModePreset(std::string presetName, PacketFormatEnum format, ChannelCodingEnum coding, const std::optional<double> &txCbw, const std::optional<double> &txSamplingRate, const std::optional<double> &rxCbw, const std::optional<double> &rxSamplingRate, std::string description);
+    FrontEndModePreset(std::string presetName, PacketFormatEnum format, ChannelCodingEnum coding, const std::optional<double> &txCbw, const std::optional<double> &rxCbw, std::string description);
 };
 
 
