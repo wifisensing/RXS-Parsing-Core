@@ -17,6 +17,7 @@
 #include <iomanip>
 #include <functional>
 #include <optional>
+#include <memory>
 #include "SignalMatrix.hxx"
 
 using ComplexData = std::complex<double>;
