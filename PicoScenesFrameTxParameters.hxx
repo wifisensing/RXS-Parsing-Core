@@ -45,6 +45,7 @@ struct PicoScenesFrameTxParameters {
     std::optional<double> fixedPowerScale{std::nullopt};
     double samplingRateOffset{0};
     double carrierFrequencyOffset{0};
+    double resampleRatio{1.0};
     double simulateTxDistance{0};
     bool splitHighLow{false};
     uint8_t vhtGroupId{0};
