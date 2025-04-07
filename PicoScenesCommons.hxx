@@ -16,8 +16,8 @@
 #include <bitset>
 #include <iomanip>
 #include <functional>
+#include <optional>
 #include "SignalMatrix.hxx"
-#include "SDRResamplingPreset.hxx"
 
 using ComplexData = std::complex<double>;
 using ComplexFloatData = std::complex<float>;

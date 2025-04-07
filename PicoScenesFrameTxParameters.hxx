@@ -7,7 +7,6 @@
 
 #include "PicoScenesCommons.hxx"
 #include "FrontEndModePreset.hxx"
-#include "SDRResamplingPreset.hxx"
 
 class TxPrecodingParameters {
 public:
