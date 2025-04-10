@@ -2,8 +2,8 @@
 // Created by Zhiping Jiang on 10/23/22.
 //
 
+#include "macros.hxx"
 #include "SDRExtraSegment.hxx"
-
 
 std::vector<uint8_t> SDRExtra::toBuffer() {
     return std::vector<uint8_t>{reinterpret_cast<uint8_t *>(this), reinterpret_cast<uint8_t *>(this) + sizeof(SDRExtra)};
@@ -24,28 +24,28 @@ std::ostream &operator<<(std::ostream &os, const SDRExtra &sdrExtra) {
     return os;
 }
 
-struct SDRExtraV1 {
+PACKED(struct SDRExtraV1 {
     int8_t scramblerInit;
     int64_t packetStartInternal;
     double lastTxTime;
-} __attribute__ ((__packed__));
+});
 
-struct SDRExtraV2 {
+PACKED(struct SDRExtraV2 {
     int8_t scramblerInit;
     int64_t packetStartInternal;
     double preciseRxTime;
     double lastTxTime;
-} __attribute__ ((__packed__));
+});
 
-struct SDRExtraV3 {
+PACKED(struct SDRExtraV3 {
     int8_t scramblerInit;
     int64_t packetStartInternal;
     int64_t hardwareRxSamplingIndex;
     double preciseRxTime;
     double lastTxTime;
-} __attribute__ ((__packed__));
+});
 
-struct SDRExtraV4 {
+PACKED(struct SDRExtraV4 {
     int8_t scramblerInit{0};
     int64_t packetStartInternal{0};
     int64_t hardwareRxSamplingIndex{0};
@@ -53,9 +53,9 @@ struct SDRExtraV4 {
     double lastTxTime{0};
     double signalInputSystemTime{0};
     double signalDecodeSystemTime{0};
-} __attribute__ ((__packed__));
+});
 
-struct SDRExtraV5 {
+PACKED(struct SDRExtraV5 {
     int8_t scramblerInit{0};
     int64_t packetStartInternal{0};
     int64_t hardwareRxSamplingIndex{0};
@@ -64,9 +64,9 @@ struct SDRExtraV5 {
     double signalInputSystemTime{0};
     double signalDecodeSystemTime{0};
     double sigEVM{0};
-} __attribute__ ((__packed__));
+});
 
-struct SDRExtraV6 {
+PACKED(struct SDRExtraV6 {
     int8_t scramblerInit{0};
     int64_t packetStartInternal{0};
     int64_t hardwareRxSamplingIndex{0};
@@ -77,7 +77,7 @@ struct SDRExtraV6 {
     double sigEVM{0};
     double initialCFO{0};
     double residualCFO{0};
-} __attribute__ ((__packed__));
+});
 
 static auto v1Parser = [](const uint8_t *buffer, const uint32_t bufferLength) -> SDRExtra {
     uint32_t pos = 0;

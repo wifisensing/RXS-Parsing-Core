@@ -7,6 +7,7 @@
 
 #include "AbstractPicoScenesFrameSegment.hxx"
 #include "PicoScenesCommons.hxx"
+#include "RxSParsingCoreDLLImport.hxx"
 
 class CargoCompression {
 public:
@@ -32,8 +33,8 @@ public:
     }
 
 private:
-    static std::function<std::optional<std::vector<uint8_t>>(const uint8_t *, size_t)> compressor;
-    static std::function<std::optional<std::vector<uint8_t>>(const uint8_t *, size_t)> decompressor;
+    RXS_PARSING_CORE_API static std::function<std::optional<std::vector<uint8_t>>(const uint8_t *, size_t)> compressor;
+    RXS_PARSING_CORE_API static std::function<std::optional<std::vector<uint8_t>>(const uint8_t *, size_t)> decompressor;
 };
 
 class PayloadCargo {

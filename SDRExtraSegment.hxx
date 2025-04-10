@@ -6,10 +6,11 @@
 #define PICOSCENES_PLATFORM_SDREXTRASEGMENT_HXX
 
 #include <unordered_map>
+#include "macros.hxx"
 #include "AbstractPicoScenesFrameSegment.hxx"
 #include "PicoScenesCommons.hxx"
 
-struct SDRExtra {
+PACKED(struct SDRExtra {
     int8_t scramblerInit{0};
     int64_t packetStartInternal{0};
     int64_t hardwareRxSamplingIndex{0};
@@ -29,7 +30,7 @@ struct SDRExtra {
 
     std::vector<uint8_t> toBuffer();
 
-} __attribute__ ((__packed__));
+});
 
 std::ostream &operator<<(std::ostream &os, const SDRExtra &sdrExtra);
 

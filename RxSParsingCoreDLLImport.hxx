@@ -1,0 +1,20 @@
+#ifndef PICOSCENES_PLATFORM_RXSPARSINGCOREDLLIMPORT_HXX
+#define PICOSCENES_PLATFORM_RXSPARSINGCOREDLLIMPORT_HXX
+
+#undef DLL_IMPORT
+#undef DLL_EXPORT
+#ifdef _WIN32
+#define DLL_EXPORT __declspec(dllexport)
+#define DLL_IMPORT __declspec(dllimport)
+#else
+#define DLL_EXPORT __attribute__((visibility("default")))
+#define DLL_IMPORT
+#endif
+
+#ifdef RXS_PARSING_CORE_EXPORTS
+#define RXS_PARSING_CORE_API DLL_EXPORT
+#else
+#define RXS_PARSING_CORE_API DLL_IMPORT
+#endif
+
+#endif // PICOSCENES_PLATFORM_RXSPARSINGCOREDLLIMPORT_HXX

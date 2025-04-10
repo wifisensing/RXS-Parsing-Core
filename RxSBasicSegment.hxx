@@ -5,10 +5,11 @@
 #ifndef PICOSCENES_PLATFORM_RXSBASICSEGMENT_HXX
 #define PICOSCENES_PLATFORM_RXSBASICSEGMENT_HXX
 
+#include "macros.hxx"
 #include "AbstractPicoScenesFrameSegment.hxx"
 #include "PicoScenesCommons.hxx"
 
-struct RxSBasic {
+PACKED(struct RxSBasic {
     uint16_t deviceType;    /* device type code */
     uint64_t tstamp;        /* h/w assigned timestamp */
     uint64_t systemTime;    /* system nanosecond time via ktime_get_real() */
@@ -27,8 +28,8 @@ struct RxSBasic {
     uint8_t userIndex;
     float noiseFloor;   /* noise floor */
     float rssi;        /* rx frame RSSI */
-    union {
-        float rssAntenna[8] __attribute__ ((__packed__));
+    PACKED(union {
+        PACKED(float rssAntenna[8]);
         struct {
             float rssi_ctl0;   /* rx frame RSSI [ctl, chain 0] */
             float rssi_ctl1;   /* rx frame RSSI [ctl, chain 1] */
@@ -39,13 +40,13 @@ struct RxSBasic {
             float rssi_ctl6;   /* rx frame RSSI [ctl, chain 6] */
             float rssi_ctl7;   /* rx frame RSSI [ctl, chain 7] */
         };
-    } __attribute__ ((__packed__));
+    });
 
     [[nodiscard]] std::string toString() const;
 
     std::vector<uint8_t> toBuffer() const;
 
-} __attribute__ ((__packed__));
+});
 
 std::ostream &operator<<(std::ostream &os, const RxSBasic &rxSBasic);
 

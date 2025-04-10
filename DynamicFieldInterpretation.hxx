@@ -11,6 +11,7 @@
 #include <optional>
 #include <string>
 #include <algorithm>
+#include <stdexcept>
 
 class DynamicContentTypeDictionary;
 

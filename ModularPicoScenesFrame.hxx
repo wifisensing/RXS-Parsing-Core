@@ -5,6 +5,7 @@
 #ifndef PICOSCENES_PLATFORM_MODULARPICOSCENESFRAME_HXX
 #define PICOSCENES_PLATFORM_MODULARPICOSCENESFRAME_HXX
 
+#include "macros.hxx"
 #include "PicoScenesCommons.hxx"
 #include "PicoScenesFrameTxParameters.hxx"
 #include "AbstractPicoScenesFrameSegment.hxx"
@@ -17,7 +18,7 @@
 #include "PayloadSegment.hxx"
 #include "CargoSegment.hxx"
 
-struct ieee80211_mac_frame_header_frame_control_field {
+PACKED(struct ieee80211_mac_frame_header_frame_control_field {
     uint16_t version: 2,
             type: 2,
             subtype: 4,
@@ -35,14 +36,14 @@ struct ieee80211_mac_frame_header_frame_control_field {
 
     [[nodiscard]] std::string getTypeString() const;
 
-} __attribute__ ((__packed__));
+});
 
 std::ostream &operator<<(std::ostream &os, const ieee80211_mac_frame_header_frame_control_field &fc);
 
 /**
  * @brief MPDU header. This structure is verified in Wireshark.
  */
-struct ieee80211_mac_frame_header {
+PACKED(struct ieee80211_mac_frame_header {
     ieee80211_mac_frame_header_frame_control_field fc;
     uint16_t dur = 0;
     std::array<uint8_t, 6> addr1{0x00, 0x16, 0xea, 0x12, 0x34, 0x56};
@@ -57,11 +58,11 @@ struct ieee80211_mac_frame_header {
 
     [[nodiscard]] std::string toString() const;
 
-} __attribute__ ((__packed__));
+});
 
 std::ostream &operator<<(std::ostream &os, const ieee80211_mac_frame_header &header);
 
-struct PicoScenesFrameHeader {
+PACKED(struct PicoScenesFrameHeader {
     [[maybe_unused]] uint32_t magicValue = 0x20150315;
     uint32_t version = 0x20201110;
     PicoScenesDeviceType deviceType = PicoScenesDeviceType::QCA9300;
@@ -74,11 +75,11 @@ struct PicoScenesFrameHeader {
 
     [[nodiscard]] std::string toString() const;
 
-} __attribute__ ((__packed__));
+});
 
 std::ostream &operator<<(std::ostream &os, const PicoScenesFrameHeader &frameHeader);
 
-class ModularPicoScenesRxFrameHeader {
+PACKED(class ModularPicoScenesRxFrameHeader {
 public:
     uint32_t frameLength = 0;
     uint32_t magicWord = 0x20150315;
@@ -94,7 +95,7 @@ public:
         return *this;
     }
 
-} __attribute__ ((__packed__));
+});
 
 class ModularPicoScenesRxFrame {
 public:
