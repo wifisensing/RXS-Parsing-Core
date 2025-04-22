@@ -388,6 +388,7 @@ U8Vector ModularPicoScenesRxFrame::toBuffer() const {
     reservedLength += sdrExtraSegment ? sdrExtraSegment->getSyncedRawBuffer().size() : 0;
     reservedLength += legacyCSISegment ? legacyCSISegment->getSyncedRawBuffer().size() : 0;
     reservedLength += basebandSignalSegment ? basebandSignalSegment->getSyncedRawBuffer().size() : 0;
+    reservedLength += eqDataSymbolsSegment ? eqDataSymbolsSegment->getSyncedRawBuffer().size() : 0;
     for (const auto &[segName, segment]: rxUnknownSegments) {
         reservedLength += segment->getSyncedRawBuffer().size();
     }
