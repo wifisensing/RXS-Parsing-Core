@@ -21,9 +21,9 @@ public:
 
     EQDataSymbolsSegment(const uint8_t *buffer, uint32_t bufferLength);
 
-    EQDataSymbolsSegment(const SignalMatrix<std::complex<float>> & symbolsV, uin8_t MCS);
+    EQDataSymbolsSegment(const SignalMatrix<std::complex<float>> & symbolsV, uint8_t MCS);
 
-    EQDataSymbolsSegment(SignalMatrix<std::complex<float>> && symbolsV, uin8_t MCS);
+    EQDataSymbolsSegment(SignalMatrix<std::complex<float>> && symbolsV, uint8_t MCS);
 
     [[nodiscard]] const SignalMatrix<std::complex<float>> &getSymbols() const;
 
@@ -31,18 +31,18 @@ public:
 
     void setSymbols(SignalMatrix<std::complex<float>> &&symbolsV);
 
-    void setMCS(uin8_t MCS);
+    void setMCS(uint8_t MCS);
 
     [[nodiscard]] const std::vector<std::complex<float>> &getReferenceConstellationMap() const;
 
-    [[nodiscard]] uin8_t getMCS() const;
+    [[nodiscard]] uint8_t getMCS() const;
 
     [[nodiscard]] std::string toString() const override;
 
 private:
     SignalMatrix<std::complex<float>> symbols;
     
-    uin8_t MCS{0};
+    uint8_t MCS{0};
 
     mutable std::vector<std::complex<float>> referenceConstellationMap;
 };

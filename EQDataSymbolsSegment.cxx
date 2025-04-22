@@ -2,8 +2,8 @@
 #include <cmath>
 
 // Function to initialize the MCS to constellation map
-static std::unordered_map<uin8_t, std::vector<std::complex<float>>> initializeConstellationMap() {
-    std::unordered_map<uin8_t, std::vector<std::complex<float>>> map;
+static std::unordered_map<uint8_t, std::vector<std::complex<float>>> initializeConstellationMap() {
+    std::unordered_map<uint8_t, std::vector<std::complex<float>>> map;
     
     // BPSK (MCS 0)
     map[0] = {
@@ -13,7 +13,7 @@ static std::unordered_map<uin8_t, std::vector<std::complex<float>>> initializeCo
     
     // QPSK (MCS 1)
     map[1] = {
-        std::complex<float>(-1.0f/sqrt(2.0f), -1.0f/sqrt(2.0f)),
+        std::complex<float>(-1.0f/sqrtf(2.0f), -1.0f/sqrt(2.0f)),
         std::complex<float>(-1.0f/sqrt(2.0f), 1.0f/sqrt(2.0f)),
         std::complex<float>(1.0f/sqrt(2.0f), -1.0f/sqrt(2.0f)),
         std::complex<float>(1.0f/sqrt(2.0f), 1.0f/sqrt(2.0f))
@@ -81,20 +81,20 @@ static std::unordered_map<uin8_t, std::vector<std::complex<float>>> initializeCo
 }
 
 // Static map to store MCS to reference constellation map pairs
-static const std::unordered_map<uin8_t, std::vector<std::complex<float>>> MCS_TO_CONSTELLATION_MAP = initializeConstellationMap();
+static const std::unordered_map<uint8_t, std::vector<std::complex<float>>> MCS_TO_CONSTELLATION_MAP = initializeConstellationMap();
 
-static auto v1Parser = [](const uint8_t *buffer, const uint32_t bufferLength, void *symbols, uin8_t &MCS) {
+static auto v1Parser = [](const uint8_t *buffer, const uint32_t bufferLength, void *symbols, uint8_t &MCS) {
     MCS = buffer[0];
     *static_cast<SignalMatrix<std::complex<float>> *>(symbols) = SignalMatrix<std::complex<float>>::fromBuffer(buffer + 1, buffer + bufferLength - 1, SignalMatrixStorageMajority::ColumnMajor);
 };
 
 EQDataSymbolsSegment::EQDataSymbolsSegment() : AbstractPicoScenesFrameSegment("EQDataSymbolsSegment", 0x1U) {}
 
-EQDataSymbolsSegment::EQDataSymbolsSegment(SignalMatrix<std::complex<float>>&& symbolsV, uin8_t MCS): AbstractPicoScenesFrameSegment("EQDataSymbolsSegment", 0x1U), symbols(std::move(symbolsV)), MCS(MCS) {
+EQDataSymbolsSegment::EQDataSymbolsSegment(SignalMatrix<std::complex<float>>&& symbolsV, uint8_t MCS): AbstractPicoScenesFrameSegment("EQDataSymbolsSegment", 0x1U), symbols(std::move(symbolsV)), MCS(MCS) {
     setSegmentPayload(std::move(symbols.toBuffer()));
 }
 
-EQDataSymbolsSegment::EQDataSymbolsSegment(const SignalMatrix<std::complex<float>>& symbolsV, uin8_t MCS): AbstractPicoScenesFrameSegment("EQDataSymbolsSegment", 0x1U), symbols(symbolsV), MCS(MCS) {
+EQDataSymbolsSegment::EQDataSymbolsSegment(const SignalMatrix<std::complex<float>>& symbolsV, uint8_t MCS): AbstractPicoScenesFrameSegment("EQDataSymbolsSegment", 0x1U), symbols(symbolsV), MCS(MCS) {
     setSegmentPayload(std::move(symbols.toBuffer()));
 }
 
@@ -122,12 +122,12 @@ void EQDataSymbolsSegment::setSymbols(SignalMatrix<std::complex<float>> &&symbol
     setSegmentPayload(std::move(symbols.toBuffer()));
 }
 
-void EQDataSymbolsSegment::setMCS(uin8_t MCS) {
+void EQDataSymbolsSegment::setMCS(uint8_t MCS) {
     this->MCS = MCS;
     setSegmentPayload(std::move(symbols.toBuffer()));
 }
 
-uin8_t EQDataSymbolsSegment::getMCS() const {
+uint8_t EQDataSymbolsSegment::getMCS() const {
     return MCS;
 }
 
