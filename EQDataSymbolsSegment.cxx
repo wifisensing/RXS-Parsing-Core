@@ -133,7 +133,7 @@ const std::vector<std::complex<float>> &EQDataSymbolsSegment::getReferenceConste
 
 std::string EQDataSymbolsSegment::toString() const {
     std::stringstream ss;
-    ss << segmentName << ":[MCS=" << static_cast<int>(MCS) << ", (float) " << std::to_string(symbols.dimensions[0]) << "x" << std::to_string(symbols.dimensions[1]);
+    ss << "EqDataSyms:[MCS=" << static_cast<int>(MCS) << ", (float) " << std::to_string(symbols.dimensions[0]) << "x" << std::to_string(symbols.dimensions[1]);
     if (symbols.dimensions.size() > 2) {
         ss << "x" << std::to_string(symbols.dimensions[2]);
     }
