@@ -27,11 +27,7 @@ public:
 
     [[nodiscard]] const SignalMatrix<std::complex<float>> &getSymbols() const;
 
-    void setSymbols(const SignalMatrix<std::complex<float>> &symbolsV);
-
-    void setSymbols(SignalMatrix<std::complex<float>> &&symbolsV);
-
-    void setMCS(uint8_t MCS);
+    void setSymbolsAndMCS(SignalMatrix<std::complex<float>> &&symbolsV, uint8_t MCS);
 
     [[nodiscard]] const std::vector<std::complex<float>> &getReferenceConstellationMap() const;
 
@@ -43,8 +39,6 @@ private:
     SignalMatrix<std::complex<float>> symbols;
     
     uint8_t MCS{0};
-
-    mutable std::vector<std::complex<float>> referenceConstellationMap;
 };
 
 #endif //PICOSCENES_PLATFORM_EQDATASYMBOLSSEGMENT_HXX 

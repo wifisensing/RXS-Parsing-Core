@@ -17,6 +17,7 @@
 #include "BasebandSignalSegment.hxx"
 #include "PayloadSegment.hxx"
 #include "CargoSegment.hxx"
+#include "EQDataSymbolsSegment.hxx"
 
 PACKED(struct ieee80211_mac_frame_header_frame_control_field {
     uint16_t version: 2,
@@ -108,6 +109,7 @@ public:
     std::shared_ptr<SDRExtraSegment> sdrExtraSegment;
     std::shared_ptr<CSISegment> legacyCSISegment;
     std::shared_ptr<BasebandSignalSegment> basebandSignalSegment;
+    std::shared_ptr<EQDataSymbolsSegment> eqDataSymbolsSegment;
     std::map<std::string, std::shared_ptr<AbstractPicoScenesFrameSegment>> rxUnknownSegments;
 
     // Tx side MPDU header and MPDUs

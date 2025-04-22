@@ -219,9 +219,8 @@ auto ModularPicoScenesRxFrame::fromBuffer(const uint8_t *inputBuffer, const uint
                 }
             } else if (segmentName == "BasebandSignal") {
                 frame.basebandSignalSegment = std::make_shared<BasebandSignalSegment>(buffer + pos, segmentLength + 4);
-            } else if (segmentName == "PreEQSymbols" || segmentName == "PilotCSI" || segmentName == "RawCSI" || segmentName == "RawLegacyCSI") {
-                // Do nothing for compatibility
-//                frame.preEQSymbolsSegment = PreEQSymbolsSegment(buffer + pos, segmentLength + 4);
+            } else if (segmentName == "EQDataSymbols") {
+                frame.eqDataSymbolsSegment = std::make_shared<EQDataSymbolsSegment>(buffer + pos, segmentLength + 4);
             } else {
                 frame.rxUnknownSegments.emplace(segmentName, std::make_shared<AbstractPicoScenesFrameSegment>(buffer + pos, segmentLength + 4));
             }
@@ -283,6 +282,8 @@ std::string ModularPicoScenesRxFrame::toString() const {
         ss << ", " << *legacyCSISegment;
     if (basebandSignalSegment)
         ss << ", " << *basebandSignalSegment;
+    if (eqDataSymbolsSegment)
+        ss << ", " << *eqDataSymbolsSegment;
     if (!rxUnknownSegments.empty()) {
         std::stringstream segss;
         segss << "RxSegments:(";
@@ -432,6 +433,12 @@ U8Vector ModularPicoScenesRxFrame::toBuffer() const {
     if (basebandSignalSegment) {
         std::copy(basebandSignalSegment->getSyncedRawBuffer().cbegin(), basebandSignalSegment->getSyncedRawBuffer().cend(), rxSegmentBuffer.data() + currentOffset);
         currentOffset += basebandSignalSegment->getSyncedRawBuffer().size();
+        modularFrameHeader.numRxSegments++;
+    }
+
+    if (eqDataSymbolsSegment) {
+        std::copy(eqDataSymbolsSegment->getSyncedRawBuffer().cbegin(), eqDataSymbolsSegment->getSyncedRawBuffer().cend(), rxSegmentBuffer.data() + currentOffset);
+        currentOffset += eqDataSymbolsSegment->getSyncedRawBuffer().size();
         modularFrameHeader.numRxSegments++;
     }
 
