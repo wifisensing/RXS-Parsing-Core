@@ -15,30 +15,40 @@
  * received symbols to assess signal quality and distortion.
  */
 
+
+class EQDataSymbols {
+public:
+    [[nodiscard]] const SignalMatrix<std::complex<float>> &getSymbols() const;
+
+    [[nodiscard]] uint8_t getMCS() const;
+
+    [[nodiscard]] const std::vector<std::complex<float>> &getReferenceConstellationMap() const;
+
+    std::vector<uint8_t> toBuffer() const;
+
+    SignalMatrix<std::complex<float>> symbols;
+
+    uint8_t MCS{0};
+};
+
 class EQDataSymbolsSegment final: public AbstractPicoScenesFrameSegment {
 public:
     EQDataSymbolsSegment();
 
     EQDataSymbolsSegment(const uint8_t *buffer, uint32_t bufferLength);
 
-    EQDataSymbolsSegment(const SignalMatrix<std::complex<float>> & symbolsV, uint8_t MCS);
+    EQDataSymbolsSegment(const EQDataSymbols &symbols);
 
-    EQDataSymbolsSegment(SignalMatrix<std::complex<float>> && symbolsV, uint8_t MCS);
+    EQDataSymbolsSegment(EQDataSymbols &&symbols);
 
-    [[nodiscard]] const SignalMatrix<std::complex<float>> &getSymbols() const;
+    const EQDataSymbols &getSymbols() const;
 
-    void setSymbolsAndMCS(SignalMatrix<std::complex<float>> &&symbolsV, uint8_t MCS);
-
-    [[nodiscard]] const std::vector<std::complex<float>> &getReferenceConstellationMap() const;
-
-    [[nodiscard]] uint8_t getMCS() const;
+    EQDataSymbols &getSymbols();
 
     [[nodiscard]] std::string toString() const override;
 
 private:
-    SignalMatrix<std::complex<float>> symbols;
-    
-    uint8_t MCS{0};
+    EQDataSymbols symbols;
 };
 
 #endif //PICOSCENES_PLATFORM_EQDATASYMBOLSSEGMENT_HXX 

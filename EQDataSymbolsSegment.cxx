@@ -80,23 +80,36 @@ static std::unordered_map<uint8_t, std::vector<std::complex<float>>> initializeC
 // Static map to store MCS to reference constellation map pairs
 static const std::unordered_map<uint8_t, std::vector<std::complex<float>>> MCS_TO_CONSTELLATION_MAP = initializeConstellationMap();
 
-static auto v1Parser = [](const uint8_t *buffer, const uint32_t bufferLength, void *symbols, uint8_t &MCS) {
-    MCS = buffer[0];
-    *static_cast<SignalMatrix<std::complex<float>> *>(symbols) = SignalMatrix<std::complex<float>>::fromBuffer(buffer + 1, buffer + bufferLength - 1, SignalMatrixStorageMajority::ColumnMajor);
+std::vector<uint8_t> EQDataSymbols::toBuffer() const {
+    std::vector<uint8_t> buffer;
+    buffer.push_back(MCS);
+    auto symbolBuffer = symbols.toBuffer();
+    std::copy(symbolBuffer.cbegin(), symbolBuffer.cend(), std::back_inserter(buffer));
+    return buffer;
+}
+
+const SignalMatrix<std::complex<float>> &EQDataSymbols::getSymbols() const {
+    return symbols;
+}
+
+uint8_t EQDataSymbols::getMCS() const {
+    return MCS;
+}
+
+const std::vector<std::complex<float>> &EQDataSymbols::getReferenceConstellationMap() const {
+    return MCS_TO_CONSTELLATION_MAP.at(MCS);
+}
+
+static EQDataSymbols v1Parser(const uint8_t *buffer, const uint32_t bufferLength) {
+    const uint8_t MCS = buffer[0];
+    auto symbols = SignalMatrix<std::complex<float>>::fromBuffer(buffer + 1, buffer + bufferLength - 1, SignalMatrixStorageMajority::ColumnMajor);
+    return EQDataSymbols{
+        .symbols = std::move(symbols),
+        .MCS = MCS};
 };
 
 EQDataSymbolsSegment::EQDataSymbolsSegment() :
     AbstractPicoScenesFrameSegment("EQDataSymbolsSegment", 0x1U) {}
-
-EQDataSymbolsSegment::EQDataSymbolsSegment(SignalMatrix<std::complex<float>> &&symbolsV, uint8_t MCS) :
-    AbstractPicoScenesFrameSegment("EQDataSymbolsSegment", 0x1U), symbols(std::move(symbolsV)), MCS(MCS) {
-    setSegmentPayload(std::move(symbols.toBuffer()));
-}
-
-EQDataSymbolsSegment::EQDataSymbolsSegment(const SignalMatrix<std::complex<float>> &symbolsV, uint8_t MCS) :
-    AbstractPicoScenesFrameSegment("EQDataSymbolsSegment", 0x1U), symbols(symbolsV), MCS(MCS) {
-    setSegmentPayload(std::move(symbols.toBuffer()));
-}
 
 EQDataSymbolsSegment::EQDataSymbolsSegment(const uint8_t *buffer, const uint32_t bufferLength) :
     AbstractPicoScenesFrameSegment(buffer, bufferLength) {
@@ -106,36 +119,32 @@ EQDataSymbolsSegment::EQDataSymbolsSegment(const uint8_t *buffer, const uint32_t
     if (segmentVersionId != 1)
         throw std::runtime_error("EQDataSymbolsSegment cannot parse the segment with version v" + std::to_string(segmentVersionId) + ".");
 
-    v1Parser(segmentPayload.data(), segmentPayload.size(), (void *)&symbols, MCS);
+    symbols = v1Parser(segmentPayload.data(), segmentPayload.size());
 }
 
-[[maybe_unused]] const SignalMatrix<std::complex<float>> &EQDataSymbolsSegment::getSymbols() const {
-    return symbols;
-}
-
-void EQDataSymbolsSegment::setSymbolsAndMCS(SignalMatrix<std::complex<float>> &&symbolsV, uint8_t MCS) {
-    symbols = std::move(symbolsV);
-    if (!MCS_TO_CONSTELLATION_MAP.contains(MCS))
-        throw std::runtime_error("Invalid MCS value: " + std::to_string(MCS));
-    this->MCS = MCS;
+EQDataSymbolsSegment::EQDataSymbolsSegment(const EQDataSymbols &symbols) :
+    AbstractPicoScenesFrameSegment("EQDataSymbolsSegment", 0x1U), symbols(symbols) {
     setSegmentPayload(std::move(symbols.toBuffer()));
 }
 
-uint8_t EQDataSymbolsSegment::getMCS() const {
-    return MCS;
+EQDataSymbolsSegment::EQDataSymbolsSegment(EQDataSymbols &&symbols) :
+    AbstractPicoScenesFrameSegment("EQDataSymbolsSegment", 0x1U), symbols(std::move(symbols)) {
+    setSegmentPayload(std::move(symbols.toBuffer()));
 }
 
-const std::vector<std::complex<float>> &EQDataSymbolsSegment::getReferenceConstellationMap() const {
-    if (!MCS_TO_CONSTELLATION_MAP.contains(MCS))
-        throw std::runtime_error("Invalid MCS value: " + std::to_string(MCS));
-    return MCS_TO_CONSTELLATION_MAP.at(MCS);
+const EQDataSymbols &EQDataSymbolsSegment::getSymbols() const {
+    return symbols;
+}
+
+EQDataSymbols &EQDataSymbolsSegment::getSymbols() {
+    return symbols;
 }
 
 std::string EQDataSymbolsSegment::toString() const {
     std::stringstream ss;
-    ss << "EqDataSyms:[MCS=" << static_cast<int>(MCS) << ", (float) " << std::to_string(symbols.dimensions[0]) << "x" << std::to_string(symbols.dimensions[1]);
-    if (symbols.dimensions.size() > 2) {
-        ss << "x" << std::to_string(symbols.dimensions[2]);
+    ss << "EqDataSyms:[MCS=" << static_cast<int>(symbols.getMCS()) << ", (float) " << std::to_string(symbols.getSymbols().dimensions[0]) << "x" << std::to_string(symbols.getSymbols().dimensions[1]);
+    if (symbols.getSymbols().dimensions.size() > 2) {
+        ss << "x" << std::to_string(symbols.getSymbols().dimensions[2]);
     }
     ss << "]";
     return ss.str();
