@@ -122,7 +122,7 @@ PACKED(struct RxsBasicContentV5 {
 });
 
 // compared to V5, change RSSI values from int8_t to float for increased accuracy
-struct RxsBasicContentV6 {
+PACKED(struct RxsBasicContentV6 {
     uint16_t deviceType;    /* device type code */
     uint64_t tstamp;        /* h/w assigned timestamp */
     uint64_t systemTime;    /* system nanosecond time via ktime_get_real() */
@@ -149,7 +149,7 @@ struct RxsBasicContentV6 {
     float rssi_ctl5;   /* rx frame RSSI [ctl, chain 5] */
     float rssi_ctl6;   /* rx frame RSSI [ctl, chain 6] */
     float rssi_ctl7;   /* rx frame RSSI [ctl, chain 7] */
-};
+});
 
 static auto v1Parser = [](const uint8_t *buffer, const uint32_t bufferLength) -> RxSBasic {
     uint32_t pos = 0;
