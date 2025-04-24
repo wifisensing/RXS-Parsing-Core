@@ -8,63 +8,77 @@
 #include "PicoScenesCommons.hxx"
 #include "FrontEndModePreset.hxx"
 
+/**
+ * @brief Parameters for transmit precoding operations
+ */
 class TxPrecodingParameters {
 public:
-    SignalMatrix<> userSpecifiedSpatialMappingMatrix;
-
-    double simulateTxDistance{0};
-
-    SignalMatrix<> rxCSI4TxBeamforming; /// N_{sc}-by-N_{tx_sts}-by-N_{rx}
-    uint8_t txNumSTS4TxBeamforming{1};
-
-    std::vector<std::array<double, 3>> antennaPositions;
-    double txSteeringAngles4PhasedArray{0};
-    double carrierFrequency{0};
+   SignalMatrix<> userSpecifiedSpatialMappingMatrix;  ///< User-defined spatial mapping matrix
+    double simulateTxDistance{0};                      ///< Simulated transmission distance
+    SignalMatrix<> rxCSI4TxBeamforming;               ///< CSI matrix for transmit beamforming (N_{sc}-by-N_{tx_sts}-by-N_{rx})
+    uint8_t txNumSTS4TxBeamforming{1};                ///< Number of spatial streams for transmit beamforming
+    std::vector<std::array<double, 3>> antennaPositions; ///< 3D positions of antennas
+    double txSteeringAngles4PhasedArray{0};           ///< Steering angles for phased array
+    double carrierFrequency{0};                       ///< Carrier frequency
 };
 
+/**
+ * @brief Frame transmission parameters for PicoScenes
+ * @details Contains all parameters needed to configure frame transmission,
+ *          including PHY layer settings and advanced features
+ */
 struct PicoScenesFrameTxParameters {
-    std::shared_ptr<FrontEndModePreset> preset{FrontEndModePreset::DEFAULT};
-    bool NDPFrame{false};
-    PacketFormatEnum frameType{PacketFormatEnum::PacketFormat_HT};
-    std::vector<uint8_t> mcs{0};
-    std::vector<uint8_t> numSTS{1};
-    double numAntenna{1};
-    uint16_t txcm{1};
-    ChannelBandwidthEnum cbw{ChannelBandwidthEnum::CBW_20};
-    GuardIntervalEnum guardInterval{GuardIntervalEnum::GI_800};
-    std::vector<ChannelCodingEnum> coding{ChannelCodingEnum::BCC};
-    bool preferAMPDU{false};
-    uint8_t numExtraSounding{0};
-    bool forceSounding{true};
-    double prefixPaddingTime{8e-6};
-    double inBasebandPostfixPaddingTime{4e-6};
-    double postfixPaddingTime{0};
-    uint8_t scramblerState{0x27};
-    double txIQAmplitudeImbalance_dB{0};
-    double txIQPhaseImbalance_rad{0};
-    std::optional<double> fixedPowerScale{std::nullopt};
-    double samplingRateOffset{0};
-    double carrierFrequencyOffset{0};
-    double resampleRatio{1.0};
-    double simulateTxDistance{0};
-    bool splitHighLow{false};
-    uint8_t vhtGroupId{0};
-    std::vector<uint8_t> heAllocationIndex{0};
-    bool txHEExtendedRange{false};
-    bool heHighDoppler{false};
-    uint8_t heMidamblePeriodicity{10};
-    uint8_t heLTFType{4};
-    bool hePreHESpatialMapping{false};
-    bool ehtDupMode{false};
-    uint8_t ehtLTFType{4};
-    std::optional<TxPrecodingParameters> precodingParameters = std::nullopt;
+   std::shared_ptr<FrontEndModePreset> preset{FrontEndModePreset::DEFAULT}; ///< Frontend mode preset
+    bool NDPFrame{false};                             ///< Null Data Packet flag
+    PacketFormatEnum frameType{PacketFormatEnum::PacketFormat_HT}; ///< Frame format type
+    std::vector<uint8_t> mcs{0};                     ///< Modulation and Coding Scheme
+    std::vector<uint8_t> numSTS{1};                  ///< Number of Space-Time Streams
+    double numAntenna{1};                            ///< Number of antennas
+    uint16_t txcm{1};                                ///< Transmit chain mask
+    ChannelBandwidthEnum cbw{ChannelBandwidthEnum::CBW_20}; ///< Channel bandwidth
+    GuardIntervalEnum guardInterval{GuardIntervalEnum::GI_800}; ///< Guard interval
+    std::vector<ChannelCodingEnum> coding{ChannelCodingEnum::BCC}; ///< Channel coding scheme
+    bool preferAMPDU{false};                         ///< Prefer A-MPDU aggregation
+    uint8_t numExtraSounding{0};                     ///< Number of extra sounding symbols
+    bool forceSounding{true};                        ///< Force sounding
+    double prefixPaddingTime{8e-6};                  ///< Prefix padding time in seconds
+    double inBasebandPostfixPaddingTime{4e-6};       ///< In-baseband postfix padding time
+    double postfixPaddingTime{0};                    ///< Postfix padding time
+    uint8_t scramblerState{0x27};                    ///< Initial scrambler state
+    double txIQAmplitudeImbalance_dB{0};            ///< TX I/Q amplitude imbalance in dB
+    double txIQPhaseImbalance_rad{0};               ///< TX I/Q phase imbalance in radians
+    std::optional<double> fixedPowerScale{std::nullopt}; ///< Fixed power scaling factor
+    double samplingRateOffset{0};                    ///< Sampling rate offset
+    double carrierFrequencyOffset{0};                ///< Carrier frequency offset
+    double resampleRatio{1.0};                       ///< Resampling ratio
+    double simulateTxDistance{0};                    ///< Simulated transmission distance
+    bool splitHighLow{false};                        ///< Split high/low frequency components
+    uint8_t vhtGroupId{0};                          ///< VHT group ID
+    std::vector<uint8_t> heAllocationIndex{0};       ///< HE resource unit allocation index
+    bool txHEExtendedRange{false};                   ///< HE extended range mode
+    bool heHighDoppler{false};                       ///< HE high Doppler mode
+    uint8_t heMidamblePeriodicity{10};              ///< HE midamble periodicity
+    uint8_t heLTFType{4};                           ///< HE LTF type
+    bool hePreHESpatialMapping{false};               ///< Pre-HE spatial mapping
+    bool ehtDupMode{false};                         ///< EHT duplicate mode
+    uint8_t ehtLTFType{4};                          ///< EHT LTF type
+    std::optional<TxPrecodingParameters> precodingParameters = std::nullopt; ///< Precoding parameters
 
+    /**
+     * @brief Apply preset configuration by name
+     * @param presetName Name of the preset to apply
+     * @throw std::invalid_argument if preset name is invalid
+     */
     void applyPreset(const std::string &presetName) {
         if (!FrontEndModePreset::getPresetMap().contains(presetName))
             throw std::invalid_argument("invalid frontend mode preset name: " + presetName + "\n" + FrontEndModePreset::printHelpContentForFrontEndModePreset());
         applyPreset(FrontEndModePreset::getPresetMap().at(presetName));
     }
 
+    /**
+     * @brief Apply preset configuration
+     * @param presetV Preset configuration to apply
+     */
     void applyPreset(const std::shared_ptr<FrontEndModePreset> &presetV) {
         preset = presetV;
         if (preset->txCBW) {
@@ -80,6 +94,11 @@ struct PicoScenesFrameTxParameters {
         }
     }
 
+    /**
+     * @brief Validate transmission parameters
+     * @throw std::invalid_argument if parameters are invalid
+     * @details Checks compatibility of parameters based on frame type and standards
+     */
     void validate() const {
         if (frameType == PacketFormatEnum::PacketFormat_NonHT) {
             if (NDPFrame)
@@ -233,6 +252,10 @@ struct PicoScenesFrameTxParameters {
         }
     }
 
+    /**
+     * @brief Get string representation of parameters
+     * @return String describing the transmission parameters
+     */
     [[nodiscard]] std::string toString() const {
         std::stringstream ss;
         ss << "tx_param[preset=" << (preset ? preset->presetName : "NULL") << ", type=" << PacketFormat2String(frameType) << ", CBW=" << ChannelBandwidth2String(cbw) << ", MCS=" << static_cast<int16_t>(mcs[0]) << ", numSTS=" << static_cast<int16_t>(numSTS[0]) << ", Coding=" << ChannelCoding2String(coding[0]) << ", GI=" << GuardInterval2String(guardInterval);
@@ -248,6 +271,12 @@ struct PicoScenesFrameTxParameters {
     }
 };
 
+/**
+ * @brief Stream output operator for transmission parameters
+ * @param os Output stream
+ * @param parameters Parameters to output
+ * @return Reference to output stream
+ */
 inline std::ostream& operator<<(std::ostream&os, const PicoScenesFrameTxParameters&parameters) {
     os << parameters.toString();
     return os;

@@ -8,6 +8,17 @@
 #include "PicoScenesCommons.hxx"
 #include "RxSParsingCoreDLLImport.hxx"
 
+/**
+ * @brief Class for managing front-end mode presets in PicoScenes
+ *
+ * @details This class provides predefined configurations for different wireless standards
+ * and channel bandwidths. It supports:
+ * - Various IEEE 802.11 standards (NonHT, HT, VHT, HESU, EHTSU)
+ * - Different channel bandwidths (20MHz, 40MHz, 80MHz, 160MHz, 320MHz)
+ * - Different coding schemes (BCC, LDPC)
+ * - Separate TX and RX configurations
+ * - Combined TX/RX (TR) configurations
+ */
 class FrontEndModePreset {
 public:
     RXS_PARSING_CORE_API static const std::shared_ptr<FrontEndModePreset> TX_CBW_320_EHTSU; ///< Equivalent to "--format ehtsu --coding ldpc --cbw 320". Optimal tx-rate and tx-resample-ratio values will be set automatically for SDR devices.
@@ -65,10 +76,22 @@ public:
     RXS_PARSING_CORE_API static const std::shared_ptr<FrontEndModePreset> TR_CBW_20_NonHT; ///< Equivalent to "--format nonht --coding bcc --cbw 20 --rx-cbw 20". Optimal tx/rx-rate and tx/rx-resample-ratio values will be set automatically for SDR devices.
     RXS_PARSING_CORE_API static const std::shared_ptr<FrontEndModePreset> DEFAULT; ///< The default profile, equivalent to TR_CBW_20_HT. Optimal tx/rx-rate and tx/rx-resample-ratio values will be set automatically for SDR devices.
 
+    /**
+     * @brief Get list of all available presets
+     * @return Reference to vector containing all preset instances
+     */
     static const std::vector<std::shared_ptr<FrontEndModePreset>> &getPresetList();
 
+    /**
+     * @brief Get map of presets indexed by name
+     * @return Reference to map of preset name to preset instance
+     */
     static const std::map<std::string, std::shared_ptr<FrontEndModePreset>> &getPresetMap();
 
+    /**
+     * @brief Get help content describing all available presets
+     * @return Formatted string containing preset descriptions
+     */
     static std::string printHelpContentForFrontEndModePreset();
 
     FrontEndModePreset() = delete;
@@ -79,15 +102,25 @@ public:
 
     friend std::ostream &operator<<(std::ostream &os, const FrontEndModePreset &preset);
 
-    const std::string presetName{};
-    const PacketFormatEnum format{PacketFormatEnum::PacketFormat_Unknown};
-    const ChannelCodingEnum coding{ChannelCodingEnum::BCC};
-    const std::optional<double> txCBW{std::nullopt};
-    const std::optional<double> rxCBW{std::nullopt};
-    const std::string description{};
+    const std::string presetName{};                    ///< Name identifier for the preset
+    const PacketFormatEnum format{PacketFormatEnum::PacketFormat_Unknown};  ///< Packet format (NonHT/HT/VHT/HESU/EHTSU)
+    const ChannelCodingEnum coding{ChannelCodingEnum::BCC};  ///< Channel coding scheme (BCC/LDPC)
+    const std::optional<double> txCBW{std::nullopt};   ///< Transmit channel bandwidth in MHz
+    const std::optional<double> rxCBW{std::nullopt};   ///< Receive channel bandwidth in MHz
+    const std::string description{};                   ///< Human-readable description of the preset
 
 private:
 
+    /**
+     * @brief Private constructor for creating preset instances
+     *
+     * @param presetName Name identifier for the preset
+     * @param format Packet format enumeration
+     * @param coding Channel coding scheme
+     * @param txCbw Transmit channel bandwidth (optional)
+     * @param rxCbw Receive channel bandwidth (optional)
+     * @param description Human-readable description
+     */
     FrontEndModePreset(std::string presetName, PacketFormatEnum format, ChannelCodingEnum coding, const std::optional<double> &txCbw, const std::optional<double> &rxCbw, std::string description);
 };
 

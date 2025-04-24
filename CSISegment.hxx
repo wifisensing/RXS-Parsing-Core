@@ -8,6 +8,16 @@
 #include "AbstractPicoScenesFrameSegment.hxx"
 #include "PicoScenesCommons.hxx"
 
+/**
+ * @brief Parse CSI data from QCA9300 NIC
+ *
+ * @tparam Iterator Output iterator type for CSI data
+ * @param outputArray Output array for parsed CSI data
+ * @param csiData Raw CSI data buffer
+ * @param nSTS Number of spatial streams
+ * @param nRx Number of receive antennas
+ * @param nTones Number of OFDM subcarriers
+ */
 template<typename Iterator>
 void parseQCA9300CSIData(Iterator outputArray, const uint8_t *csiData, const int nSTS, const int nRx, const int nTones) {
 
@@ -47,6 +57,13 @@ void parseQCA9300CSIData(Iterator outputArray, const uint8_t *csiData, const int
     }
 }
 
+/**
+ * @brief Sort indices based on values
+ *
+ * @tparam T Value type to sort
+ * @param v Vector of values
+ * @return Vector of sorted indices
+ */
 template<typename T>
 std::vector<size_t> sort_indexes(const std::vector<T> &v) {
 
@@ -61,6 +78,16 @@ std::vector<size_t> sort_indexes(const std::vector<T> &v) {
     return idx;
 }
 
+/**
+ * @brief Parse CSI data from Intel IWL5300 NIC
+ *
+ * @tparam Iterator Output iterator type for CSI matrix
+ * @param csi_matrix Output matrix for parsed CSI data
+ * @param payload Raw CSI payload data
+ * @param ntx Number of transmit antennas
+ * @param nrx Number of receive antennas
+ * @param ant_sel Antenna selection configuration
+ */
 template<typename Iterator>
 void parseIWL5300CSIData(Iterator csi_matrix, const uint8_t *payload, const int ntx, const int nrx, const uint8_t ant_sel) {
 
@@ -116,91 +143,144 @@ public:
     uint16_t numCSI = 1; /// Number of 3-D CSI matrix, usually 1. However, for LegacyCSI and PilotCSI, since these ARE multiple OFDM symbols, numCSI maybe greater than 1.
 
     /**
-     * Return the total number of Tx spatial streams
-     * @return numTx + numESS
+     * @brief Get total number of Tx spatial streams
+     * @return Sum of numTx and numESS
      */
     [[nodiscard]] inline uint16_t numTxSpatialStreams() const {
         return numTx + numESS;
     }
 
+    /**
+     * @brief Get number of streams per CSI matrix
+     * @return Product of total Tx streams and Rx chains
+     */
     [[nodiscard]] inline uint16_t numStreamsPerCSI() const {
         return numTxSpatialStreams() * numRx;
     }
 
+    /**
+    * @brief Get total number of subcarriers per CSI matrix
+    * @return Product of streams per CSI and number of tones
+    */
     [[nodiscard]] inline uint16_t numTotalSubcarriersPerCSI() const {
         return numStreamsPerCSI() * numTones;
     }
 
+    /**
+     * @brief Get total number of streams across all CSI matrices
+     * @return Product of streams per CSI and number of CSI matrices
+     */
     [[nodiscard]] inline uint16_t numStreamsAll() const {
         return numStreamsPerCSI() * numCSI;
     }
 
+    /**
+     * @brief Get total number of subcarriers across all CSI matrices
+     * @return Product of total streams and number of tones
+     */
     [[nodiscard]] inline uint16_t numTotalSubcarriersAll() const {
         return numStreamsAll() * numTones;
     }
 };
 
 /**
- * The core CSI data class
+ * @brief Core CSI data class
+ *
+ * Contains all CSI measurement data including device information,
+ * signal parameters, and the actual CSI measurements.
  */
 class CSI {
 public:
-    PicoScenesDeviceType deviceType; ///< The type of the device that measures this CSI
-    uint8_t firmwareVersion; ///< The firmware version, only used for AX200/AX210
-    PacketFormatEnum packetFormat; ///< The packet format of this frame
-    ChannelBandwidthEnum cbw; ///< The channel bandwidth (CBW) parameter of this frame
-    uint64_t carrierFreq; ///< The actual carrier frequency
-    uint64_t carrierFreq2; ///< The second RF center frequency, mainly used for dual-channel splitting, e.g., 80 + 80 mode
-    bool isMerged; ///< If high/low dual-channel merged, true, else false
-    uint64_t samplingRate; ///< The actual hardware sampling rate; if isMerged is true, this value is the combined rate, e.g., 80 + 80 mode gives 160 MHz sampling rate
-    uint32_t subcarrierBandwidth; ///< The bandwidth of OFDM subcarriers, usually 312.5e3 for 802.11/a/g/n/ac and 78.125e3 for 802.11ax
-    CSIDimension dimensions; ///< The dimension information of the CSI data
-    uint8_t antSel; ///< The antenna selection (antenna permutation) information, only used for IWL5300 NIC
-    int16_t subcarrierOffset; ///< the index offset of the subcarrierIndices. For example, for a HT20-rate packet, subcarrierOffset = 0; for HT40+, subcarrierOffset = 32; for HT40-, subcarrierOffset = -32;
-    std::vector<int16_t> subcarrierIndices; ///< The CSI subcarrier index. For example, [-28, 28] for 11n format frame.
-    std::vector<uint32_t> timingOffsets; ///< The offset of LTF segment within the whole PPDU, multiple values for multiple CSI, e.g., in case of the extra spatial sounding or midamble
-    SignalMatrix<std::complex<float>> CSIArray; ///< The core CSI data matrix
-    SignalMatrix<float> magnitudeArray; ///< The magnitude data matrix
-    SignalMatrix<float> phaseArray; ///< The phase data matrix
-    SignalMatrix<float> phaseSlope; ///< The slope of the interpolated & unwrapped phase
-    SignalMatrix<float> phaseIntercept; ///< The intercept of the interpolated & unwrapped phase
-
-    U8Vector rawCSIData; ///< The raw CSI data
+    PicoScenesDeviceType deviceType;      ///< Device type that measured this CSI
+    uint8_t firmwareVersion;              ///< Firmware version (AX200/AX210 only)
+    PacketFormatEnum packetFormat;        ///< Frame packet format
+    ChannelBandwidthEnum cbw;             ///< Channel bandwidth
+    uint64_t carrierFreq;                 ///< Primary carrier frequency
+    uint64_t carrierFreq2;                ///< Secondary carrier frequency
+    bool isMerged;                        ///< High/low dual-channel merge status
+    uint64_t samplingRate;                ///< Hardware sampling rate
+    uint32_t subcarrierBandwidth;         ///< OFDM subcarrier bandwidth
+    CSIDimension dimensions;              ///< CSI dimension information
+    uint8_t antSel;                       ///< Antenna selection (IWL5300 only)
+    int16_t subcarrierOffset;             ///< Subcarrier index offset
+    std::vector<int16_t> subcarrierIndices; ///< CSI subcarrier indices
+    std::vector<uint32_t> timingOffsets;  ///< LTF segment timing offsets
+    SignalMatrix<std::complex<float>> CSIArray; ///< Core CSI data matrix
+    SignalMatrix<float> magnitudeArray;   ///< Magnitude data matrix
+    SignalMatrix<float> phaseArray;       ///< Phase data matrix
+    SignalMatrix<float> phaseSlope;       ///< Interpolated phase slope
+    SignalMatrix<float> phaseIntercept;   ///< Interpolated phase intercept
+    U8Vector rawCSIData;                  ///< Raw CSI data
 
     /**
-     * Perform cyclic shift delay (CSD) removal and CSI interpolation
-     * @details The CSD removal operation removes the additionally added phase slope for tha 2nd/3rd spatial streams;
-     * The CSI interpolation operation interpolates the 0-th subcarrier, meanwhile generates the magnitudeArray and phaseArray
+     * @brief Remove CSD and interpolate CSI data
+     *
+     * Removes cyclic shift delay from spatial streams and
+     * interpolates the 0-th subcarrier while generating
+     * magnitude and phase arrays.
      */
     void removeCSDAndInterpolateCSI();
 
     /**
-     * Convert current CSI object to raw buffer, for storage or transfer
-     * @return
+     * @brief Serialize CSI object to buffer
+     * @return Serialized buffer
      */
     std::vector<uint8_t> toBuffer();
 
     /**
-     * Create CSI object from the QCA9300 NIC returned raw bytes
+     * @brief Create CSI object from QCA9300 data
+     *
+     * @param buffer Raw data buffer
+     * @param bufferLength Buffer length
+     * @param numTx Number of Tx antennas
+     * @param numRx Number of Rx antennas
+     * @param numTones Number of tones
+     * @param cbw Channel bandwidth
+     * @param subcarrierIndexOffset Subcarrier index offset
+     * @return Shared pointer to created CSI object
      */
     static std::shared_ptr<CSI> fromQCA9300(const uint8_t* buffer, uint32_t bufferLength, uint8_t numTx, uint8_t numRx, uint8_t numTones, ChannelBandwidthEnum cbw, int16_t subcarrierIndexOffset);
 
     /**
-     * Create CSI object from the IWL5300 NIC returned raw bytes
+     * @brief Create CSI object from IWL5300 data
+     *
+     * @param buffer Raw data buffer
+     * @param bufferLength Buffer length
+     * @param numTx Number of Tx antennas
+     * @param numRx Number of Rx antennas
+     * @param numTones Number of tones
+     * @param cbw Channel bandwidth
+     * @param subcarrierIndexOffset Subcarrier index offset
+     * @param ant_sel Antenna selection
+     * @return Shared pointer to created CSI object
      */
     static std::shared_ptr<CSI> fromIWL5300(const uint8_t* buffer, uint32_t bufferLength, uint8_t numTx, uint8_t numRx, uint8_t numTones, ChannelBandwidthEnum cbw, int16_t subcarrierIndexOffset, uint8_t ant_sel);
 
     /**
-     * Create CSI object from the AX200/AX210 NIC returned raw bytes
+     * @brief Create CSI object from IWL MVM data (AX200/AX210)
+     *
+     * @param buffer Raw data buffer
+     * @param bufferLength Buffer length
+     * @param firmwareVersion Firmware version
+     * @param numTx Number of Tx antennas
+     * @param numRx Number of Rx antennas
+     * @param numTones Number of tones
+     * @param format Packet format
+     * @param cbw Channel bandwidth
+     * @param subcarrierIndexOffset Subcarrier index offset
+     * @param skipPilotSubcarriers Whether to skip pilot subcarriers
+     * @param antSelByte Antenna selection byte
+     * @return Shared pointer to created CSI object
      */
     static std::shared_ptr<CSI> fromIWLMVM(const uint8_t* buffer, uint32_t bufferLength, uint8_t firmwareVersion, uint8_t numTx, uint8_t numRx, uint16_t numTones, PacketFormatEnum format, ChannelBandwidthEnum cbw, int16_t subcarrierIndexOffset, bool skipPilotSubcarriers = true, uint8_t antSelByte = 0);
 
     /**
-     * A CSI data format converter
-     * @tparam OutputValueType
-     * @tparam InputValueType
-     * @param inputArray
-     * @return
+     * @brief Convert CSI array between different numeric types
+     *
+     * @tparam OutputValueType Target numeric type
+     * @tparam InputValueType Source numeric type
+     * @param inputArray Input CSI array
+     * @return Converted CSI array
      */
     template<typename OutputValueType, typename InputValueType>
     static std::vector<std::complex<OutputValueType>> convertCSIArrayType(const std::vector<std::complex<InputValueType>> &inputArray) {
@@ -212,35 +292,86 @@ public:
     }
 
     /**
-     * @brief get the index of the 0-th subcarrier (DC subcarrier)
-     * @return An int index if the measurement contains 0-th subcarrier, else a std::nullopt value.
+     * @brief Get index of DC (0-th) subcarrier
+     * @return Optional containing index if present
      */
     [[nodiscard]] std::optional<int16_t> get0thSubcarrierIndex() const;
 
     /**
-     * Return the CSI data with the specified @param subcarrierIndex, @param stsIndexStartingFrom0, @param rxIndexStartingFrom0, @param csiIndexStartingFrom0
-     * @see getMagnitude, @see getPhase
-     * @param subcarrierIndex
-     * @param stsIndexStartingFrom0
-     * @param rxIndexStartingFrom0
-     * @param csiIndexStartingFrom0
-     * @return
+     * @brief Get CSI value for specific parameters
+     *
+     * @param subcarrierIndex Subcarrier index
+     * @param stsIndexStartingFrom0 Spatial stream index
+     * @param rxIndexStartingFrom0 Receive antenna index
+     * @param csiIndexStartingFrom0 CSI matrix index
+     * @return Optional containing CSI value if parameters valid
      */
     [[nodiscard]] std::optional<std::complex<double>> getCSI(int16_t subcarrierIndex, uint8_t stsIndexStartingFrom0 = 0, uint8_t rxIndexStartingFrom0 = 0, uint16_t csiIndexStartingFrom0 = 0) const;
 
+    /**
+     * @brief Get magnitude value for specific parameters
+     *
+     * @param subcarrierIndex Subcarrier index
+     * @param stsIndex Spatial stream index
+     * @param rxIndex Receive antenna index
+     * @param csiIndexStartingFrom0 CSI matrix index
+     * @return Optional containing magnitude if parameters valid
+     */
     [[nodiscard]] std::optional<double> getMagnitude(int16_t subcarrierIndex, uint8_t stsIndex = 0, uint8_t rxIndex = 0, uint16_t csiIndexStartingFrom0 = 0) const;
 
+    /**
+     * @brief Get phase value for specific parameters
+     *
+     * @param subcarrierIndex Subcarrier index
+     * @param stsIndex Spatial stream index
+     * @param rxIndex Receive antenna index
+     * @param csiIndexStartingFrom0 CSI matrix index
+     * @return Optional containing phase if parameters valid
+     */
     [[nodiscard]] std::optional<double> getPhase(int16_t subcarrierIndex, uint8_t stsIndex = 0, uint8_t rxIndex = 0, uint16_t csiIndexStartingFrom0 = 0) const;
 };
 
+/**
+ * @brief Class managing CSI subcarrier indices
+ *
+ * Provides static methods to access subcarrier indices for different
+ * packet formats and channel bandwidths.
+ */
 class CSISubcarrierIndex {
 public:
+    /**
+     * @brief Get all subcarrier indices for given format and bandwidth
+     *
+     * @param format Packet format
+     * @param cbw Channel bandwidth
+     * @return Vector of subcarrier indices
+     */
     static const std::vector<int16_t> &getAllSubcarrierIndices(PacketFormatEnum format, ChannelBandwidthEnum cbw);
 
+    /**
+     * @brief Get pilot subcarrier indices for given format and bandwidth
+     *
+     * @param format Packet format
+     * @param cbw Channel bandwidth
+     * @return Vector of pilot subcarrier indices
+     */
     static const std::vector<int16_t> &getPilotSubcarrierIndices(PacketFormatEnum format, ChannelBandwidthEnum cbw);
 
+    /**
+     * @brief Get data subcarrier indices for given format and bandwidth
+     *
+     * @param format Packet format
+     * @param cbw Channel bandwidth
+     * @return Vector of data subcarrier indices
+     */
     static const std::vector<int16_t> &getDataSubcarrierIndices(PacketFormatEnum format, ChannelBandwidthEnum cbw);
 
+    /**
+     * @brief Get IWL5300 specific subcarrier indices
+     *
+     * @param cbw Channel bandwidth
+     * @return Vector of subcarrier indices
+     */
     static const std::vector<int16_t> &getIWL5300Subcarriers(ChannelBandwidthEnum cbw);
 
 private:
@@ -279,20 +410,51 @@ private:
 };
 
 /**
- * The CSI Segment data
+ * @brief Class representing a CSI segment in PicoScenes frame
+ *
+ * Final class that extends AbstractPicoScenesFrameSegment to handle
+ * Channel State Information data segments.
  */
 class CSISegment final : public AbstractPicoScenesFrameSegment {
 public:
+    /**
+     * @brief Default constructor
+     *
+     * Creates a new CSI segment with default parameters
+     */
     CSISegment();
 
+    /**
+     * @brief Construct from buffer
+     *
+     * @param buffer Raw segment data
+     * @param bufferLength Buffer length
+     */
     CSISegment(const uint8_t *buffer, uint32_t bufferLength);
 
+    /**
+    * @brief Construct from CSI object
+    *
+    * @param csi Shared pointer to CSI object
+    */
     explicit CSISegment(const std::shared_ptr<CSI> & csi);
 
+    /**
+     * @brief Get string representation
+     * @return String describing the segment
+     */
     [[nodiscard]] std::string toString() const override;
 
+    /**
+     * @brief Get CSI object
+     * @return Shared pointer to CSI object
+     */
     [[nodiscard]] const std::shared_ptr<CSI> &getCSI() const;
 
+    /**
+     * @brief Set CSI object
+     * @param csi New CSI object
+     */
     void setCSI(const std::shared_ptr<CSI> &csi);
 
 private:
