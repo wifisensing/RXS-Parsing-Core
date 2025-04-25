@@ -36,9 +36,9 @@ struct PicoScenesFrameTxParameters {
     double numAntenna{1};                            ///< Number of antennas
     uint16_t txcm{1};                                ///< Transmit chain mask
     ChannelBandwidthEnum cbw{ChannelBandwidthEnum::CBW_20}; ///< Channel bandwidth
+    bool preferAMPDU{false};                         ///< Prefer A-MPDU aggregation
     GuardIntervalEnum guardInterval{GuardIntervalEnum::GI_800}; ///< Guard interval
     std::vector<ChannelCodingEnum> coding{ChannelCodingEnum::BCC}; ///< Channel coding scheme
-    bool preferAMPDU{false};                         ///< Prefer A-MPDU aggregation
     uint8_t numExtraSounding{0};                     ///< Number of extra sounding symbols
     bool forceSounding{true};                        ///< Force sounding
     double prefixPaddingTime{8e-6};                  ///< Prefix padding time in seconds
